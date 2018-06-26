@@ -104,19 +104,29 @@ segment and subnet which can be controlled by the DHCP server.
 
 ### 1. Download and configure
 
-Download the DeepOps repo onto the provisioning system and check out a local
-branch for your changes:
+Download the DeepOps repo onto the provisioning system and copy the example configuration
+files so that you can make local changes:
 
 ```sh
 git clone --recursive https://github.com/NVIDIA/deepops.git
-git checkout -b local
+cp -r config.example/ config/
 ```
 
 > Note: In Git 2.16.2 or later, use `--recurse-submodules` instead of `--recursive`.
 > If you did a non-recursive clone, you can later run `git submodule update --init --recursive`
 > to pull down submodules
 
-Use the `inventory` file to set the cluster server hostnames, and optional
+The `config/` directory is ignored by git, so a new git repository can be created in this
+directory to track local changes:
+
+```sh
+cd config/
+git init .
+git add .
+git commit -am 'initial commit'
+```
+
+Use the `config/inventory` file to set the cluster server hostnames, and optional
 per-host info like IP addresses and network interfaces. The cluster should
 ideally use DNS, but you can also explicitly set server IP addresses in the
 inventory file.
@@ -128,11 +138,11 @@ servers which do not have resolvable hostnames
 * Use the `ib_bond_addr` variable to configure the infiniband network adapters
 with IPoIB in a single bonded interface
 
-Configure cluster parameters by modifying the various yaml files in the `group_vars`
+Configure cluster parameters by modifying the various yaml files in the `config/group_vars`
 directory. The cluster-wide global config resides in the `all.yml` file, while
 group-specific options reside in the other files. File names correspond to groups
 in the inventory file, i.e. `[dgxservers]` in the inventory file corresponds with
-`group_vars/dgxservers.yml`.
+`config/group_vars/dgxservers.yml`.
 
 ### 2. Management server setup
 

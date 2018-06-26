@@ -1,0 +1,22 @@
+---
+ceph_stable: True
+ceph_origin: 'repository'
+ceph_repository: 'community'
+ceph_stable_release: luminous
+# moved to inventory since not all hosts are the same
+# for some reason setting here overrides inventory file var
+#monitor_interface: enp129s0f0
+public_network: 10.0.0.0/24
+radosgw_address: 'address'
+journal_collocation: True
+devices:
+  - /dev/sdb
+#  - /dev/sdc
+#  - /dev/sdd
+#  - /dev/sde
+osd_scenario: 'collocated'
+ceph_conf_overrides:
+    mon:
+        mon_allow_pool_delete: true
+# prevent ceph from using groups['all']
+delegate_facts_host: false
