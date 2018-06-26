@@ -1,0 +1,6 @@
+---
+
+- hosts: compute-nodes
+  become: yes
+  roles:
+    - { role: ramboot, is_compute: yes, is_stateless: no }

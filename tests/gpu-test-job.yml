@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-pod
+spec:
+  containers:
+    - name: cuda-container
+      image: nvidia/cuda:9.0-devel
+      command: ["sleep", "6000"]
+      args:
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+  restartPolicy: Never
+

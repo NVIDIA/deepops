@@ -1,0 +1,59 @@
+#
+# Check if user gave --comment=mps-per-gpu when submitting their job.
+#
+scontrol show job $SLURM_JOBID | grep Comment | grep -i mps-per-gpu > /dev/null
+if [ $? -eq 0 ]; then
+    #
+    # Count how many GPUs are on the system
+    #
+    NUM_GPUS=$(/usr/sbin/lspci -n -d 10de: | wc -l)
+    case $NUM_GPUS in
+        '' | *[!0-9]*) ;; #skip if non-numeric
+        *)
+            i=0
+            #
+            # In this loop we iterate through the number of GPUs starting
+            # an MPS daemon and MPS server for each GPU.
+            #
+            while [ ${i} -lt ${NUM_GPUS} ]
+            do
+                GPUINDEX=$i
+                export CUDA_VISIBLE_DEVICES=$GPUINDEX
+                export CUDA_MPS_PIPE_DIRECTORY=/tmp/nvidia-mps_$GPUINDEX
+                export CUDA_MPS_LOG_DIRECTORY=/tmp/nvidia-log_$GPUINDEX
+                #
+                # Set GPU compute mode to EXCLUSIVE_PROCESS
+                #
+                nvidia-smi -i $GPUINDEX -c 3
+                sleep 1
+                #
+                # Start MPS daemon
+                #
+                sudo -u $SLURM_JOB_USER PATH=${PATH} CUDA_VISIBLE_DEVICES=$GPUINDEX CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_LOG_DIRECTORY CUDA_MPS_PIPE_DIRECTORY=$CUDA_MPS_PIPE_DIRECTORY -s nvidia-cuda-mps-control -d
+                sleep 1
+                let i=i+1
+            done
+            i=0
+            while [ ${i} -lt ${NUM_GPUS} ]
+            do
+                GPUINDEX=$i
+                export CUDA_VISIBLE_DEVICES=$GPUINDEX
+                export CUDA_MPS_PIPE_DIRECTORY=/tmp/nvidia-mps_$GPUINDEX
+                export CUDA_MPS_LOG_DIRECTORY=/tmp/nvidia-log_$GPUINDEX
+                #
+                # Start MPS server
+                #
+                echo "start_server -uid $SLURM_JOB_UID"  | CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_LOG_DIRECTORY CUDA_MPS_PIPE_DIRECTORY=$CUDA_MPS_PIPE_DIRECTORY nvidia-cuda-mps-control
+                sleep 1
+                #
+                # Determine MPS server PID and GPU CPU affinity.  Bind MPS server to that CPU.
+                #
+                MPS_SERVER_PID=`nvidia-smi -q -i $GPUINDEX -d PIDS | grep "Process ID" | awk '{print $4}'`
+                GPUCPUAFFINITY=$(nvidia-smi topo -m | grep -m2 GPU${GPUINDEX} | tail -n1 | \
+                  awk '{print $NF}')
+                taskset -p -c ${GPUCPUAFFINITY} $MPS_SERVER_PID
+
+                let i=i+1
+            done
+    esac
+fi

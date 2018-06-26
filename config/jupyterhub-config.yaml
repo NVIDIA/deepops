@@ -1,0 +1,19 @@
+# ref: https://github.com/jupyterhub/zero-to-jupyterhub-k8s/blob/master/jupyterhub/values.yaml
+singleuser:
+  image:
+    name: dholt/jupyterhub-k8s-gpu
+    tag: v0.6
+  extraEnv:
+    - JUPYTER_ENABLE_LAB: 1
+  # doesn't exist in helm chart... pod gets all GPUs
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+  nodeSelector:
+    gpu: "true"
+hub:
+    cookieSecret: "<secret token>"
+    prePuller:
+      enabled: false
+proxy:
+    secretToken: "<secret token>"

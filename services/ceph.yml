@@ -1,0 +1,100 @@
+# This is for connecting an external Ceph instance to Kubernetes
+# Not needed if just using Rook for Ceph in Kubernetes
+# https://github.com/kubernetes-incubator/external-storage/tree/master/ceph/rbd/deploy/rbac
+###
+# Storage
+###
+---
+# Create a storage class for Ceph which is the default storage class in k8s
+# Create a new user in Ceph just for k8s, using kube/ceph-secret-kube
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: rbd
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: ceph.com/rbd
+parameters:
+  monitors: 10.0.0.1:6789, 10.0.0.2:6789, 10.0.0.3:6789
+  pool: kube
+  adminId: admin
+  adminSecretName: ceph-admin
+  adminSecretNamespace: kube-system
+  userId: kube
+  userSecretName: ceph-client
+  imageFormat: "2"
+  imageFeatures: layering
+
+###
+# Account
+###
+---
+# Create cluster role (~group) with specific permissions for persistent volumes
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: rbd-provisioner
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]
+---
+# Create service account for RBD provisioner
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: rbd-provisioner
+---
+# Bind service account to cluster role/group
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: rbd-provisioner
+subjects:
+  - kind: ServiceAccount
+    name: rbd-provisioner
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: rbd-provisioner
+  apiGroup: rbac.authorization.k8s.io
+
+###
+# Service
+###
+---
+# Create RBD provisioner deployment
+# The Rados Block Device (RBD) provisioner creates persistent volumes on demand
+# and hands them out
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: rbd-provisioner
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: rbd-provisioner
+    spec:
+      containers:
+      - name: rbd-provisioner
+        image: "quay.io/external_storage/rbd-provisioner:latest"
+        env:
+        - name: PROVISIONER_NAME
+          value: ceph.com/rbd
+      serviceAccount: rbd-provisioner

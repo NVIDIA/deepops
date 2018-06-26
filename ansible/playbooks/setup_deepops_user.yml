@@ -1,0 +1,96 @@
+---
+# Configure the DeepOps User
+- hosts: all
+  become: yes
+  gather_facts: True
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  roles:
+    - { role: local-apt, when: is_airgapped }
+    - ssh
+  tasks:
+    - name: install python for ansible
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      register: output
+      changed_when: output.stdout != ""
+
+    - name: set sudo without password
+      lineinfile: dest=/etc/sudoers regexp="^%sudo" line="%sudo ALL=(ALL) NOPASSWD:ALL"
+
+    - name: create /local
+      file:
+        path: /local
+        state: directory
+
+    - name: create /opt/deepops
+      file:
+        path: /opt/deepops
+        state: directory
+
+    - name: create deepops user
+      user:
+        name: deepops
+        uid: 1337
+        home: /local/deepops
+        shell: /bin/bash
+        state: present
+        groups:
+          - sudo
+
+    - name: set authorized key for deepops user
+      authorized_key:
+        user: deepops
+        state: present
+        key: "{{ lookup('file', '~/.ssh/deepops.pub') }}"
+
+
+
+# Move or Delete all local users
+# This set of tasks ensures that the DeepOps user is properly configured.
+
+- hosts: all
+  become: yes
+  gather_facts: True
+  vars:
+    ansible_user: deepops
+    ansible_ssh_private_key_file: ~/.ssh/deepops
+  tasks:
+
+    - name: check for state file
+      stat:
+        path: /opt/deepops/.local_users
+      register: has_run
+
+    - name: get list of local users in /home
+      find:
+        paths: /home
+        file_type: directory
+      register: local_users
+
+    - name: delete local users
+      user:
+        name: "{{ item.path|basename }}"
+        state: absent
+        remove: yes
+      with_items: "{{ local_users.files }}"
+      when: delete_local_users and has_run.stat.exists == False
+
+    - name: move local users
+      block:
+      - command: killall -u "{{ item.path|basename }}"
+        ignore_errors: True
+        with_items: "{{ local_users.files }}"
+      - user:
+          name: "{{ item.path|basename }}"
+          home: "/local/{{ item.path|basename }}"
+          move_home: yes
+          state: present
+        with_items: "{{ local_users.files }}"
+      when: not delete_local_users and has_run.stat.exists == False
+
+    - name: generate state file
+      file:
+        path: /opt/deepops/.local_users
+        state: touch
+        mode: 0644
+      when: has_run.stat.exists == False

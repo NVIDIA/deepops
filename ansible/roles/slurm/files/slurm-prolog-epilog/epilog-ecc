@@ -1,0 +1,18 @@
+# Make sure ECC is on.
+nvidia-smi -a | grep -A1 Ecc | grep -i disabled > /dev/null
+if [ $? -eq 0 ]; then
+    logger -t PROLOG "Enabling ECC"
+    nvidia-smi -e 1
+    GPUCOUNT=`nvidia-smi -L | wc -l`
+    GPUMAXINDEX=`expr $GPUCOUNT - 1`
+    systemctl stop collectd
+    logger -t PROLOG "Triggering GPU reset"
+    for i in `seq 0 $GPUMAXINDEX`; do
+        e=`nvidia-smi -r -i $i 2>&1`
+        if [ $? -ne 0 ]; then
+            logger -t PROLOG "WARNING! GPU $i reset failed"
+            logger -t PROLOG "GPU $i reset error: $e"
+        fi
+    done
+    logger -t PROLOG "GPU reset done"
+fi

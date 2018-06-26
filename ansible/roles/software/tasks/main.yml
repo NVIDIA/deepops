@@ -1,0 +1,20 @@
+---
+
+- name: apt update
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: apt upgrade
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+    upgrade: safe
+
+- name: install default software
+  action: apt name={{ item }} state=latest
+  when: ansible_os_family == "Debian"
+  with_items: "{{ default_ubuntu_packages }}"
+  tags:
+    - packages

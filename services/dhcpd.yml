@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dhcp-server
+spec:
+  hostNetwork: true
+  containers:
+    - name: dhcp-server
+      image: joebiellik/dhcpd
+      volumeMounts:
+        - name: config-volume
+          mountPath: /etc/dhcp
+  volumes:
+    - name: config-volume
+      configMap:
+        name: dhcpd
+  restartPolicy: Never

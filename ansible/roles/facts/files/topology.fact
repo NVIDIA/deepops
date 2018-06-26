@@ -1,0 +1,18 @@
+#!/bin/bash
+SOCKETS=`lscpu | grep "Socket(s):"  | cut -d : -f 2 | awk '{print $1}'`
+THREADSPERCORE=`lscpu | grep "Thread(s) per core:" | cut -d : -f 2 | awk '{print $1}'`
+CORESPERSOCKET=`lscpu | grep "Core(s) per socket:" | cut -d : -f 2 | awk '{print $1}'`
+echo "{"
+echo "  \"cpu_topology\": {"
+echo "    \"sockets\": \"$SOCKETS\","
+echo "    \"cores_per_socket\": \"$CORESPERSOCKET\","
+echo "    \"threads_per_core\": \"$THREADSPERCORE\"",
+echo "    \"logical_cpus\": \"$(expr $SOCKETS \* $CORESPERSOCKET \* $THREADSPERCORE)\""
+echo "  },"
+echo "  \"gpu_topology\": ["
+gpus=$(for i in `lspci | grep -i nvidia | grep 3D | awk '{print $1}' | cut -d : -f 1`; do \
+    echo -n \"$(cat /sys/class/pci_bus/0000:$i/cpulistaffinity)\",; done | sed 's/,$//')
+echo "    $gpus"
+echo "  ]"
+echo "}"
+

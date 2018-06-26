@@ -1,0 +1,8 @@
+# Enable hypterthreading if requested
+scontrol show job $SLURM_JOBID | grep Comment | grep -i hyperthreading | grep -v nohyperthreading > /dev/null
+if [ $? -eq 0 ]; then
+	for i in /sys/devices/system/cpu/*/online ; do
+		echo 1 > $i
+		echo Enabling CPU $(echo $i | egrep -o cpu[0-9]+ | tr -d 'cpu')
+	done
+fi

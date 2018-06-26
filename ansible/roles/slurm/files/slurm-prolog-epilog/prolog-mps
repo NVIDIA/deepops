@@ -1,0 +1,24 @@
+# Activate NVIDIA MPS if requested
+# Server will start automatically, no need to start explicitly
+scontrol show job $SLURM_JOBID | grep Comment | grep -i mps | grep -v mps-per-gpu > /dev/null
+if [ $? -eq 0 ]; then
+    NUM_GPUS=$(/usr/sbin/lspci -n -d 10de: | wc -l)
+    case $NUM_GPUS in
+        '' | *[!0-9]*) ;; #skip if non-numeric
+        *)
+            GPUS=""
+            i=0
+            while [ ${i} -lt ${NUM_GPUS} ]
+            do
+                GPUS+="${i},"
+                let i=i+1
+            done
+            GPUS=${GPUS%%,}
+    esac
+    sudo nvidia-smi -c 3
+    export CUDA_VISIBLE_DEVICES=$GPUS
+    export CUDA_MPS_PIPE_DIRECTORY=/tmp/nvidia-mps
+    export CUDA_MPS_LOG_DIRECTORY=/tmp/nvidia-log
+    sudo -u $SLURM_JOB_USER PATH=${PATH} CUDA_VISIBLE_DEVICES=$GPUS CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_LOG_DIRECTORY CUDA_MPS_LOG_DIRECTORY=$CUDA_MPS_LOG_DIRECTORY -s nvidia-cuda-mps-control -d
+    export CUDA_VISIBLE_DEVICES=$GPUS
+fi

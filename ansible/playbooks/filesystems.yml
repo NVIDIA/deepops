@@ -1,0 +1,12 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: mount /tmp as ramdisk
+      mount:
+        path: /tmp
+        src: tmpfs
+        fstype: tmpfs
+        state: mounted
+        opts: rw,nosuid,nodev
+      tags: tmpfs

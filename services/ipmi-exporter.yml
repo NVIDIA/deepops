@@ -1,0 +1,48 @@
+#docker run --device=/dev/ipmi0 -d --name ipmi_exporter -p 9289:9289 --name prometheus-ipmi-exporter lovoo/ipmi_exporter:latest
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  annotations:
+#    prometheus.io/scrape: 'true'
+#  labels:
+#    app: ipmi-exporter
+#    name: ipmi-exporter
+#  name: ipmi-exporter
+#spec:
+#  clusterIP: None
+#  ports:
+#  - name: scrape
+#    port: 9289
+#    protocol: TCP
+#  selector:
+#    app: ipmi-exporter
+#  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: ipmi-exporter
+spec:
+  template:
+    metadata:
+      labels:
+        app: ipmi-exporter
+      name: ipmi-exporter
+    spec:
+      containers:
+      - image: lovoo/ipmi_exporter:latest
+        name: ipmi-exporter
+        ports:
+        - containerPort: 9289
+          hostPort: 9289
+          name: scrape
+        volumeMounts:
+        - mountPath: /dev/ipmi0
+          name: ipmi-dev
+        securityContext:    # unfortunately required since 'type: CharDevice' doesn't work
+          privileged: true
+      volumes:
+      - name: ipmi-dev
+        hostPath:
+          path: /dev/ipmi0
+          #type: CharDevice

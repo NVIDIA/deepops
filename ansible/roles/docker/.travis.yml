@@ -1,0 +1,19 @@
+---
+language: python
+python: "2.7"
+env:
+  - ANSIBLE_VERSION='ansible<2'
+  - ANSIBLE_VERSION='ansible>2'
+
+before_install:
+  - sudo apt-get update -qq
+  #- sudo apt-get install -qq python-apt python-pycurl
+install:
+  # Install Ansible.
+  - sudo pip install $ANSIBLE_VERSION
+script:
+  - ansible --version
+  - export ANSIBLE_ROLES_PATH="../"
+#  - echo localhost > inventory
+  - ansible-playbook -i hosts --syntax-check docker.yml
+  - ansible-playbook -i hosts --connection=local --sudo -vvvv docker.yml

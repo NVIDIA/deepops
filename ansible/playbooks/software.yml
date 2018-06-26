@@ -1,0 +1,70 @@
+---
+# Configure host for local apt repo
+- hosts: all
+  become: true
+  roles:
+    - {role: local-apt } #, when: with_local_apt}
+      #- { role: docker, when: with_local_apt == false, tags: docker }
+      ###- { role: docker, tags: docker }
+      #- {role: nvidia-docker2, when: with_local_apt}
+      #- {role: singularity, when: with_local_apt}
+  tasks:
+    - name: remove old/undesirable packages
+      apt:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+      - popularity-contest
+      - nvidia-sysinfo-dgx
+    - name: remove packages for airgapped
+      apt:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+      - dgx-repo
+      - dgxstation-repo
+      - dgx-docker-repo
+      when: is_airgapped
+    - name: upgrade installed packages
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+        upgrade: safe
+
+- hosts: dgx-servers
+  become: true
+  roles:
+    - { role: dgx-software, tags: software }
+    - { role: cachefilesd, when: not is_official }
+  tasks:
+  - name: change permissions on /raid
+    file:
+      path: /raid
+      state: directory
+      owner: root
+      group: root
+      mode: "1777"
+    tags:
+      - raid
+      - storage
+
+- hosts: tesla-servers
+  become: true
+  roles:
+    - { role: tesla-software, tags: software }
+
+- hosts: slurm-masters
+  become: true
+  roles:
+    - { role: software, tags: software }
+
+- hosts: all
+  become: true
+  roles:
+    - reboot
+  tasks:
+  - name: clean up packages
+    apt:
+      autoremove: yes
+
+

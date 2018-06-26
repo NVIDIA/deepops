@@ -1,0 +1,9 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: hello-world
+spec:
+  containers:
+  - name: hello-world
+    image: hello-world
+  restartPolicy: Never

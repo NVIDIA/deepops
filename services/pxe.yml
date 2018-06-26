@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pxe-server
+spec:
+  hostNetwork: true
+  containers:
+    - name: pxe-server
+      image: deepops/provision/pxe      # change me
+      volumeMounts:
+        - name: config-volume
+          mountPath: /data
+        - name: nfs
+          mountPath: "/iso"
+  imagePullSecrets:
+  - name: secret                        # change me
+  volumes:
+    - name: config-volume
+      configMap:
+        name: pxe
+        items:
+        - key: machines.json
+          path: machines.json
+    - name: nfs
+      persistentVolumeClaim:
+        claimName: nfs-dgx-iso
+  restartPolicy: Never

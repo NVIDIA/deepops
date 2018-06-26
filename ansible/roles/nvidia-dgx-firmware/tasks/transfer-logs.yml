@@ -1,0 +1,26 @@
+---
+- include: get-time.yml
+
+- name: Get on-board and container firmware versions
+  shell: docker run --privileged --rm -v /:/hostfs {{ firmware_update_container }} show_version > fw-versions.log
+  args:
+    chdir: /tmp
+  changed_when: False
+
+- name: Copy fw versions log file to local machine
+  fetch:
+    src: /tmp/fw-versions.log
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-fw-version.log"
+    flat: yes
+
+- name: Copy /var/log/syslog to local machine
+  fetch:
+    src: /var/log/syslog
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-syslog"
+    flat: yes
+
+- name: Copy /var/log/nvidia-fw.log to local machine
+  fetch:
+    src: /var/log/nvidia-fw.log
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-nvidia-fw.log"
+    flat: yes

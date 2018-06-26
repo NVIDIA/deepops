@@ -1,0 +1,13 @@
+# Disable hypterthreading if requested
+scontrol show job $SLURM_JOBID | grep Comment | grep -i nohyperthreading > /dev/null
+if [ $? -eq 0 ]; then
+	cat `find /sys/devices/system/cpu -name thread_siblings_list` | sort | uniq > /tmp/thread_siblings_list
+	for sibs in `cat /tmp/thread_siblings_list` ; do
+	    	echo $sibs | grep ',' >& /dev/null # if there is a comma (','), then need to disable 2nd
+    		if [ $? -eq 0 ] ; then
+      			x=`echo $sibs | cut -f 2 -d ','`
+      			echo Disabling CPU $x
+      			echo 0 > /sys/devices/system/cpu/cpu$x/online
+    		fi
+  	done
+fi

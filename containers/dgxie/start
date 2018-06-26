@@ -1,0 +1,108 @@
+#!/bin/sh
+
+## CONFIG
+ISO=${ISO:-/iso}
+PRESEED=${ISO}/preseed/pxe.template.seed
+INT=${INT:-enp1s0f0}
+DISK=${DISK:-sda}
+DEFAULT=${DEFAULT:-local}
+HTTP_PORT=${HTTP_PORT:-13370}
+KBD=${KBD:-us}
+KERN_EXTRA=${KERN_EXTRA:-}
+HOST_INT_PUB=${HOST_INT_PUB:-eth0}
+HOST_INT_PRV=${HOST_INT_PRV:-eth1}
+NETWORK=${NETWORK:-192.168.1.0}
+NETMASK=${NETMASK:-255.255.255.0}
+IP=${IP:-192.168.1.1}
+GATEWAY=${GATEWAY:-${IP}}
+DNS1=${DNS1:-8.8.8.8}
+DNS2=${DNS2:-8.8.4.4}
+DHCP_START=${DHCP_START:-192.168.1.100}
+DHCP_END=${DHCP_END:-192.168.1.199}
+LEASETIME=${LEASETIME:-7200}
+DOMAIN=${DOMAIN:-local}
+###
+
+mkdir -p "${ISO}"
+
+# Check for mounted DGX Server ISO
+type ${PRESEED} >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+    dgx_iso="$(find /nfs -name \*.iso)"
+    mount -o loop -t iso9660 "$dgx_iso" "${ISO}"
+fi
+
+# Check for mounted DGX Server ISO
+type ${PRESEED} >/dev/null 2>&1
+if [ $? -eq 0 ] ; then
+	cp ${PRESEED} /www/dgx.seed
+	PRESEED=/www/dgx.seed
+	ln -sf ${ISO} /www/iso
+
+    # Set up PXE boot stuff
+    cp -r ${ISO}/install/netboot/ubuntu-installer/amd64/ /tftpboot/efi64/dgx-installer/
+
+    # Configure PXE boot menu args
+    sed -i "s/\#IP\#/${IP}:${HTTP_PORT}/g" /tftpboot/pxelinux.cfg/*
+    sed -i "s/\#INT\#/${INT}/g" /tftpboot/pxelinux.cfg/*
+    sed -i "s/\#DEFAULT\#/${DEFAULT}/g" /tftpboot/pxelinux.cfg/*
+
+    # Highlight default option in PXE menu
+    if [ "${DEFAULT}" == "DGX" ] ; then
+        sed -i "s/\#M_DEF_DGX\#/MENU DEFAULT/g" /tftpboot/pxelinux.cfg/*
+    fi
+
+    # Modify preseed
+    sed -i "s/^d-i live-installer.*/d-i live-installer\/net-image string ftp:\/\/${IP}\/install\/filesystem.squashfs/g" ${PRESEED}
+    sed -i "s/^d-i mirror\/ftp\/hostname.*/d-i mirror\/ftp\/hostname string ${IP}/g" ${PRESEED}
+    sed -i "s/^d-i apt-setup\/local0\/repository.*/d-i apt-setup\/local0\/repository string deb ftp:\/\/${IP}\/ xenial main multiverse/g" ${PRESEED}
+    sed -i "s/^d-i mirror\/ftp\/directory.*/d-i mirror\/ftp\/directory string \//g" ${PRESEED}
+    sed -i "s/^d-i apt-setup\/security_host.*/d-i apt-setup\/security_host string ${IP}/g" ${PRESEED}
+
+    # Try to get install process to fix BIOS boot order on pre-3.18 BMC firmwares; sets DGX to boot from first disk
+    # Turn off chassis identify light
+    sed -i "s/in-target sh -c \"logger preseed\/late_command: end\"\;/modprobe -v ipmi_devintf\; \\\\\n\\t in-target sh -c \"sudo ipmitool raw 0x00 0x08 0x05 0xe0 0x08 0x00 0x00 0x00\"\; \\\\\n\\t in-target sh -c \"sudo ipmitool chassis identify 0\"\; \\\\\n\\t in-target sh -c \"curl -X POST -d action=end ${IP}:${HTTP_PORT}\/install\"\; \\\\\n\\tin-target sh -c \"logger preseed\/late_command: end\"\;/g" ${PRESEED}
+
+    # Add early command to log install start
+    #sed -i "s/^# Use default/d-i preseed\/early_command string wget --post-data action=start ${IP}\/install\\n\\n# Use default/g" ${PRESEED}
+    #sed -i "s/early_command string/early_command string wget --post-data action=start 192.168.1.1\/install \;/g" ${PRESEED}
+
+    # Useful for Xen VM
+    sed -i "s/\/dev\/sda/\/dev\/${DISK}/g" ${PRESEED}
+    sed -i "s/enp1s0f0/${INT}/g" ${PRESEED}
+
+    # FTP
+    sed -i "s~/var/lib/ftp~${ISO}~g" /etc/passwd
+
+else
+	echo "DGX ISO must be mounted at ${ISO}"
+	echo "can't find ${PRESEED}"
+fi
+
+# DHCP
+sed -i "s/\#HOST_INT_PRV\#/${HOST_INT_PRV}/g" /etc/dnsmasq.conf
+sed -i "s/\#LEASETIME\#/${LEASETIME}/g" /etc/dnsmasq.conf
+sed -i "s/\#DOMAIN\#/${DOMAIN}/g" /etc/dnsmasq.conf
+sed -i "s/\#IP\#/${IP}/g" /etc/dnsmasq.conf
+sed -i "s/\#NETWORK\#/${NETWORK}/g" /etc/dnsmasq.conf
+sed -i "s/\#NETMASK\#/${NETMASK}/g" /etc/dnsmasq.conf
+sed -i "s/\#GATEWAY\#/${GATEWAY}/g" /etc/dnsmasq.conf
+sed -i "s/\#DNS1\#/${DNS1}/g" /etc/dnsmasq.conf
+sed -i "s/\#DNS2\#/${DNS2}/g" /etc/dnsmasq.conf
+sed -i "s/\#DHCP_START\#/${DHCP_START}/g" /etc/dnsmasq.conf
+sed -i "s/\#DHCP_END\#/${DHCP_END}/g" /etc/dnsmasq.conf
+
+# NAT
+/sbin/iptables -t nat -A POSTROUTING -o ${HOST_INT_PUB} -j MASQUERADE
+/sbin/iptables -A FORWARD -i ${HOST_INT_PUB} -o ${HOST_INT_PRV} -m state --state RELATED,ESTABLISHED -j ACCEPT
+/sbin/iptables -A FORWARD -i ${HOST_INT_PRV} -o ${HOST_INT_PUB} -j ACCEPT
+sysctl -w net.ipv4.ip_forward=1
+
+# Copy PXE config for EFI
+cp -r /tftpboot/pxelinux.cfg /tftpboot/efi64/
+
+# Run some servers
+nginx &
+/usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf &
+/usr/local/bin/rest_api.py >/dev/null 2>&1 &
+exec dnsmasq -k --log-facility=-

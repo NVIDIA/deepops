@@ -1,0 +1,47 @@
+---
+# Select python variable file according to the ansible_python_interpreter.
+python_vars_file: >-
+  {{ 'python3.yml' if ansible_python_interpreter is defined
+                          and 'python3' in ansible_python_interpreter
+                       else 'python2.yml' }}
+
+# To use Docker Ansible modules, managed nodes require some Docker Python packages :
+# * `docker-py` (renamed into `docker` since the 2.0.0 version);
+# * `docker-compose` which is required by the docker_service Ansible module.
+#
+# The `docker` python package introduces some backward incompatible changes is version 2.0.0.
+# Ansible 2.3+ is required to run this new version. Previous Ansible versions have to use docker-py<=1.10.6.
+# The `docker-compose` python package has a dependency over the docker/docker-py package.
+# The `docker-compose` 1.9.0 is the latest version to be compatible with the docker<2.0.0.
+#
+# To sum up:
+# * with Ansible < 2.3:
+#   * you have to use docker-py<=1.10.6 due to backward incompatibilities of next versions
+#   * you have to use docker-compose<=1.9.0 due to docker-compose>1.9.0 using newer versions of docker-py.
+
+# Compute Ansible version or latest
+_ansible_version_latest: "{{ ansible_version.full | version_compare('2.3', '<') }}"
+
+# Compute Python Docker component version or latest
+_pip_version_docker_latest: >-
+  {{ pip_version_docker=='latest' or (pip_version_docker | version_compare('1.10.6', '>')) }}
+
+# Compute Python Docker-compose component version or latest
+_pip_version_docker_compose_latest: >-
+  {{ pip_version_docker_compose=='latest' or (pip_version_docker_compose | version_compare('1.9.0', '>')) }}
+
+# Compute the `docker` Python package's version to use.
+_pip_version_docker: >-
+  {{ '1.10.6' if (_ansible_version_latest and _pip_version_docker_latest) else pip_version_docker }}
+
+# Compute the `docker` Python package's name according to its version.
+_pip_docker_package_name: "{{ 'docker-py' if not _pip_version_docker_latest else 'docker' }}"
+
+# Determine whether to install the `docker` package or not. The `docker-compose` Python package has a dependency over
+# the `docker` Python package. So when installing the `docker-compose` package we'd rather let it handle the `docker`
+# package version to prevent version mismatches.
+_pip_install_docker: "{{ not pip_install_docker_compose and pip_install_docker }}"
+
+# Compute the `docker-compose` Python package's version to use.
+_pip_version_docker_compose: >-
+  {{ '1.9.0' if (_ansible_version_latest and _pip_version_docker_compose_latest) else pip_version_docker_compose }}

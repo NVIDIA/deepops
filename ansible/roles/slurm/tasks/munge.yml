@@ -1,0 +1,25 @@
+---
+
+- name: install munge
+  package:
+    name: munge
+    state: latest
+  notify:
+    - restart munge
+
+- name: create munge.key
+  template:
+    src: munge.key.j2
+    dest: /etc/munge/munge.key
+    mode: 0400
+    owner: munge
+  notify:
+    - restart munge
+
+- name: start munge
+  service:
+    name: munge
+    enabled: yes
+    state: started
+
+- meta: flush_handlers

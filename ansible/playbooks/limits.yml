@@ -1,0 +1,6 @@
+---
+
+- hosts: compute-nodes
+  become: yes
+  roles:
+    - { role: limits }

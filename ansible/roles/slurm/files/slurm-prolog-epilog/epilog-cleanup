@@ -1,0 +1,30 @@
+# Reset access and kill stray processes
+USER=$SLURM_JOB_USER
+if [ $USER != root ]; then
+    killall -9 -u $USER
+    if [ $? -eq 0 ]; then
+        echo "Killed residual processes for $USER"
+    fi
+fi
+
+# Clear caches
+sync
+echo 3 > /proc/sys/vm/drop_caches
+
+# Clean up processes still running.  If processes don't exit node is drained.
+nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}' | grep -v - > /dev/null
+if [ $? -eq 0 ] ; then
+	for i in `nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}'`
+		do
+		kill -9 $i
+	done
+fi
+sleep 5
+nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}' | grep -v - > /dev/null
+if [ $? -eq 0 ] ; then
+	echo "Processes found"
+	scontrol update nodename=$HOSTNAME state=drain reason="Residual GPU processes found"
+else
+	echo "No processes found"
+fi
+

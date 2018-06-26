@@ -1,0 +1,9 @@
+admin.conf
+.Dockerfile
+.idea
+inventory.cfg
+kubectl
+*.retry
+roles/community
+.terraform
+*.tf*

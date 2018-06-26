@@ -1,0 +1,10 @@
+# Start DCGM GPU stats collection if requested
+scontrol show job $SLURM_JOBID | grep Comment | grep -i dcgmstats > /dev/null
+if [ $? -eq 0 ]; then
+        GPULIST=`nvidia-smi | grep Tesla | awk -vORS=, '{print $2}' | sed 's/,$/\n/'`
+        sudo -u $SLURM_JOB_USER nv-hostengine ~$SLURM_JOB_USER/nvhost.pid
+        sudo -u $SLURM_JOB_USER dcgmi group -c gpuinfo
+        sudo -u $SLURM_JOB_USER dcgmi group -g 1 -a $GPULIST
+        sudo -u $SLURM_JOB_USER dcgmi stats -g 1 --enable
+        sudo -u $SLURM_JOB_USER dcgmi stats -g 1 -s $SLURM_JOBID
+fi

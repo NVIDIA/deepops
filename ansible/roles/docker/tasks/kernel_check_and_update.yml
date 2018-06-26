@@ -1,0 +1,65 @@
+- name: Install backported trusty kernel onto 12.04
+  apt:
+    pkg: "{{ item }}"
+    state: "{{ kernel_pkg_state }}"
+    update_cache: yes
+    cache_valid_time: 600
+  with_items:
+    - linux-image-generic-lts-trusty
+    - linux-headers-generic-lts-trusty
+  register: kernel_result
+  when: "ansible_distribution_version|version_compare('12.04', '=')"
+
+- name: Install Xorg packages for backported kernels (very optional)
+  apt:
+    pkg: "{{ item }}"
+    state: installed
+    update_cache: yes
+    cache_valid_time: 600
+  with_items:
+    - xserver-xorg-lts-trusty
+    - libgl1-mesa-glx-lts-trusty
+  register: xorg_pkg_result
+  when: "install_xorg_pkgs and (kernel_result|changed or kernel_result|success)"
+
+- name: Install latest kernel for Ubuntu 13.04+
+  apt:
+    pkg: "{{ item }}"
+    state: "{{ kernel_pkg_state }}"
+    update_cache: yes
+    cache_valid_time: 600
+  with_items:
+    - "linux-image-extra-{{ ansible_kernel }}"
+    - linux-image-extra-virtual
+  when: "ansible_distribution_version|version_compare('13.04', '=')
+      or ansible_distribution_version|version_compare('13.10', '=')
+      or install_kernel_extras"
+
+# Fix for https://github.com/dotcloud/docker/issues/4568
+- name: Install cgroup-lite for Ubuntu 13.10
+  apt:
+    pkg: cgroup-lite
+    state: "{{ cgroup_lite_pkg_state }}"
+    update_cache: yes
+    cache_valid_time: 600
+  register: cgroup_lite_result
+  when: "ansible_distribution_version|version_compare('13.10', '=')"
+
+- name: Reboot instance
+  command: /sbin/shutdown -r now
+  register: reboot_result
+  when: "(ansible_distribution_version|version_compare('12.04', '=') and kernel_result|changed)
+      or (ansible_distribution_version|version_compare('13.10', '=') and cgroup_lite_result|changed)
+      or xorg_pkg_result|changed"
+
+- name: Wait for instance to come online (10 minute timeout)
+  become: no
+  local_action:
+    module: wait_for
+    host: "{{ ansible_ssh_host|default(inventory_hostname) }}"
+    port: "{{ ansible_ssh_port|default(ssh_port) }}"
+    delay: 30
+    timeout: 600
+    state: started
+  when: "(ansible_distribution_version|version_compare('12.04', '=') and reboot_result|changed)
+      or (ansible_distribution_version|version_compare('13.10', '=') and cgroup_lite_result|changed)"

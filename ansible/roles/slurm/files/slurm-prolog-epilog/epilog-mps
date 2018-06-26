@@ -1,0 +1,11 @@
+# Quit cuda mps if it's running
+ps aux | grep nvidia-cuda-mps | grep -v grep > /dev/null
+if [ $? -eq 0 ]; then
+    echo quit | nvidia-cuda-mps-control
+fi
+
+# Test for presence of mps zombie
+ps aux | grep nvidia-cuda-mps | grep -v grep > /dev/null
+if [ $? -eq 0 ]; then
+    killall nvidia-cuda-mps-server
+fi
