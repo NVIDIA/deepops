@@ -7,3 +7,4 @@ kubectl
 roles/community
 .terraform
 *.tf*
+config

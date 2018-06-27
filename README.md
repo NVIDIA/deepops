@@ -104,19 +104,29 @@ segment and subnet which can be controlled by the DHCP server.
 
 ### 1. Download and configure
 
-Download the DeepOps repo onto the provisioning system and check out a local
-branch for your changes:
+Download the DeepOps repo onto the provisioning system and copy the example configuration
+files so that you can make local changes:
 
 ```sh
 git clone --recursive https://github.com/NVIDIA/deepops.git
-git checkout -b local
+cp -r config.example/ config/
 ```
 
 > Note: In Git 2.16.2 or later, use `--recurse-submodules` instead of `--recursive`.
 > If you did a non-recursive clone, you can later run `git submodule update --init --recursive`
 > to pull down submodules
 
-Use the `inventory` file to set the cluster server hostnames, and optional
+The `config/` directory is ignored by git, so a new git repository can be created in this
+directory to track local changes:
+
+```sh
+cd config/
+git init .
+git add .
+git commit -am 'initial commit'
+```
+
+Use the `config/inventory` file to set the cluster server hostnames, and optional
 per-host info like IP addresses and network interfaces. The cluster should
 ideally use DNS, but you can also explicitly set server IP addresses in the
 inventory file.
@@ -128,11 +138,11 @@ servers which do not have resolvable hostnames
 * Use the `ib_bond_addr` variable to configure the infiniband network adapters
 with IPoIB in a single bonded interface
 
-Configure cluster parameters by modifying the various yaml files in the `group_vars`
+Configure cluster parameters by modifying the various yaml files in the `config/group_vars`
 directory. The cluster-wide global config resides in the `all.yml` file, while
 group-specific options reside in the other files. File names correspond to groups
 in the inventory file, i.e. `[dgxservers]` in the inventory file corresponds with
-`group_vars/dgxservers.yml`.
+`config/group_vars/dgxservers.yml`.
 
 ### 2. Management server setup
 
@@ -156,7 +166,7 @@ flags
 ansible-playbook -l mgmt -k -K ansible/playbooks/bootstrap.yml
 ```
 
-Where `mgmt` is the group of servers in your `inventory` file which will become
+Where `mgmt` is the group of servers in your `config/inventory` file which will become
 management servers for the cluster.
 
 To run arbitrary commands in parallel across nodes in the cluster, you can use ansible
@@ -193,7 +203,7 @@ Deploy Kubernetes on management servers:
 Modify the file `config/kube.yml` if needed and deploy Kubernetes:
 
 ```sh
-ANSIBLE_CONFIG=kubespray/ansible.cfg ansible-playbook -i inventory -l mgmt -v -b --flush-cache --extra-vars "@config/kube.yml" kubespray/cluster.yml
+ansible-playbook -l mgmt -v -b --flush-cache --extra-vars "@config/kube.yml" kubespray/cluster.yml
 ```
 
 Place a hold on the `docker-ce` package so it doesn't get upgraded:
@@ -321,7 +331,7 @@ Modify the DGXie kubernetes manifest `services/dgxie.yml` to configure settings
 for the DHCP server and DGX install process
 
 Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node and DGX
-server in the cluster. IP addresses should match those used in the `inventory` file.
+server in the cluster. IP addresses should match those used in the `config/inventory` file.
 
 You can get the MAC address of DGX system interfaces via the BMC, for example:
 
@@ -511,7 +521,7 @@ The DGX install process will take approximately 15 minutes. You can check the DG
 ```
 
 If your DGX are on an un-routable subnet, uncomment the `ansible_ssh_common_args` variable in the
-`group_vars/dgx-servers.yml` file and modify the IP address to the IP address of the managment server
+`config/group_vars/dgx-servers.yml` file and modify the IP address to the IP address of the managment server
 with access to the private subnet, i.e.
 
 ```sh
@@ -592,13 +602,13 @@ not accept Slurm jobs. From the login node, run:
 sudo scontrol update node=dgx01 state=drain reason=k8s
 ```
 
-Modify the `inventory` file to add the DGX to the `kube-node` and `k8s-gpu` categories by uncommenting
+Modify the `config/inventory` file to add the DGX to the `kube-node` and `k8s-gpu` categories by uncommenting
 the `dgx-servers` entry in these sections
 
 Re-run Kubespray to install Kubernetes on the DGX:
 
 ```sh
-ANSIBLE_CONFIG=kubespray/ansible.cfg ansible-playbook -i inventory -l k8s-cluster -k -v -b --flush-cache --extra-vars "@config/kube.yml" kubespray/cluster.yml
+ansible-playbook -l k8s-cluster -k -v -b --flush-cache --extra-vars "@config/kube.yml" kubespray/cluster.yml
 ```
 
 Check that the installation was successful:
@@ -619,7 +629,7 @@ ansible dgx-servers -k -b -a "apt-mark hold docker-ce"
 Install the nvidia-container-runtime on the DGX:
 
 ```sh
-ANSIBLE_CONFIG=kubespray/ansible.cfg ansible-playbook -i inventory -l k8s-gpu -k -v -b --extra-vars "@config/kube.yml" playbooks/k8s-gpu.yml
+ansible-playbook -l k8s-gpu -k -v -b --flush-cache --extra-vars "@config/kube.yml" playbooks/k8s-gpu.yml
 ```
 
 Test that GPU support is working:
