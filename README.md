@@ -46,6 +46,9 @@ An optional login server can be used to allow users a place to interact with dat
 and launch jobs. The Slurm job scheduler can also be installed in parallel with Kubernetes
 to facilitate easier large-scale training jobs or more traditional HPC workloads.
 
+For more information on deploying DGX in the datacenter, consult the
+[DGX Data Center Reference Design Whitepaper](https://nvidia-gpugenius.highspot.com/viewer/5b33fecf1279587c07d8ac86)
+
 ## Prerequisites
 
 ### Hardware Requirements
