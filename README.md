@@ -223,10 +223,20 @@ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s htt
 chmod +x ./kubectl
 ```
 
+To make administration easier, you may want to copy the `kubectl` binary to someplace in your `$PATH`
+and copy the `admin.conf` configuration file to `~/.kube/config` so that it is used by default.
+Otherwise, you may use the `kubectl` flag `--kubeconfig=./admin.conf` instead of copying the configuration file.
+
+If you have an existing Kubernetes configuration file, you can merge the two with:
+
+```sh
+mv ~/.kube/config{,.bak} && KUBECONFIG=./admin.conf:~/.kube/config.bak kubectl config view --flatten | tee ~/.kube/config
+```
+
 Test you can access the kubernetes cluster:
 
 ```sh
-$ ./kubectl --kubeconfig=admin.conf get nodes
+$ kubectl get nodes
 NAME      STATUS    ROLES         AGE       VERSION
 mgmt01    Ready     master,node   15h       v1.9.2+coreos.0
 ```
@@ -234,12 +244,8 @@ mgmt01    Ready     master,node   15h       v1.9.2+coreos.0
 Configure the management node to use Kubernetes DNS:
 
 ```sh
-ansible mgmt -b -m lineinfile -a "path=/etc/resolv.conf firstmatch=yes insertbefore='^nameserver' line='nameserver $(./kubectl --kubeconfig=./admin.conf -n kube-system get svc kube-dns --template={{.spec.clusterIP}})'"
+ansible mgmt -b -m lineinfile -a "path=/etc/resolv.conf firstmatch=yes insertbefore='^nameserver' line='nameserver $(kubectl -n kube-system get svc kube-dns --template={{.spec.clusterIP}})'"
 ```
-
-To make administration easier, you may want to copy the `kubectl` binary to someplace in your `$PATH`
-and copy the `admin.conf` configuration file to `~/.kube/config` so that it is used by default.
-The remainder of the kubernetes commands in the document may assume this is the case.
 
 __Ceph:__
 
@@ -249,24 +255,24 @@ Ceph is provisioned using Rook to simplify deployment.
 You should be able to deploy Rook without making modifications to the manifests:
 
 ```sh
-./kubectl --kubeconfig=admin.conf create -f services/rook/operator.yaml
-./kubectl --kubeconfig=admin.conf create -f services/rook/cluster.yaml
-./kubectl --kubeconfig=admin.conf create -f services/rook/storageclass.yml
+kubectl create -f services/rook/operator.yaml
+kubectl create -f services/rook/cluster.yaml
+kubectl create -f services/rook/storageclass.yml
 ```
 
 If you need to remove Rook for any reason, here are the steps:
 
 ```sh
-./kubectl --kubeconfig=admin.conf delete -f services/rook/storageclass.yml
-./kubectl --kubeconfig=admin.conf delete -f services/rook/cluster.yaml
-./kubectl --kubeconfig=admin.conf delete -f services/rook/operator.yaml
+kubectl delete -f services/rook/storageclass.yml
+kubectl delete -f services/rook/cluster.yaml
+kubectl delete -f services/rook/operator.yaml
 ansible mgmt -b -m file -a "path=/var/lib/rook state=absent"
 ```
 
 To interact with Ceph directly, install the Rook toolbox:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf create -f services/rook/toolbox.yml
+kubectl create -f services/rook/toolbox.yml
 ```
 
 > Note: It will take a few minutes for containers to be pulled and started.
@@ -275,13 +281,13 @@ To interact with Ceph directly, install the Rook toolbox:
 You can check Ceph status for example, with:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf -n rook-ceph exec -ti rook-ceph-tools ceph status
+kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status
 ```
 
 Once Ceph reports 'HEALTH_OK' and there is at least one 'mgr' active, enable the Ceph prometheus exporter:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
+kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 ```
 
 ### 3. Services
@@ -297,7 +303,7 @@ You should not need to modify the NFS server manifest file.
 Launch the NFS server with:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf apply -f services/nfs-server.yml
+kubectl apply -f services/nfs-server.yml
 ```
 
 #### __DHCP/DNS/PXE server (DGXie):__
@@ -317,7 +323,7 @@ Copy the DGX Base OS ISO to the NFS server, substituting the path to the DGX ISO
 you downloaded:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf cp /path/to/DGXServer-3.1.2.170902_f8777e.iso $(./kubectl --kubeconfig=./admin.conf get pod -l role=nfs-server -o custom-columns=:metadata.name --no-headers):/exports/
+kubectl cp /path/to/DGXServer-3.1.2.170902_f8777e.iso $(kubectl get pod -l role=nfs-server -o custom-columns=:metadata.name --no-headers):/exports/
 ```
 
 Build the DGXie container and copy to each management host:
@@ -350,7 +356,7 @@ made any changes (the DGXie container will try to mount this config map). Option
 you may comment out the mounting of this config map in `services/dgxie.yml`:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf create configmap dhcpd --from-file=config/dhcpd.hosts.conf
+kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf
 ```
 
 __Deploy DGXie service__
@@ -358,13 +364,13 @@ __Deploy DGXie service__
 Launch the DGXie service:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf apply -f services/dgxie.yml
+kubectl apply -f services/dgxie.yml
 ```
 
 Check the DGXie logs to make sure the services were started without errors:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf logs -l app=dgxie
+kubectl logs -l app=dgxie
 ```
 
 Configure the management server(s) to use DGXie for cluster-wide DNS:
@@ -403,19 +409,19 @@ You will want to modify the `web.external-url` flags as well as the various
 Launch Prometheus which collects and stores data:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf apply -f services/prometheus-monitor.yml
+kubectl apply -f services/prometheus-monitor.yml
 ```
 
 Patch the prometheus volume to retain if the volume claim is deleted
 
 ```sh
-./kubectl --kubeconfig=./admin.conf patch pv $(./kubectl --kubeconfig=./admin.conf get pv | grep prometheus | awk '{print $1}') -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+kubectl patch pv $(kubectl get pv | grep prometheus | awk '{print $1}') -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
 ```
 
 Launch the node-exporter on each management node to monitor them with prometheus:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf apply -f services/node-exporter.yml
+kubectl apply -f services/node-exporter.yml
 ```
 
 __Grafana:__
@@ -423,13 +429,13 @@ __Grafana:__
 Launch Grafana web dashboard:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf apply -f services/grafana.yml
+kubectl apply -f services/grafana.yml
 ```
 
 Patch the grafana volume to retain if the volume claim is deleted
 
 ```sh
-./kubectl --kubeconfig=./admin.conf patch pv $(./kubectl --kubeconfig=./admin.conf get pv | grep grafana | awk '{print $1}') -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+kubectl patch pv $(kubectl get pv | grep grafana | awk '{print $1}') -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
 ```
 
 Sign in to Grafana via the web interface using the password for the `admin` user defined
@@ -461,7 +467,7 @@ If the prometheus or alertmanager config-map is updated, you can tell them to re
 removing the entire pod
 
 ```sh
-./kubectl --kubeconfig=./admin.conf apply -f services/prometheus-monitor.yml
+kubectl apply -f services/prometheus-monitor.yml
 curl -X POST http://mgmt:30500/-/reload
 # tell alertmanager to re-read config
 curl -X POST http://mgmt:30400/-/reload
@@ -520,7 +526,7 @@ ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> power cycle
 The DGX install process will take approximately 15 minutes. You can check the DGXie logs with:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf logs -l app=dgxie
+kubectl logs -l app=dgxie
 ```
 
 If your DGX are on an un-routable subnet, uncomment the `ansible_ssh_common_args` variable in the
@@ -595,7 +601,7 @@ Create the NVIDIA GPU k8s device plugin daemon set (just need to do this once):
 
 ```sh
 # deploy nvidia GPU device plugin (only need to do this the first time, can leave it deployed)
-./kubectl --kubeconfig=./admin.conf create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.9/nvidia-device-plugin.yml
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.9/nvidia-device-plugin.yml
 ```
 
 If the DGX is a member of the Slurm cluster, be sure to drain node in Slurm so that it does
@@ -617,7 +623,7 @@ ansible-playbook -l k8s-cluster -k -v -b --flush-cache --extra-vars "@config/kub
 Check that the installation was successful:
 
 ```sh
-$ ./kubectl --kubeconfig=./admin.conf get nodes
+$ kubectl get nodes
 NAME      STATUS    ROLES         AGE       VERSION
 dgx01     Ready     node          6m        v1.9.2+coreos.0
 mgmt01    Ready     master,node   19h       v1.9.2+coreos.0
@@ -638,9 +644,9 @@ ansible-playbook -l k8s-gpu -k -v -b --flush-cache --extra-vars "@config/kube.ym
 Test that GPU support is working:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf apply -f tests/gpu
-./kubectl --kubeconfig=./admin.conf exec -ti gpu-pod -- nvidia-smi -L
-./kubectl --kubeconfig=./admin.conf delete pod gpu-pod
+kubectl apply -f tests/gpu
+kubectl exec -ti gpu-pod -- nvidia-smi -L
+kubectl delete pod gpu-pod
 ```
 
 ### 5. Login server:
@@ -660,14 +666,14 @@ login node with a reserved IP lease and set the MAC address of the login node.
 Store the DHCP hosts config file as config-map in Kubernetes:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf create configmap dhcpd --from-file=config/dhcpd.hosts.conf
+kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf
 ```
 
 If you already have a `dhcpd.hosts.conf` config map, you can delete it and then re-create it:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf delete configmap dhcpd
-./kubectl --kubeconfig=./admin.conf create configmap dhcpd --from-file=config/dhcpd.hosts.conf
+kubectl delete configmap dhcpd
+kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf
 ```
 
 In order to provision systems other than DGX (i.e. the login node), you will need to create a custom
@@ -686,7 +692,7 @@ node which will be used to connect to the network during the install (i.e. `eth1
 Store the new PXE config as a config map in kubernetes:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf create configmap pxe-login --from-file=config/pxelinux.cfg/01-00-50-56-bb-6f-74
+kubectl create configmap pxe-login --from-file=config/pxelinux.cfg/01-00-50-56-bb-6f-74
 ```
 
 Edit `services/dgxie.yml` and uncomment/modify the `pxe-config-volume` volume to mount the config map in the DGXie
@@ -706,8 +712,8 @@ container. For example:
 Re-deploy the DGXie service:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf delete -f services/dgxie.yml
-./kubectl --kubeconfig=./admin.conf apply -f services/dgxie.yml
+kubectl delete -f services/dgxie.yml
+kubectl apply -f services/dgxie.yml
 ```
 
 Set the login node to boot from the network and power on the system. The login node should receive a response
@@ -860,7 +866,7 @@ __NVIDIA GPU Cloud Container Registry (NGC):__
 Create secret for registry login:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf create secret docker-registry ngc --docker-server=nvcr.io --docker-username='$oauthtoken' --docker-password=<api-key> --docker-email='foo@example.com'
+kubectl create secret docker-registry ngc --docker-server=nvcr.io --docker-username='$oauthtoken' --docker-password=<api-key> --docker-email='foo@example.com'
 ```
 
 Add to Kubernetes pod spec:
@@ -918,8 +924,8 @@ kube_apiserver_admission_control:
 Patch namespaces to apply a specific node selector to every pod:
 
 ```sh
-./kubectl --kubeconfig=./admin.conf --context=admin patch namespace <username> -p '{"metadata":{"annotations":{"scheduler.alpha.kubernetes.io/node-selector":"scheduler=k8s"}}}'
-./kubectl --kubeconfig=./admin.conf --context=admin get ns <username> -o yaml
+kubectl patch namespace <username> -p '{"metadata":{"annotations":{"scheduler.alpha.kubernetes.io/node-selector":"scheduler=k8s"}}}'
+kubectl get ns <username> -o yaml
 ```
 
 Where `<username>` is the name of the namespace, typically the same as the username
