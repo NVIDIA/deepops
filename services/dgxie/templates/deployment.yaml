@@ -1,94 +1,114 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: dgxie
+  name: {{ template "dgxie.fullname" . }}
+  labels:
+    app: {{ template "dgxie.name" . }}
+    chart: {{ template "dgxie.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "dgxie.name" . }}
+      release: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: dgxie
+        app: {{ template "dgxie.name" . }}
+        release: {{ .Release.Name }}
     spec:
       hostNetwork: true
-      nodeSelector:
-        node-role.kubernetes.io/master: "true"
       containers:
-        - name: dgxie
-          image: dgxie:latest
-          imagePullPolicy: IfNotPresent
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
             privileged: true
           volumeMounts:
-            # Path for DHCP host-specific config, DO NOT MODIFY
             - name: dhcp-config-volume
               mountPath: "/etc/dnsmasq.d"
             - name: dhcp-leases
               mountPath: "/var/lib/misc/"
-            #- name: pxe-config-volume
-            #  mountPath: /tftpboot/pxelinux.cfg
-            # Path for NFS mount, DO NOT MODIFY
             - name: nfs
               mountPath: "/nfs"
+            #- name: pxe-config-volume
+            #  mountPath: /tftpboot/pxelinux.cfg
           env:
             # Path in container to mounted DGX ISO
             - name: ISO
-              value: "/iso"
+              value: "{{ .Values.isoPath }}"
             # Default DGX boot mode
             # Options:
             #   "DGX":   boot DGX to install media
             #   "local": boot DGX to local disk
             - name: DEFAULT
-              value: "DGX"
+              value: "{{ .Values.bootMode }}"
             # DGX network interface to use during install
             - name: INT
-              value: "enp1s0f0"
+              value: "{{ .Values.dgxNetInt }}"
             # DGX disk to use during install
             - name: DISK
-              value: "sda"
+              value: "{{ .Values.dgxDisk }}"
             # DGX Keyboard layout to use
             - name: KBD
-              value: "us"
+              value: "{{ .Values.dgxKbd }}"
             # Extra kernel parameters to pass during DGX OS install
             # i.e. "rebuild-raid"
             - name: KERN_EXTRA
-              value: ""
+              value: "{{ .Values.dgxKernExtra }}"
             # Network interface of public network on management servers
             - name: HOST_INT_PUB
-              value: "eth0"
+              value: "{{ .Values.mgmtIntPub }}"
             # Network interface of private network where DGX are connected on management servers
             - name: HOST_INT_PRV
-              value: "eth1"
+              value: "{{ .Values.mgmtIntPrv }}"
             # Network domain
             - name: DOMAIN
-              value: "local"
+              value: "{{ .Values.netDomain }}"
             # IP address of private network interface on management server
             - name: IP
-              value: "192.168.1.1"
+              value: "{{ .Values.netPrvIp }}"
             # Private Network
             - name: NETWORK
-              value: "192.168.1.0"
+              value: "{{ .Values.netPrvNet }}"
             # Private network netmask
             - name: NETMASK
-              value: "255.255.255.0"
+              value: "{{ .Values.netPrvNetmask }}"
             # Private network gateway
             - name: GATEWAY
-              value: "192.168.1.1"
+              value: "{{ .Values.netPrvGateway }}"
             # DNS nameservers
             - name: DNS1
-              value: "192.168.1.1"
+              value: "{{ .Values.netPrvDns1 }}"
             - name: DNS2
-              value: "8.8.8.8"
+              value: "{{ .Values.netPrvDns2 }}"
             # DHCP dynamic address range
             - name: DHCP_START
-              value: "192.168.1.100"
+              value: "{{ .Values.netPrvDhcpStart }}"
             - name: DHCP_END
-              value: "192.168.1.199"
+              value: "{{ .Values.netPrvDhcpEnd }}"
             # DHCP lease time
             - name: LEASETIME
-              value: "7200"
+              value: "{{ .Values.netPrvDhcpLease }}"
             # HTTP port for HTTP server
             - name: HTTP_PORT
-              value: "13370"
+              value: "{{ .Values.httpPort }}"
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
       volumes:
         - name: dhcp-config-volume
           configMap:
@@ -100,19 +120,13 @@ spec:
         - name: dhcp-leases
           persistentVolumeClaim:
             claimName: dhcp-leases
-        #- name: pxe-config-volume
-        #  configMap:
-        #    name: pxe-login
-        #    items:
-        #    - key: 01-0c-c4-7a-a3-3e-94
-        #      path: 01-0c-c4-7a-a3-3e-94
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: dhcp-leases
   labels:
-    app: dgxie
+    app: {{ template "dgxie.name" . }}
   annotations:
     volume.alpha.kubernetes.io/storage-class: default
 spec:

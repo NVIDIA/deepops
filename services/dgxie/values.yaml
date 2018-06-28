@@ -1,0 +1,51 @@
+# Default values for dgxie.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# DGXie config
+bootMode: DGX
+isoPath: /iso
+dgxNetInt: enp1s0f0
+dgxDisk: sda
+dgxKbd: us
+dgxKernExtra: ''
+mgmtIntPub: eth0
+mgmtIntPrv: eth1
+netDomain: local
+netPrvIp: 192.168.1.1
+netPrvNet: 192.168.1.0
+netPrvNetmask: 255.255.255.0
+netPrvGateway: 192.168.1.1
+netPrvDns1: 192.168.1.1
+netPrvDns2: 8.8.8.8
+netPrvDhcpStart: 192.168.1.100
+netPrvDhcpEnd: 192.168.1.199
+netPrvDhcpLease: 7200
+httpPort: 13370
+
+# Deployment config
+replicaCount: 1
+
+image:
+  repository: dgxie
+  tag: latest
+  pullPolicy: IfNotPresent
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+nodeSelector:
+  node-role.kubernetes.io/master: "true"
+
+tolerations: []
+
+affinity: {}
