@@ -292,13 +292,23 @@ kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 
 ### 3. Services
 
-For each service which runs on kubernetes, you will want to modify the `yml` file in the `services`
-directory to suit your environment. Usually this means at least setting hostnames.
+Some services are installed using Helm, a package manager-like system for Kubernetes.
+
+Install Helm by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
+
+If you're using Linux, the script `scripts/helm_install_linux.sh` will set up Helm for the current user
+
+Configure Kubernetes to use Helm:
+
+```sh
+kubectl create sa tiller --namespace kube-system
+kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+helm init --service-account tiller --node-selectors node-role.kubernetes.io/master=true
+```
 
 #### __NFS:__
 
 An NFS server is used to serve files internally to other Kubernetes services.
-You should not need to modify the NFS server manifest file.
 
 Launch the NFS server with:
 
@@ -319,7 +329,7 @@ __Setup__
 You will need to download the official DGX Base OS ISO image to your provisioning machine.
 The latest DGX Base OS is available via the NVIDIA Entperprise Support Portal (ESP).
 
-Copy the DGX Base OS ISO to the NFS server, substituting the path to the DGX ISO
+Copy the DGX Base OS ISO to the NFS server running in Kubernetes, substituting the path to the DGX ISO
 you downloaded:
 
 ```sh
@@ -336,8 +346,8 @@ docker save dgxie:latest | bzip2 | ssh <user>@<mgmt-host> 'bunzip2 | docker load
 
 __Configure__
 
-Modify the DGXie kubernetes manifest `services/dgxie.yml` to configure settings
-for the DHCP server and DGX install process
+Modify the DGXie configuration in `config/dgxie.yml` to set values for the DHCP server
+and DGX install process
 
 Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node and DGX
 server in the cluster. IP addresses should match those used in the `config/inventory` file.
@@ -353,8 +363,7 @@ ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> raw 0x30 0x19 0x
 ```
 
 Store the DHCP hosts config file as config-map in Kubernetes, even if you have not
-made any changes (the DGXie container will try to mount this config map). Optionally
-you may comment out the mounting of this config map in `services/dgxie.yml`:
+made any changes (the DGXie container will try to mount this config map):
 
 ```sh
 kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf
@@ -365,7 +374,7 @@ __Deploy DGXie service__
 Launch the DGXie service:
 
 ```sh
-kubectl apply -f services/dgxie.yml
+helm install --values config/dgxie.yml services/dgxie
 ```
 
 Check the DGXie logs to make sure the services were started without errors:
@@ -964,20 +973,6 @@ scp mgmt-01:~/<username>.kubeconfig ~/.kube/config
 Where `<username>` is the name of the new user account being created
 
 #### __Kubernetes add-ons:__
-
-__helm:__
-
-Helm is the Kubernetes package manager:
-
-```sh
-curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
-chmod +x get_helm.sh
-sed -i 's/sudo//g' get_helm.sh
-HELM_INSTALL_DIR=~/.local/bin ./get_helm.sh
-kubectl create sa tiller --namespace kube-system
-kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-helm init --service-account tiller
-```
 
 __Service Mesh:__
 
