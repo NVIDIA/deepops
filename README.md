@@ -341,6 +341,7 @@ for the DHCP server and DGX install process
 
 Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node and DGX
 server in the cluster. IP addresses should match those used in the `config/inventory` file.
+You may also add other valid configuration options for dnsmasq to this file.
 
 You can get the MAC address of DGX system interfaces via the BMC, for example:
 
@@ -379,12 +380,30 @@ Configure the management server(s) to use DGXie for cluster-wide DNS:
 ansible-playbook -l mgmt ansible/playbooks/resolv.yml
 ```
 
+If you later make changes to `config/dhcpd.hosts.conf`, you can update the file in Kubernetes
+and restart the service with:
+
+```sh
+kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf -o yaml --dry-run | kubectl replace -f -
+kubectl delete pod -l app=dgxie
+```
+
 #### __APT Repo:__
 
 Launch service. Runs on port `30000`: http://mgmt:30000
 
 ```sh
 kubectl apply -f services/apt.yml
+```
+
+#### __Container Registry:__
+
+The container registry installed via Helm.
+To install Helm, see [Kubernetes add-ons](#kubernetes-add-ons)
+
+```sh
+helm install stable/docker-registry
+helm install stable/docker-registry -n registry --set service.type=NodePort,service.nodePort=30100,persistence.enabled=true,persistence.size=10Gi
 ```
 
 #### __Monitoring:__
