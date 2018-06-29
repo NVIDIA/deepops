@@ -157,12 +157,12 @@ Be sure to enable SSH and record the user and password used during install.
 
 __Bootstrap:__
 
-Deploy management node(s):
-
 The password and SSH keys added to the `ubuntu` user in the `config/group_vars/all.yml`
 file will be configured on the management node. You should add an SSH key to the configuration
 file, or you will have to append the `-k` flag and type the password for the `ubuntu`
 user for all Ansible commands following the bootstrap.
+
+Deploy management node(s):
 
 > Type the password for the user you configured during management server OS
 installation when prompted to allow for the use of `sudo` when configuring the
