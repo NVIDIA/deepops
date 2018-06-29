@@ -2,29 +2,28 @@
 # Container registry configuration
 #
 
-#service:
-  # Make the registry available outside the kubernetes cluster
-  #  type: NodePort
-  # Port to use for registry service
-  #nodePort: 30100
-
+# Storage
 persistence:
   # Use persistent storage to retain data
   enabled: true
   # Size of persistent storage volume
   size: 10Gi
 
+# Run container registry service only on master nodes
 nodeSelector:
   node-role.kubernetes.io/master: "true"
 
+# Data ingress
 ingress:
   enabled: true
+  # Registry hostname in cluster-local DNS
   hosts:
   - registry.local
   annotations:
     kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/rewrite-target: /
+  # Support HTTPS (required)
   tls:
   - hosts:
     -  registry.local
