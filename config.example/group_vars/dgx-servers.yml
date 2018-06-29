@@ -8,3 +8,13 @@ ansible_user: dgxuser
 collectd_python_modules:
   - dcgm_collectd
 with_dcgm_collectd: true
+
+daemon_json:
+  bip: 192.168.99.1/24
+  default-runtime: nvidia
+  insecure-registries:
+    - "registry.local:30100"
+  runtimes:
+    nvidia:
+      path: /usr/bin/nvidia-container-runtime
+      runtimeArgs: []

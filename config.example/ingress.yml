@@ -1,0 +1,10 @@
+
+
+controller:
+  service:
+    type: NodePort
+  nodeSelector:
+    node-role.kubernetes.io/master: "true"
+defaultBackend:
+  nodeSelector:
+    node-role.kubernetes.io/master: "true"

@@ -292,7 +292,9 @@ kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 
 ### 3. Services
 
-Some services are installed using Helm, a package manager-like system for Kubernetes.
+#### __Helm:__
+
+Some services are installed using [Helm](https://helm.sh/), a package manager for Kubernetes.
 
 Install Helm by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
 
@@ -304,6 +306,22 @@ Configure Kubernetes to use Helm:
 kubectl create sa tiller --namespace kube-system
 kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
 helm init --service-account tiller --node-selectors node-role.kubernetes.io/master=true
+```
+
+#### __Ingress controller:__
+
+An ingress controller routes external traffic to services. 
+
+Modify `config/ingress.yml` if needed and install the ingress controller:
+
+```sh
+helm install --values config/ingress.yml stable/nginx-ingress
+```
+
+You can check the ingress controller logs with:
+
+```sh
+kubectl logs -l app=nginx-ingress
 ```
 
 #### __NFS:__
@@ -407,12 +425,23 @@ kubectl apply -f services/apt.yml
 
 #### __Container Registry:__
 
-The container registry installed via Helm.
-To install Helm, see [Kubernetes add-ons](#kubernetes-add-ons)
+Modify `config/registry.yml` if needed and launch the container registry:
 
 ```sh
-helm install stable/docker-registry
-helm install stable/docker-registry -n registry --set service.type=NodePort,service.nodePort=30100,persistence.enabled=true,persistence.size=10Gi
+helm repo add stable https://kubernetes-charts.storage.googleapis.com
+helm install --values config/registry.yml stable/docker-registry --version 1.4.3
+```
+
+Configure DGX servers to allow the local (insecure) container registry:
+
+```sh
+ansible-playbook -l dgx-servers -k --tag docker playbooks/extra.yml
+```
+
+You can check the container registry logs with:
+
+```sh
+kubectl logs -l app=docker-registry
 ```
 
 #### __Monitoring:__
@@ -499,17 +528,6 @@ kubectl apply -f services/prometheus-monitor.yml
 curl -X POST http://mgmt:30500/-/reload
 # tell alertmanager to re-read config
 curl -X POST http://mgmt:30400/-/reload
-```
-
-#### __Ingress controller:__
-
-An ingress controller routes external traffic to services. 
-
-Modify `services/ingress.yml` to configure real DNS names for services and apply:
-
-```sh
-kubectl apply -f services/ingress-controller.yml
-kubectl apply -f services/ingress.yml
 ```
 
 ### 4. DGX compute nodes:
@@ -902,6 +920,17 @@ Add to Kubernetes pod spec:
 ```sh
   imagePullSecrets:
     - name: ngc
+```
+
+__Upgrading Helm Charts:__
+
+If you make changes to configuration or want to update Helm charts, you can run something like:
+
+```sh
+# show currently installed releases
+helm list
+# update a particular release with new values in config/ingress.yml, for example
+helm upgrade --values config/ingress.yml knobby-billygoat stable/nginx-ingress
 ```
 
 #### __Kubernetes user access:__
