@@ -1,6 +1,7 @@
 
 
 controller:
+  hostNetwork: true
   service:
     type: NodePort
   nodeSelector:
