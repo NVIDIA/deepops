@@ -8,3 +8,4 @@ roles/community
 .terraform
 *.tf*
 config
+get_helm.sh
