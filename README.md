@@ -938,14 +938,23 @@ Add to Kubernetes pod spec:
 
 __Upgrading Helm Charts:__
 
-If you make changes to configuration or want to update Helm charts, you can run something like:
+If you make changes to configuration or want to update Helm charts, you can use the `helm upgrade`
+command to apply changes
+
+Show currently installed releases:
 
 ```sh
-# show currently installed releases
 helm list
-# update a particular release with new values in config/ingress.yml, for example
-helm upgrade --values config/ingress.yml knobby-billygoat stable/nginx-ingress
 ```
+
+To upgrade the ingress controller with new values from `config/ingress.yml` for example, you would run:
+
+```sh
+helm upgrade --values config/ingress.yml <release_name> stable/nginx-ingress
+```
+
+Where `<release_name>` is the name of the deployed ingress controller chart obtained from
+`helm list`.
 
 #### __Kubernetes user access:__
 
