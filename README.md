@@ -310,7 +310,7 @@ helm init --service-account tiller --node-selectors node-role.kubernetes.io/mast
 
 #### __Ingress controller:__
 
-An ingress controller routes external traffic to services. 
+An ingress controller routes external traffic to services.
 
 Modify `config/ingress.yml` if needed and install the ingress controller:
 

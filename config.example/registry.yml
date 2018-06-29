@@ -13,7 +13,7 @@ persistence:
   enabled: true
   # Size of persistent storage volume
   size: 10Gi
- 
+
 nodeSelector:
   node-role.kubernetes.io/master: "true"
 
