@@ -444,6 +444,20 @@ You can check the container registry logs with:
 kubectl logs -l app=docker-registry
 ```
 
+The container registry will be available to nodes in the cluster at `registry.local`, for example:
+
+```sh
+# pull container image from docker hub
+docker pull busybox:latest
+
+# tag image for local container registry
+# (you can also get the image ID manually with: docker images)
+docker tag $(docker images -f reference=busybox --format "{{.ID}}") registry.local/busybox
+
+# push image to local container registry
+docker push registry.local/busybox
+```
+
 #### __Monitoring:__
 
 Cluster monitoring is provided by Collectd, Prometheus and Grafana
