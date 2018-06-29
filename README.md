@@ -159,16 +159,16 @@ __Bootstrap:__
 
 Deploy management node(s):
 
+The password and SSH keys added to the `ubuntu` user in the `config/group_vars/all.yml`
+file will be configured on the management node. You should add an SSH key to the configuration
+file, or you will have to append the `-k` flag and type the password for the `ubuntu`
+user for all Ansible commands following the bootstrap.
+
 > Type the password for the user you configured during management server OS
 installation when prompted to allow for the use of `sudo` when configuring the
 management servers. If the management servers were installed with the use of
 SSH keys and sudo does not require a password, you may omit the `-k` and `-K`
 flags
-
-The password and SSH keys added to the `ubuntu` user in the `config/group_vars/all.yml`
-file will be configured on the management node. You should add an SSH key to the configuration
-file, or you will have to append the `-k` flag and type the password for the `ubuntu`
-user for all Ansible commands following the bootstrap.
 
 ```sh
 ansible-playbook -l mgmt -k -K ansible/playbooks/bootstrap.yml
