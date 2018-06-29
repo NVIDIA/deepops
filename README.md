@@ -55,7 +55,7 @@ For more information on deploying DGX in the datacenter, consult the
 
 * 1 or more CPU-only servers for management
   * 3 or more servers can be used for high-availability
-  * Minimum: 40GB hard disk, 8GB RAM
+  * Minimum: 200GB hard disk, 8GB RAM
   * Ubuntu 16.04 LTS installed
 * 1 or more DGX compute nodes
 * Laptop or workstation for provisioning/deployment
@@ -292,7 +292,9 @@ kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 
 ### 3. Services
 
-Some services are installed using Helm, a package manager-like system for Kubernetes.
+#### __Helm:__
+
+Some services are installed using [Helm](https://helm.sh/), a package manager for Kubernetes.
 
 Install Helm by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
 
@@ -304,6 +306,22 @@ Configure Kubernetes to use Helm:
 kubectl create sa tiller --namespace kube-system
 kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
 helm init --service-account tiller --node-selectors node-role.kubernetes.io/master=true
+```
+
+#### __Ingress controller:__
+
+An ingress controller routes external traffic to services.
+
+Modify `config/ingress.yml` if needed and install the ingress controller:
+
+```sh
+helm install --values config/ingress.yml stable/nginx-ingress
+```
+
+You can check the ingress controller logs with:
+
+```sh
+kubectl logs -l app=nginx-ingress
 ```
 
 #### __NFS:__
@@ -351,6 +369,7 @@ and DGX install process
 
 Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node and DGX
 server in the cluster. IP addresses should match those used in the `config/inventory` file.
+You may also add other valid configuration options for dnsmasq to this file.
 
 You can get the MAC address of DGX system interfaces via the BMC, for example:
 
@@ -388,12 +407,55 @@ Configure the management server(s) to use DGXie for cluster-wide DNS:
 ansible-playbook -l mgmt ansible/playbooks/resolv.yml
 ```
 
+If you later make changes to `config/dhcpd.hosts.conf`, you can update the file in Kubernetes
+and restart the service with:
+
+```sh
+kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf -o yaml --dry-run | kubectl replace -f -
+kubectl delete pod -l app=dgxie
+```
+
 #### __APT Repo:__
 
 Launch service. Runs on port `30000`: http://mgmt:30000
 
 ```sh
 kubectl apply -f services/apt.yml
+```
+
+#### __Container Registry:__
+
+Modify `config/registry.yml` if needed and launch the container registry:
+
+```sh
+helm repo add stable https://kubernetes-charts.storage.googleapis.com
+helm install --values config/registry.yml stable/docker-registry --version 1.4.3
+```
+
+Configure DGX servers to allow the local (insecure) container registry:
+
+```sh
+ansible-playbook -l dgx-servers -k --tag docker playbooks/extra.yml
+```
+
+You can check the container registry logs with:
+
+```sh
+kubectl logs -l app=docker-registry
+```
+
+The container registry will be available to nodes in the cluster at `registry.local`, for example:
+
+```sh
+# pull container image from docker hub
+docker pull busybox:latest
+
+# tag image for local container registry
+# (you can also get the image ID manually with: docker images)
+docker tag $(docker images -f reference=busybox --format "{{.ID}}") registry.local/busybox
+
+# push image to local container registry
+docker push registry.local/busybox
 ```
 
 #### __Monitoring:__
@@ -480,17 +542,6 @@ kubectl apply -f services/prometheus-monitor.yml
 curl -X POST http://mgmt:30500/-/reload
 # tell alertmanager to re-read config
 curl -X POST http://mgmt:30400/-/reload
-```
-
-#### __Ingress controller:__
-
-An ingress controller routes external traffic to services. 
-
-Modify `services/ingress.yml` to configure real DNS names for services and apply:
-
-```sh
-kubectl apply -f services/ingress-controller.yml
-kubectl apply -f services/ingress.yml
 ```
 
 ### 4. DGX compute nodes:
@@ -884,6 +935,26 @@ Add to Kubernetes pod spec:
   imagePullSecrets:
     - name: ngc
 ```
+
+__Upgrading Helm Charts:__
+
+If you make changes to configuration or want to update Helm charts, you can use the `helm upgrade`
+command to apply changes
+
+Show currently installed releases:
+
+```sh
+helm list
+```
+
+To upgrade the ingress controller with new values from `config/ingress.yml` for example, you would run:
+
+```sh
+helm upgrade --values config/ingress.yml <release_name> stable/nginx-ingress
+```
+
+Where `<release_name>` is the name of the deployed ingress controller chart obtained from
+`helm list`.
 
 #### __Kubernetes user access:__
 
