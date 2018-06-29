@@ -7,7 +7,7 @@ persistence:
   # Use persistent storage to retain data
   enabled: true
   # Size of persistent storage volume
-  size: 10Gi
+  size: 100Gi
 
 # Run container registry service only on master nodes
 nodeSelector:

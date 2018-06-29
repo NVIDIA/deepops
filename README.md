@@ -55,7 +55,7 @@ For more information on deploying DGX in the datacenter, consult the
 
 * 1 or more CPU-only servers for management
   * 3 or more servers can be used for high-availability
-  * Minimum: 40GB hard disk, 8GB RAM
+  * Minimum: 200GB hard disk, 8GB RAM
   * Ubuntu 16.04 LTS installed
 * 1 or more DGX compute nodes
 * Laptop or workstation for provisioning/deployment
