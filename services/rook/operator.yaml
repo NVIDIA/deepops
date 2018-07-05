@@ -206,7 +206,8 @@ spec:
       serviceAccountName: rook-ceph-operator
       containers:
       - name: rook-ceph-operator
-        image: rook/ceph:master
+        #image: rook/ceph:master
+        image: rook/ceph:v0.7.0-184.gb4e9eba
         args: ["ceph", "operator"]
         env:
         # To disable RBAC, uncomment the following:
