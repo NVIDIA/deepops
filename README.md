@@ -301,10 +301,12 @@ kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 
 Some services are installed using [Helm](https://helm.sh/), a package manager for Kubernetes.
 
-Install Helm by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
+Install them Helm client by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
 
 If you're using Linux, the script `scripts/helm_install_linux.sh` will set up Helm for the current user
 
+Be sure to install a version of Helm matching the version in `config/kube.yml`
+<!--
 Configure Kubernetes to use Helm:
 
 ```sh
@@ -312,6 +314,7 @@ kubectl create sa tiller --namespace kube-system
 kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
 helm init --service-account tiller --node-selectors node-role.kubernetes.io/master=true
 ```
+-->
 
 #### __Ingress controller:__
 
