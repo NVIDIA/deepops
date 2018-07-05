@@ -301,7 +301,7 @@ kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 
 Some services are installed using [Helm](https://helm.sh/), a package manager for Kubernetes.
 
-Install them Helm client by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
+Install the Helm client by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
 
 If you're using Linux, the script `scripts/helm_install_linux.sh` will set up Helm for the current user
 
