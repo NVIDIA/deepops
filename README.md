@@ -306,15 +306,16 @@ Install the Helm client by following the instructions for the OS on your provisi
 If you're using Linux, the script `scripts/helm_install_linux.sh` will set up Helm for the current user
 
 Be sure to install a version of Helm matching the version in `config/kube.yml`
-<!--
-Configure Kubernetes to use Helm:
+
+(Optional) If `helm_enabled` is `true` in `config/kube.yml`,
+the Helm server will already be deployed in Kubernetes.
+If it needs to be installed manually for some reason, run:
 
 ```sh
 kubectl create sa tiller --namespace kube-system
 kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
 helm init --service-account tiller --node-selectors node-role.kubernetes.io/master=true
 ```
--->
 
 #### __Ingress controller:__
 

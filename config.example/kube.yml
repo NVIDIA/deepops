@@ -39,6 +39,8 @@ dashboard_enabled: false
 # Helm deployment
 helm_enabled: true
 helm_version: v2.9.1
+# Set node selector options for Tiller Deployment manifest.
+tiller_node_selectors: "node-role.kubernetes.io/master=true"
 
 ## Needed for OpenStack only
 #local_volume_base_dir: /tmp/disks
