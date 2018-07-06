@@ -301,11 +301,15 @@ kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 
 Some services are installed using [Helm](https://helm.sh/), a package manager for Kubernetes.
 
-Install Helm by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
+Install the Helm client by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
 
 If you're using Linux, the script `scripts/helm_install_linux.sh` will set up Helm for the current user
 
-Configure Kubernetes to use Helm:
+Be sure to install a version of Helm matching the version in `config/kube.yml`
+
+(Optional) If `helm_enabled` is `true` in `config/kube.yml`,
+the Helm server will already be deployed in Kubernetes.
+If it needs to be installed manually for some reason, run:
 
 ```sh
 kubectl create sa tiller --namespace kube-system
@@ -437,7 +441,8 @@ helm repo add stable https://kubernetes-charts.storage.googleapis.com
 helm install --values config/registry.yml stable/docker-registry --version 1.4.3
 ```
 
-Configure DGX servers to allow the local (insecure) container registry:
+Once you have [provisioned DGX servers](#4.-DGX-compute-nodes),
+configure them to allow access to the local (insecure) container registry:
 
 ```sh
 ansible-playbook -l dgx-servers -k --tag docker playbooks/extra.yml
@@ -666,7 +671,7 @@ Create the NVIDIA GPU k8s device plugin daemon set (just need to do this once):
 
 ```sh
 # deploy nvidia GPU device plugin (only need to do this the first time, can leave it deployed)
-kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.9/nvidia-device-plugin.yml
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
 ```
 
 If the DGX is a member of the Slurm cluster, be sure to drain node in Slurm so that it does
