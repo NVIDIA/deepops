@@ -43,8 +43,8 @@ netPrvNetmask: 255.255.255.0
 netPrvGateway: 192.168.1.1
 
 # DNS nameservers
-netPrvDns1: 192.168.1.1
-netPrvDns2: 8.8.8.8
+netPrvDns1: 8.8.8.8
+netPrvDns2: 8.8.4.4
 
 # DHCP dynamic address range
 netPrvDhcpStart: 192.168.1.100

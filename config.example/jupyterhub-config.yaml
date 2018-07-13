@@ -4,16 +4,15 @@ singleuser:
     name: dholt/jupyterhub-k8s-gpu
     tag: v0.6
   extraEnv:
-    - JUPYTER_ENABLE_LAB: 1
-  # doesn't exist in helm chart... pod gets all GPUs
-  resources:
-    limits:
-      nvidia.com/gpu: 1
+  - JUPYTER_ENABLE_LAB: 1
   nodeSelector:
     gpu: "true"
 hub:
-    cookieSecret: "<secret token>"
+  cookieSecret: "<secret token>"
     prePuller:
       enabled: false
+  extraConfig:
+    10-gpu: |
+      c.KubeSpawner.extra_resource_limits = { 'nvidia.com/gpu': 1 }
 proxy:
-    secretToken: "<secret token>"
+  secretToken: "<secret token>"
