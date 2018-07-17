@@ -33,8 +33,6 @@ spec:
               mountPath: "/var/lib/misc/"
             - name: nfs
               mountPath: "/nfs"
-            #- name: pxe-config-volume
-            #  mountPath: /tftpboot/pxelinux.cfg
           env:
             # Path in container to mounted DGX ISO
             - name: ISO
