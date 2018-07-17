@@ -27,7 +27,7 @@ httpPort: 13370
 replicaCount: 1
 
 image:
-  repository: dgxie
+  repository: deepops/dgxie
   tag: latest
   pullPolicy: IfNotPresent
 
