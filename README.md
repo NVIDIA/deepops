@@ -255,35 +255,26 @@ ansible mgmt -b -m lineinfile -a "path=/etc/resolv.conf firstmatch=yes insertbef
 __Ceph:__
 
 Persistent storage for Kubernetes on the management nodes is supplied by Ceph.
-Ceph is provisioned using Rook to simplify deployment.
-
-You should be able to deploy Rook without making modifications to the manifests:
+Ceph is provisioned using Rook to simplify deployment:
 
 ```sh
-kubectl create -f services/rook/operator.yaml
-kubectl create -f services/rook/cluster.yaml
-kubectl create -f services/rook/storageclass.yml
+helm repo add rook-master https://charts.rook.io/master
+helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph --version v0.7.0-284.g863c10f --set agent.flexVolumeDirPath=/var/lib/kubelet/volumeplugins/
+kubectl create -f services/rook-cluster.yml
 ```
 
 If you need to remove Rook for any reason, here are the steps:
 
 ```sh
-kubectl delete -f services/rook/storageclass.yml
-kubectl delete -f services/rook/cluster.yaml
-kubectl delete -f services/rook/operator.yaml
+kubectl delete -f services/rook-cluster.yml
+helm del --purge rook-ceph
 ansible mgmt -b -m file -a "path=/var/lib/rook state=absent"
-```
-
-To interact with Ceph directly, install the Rook toolbox:
-
-```sh
-kubectl create -f services/rook/toolbox.yml
 ```
 
 > Note: It will take a few minutes for containers to be pulled and started.
 > Wait for Rook to be fully installed before proceeding
 
-You can check Ceph status for example, with:
+You can check Ceph status with:
 
 ```sh
 kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status
