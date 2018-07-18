@@ -1,6 +1,7 @@
 #!/bin/sh
 
 ## CONFIG
+MNT=${MNT:-/data}
 ISO=${ISO:-/iso}
 PRESEED=${ISO}/preseed/pxe.template.seed
 INT=${INT:-enp1s0f0}
@@ -28,7 +29,7 @@ mkdir -p "${ISO}"
 # Check for mounted DGX Server ISO
 find ${PRESEED} >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
-    dgx_iso="$(find /nfs -name \*.iso)"
+    dgx_iso="$(find ${MNT} -name DGXServer\*.iso)"
     mount -o loop -t iso9660 "$dgx_iso" "${ISO}"
 fi
 
@@ -90,7 +91,7 @@ sysctl -w net.ipv4.ip_forward=1
 
 # Run some servers
 nginx &
-/usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf &
+/usr/sbin/vsftpd /etc/vsftpd.conf &
 /usr/local/bin/rest_api.py >/dev/null 2>&1 &
 python /api.py &
 /usr/bin/pixiecore api http://127.0.0.1:${HTTP_PORT} --dhcp-no-bind -p 81 &
