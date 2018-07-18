@@ -8,7 +8,7 @@ app = Flask(__name__)
 @app.route('/v1/boot/<mac>')
 def pxe(mac):
     # load machine profiles for each call so we can re-load changes from disk
-    jf = open('/data/machines.json', 'r')
+    jf = open('/etc/machines/machines.json', 'r')
     machines = json.load(jf)
     jf.close()
 
