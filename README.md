@@ -213,12 +213,13 @@ Modify the file `config/kube.yml` if needed and deploy Kubernetes:
 ```sh
 ansible-playbook -l mgmt -v -b --flush-cache --extra-vars "@config/kube.yml" kubespray/cluster.yml
 ```
-
+<!--
 Place a hold on the `docker-ce` package so it doesn't get upgraded:
 
 ```sh
 ansible mgmt -b -a "apt-mark hold docker-ce"
 ```
+-->
 
 Set up Kubernetes for remote administration:
 
@@ -285,6 +286,14 @@ You can check Ceph status with:
 ```sh
 kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status
 ```
+<!--
+Once the Ceph filesystem is up, it is safe to continue, i.e:
+
+```sh
+$ kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status | grep mds
+    mds: cephfs-1/1/1 up  {0=cephfs-54949bc7c4-8jv4t=up:active}, 1 up:standby-replay
+```
+-->
 
 ### 3. Services
 
@@ -321,6 +330,8 @@ substituting the path to the DGX ISO you downloaded:
 kubectl apply -f services/iso-loader.yml
 kubectl cp /path/to/DGXServer-3.1.2.170902_f8777e.iso $(kubectl get pod -l app=iso-loader -o custom-columns=:metadata.name --no-headers):/data/iso/
 ```
+
+> Note: If the `iso-loader` POD fails to mount the CephFS volume, you may need to restart the kubelet service on the master node(s): `ansible mgmt -b -a "systemctl restart kubelet"`
 
 __Configure__
 
@@ -1089,6 +1100,7 @@ Software used in this project:
   * SSH: https://github.com/weareinteractive/ansible-ssh
 * Kubespray: https://github.com/kubernetes-incubator/kubespray
 * Ceph: https://github.com/ceph/ceph-ansible
+* Pixiecore: https://github.com/google/netboot/tree/master/pixiecore
 
 ## Copyright and License
 
