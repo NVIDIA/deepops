@@ -4,6 +4,7 @@
 
 # DGXie config
 bootMode: DGX
+mntPath: /data
 isoPath: /iso
 dgxNetInt: enp1s0f0
 dgxDisk: sda
