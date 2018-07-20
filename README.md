@@ -661,7 +661,6 @@ __Adding DGX to Kubernetes:__
 Create the NVIDIA GPU k8s device plugin daemon set (just need to do this once):
 
 ```sh
-# deploy nvidia GPU device plugin (only need to do this the first time, can leave it deployed)
 kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
 ```
 
