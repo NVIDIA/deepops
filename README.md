@@ -244,7 +244,7 @@ Test you can access the kubernetes cluster:
 ```sh
 $ kubectl get nodes
 NAME      STATUS    ROLES         AGE       VERSION
-mgmt01    Ready     master,node   15h       v1.9.2+coreos.0
+mgmt01    Ready     master,node   7m        v1.11.0
 ```
 
 __Helm:__
@@ -324,7 +324,8 @@ You will need to download the official DGX Base OS ISO image to your provisionin
 The latest DGX Base OS is available via the NVIDIA Entperprise Support Portal (ESP).
 
 Copy the DGX Base OS ISO to shared storage via a container running in Kubernetes,
-substituting the path to the DGX ISO you downloaded:
+substituting the path to the DGX ISO you downloaded (be sure to wait for the `iso-loader` POD
+to be in the *Running* state before attempting to copy the ISO):
 
 ```sh
 kubectl apply -f services/iso-loader.yml
@@ -339,7 +340,7 @@ Modify the DGXie configuration in `config/dgxie.yml` to set values for the DHCP 
 and DGX install process
 
 Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node and DGX
-server in the cluster. IP addresses should match those used in the `config/inventory` file.
+server in the cluster if required. IP addresses should match those used in the `config/inventory` file.
 You may also add other valid configuration options for dnsmasq to this file.
 
 You can get the MAC address of DGX system interfaces via the BMC, for example:
@@ -351,8 +352,12 @@ ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> raw 0x30 0x19 0x
 ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> raw 0x30 0x19 0x00 0x12 | tail -c 18 | tr ' ' ':'
 ```
 
-Store the DHCP hosts config file as config-map in Kubernetes, even if you have not
-made any changes (the DGXie container will try to mount this config map):
+Modify `config/machines.json` to add a PXE entry for each DGX. Copy the `dgx-example` section and modify
+the MAC address for each DGX you would like to boot. You can modify boot parameters or install
+alternate operating systems if required.
+
+Store the config files as config-maps in Kubernetes, even if you have not
+made any changes (the DGXie container will try to mount these config maps):
 
 ```sh
 kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf
