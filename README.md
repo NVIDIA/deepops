@@ -213,12 +213,13 @@ Modify the file `config/kube.yml` if needed and deploy Kubernetes:
 ```sh
 ansible-playbook -l mgmt -v -b --flush-cache --extra-vars "@config/kube.yml" kubespray/cluster.yml
 ```
-
+<!--
 Place a hold on the `docker-ce` package so it doesn't get upgraded:
 
 ```sh
 ansible mgmt -b -a "apt-mark hold docker-ce"
 ```
+-->
 
 Set up Kubernetes for remote administration:
 
@@ -246,72 +247,55 @@ NAME      STATUS    ROLES         AGE       VERSION
 mgmt01    Ready     master,node   15h       v1.9.2+coreos.0
 ```
 
-Configure the management node to use Kubernetes DNS:
-
-```sh
-ansible mgmt -b -m lineinfile -a "path=/etc/resolv.conf firstmatch=yes insertbefore='^nameserver' line='nameserver $(kubectl -n kube-system get svc kube-dns --template={{.spec.clusterIP}})'"
-```
-
-__Ceph:__
-
-Persistent storage for Kubernetes on the management nodes is supplied by Ceph.
-Ceph is provisioned using Rook to simplify deployment.
-
-You should be able to deploy Rook without making modifications to the manifests:
-
-```sh
-kubectl create -f services/rook/operator.yaml
-kubectl create -f services/rook/cluster.yaml
-kubectl create -f services/rook/storageclass.yml
-```
-
-If you need to remove Rook for any reason, here are the steps:
-
-```sh
-kubectl delete -f services/rook/storageclass.yml
-kubectl delete -f services/rook/cluster.yaml
-kubectl delete -f services/rook/operator.yaml
-ansible mgmt -b -m file -a "path=/var/lib/rook state=absent"
-```
-
-To interact with Ceph directly, install the Rook toolbox:
-
-```sh
-kubectl create -f services/rook/toolbox.yml
-```
-
-> Note: It will take a few minutes for containers to be pulled and started.
-> Wait for Rook to be fully installed before proceeding
-
-You can check Ceph status for example, with:
-
-```sh
-kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status
-```
-
-Once Ceph reports 'HEALTH_OK' and there is at least one 'mgr' active, enable the Ceph prometheus exporter:
-
-```sh
-kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
-```
-
-### 3. Services
-
-#### __Helm:__
+__Helm:__
 
 Some services are installed using [Helm](https://helm.sh/), a package manager for Kubernetes.
 
-Install Helm by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
+Install the Helm client by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
 
 If you're using Linux, the script `scripts/helm_install_linux.sh` will set up Helm for the current user
 
-Configure Kubernetes to use Helm:
+Be sure to install a version of Helm matching the version in `config/kube.yml`
+
+(Optional) If `helm_enabled` is `true` in `config/kube.yml`,
+the Helm server will already be deployed in Kubernetes.
+If it needs to be installed manually for some reason, run:
 
 ```sh
 kubectl create sa tiller --namespace kube-system
 kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
 helm init --service-account tiller --node-selectors node-role.kubernetes.io/master=true
 ```
+
+__Ceph:__
+
+Persistent storage for Kubernetes on the management nodes is supplied by Ceph.
+Ceph is provisioned using Rook to simplify deployment:
+
+```sh
+helm repo add rook-master https://charts.rook.io/master
+helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph --version v0.7.0-284.g863c10f --set agent.flexVolumeDirPath=/var/lib/kubelet/volume-plugins/
+kubectl create -f services/rook-cluster.yml
+```
+
+> Note: It will take a few minutes for containers to be pulled and started.
+> Wait for Rook to be fully installed before proceeding
+
+You can check Ceph status with:
+
+```sh
+kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status
+```
+<!--
+Once the Ceph filesystem is up, it is safe to continue, i.e:
+
+```sh
+$ kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status | grep mds
+    mds: cephfs-1/1/1 up  {0=cephfs-54949bc7c4-8jv4t=up:active}, 1 up:standby-replay
+```
+-->
+
+### 3. Services
 
 #### __Ingress controller:__
 
@@ -329,43 +313,25 @@ You can check the ingress controller logs with:
 kubectl logs -l app=nginx-ingress
 ```
 
-#### __NFS:__
-
-An NFS server is used to serve files internally to other Kubernetes services.
-
-Launch the NFS server with:
-
-```sh
-kubectl apply -f services/nfs-server.yml
-```
-
 #### __DHCP/DNS/PXE server (DGXie):__
 
 DGXie is an all-in-one container for DHCP, DNS, and PXE, specifically tailored to the DGX Base OS.
 If you already have DHCP, DNS, or PXE servers you can skip this step.
-In the future you will be able to use the DGXie
-PXE server with an existing DHCP server, but there is currently a bug in ProxyDHCP
-support preventing DGX nodes from booting properly.
 
 __Setup__
 
 You will need to download the official DGX Base OS ISO image to your provisioning machine.
 The latest DGX Base OS is available via the NVIDIA Entperprise Support Portal (ESP).
 
-Copy the DGX Base OS ISO to the NFS server running in Kubernetes, substituting the path to the DGX ISO
-you downloaded:
+Copy the DGX Base OS ISO to shared storage via a container running in Kubernetes,
+substituting the path to the DGX ISO you downloaded:
 
 ```sh
-kubectl cp /path/to/DGXServer-3.1.2.170902_f8777e.iso $(kubectl get pod -l role=nfs-server -o custom-columns=:metadata.name --no-headers):/exports/
+kubectl apply -f services/iso-loader.yml
+kubectl cp /path/to/DGXServer-3.1.2.170902_f8777e.iso $(kubectl get pod -l app=iso-loader -o custom-columns=:metadata.name --no-headers):/data/iso/
 ```
 
-Build the DGXie container and copy to each management host:
-
-```sh
-cd containers/dgxie
-docker build -t dgxie .
-docker save dgxie:latest | bzip2 | ssh <user>@<mgmt-host> 'bunzip2 | docker load'
-```
+> Note: If the `iso-loader` POD fails to mount the CephFS volume, you may need to restart the kubelet service on the master node(s): `ansible mgmt -b -a "systemctl restart kubelet"`
 
 __Configure__
 
@@ -390,6 +356,7 @@ made any changes (the DGXie container will try to mount this config map):
 
 ```sh
 kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf
+kubectl create configmap pxe-machines --from-file=config/machines.json
 ```
 
 __Deploy DGXie service__
@@ -420,6 +387,12 @@ kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf -o yaml --dry
 kubectl delete pod -l app=dgxie
 ```
 
+If you make changes to `machines.json`, you can update the file without having to restart the DGXie POD:
+
+```sh
+kubectl create configmap pxe-machines --from-file=config/machines.json -o yaml --dry-run | kubectl replace -f -
+```
+
 #### __APT Repo:__
 
 Launch service. Runs on port `30000`: http://mgmt:30000
@@ -437,7 +410,8 @@ helm repo add stable https://kubernetes-charts.storage.googleapis.com
 helm install --values config/registry.yml stable/docker-registry --version 1.4.3
 ```
 
-Configure DGX servers to allow the local (insecure) container registry:
+Once you have [provisioned DGX servers](#4.-DGX-compute-nodes),
+configure them to allow access to the local (insecure) container registry:
 
 ```sh
 ansible-playbook -l dgx-servers -k --tag docker playbooks/extra.yml
@@ -498,6 +472,12 @@ Launch the node-exporter on each management node to monitor them with prometheus
 
 ```sh
 kubectl apply -f services/node-exporter.yml
+```
+
+Enable the Ceph prometheus exporter:
+
+```sh
+kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 ```
 
 __Grafana:__
@@ -665,8 +645,7 @@ __Adding DGX to Kubernetes:__
 Create the NVIDIA GPU k8s device plugin daemon set (just need to do this once):
 
 ```sh
-# deploy nvidia GPU device plugin (only need to do this the first time, can leave it deployed)
-kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.9/nvidia-device-plugin.yml
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
 ```
 
 If the DGX is a member of the Slurm cluster, be sure to drain node in Slurm so that it does
@@ -1098,6 +1077,17 @@ ansible all -m debug -a "var=ansible_default_ipv4"
 
 Where `ansible_default_ipv4` is the variable in question
 
+__Rook:__
+
+If you need to remove Rook for any reason, here are the steps:
+
+```sh
+kubectl delete -f services/rook-cluster.yml
+helm del --purge rook-ceph
+ansible mgmt -b -m file -a "path=/var/lib/rook state=absent"
+```
+
+
 ## Open Source Software
 
 Software used in this project:
@@ -1109,6 +1099,7 @@ Software used in this project:
   * SSH: https://github.com/weareinteractive/ansible-ssh
 * Kubespray: https://github.com/kubernetes-incubator/kubespray
 * Ceph: https://github.com/ceph/ceph-ansible
+* Pixiecore: https://github.com/google/netboot/tree/master/pixiecore
 
 ## Copyright and License
 

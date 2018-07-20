@@ -4,6 +4,7 @@
 
 # DGXie config
 bootMode: DGX
+mntPath: /data
 isoPath: /iso
 dgxNetInt: enp1s0f0
 dgxDisk: sda
@@ -27,7 +28,7 @@ httpPort: 13370
 replicaCount: 1
 
 image:
-  repository: dgxie
+  repository: deepops/dgxie
   tag: latest
   pullPolicy: IfNotPresent
 
