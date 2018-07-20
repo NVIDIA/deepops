@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: apt-server
-        image: deepops/build-packages/deepops_apt
+        image: deepops/apt-online
         ports:
         - containerPort: 80
 ---
