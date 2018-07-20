@@ -255,7 +255,11 @@ Install the Helm client by following the instructions for the OS on your provisi
 
 If you're using Linux, the script `scripts/helm_install_linux.sh` will set up Helm for the current user
 
-Configure Kubernetes to use Helm:
+Be sure to install a version of Helm matching the version in `config/kube.yml`
+
+(Optional) If `helm_enabled` is `true` in `config/kube.yml`,
+the Helm server will already be deployed in Kubernetes.
+If it needs to be installed manually for some reason, run:
 
 ```sh
 kubectl create sa tiller --namespace kube-system
@@ -292,26 +296,6 @@ $ kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status | grep mds
 -->
 
 ### 3. Services
-
-#### __Helm:__
-
-Some services are installed using [Helm](https://helm.sh/), a package manager for Kubernetes.
-
-Install the Helm client by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
-
-If you're using Linux, the script `scripts/helm_install_linux.sh` will set up Helm for the current user
-
-Be sure to install a version of Helm matching the version in `config/kube.yml`
-
-(Optional) If `helm_enabled` is `true` in `config/kube.yml`,
-the Helm server will already be deployed in Kubernetes.
-If it needs to be installed manually for some reason, run:
-
-```sh
-kubectl create sa tiller --namespace kube-system
-kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-helm init --service-account tiller --node-selectors node-role.kubernetes.io/master=true
-```
 
 #### __Ingress controller:__
 
