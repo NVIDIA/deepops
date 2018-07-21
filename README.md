@@ -539,9 +539,8 @@ curl -X POST http://mgmt:30400/-/reload
 __Provisioning:__
 
 Provision DGX nodes with the official DGX ISO over PXE boot using DGXie.
-Use the default password for `dgxuser`
 
-> The `scripts/do_ipmi.sh` script has these commands and can be looped over multiple hosts
+> Note: The `scripts/do_ipmi.sh` script has these commands and can be looped over multiple hosts
 
 Disable the DGX IPMI boot device selection 60s timeout, you only need to do this once for
 each DGX, but it is required:
@@ -549,6 +548,8 @@ each DGX, but it is required:
 ```sh
 ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> raw 0x00 0x08 0x03 0x08
 ```
+
+> Note: The default IPMI username and password is `qct.admin`
 
 Set the DGX to boot from the first disk, using EFI, and to persist the setting:
 
@@ -588,8 +589,7 @@ ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
 ```
 
 Test the connection to the DGX servers via the bastion host (management server). Type the password
-for `dgxuser` on the DGX when prompted. The default password for `dgxuser` can be found in the file
-`containers/dgxie/configuration`:
+for `dgxuser` on the DGX when prompted. The default password for `dgxuser` is `DgxUser123`:
 
 ```sh
 ansible dgx-servers -k -a 'hostname'
@@ -600,16 +600,16 @@ __Configuration:__
 Configuration of the DGX is accomplished via Ansible roles.
 Modify the file `ansible/site.yml` to enable or disable various components
 
-Type the password for `dgxuser` on the DGX when prompted while running the bootstrap playbook.
-The default password for `dgxuser` can be found in the file `containers/dgxie/configuration`:
+Type the default password for `dgxuser` on the DGX when prompted while running the bootstrap playbook.
+The default password for `dgxuser` is `DgxUser123`:
 
 ```sh
 ansible-playbook -k -K -l dgx-servers ansible/playbooks/bootstrap.yml
 ```
 
 After running the first command, you may omit the `-K` flag on subsequent runs. The password
-for the `deepops` user will also change to the one set in the `groups_vars/all.yml` file.
-Run the site playbook to finish configuring the DGX:
+for the `deepops` user will also change to the one set in the `groups_vars/all.yml` file
+(by default, this password is `deepops`). Run the site playbook to finish configuring the DGX:
 
 ```sh
 ansible-playbook -k -l dgx-servers ansible/site.yml
