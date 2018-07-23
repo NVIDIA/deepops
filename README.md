@@ -601,7 +601,9 @@ ansible dgx-servers -k -a 'hostname'
 __Configuration:__
 
 Configuration of the DGX is accomplished via Ansible roles.
-Modify the file `ansible/site.yml` to enable or disable various components
+Various playbooks to install components are available in `ansible/playbooks`.
+Modify the file `ansible/site.yml` to enable or disable various playbooks, or run playbooks
+directly.
 
 Type the default password for `dgxuser` on the DGX when prompted while running the bootstrap playbook.
 The default password for `dgxuser` is `DgxUser123`:
@@ -755,7 +757,9 @@ with access to the private subnet, i.e.
 ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
 ```
 
-Modify the file `ansible/site.yml` to enable or disable various components and run playbooks to configure:
+Various playbooks to install components are available in `ansible/playbooks`.
+Modify the file `ansible/site.yml` to enable or disable various playbooks, or run playbooks
+directly:
 
 ```sh
 ansible-playbook -k -K -l login ansible/playbooks/bootstrap.yml
@@ -766,8 +770,22 @@ ansible-playbook -k -l login ansible/site.yml
 
 #### __Slurm:__
 
+Slurm overview: https://slurm.schedmd.com/overview.html
+
+"Slurm is an open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters."
+
+> Note: For more information on Slurm and GPUs, see: https://github.com/dholt/slurm-gpu
+
+To install Slurm, configure nodes in `config/inventory` and run the Ansible playbook:
+
 ```sh
-ansible-playbook -k -l slurm-cluster ansible/site.yml
+ansible-playbook -k -l slurm-cluster ansible/playbooks/slurm.yml
+```
+
+DGX nodes may appear 'down' in Slurm after install due to rebooting. Set nodes to idle if required:
+
+```sh
+sudo scontrol update node=dgx01 state=idle
 ```
 
 ## Cluster Usage
