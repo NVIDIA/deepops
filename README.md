@@ -669,13 +669,15 @@ Re-run Kubespray to install Kubernetes on the DGX:
 ansible-playbook -l k8s-cluster -k -v -b --flush-cache --extra-vars "@config/kube.yml" kubespray/cluster.yml
 ```
 
+> Note: If the kubesray run fails for any reason, try running again
+
 Check that the installation was successful:
 
 ```sh
 $ kubectl get nodes
 NAME      STATUS    ROLES         AGE       VERSION
-dgx01     Ready     node          6m        v1.9.2+coreos.0
-mgmt01    Ready     master,node   19h       v1.9.2+coreos.0
+dgx01     Ready     node          3m        v1.11.0
+mgmt01    Ready     master,node   2d        v1.11.0
 ```
 
 Place a hold on the `docker-ce` package so it doesn't get upgraded:
@@ -693,85 +695,64 @@ ansible-playbook -l k8s-gpu -k -v -b --flush-cache --extra-vars "@config/kube.ym
 Test that GPU support is working:
 
 ```sh
-kubectl apply -f tests/gpu
+kubectl apply -f tests/gpu-test-job.yml
 kubectl exec -ti gpu-pod -- nvidia-smi -L
 kubectl delete pod gpu-pod
 ```
 
 ### 5. Login server:
 
-> If you do not require a login node, you may skip this section
+> Note: If you do not require a login node, you may skip this section
+
+> Note: By default the login node(s) are not part of the kubernetes cluster. If you need to
+add login node(s) to the kubernetes cluster, add login servers to the kubernetes categories
+in the `config/inventory` file and re-run the ansible playbooks as above for management and
+DGX servers.
 
 __Provisioning:__
 
-The login server must be set to UEFI boot, including the Network interfaces in EFI mode.
+Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node
+if required. IP addresses should match those used in the `config/inventory` file.
 
-Provision the login server with the official DGX ISO over PXE boot using DGXie.
-Use the default password for `dgxuser`
-
-Modify `config/dhcpd.hosts.conf` to add a host entry for the login node. Configure the
-login node with a reserved IP lease and set the MAC address of the login node.
-
-Store the DHCP hosts config file as config-map in Kubernetes:
+Update the `dhcpd.hosts.conf` config map if modified and restart the DGXie POD:
 
 ```sh
-kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf
+kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf -o yaml --dry-run | kubectl replace -f -
+kubectl delete pod -l app=dgxie
 ```
 
-If you already have a `dhcpd.hosts.conf` config map, you can delete it and then re-create it:
+Modify `config/machines.json` to add a PXE entry for each login node.
+Copy the `64-bit-ubuntu-example` section and modify
+the MAC address for each login node you would like to boot. You can modify boot parameters or install
+alternate operating systems if required.
+
+Update the PXE server config map:
 
 ```sh
-kubectl delete configmap dhcpd
-kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf
+kubectl create configmap pxe-machines --from-file=config/machines.json -o yaml --dry-run | kubectl replace -f -
 ```
 
-In order to provision systems other than DGX (i.e. the login node), you will need to create a custom
-PXE boot configuration file. Modify the `config/pxelinux.cfg/*` file(s) and store a config map.
-You will also need to uncomment the specific volume mounts in the `services/dgxie.conf` file.
+Set login nodes to boot from the network for the next boot only and power on the systems.
+The login nodes should receive a response from the DGXie service and begin the OS install process.
 
-Rename the PXE config file to match the MAC address of the login node, for example:
+> Note: Be sure to either monitor the PXE install or configure servers to boot from the network
+on the next boot only to avoid a re-install loop
 
-```sh
-git mv config/pxelinux.cfg/01-01-23-45-67-89-ab config/pxelinux.cfg/01-00-50-56-bb-6f-74
-```
-
-Edit this PXE config file to set the value of `netcfg/choose_interface` to the primary NIC of the login
-node which will be used to connect to the network during the install (i.e. `eth1`)
-
-Store the new PXE config as a config map in kubernetes:
-
-```sh
-kubectl create configmap pxe-login --from-file=config/pxelinux.cfg/01-00-50-56-bb-6f-74
-```
-
-Edit `services/dgxie.yml` and uncomment/modify the `pxe-config-volume` volume to mount the config map in the DGXie
-container. For example:
-
-```sh
-	volumes:
-	...
-	- name: pxe-config-volume
-	  configMap:
-		name: pxe-login
-		items:
-		- key: 01-00-50-56-bb-6f-74
-		  path: 01-00-50-56-bb-6f-74
-```
-
-Re-deploy the DGXie service:
-
-```sh
-kubectl delete -f services/dgxie.yml
-kubectl apply -f services/dgxie.yml
-```
-
-Set the login node to boot from the network and power on the system. The login node should receive a response
-from the DGXie service and begin the DGX OS install process.
-
+If manually configuring the install, be sure the initial user matches the user in `config/group_vars/login.yml`.
 
 __Configuration:__
 
-Once OS installation is complete, bootstrap and configure the login node(s) via Ansible:
+Once OS installation is complete, bootstrap and configure the login node(s) via Ansible.
+
+If your login nodes are on an un-routable subnet, uncomment the `ansible_ssh_common_args` variable in the
+`config/group_vars/login.yml` file and modify the IP address to the IP address of the managment server
+with access to the private subnet, i.e.
+
+```sh
+ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
+```
+
+Modify the file `ansible/site.yml` to enable or disable various components and run playbooks to configure:
 
 ```sh
 ansible-playbook -k -K -l login ansible/playbooks/bootstrap.yml
