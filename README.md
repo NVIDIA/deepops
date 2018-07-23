@@ -12,11 +12,12 @@ Deploy a scalable DGX cluster on-prem or in the cloud
   * [Network Requirements](#network-requirements)
 * [Installation Steps](#installation-steps)
   * [Overview](#installation-overview)
-  * [1. Download/Configure](#1.-download-and-configure)
-  * [2. Management Server Setup](#2.-management-server-setup)
-  * [3. Services bootstrap](#3.-services)
-  * [4. DGX Setup](#4.-DGX-compute-nodes)
-  * [5. Login Server](#5.-login-server)
+  * [1. Download/Configure](#1-download-and-configure)
+  * [2. Management Server Setup](#2-management-server-setup)
+  * [3. Services bootstrap](#3-services)
+  * [4. DGX Setup](#4-DGX-compute-nodes)
+  * [5. Login Server](#5-login-server)
+  * [6, Additional Components](#6-additional-components)
 * [Cluster Usage](#cluster-usage)
   * [Maintenance](#maintenance)
     * [Login Server](#login-server)
@@ -24,6 +25,8 @@ Deploy a scalable DGX cluster on-prem or in the cloud
   * [Kubernetes](#kubernetes)
 * [Troubleshooting](#troubleshooting)
 * [Open Source Software](#open-source-software)
+* [Copyright and License](#copyright-and-license)
+* [Issues and Contributing](#issues-and-contributing)
 
 ## Overview
 
@@ -94,15 +97,15 @@ segment and subnet which can be controlled by the DHCP server.
    * Deploy Ceph persistent storage on management nodes
 3. Deploy cluster service containers on Kubernetes
    * DHCP/DNS/PXE, container registry, Apt repo, monitoring, alerting
-4. Deploy login node
+4. Deploy DGX-1 compute nodes
    * Install DGX OS (via PXE), bootstrap (via Ansible)
+   * Update firmware (via Ansible, if required)
+   * Join DGX-1 compute nodes to Kubernetes cluster and deploy GPU device plugin
+5. Deploy login node
+   * Install OS (via PXE), bootstrap (via Ansible)
    * Install/build HPC software and modules
-5. Deploy DGX-1 compute nodes
-   * Install DGX OS (via PXE), bootstrap (via Ansible)
-   * Update firmwares (via Ansible) if an update is available
 6. Deploy cluster SW layers
    * Install Slurm HPC scheduler on login and compute nodes
-   * Join DGX-1 compute nodes to Kubernetes cluster and deploy GPU device plugin
    * Configure Kubernetes Oauth integration for user access
 
 ### 1. Download and configure
@@ -757,6 +760,14 @@ Modify the file `ansible/site.yml` to enable or disable various components and r
 ```sh
 ansible-playbook -k -K -l login ansible/playbooks/bootstrap.yml
 ansible-playbook -k -l login ansible/site.yml
+```
+
+### 6. Additional Components
+
+#### __Slurm:__
+
+```sh
+ansible-playbook -k -l slurm-cluster ansible/site.yml
 ```
 
 ## Cluster Usage
