@@ -18,11 +18,11 @@ is_unofficial: false # set 'true' when using non-official OS on DGX
 is_official: true
 
 # Use the on-prem apt repo?
-with_local_apt: false
+with_local_apt: true
 # Local apt repo host:port
-local_apt_host: 10.0.0.1:30000
+local_apt_host: 192.168.1.1:30000
 # local apt repo path
-local_apt_path: dgx-baseos3
+local_apt_path: deepops-online
 
 # Cluster nameserver
 # Set to the IP address of your management node

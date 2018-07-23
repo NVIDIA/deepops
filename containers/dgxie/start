@@ -1,6 +1,7 @@
 #!/bin/sh
 
 ## CONFIG
+MNT=${MNT:-/data}
 ISO=${ISO:-/iso}
 PRESEED=${ISO}/preseed/pxe.template.seed
 INT=${INT:-enp1s0f0}
@@ -26,31 +27,18 @@ DOMAIN=${DOMAIN:-local}
 mkdir -p "${ISO}"
 
 # Check for mounted DGX Server ISO
-type ${PRESEED} >/dev/null 2>&1
+find ${PRESEED} >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
-    dgx_iso="$(find /nfs -name \*.iso)"
+    dgx_iso="$(find ${MNT} -name DGXServer\*.iso)"
     mount -o loop -t iso9660 "$dgx_iso" "${ISO}"
 fi
 
 # Check for mounted DGX Server ISO
-type ${PRESEED} >/dev/null 2>&1
+find ${PRESEED} >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
 	cp ${PRESEED} /www/dgx.seed
 	PRESEED=/www/dgx.seed
 	ln -sf ${ISO} /www/iso
-
-    # Set up PXE boot stuff
-    cp -r ${ISO}/install/netboot/ubuntu-installer/amd64/ /tftpboot/efi64/dgx-installer/
-
-    # Configure PXE boot menu args
-    sed -i "s/\#IP\#/${IP}:${HTTP_PORT}/g" /tftpboot/pxelinux.cfg/*
-    sed -i "s/\#INT\#/${INT}/g" /tftpboot/pxelinux.cfg/*
-    sed -i "s/\#DEFAULT\#/${DEFAULT}/g" /tftpboot/pxelinux.cfg/*
-
-    # Highlight default option in PXE menu
-    if [ "${DEFAULT}" == "DGX" ] ; then
-        sed -i "s/\#M_DEF_DGX\#/MENU DEFAULT/g" /tftpboot/pxelinux.cfg/*
-    fi
 
     # Modify preseed
     sed -i "s/^d-i live-installer.*/d-i live-installer\/net-image string ftp:\/\/${IP}\/install\/filesystem.squashfs/g" ${PRESEED}
@@ -72,7 +60,7 @@ if [ $? -eq 0 ] ; then
     sed -i "s/enp1s0f0/${INT}/g" ${PRESEED}
 
     # FTP
-    sed -i "s~/var/lib/ftp~${ISO}~g" /etc/passwd
+    sed -i "s~/srv/ftp~${ISO}~g" /etc/passwd
 
 else
 	echo "DGX ISO must be mounted at ${ISO}"
@@ -92,17 +80,20 @@ sed -i "s/\#DNS2\#/${DNS2}/g" /etc/dnsmasq.conf
 sed -i "s/\#DHCP_START\#/${DHCP_START}/g" /etc/dnsmasq.conf
 sed -i "s/\#DHCP_END\#/${DHCP_END}/g" /etc/dnsmasq.conf
 
+# HTTP
+sed -i "s/\#HTTP_PORT\#/${HTTP_PORT}/g" /etc/nginx/nginx.conf
+
 # NAT
 /sbin/iptables -t nat -A POSTROUTING -o ${HOST_INT_PUB} -j MASQUERADE
 /sbin/iptables -A FORWARD -i ${HOST_INT_PUB} -o ${HOST_INT_PRV} -m state --state RELATED,ESTABLISHED -j ACCEPT
 /sbin/iptables -A FORWARD -i ${HOST_INT_PRV} -o ${HOST_INT_PUB} -j ACCEPT
 sysctl -w net.ipv4.ip_forward=1
 
-# Copy PXE config for EFI
-cp -r /tftpboot/pxelinux.cfg /tftpboot/efi64/
-
 # Run some servers
 nginx &
-/usr/sbin/vsftpd /etc/vsftpd/vsftpd.conf &
+/usr/sbin/vsftpd /etc/vsftpd.conf &
 /usr/local/bin/rest_api.py >/dev/null 2>&1 &
-exec dnsmasq -k --log-facility=-
+python /api.py &
+/usr/bin/pixiecore api http://127.0.0.1:${HTTP_PORT} --dhcp-no-bind -p 81 &
+dnsmasq
+tail -f /var/log/dnsmasq.log

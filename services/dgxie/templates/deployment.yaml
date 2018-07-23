@@ -29,13 +29,16 @@ spec:
           volumeMounts:
             - name: dhcp-config-volume
               mountPath: "/etc/dnsmasq.d"
+            - name: pxe-machines-vol
+              mountPath: "/etc/machines/"
             - name: dhcp-leases
               mountPath: "/var/lib/misc/"
-            - name: nfs
-              mountPath: "/nfs"
-            #- name: pxe-config-volume
-            #  mountPath: /tftpboot/pxelinux.cfg
+            - name: cephfs
+              mountPath: "{{ .Values.mntPath }}"
           env:
+            # Path in container to storage containing ISO image
+            - name: MNT
+              value: "{{ .Values.mntPath }}"
             # Path in container to mounted DGX ISO
             - name: ISO
               value: "{{ .Values.isoPath }}"
@@ -113,10 +116,17 @@ spec:
         - name: dhcp-config-volume
           configMap:
             name: dhcpd
-        - name: nfs
-          nfs:
-            server: nfs-server.default.svc.cluster.local
-            path: /
+        - name: pxe-machines-vol
+          configMap:
+            name: pxe-machines
+        - name: cephfs
+          flexVolume:
+            driver: ceph.rook.io/rook
+            fsType: ceph
+            options:
+              fsName: cephfs
+              clusterName: rook-ceph
+              path: /iso
         - name: dhcp-leases
           persistentVolumeClaim:
             claimName: dhcp-leases

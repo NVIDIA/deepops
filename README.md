@@ -12,11 +12,12 @@ Deploy a scalable DGX cluster on-prem or in the cloud
   * [Network Requirements](#network-requirements)
 * [Installation Steps](#installation-steps)
   * [Overview](#installation-overview)
-  * [1. Download/Configure](#1.-download-and-configure)
-  * [2. Management Server Setup](#2.-management-server-setup)
-  * [3. Services bootstrap](#3.-services)
-  * [4. DGX Setup](#4.-DGX-compute-nodes)
-  * [5. Login Server](#5.-login-server)
+  * [1. Download/Configure](#1-download-and-configure)
+  * [2. Management Server Setup](#2-management-server-setup)
+  * [3. Services bootstrap](#3-services)
+  * [4. DGX Setup](#4-DGX-compute-nodes)
+  * [5. Login Server](#5-login-server)
+  * [6, Additional Components](#6-additional-components)
 * [Cluster Usage](#cluster-usage)
   * [Maintenance](#maintenance)
     * [Login Server](#login-server)
@@ -24,6 +25,8 @@ Deploy a scalable DGX cluster on-prem or in the cloud
   * [Kubernetes](#kubernetes)
 * [Troubleshooting](#troubleshooting)
 * [Open Source Software](#open-source-software)
+* [Copyright and License](#copyright-and-license)
+* [Issues and Contributing](#issues-and-contributing)
 
 ## Overview
 
@@ -94,15 +97,15 @@ segment and subnet which can be controlled by the DHCP server.
    * Deploy Ceph persistent storage on management nodes
 3. Deploy cluster service containers on Kubernetes
    * DHCP/DNS/PXE, container registry, Apt repo, monitoring, alerting
-4. Deploy login node
+4. Deploy DGX-1 compute nodes
    * Install DGX OS (via PXE), bootstrap (via Ansible)
+   * Update firmware (via Ansible, if required)
+   * Join DGX-1 compute nodes to Kubernetes cluster and deploy GPU device plugin
+5. Deploy login node
+   * Install OS (via PXE), bootstrap (via Ansible)
    * Install/build HPC software and modules
-5. Deploy DGX-1 compute nodes
-   * Install DGX OS (via PXE), bootstrap (via Ansible)
-   * Update firmwares (via Ansible) if an update is available
 6. Deploy cluster SW layers
    * Install Slurm HPC scheduler on login and compute nodes
-   * Join DGX-1 compute nodes to Kubernetes cluster and deploy GPU device plugin
    * Configure Kubernetes Oauth integration for user access
 
 ### 1. Download and configure
@@ -213,12 +216,13 @@ Modify the file `config/kube.yml` if needed and deploy Kubernetes:
 ```sh
 ansible-playbook -l mgmt -v -b --flush-cache --extra-vars "@config/kube.yml" kubespray/cluster.yml
 ```
-
+<!--
 Place a hold on the `docker-ce` package so it doesn't get upgraded:
 
 ```sh
 ansible mgmt -b -a "apt-mark hold docker-ce"
 ```
+-->
 
 Set up Kubernetes for remote administration:
 
@@ -243,75 +247,58 @@ Test you can access the kubernetes cluster:
 ```sh
 $ kubectl get nodes
 NAME      STATUS    ROLES         AGE       VERSION
-mgmt01    Ready     master,node   15h       v1.9.2+coreos.0
+mgmt01    Ready     master,node   7m        v1.11.0
 ```
 
-Configure the management node to use Kubernetes DNS:
-
-```sh
-ansible mgmt -b -m lineinfile -a "path=/etc/resolv.conf firstmatch=yes insertbefore='^nameserver' line='nameserver $(kubectl -n kube-system get svc kube-dns --template={{.spec.clusterIP}})'"
-```
-
-__Ceph:__
-
-Persistent storage for Kubernetes on the management nodes is supplied by Ceph.
-Ceph is provisioned using Rook to simplify deployment.
-
-You should be able to deploy Rook without making modifications to the manifests:
-
-```sh
-kubectl create -f services/rook/operator.yaml
-kubectl create -f services/rook/cluster.yaml
-kubectl create -f services/rook/storageclass.yml
-```
-
-If you need to remove Rook for any reason, here are the steps:
-
-```sh
-kubectl delete -f services/rook/storageclass.yml
-kubectl delete -f services/rook/cluster.yaml
-kubectl delete -f services/rook/operator.yaml
-ansible mgmt -b -m file -a "path=/var/lib/rook state=absent"
-```
-
-To interact with Ceph directly, install the Rook toolbox:
-
-```sh
-kubectl create -f services/rook/toolbox.yml
-```
-
-> Note: It will take a few minutes for containers to be pulled and started.
-> Wait for Rook to be fully installed before proceeding
-
-You can check Ceph status for example, with:
-
-```sh
-kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status
-```
-
-Once Ceph reports 'HEALTH_OK' and there is at least one 'mgr' active, enable the Ceph prometheus exporter:
-
-```sh
-kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
-```
-
-### 3. Services
-
-#### __Helm:__
+__Helm:__
 
 Some services are installed using [Helm](https://helm.sh/), a package manager for Kubernetes.
 
-Install Helm by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
+Install the Helm client by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
 
 If you're using Linux, the script `scripts/helm_install_linux.sh` will set up Helm for the current user
 
-Configure Kubernetes to use Helm:
+Be sure to install a version of Helm matching the version in `config/kube.yml`
+
+(Optional) If `helm_enabled` is `true` in `config/kube.yml`,
+the Helm server will already be deployed in Kubernetes.
+If it needs to be installed manually for some reason, run:
 
 ```sh
 kubectl create sa tiller --namespace kube-system
 kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
 helm init --service-account tiller --node-selectors node-role.kubernetes.io/master=true
 ```
+
+__Ceph:__
+
+Persistent storage for Kubernetes on the management nodes is supplied by Ceph.
+Ceph is provisioned using Rook to simplify deployment:
+
+```sh
+helm repo add rook-master https://charts.rook.io/master
+helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph --version v0.7.0-284.g863c10f --set agent.flexVolumeDirPath=/var/lib/kubelet/volume-plugins/
+kubectl create -f services/rook-cluster.yml
+```
+
+> Note: It will take a few minutes for containers to be pulled and started.
+> Wait for Rook to be fully installed before proceeding
+
+You can check Ceph status with:
+
+```sh
+kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status
+```
+<!--
+Once the Ceph filesystem is up, it is safe to continue, i.e:
+
+```sh
+$ kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status | grep mds
+    mds: cephfs-1/1/1 up  {0=cephfs-54949bc7c4-8jv4t=up:active}, 1 up:standby-replay
+```
+-->
+
+### 3. Services
 
 #### __Ingress controller:__
 
@@ -329,43 +316,26 @@ You can check the ingress controller logs with:
 kubectl logs -l app=nginx-ingress
 ```
 
-#### __NFS:__
-
-An NFS server is used to serve files internally to other Kubernetes services.
-
-Launch the NFS server with:
-
-```sh
-kubectl apply -f services/nfs-server.yml
-```
-
 #### __DHCP/DNS/PXE server (DGXie):__
 
 DGXie is an all-in-one container for DHCP, DNS, and PXE, specifically tailored to the DGX Base OS.
 If you already have DHCP, DNS, or PXE servers you can skip this step.
-In the future you will be able to use the DGXie
-PXE server with an existing DHCP server, but there is currently a bug in ProxyDHCP
-support preventing DGX nodes from booting properly.
 
 __Setup__
 
 You will need to download the official DGX Base OS ISO image to your provisioning machine.
 The latest DGX Base OS is available via the NVIDIA Entperprise Support Portal (ESP).
 
-Copy the DGX Base OS ISO to the NFS server running in Kubernetes, substituting the path to the DGX ISO
-you downloaded:
+Copy the DGX Base OS ISO to shared storage via a container running in Kubernetes,
+substituting the path to the DGX ISO you downloaded (be sure to wait for the `iso-loader` POD
+to be in the *Running* state before attempting to copy the ISO):
 
 ```sh
-kubectl cp /path/to/DGXServer-3.1.2.170902_f8777e.iso $(kubectl get pod -l role=nfs-server -o custom-columns=:metadata.name --no-headers):/exports/
+kubectl apply -f services/iso-loader.yml
+kubectl cp /path/to/DGXServer-3.1.2.170902_f8777e.iso $(kubectl get pod -l app=iso-loader -o custom-columns=:metadata.name --no-headers):/data/iso/
 ```
 
-Build the DGXie container and copy to each management host:
-
-```sh
-cd containers/dgxie
-docker build -t dgxie .
-docker save dgxie:latest | bzip2 | ssh <user>@<mgmt-host> 'bunzip2 | docker load'
-```
+> Note: If the `iso-loader` POD fails to mount the CephFS volume, you may need to restart the kubelet service on the master node(s): `ansible mgmt -b -a "systemctl restart kubelet"`
 
 __Configure__
 
@@ -373,7 +343,7 @@ Modify the DGXie configuration in `config/dgxie.yml` to set values for the DHCP 
 and DGX install process
 
 Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node and DGX
-server in the cluster. IP addresses should match those used in the `config/inventory` file.
+server in the cluster if required. IP addresses should match those used in the `config/inventory` file.
 You may also add other valid configuration options for dnsmasq to this file.
 
 You can get the MAC address of DGX system interfaces via the BMC, for example:
@@ -385,11 +355,16 @@ ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> raw 0x30 0x19 0x
 ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> raw 0x30 0x19 0x00 0x12 | tail -c 18 | tr ' ' ':'
 ```
 
-Store the DHCP hosts config file as config-map in Kubernetes, even if you have not
-made any changes (the DGXie container will try to mount this config map):
+Modify `config/machines.json` to add a PXE entry for each DGX. Copy the `dgx-example` section and modify
+the MAC address for each DGX you would like to boot. You can modify boot parameters or install
+alternate operating systems if required.
+
+Store the config files as config-maps in Kubernetes, even if you have not
+made any changes (the DGXie container will try to mount these config maps):
 
 ```sh
 kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf
+kubectl create configmap pxe-machines --from-file=config/machines.json
 ```
 
 __Deploy DGXie service__
@@ -420,6 +395,12 @@ kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf -o yaml --dry
 kubectl delete pod -l app=dgxie
 ```
 
+If you make changes to `machines.json`, you can update the file without having to restart the DGXie POD:
+
+```sh
+kubectl create configmap pxe-machines --from-file=config/machines.json -o yaml --dry-run | kubectl replace -f -
+```
+
 #### __APT Repo:__
 
 Launch service. Runs on port `30000`: http://mgmt:30000
@@ -437,7 +418,8 @@ helm repo add stable https://kubernetes-charts.storage.googleapis.com
 helm install --values config/registry.yml stable/docker-registry --version 1.4.3
 ```
 
-Configure DGX servers to allow the local (insecure) container registry:
+Once you have [provisioned DGX servers](#4.-DGX-compute-nodes),
+configure them to allow access to the local (insecure) container registry:
 
 ```sh
 ansible-playbook -l dgx-servers -k --tag docker playbooks/extra.yml
@@ -500,6 +482,12 @@ Launch the node-exporter on each management node to monitor them with prometheus
 kubectl apply -f services/node-exporter.yml
 ```
 
+Enable the Ceph prometheus exporter:
+
+```sh
+kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
+```
+
 __Grafana:__
 
 Launch Grafana web dashboard:
@@ -554,9 +542,8 @@ curl -X POST http://mgmt:30400/-/reload
 __Provisioning:__
 
 Provision DGX nodes with the official DGX ISO over PXE boot using DGXie.
-Use the default password for `dgxuser`
 
-> The `scripts/do_ipmi.sh` script has these commands and can be looped over multiple hosts
+> Note: The `scripts/do_ipmi.sh` script has these commands and can be looped over multiple hosts
 
 Disable the DGX IPMI boot device selection 60s timeout, you only need to do this once for
 each DGX, but it is required:
@@ -564,6 +551,8 @@ each DGX, but it is required:
 ```sh
 ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> raw 0x00 0x08 0x03 0x08
 ```
+
+> Note: The default IPMI username and password is `qct.admin`
 
 Set the DGX to boot from the first disk, using EFI, and to persist the setting:
 
@@ -603,8 +592,7 @@ ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
 ```
 
 Test the connection to the DGX servers via the bastion host (management server). Type the password
-for `dgxuser` on the DGX when prompted. The default password for `dgxuser` can be found in the file
-`containers/dgxie/configuration`:
+for `dgxuser` on the DGX when prompted. The default password for `dgxuser` is `DgxUser123`:
 
 ```sh
 ansible dgx-servers -k -a 'hostname'
@@ -613,18 +601,20 @@ ansible dgx-servers -k -a 'hostname'
 __Configuration:__
 
 Configuration of the DGX is accomplished via Ansible roles.
-Modify the file `ansible/site.yml` to enable or disable various components
+Various playbooks to install components are available in `ansible/playbooks`.
+Modify the file `ansible/site.yml` to enable or disable various playbooks, or run playbooks
+directly.
 
-Type the password for `dgxuser` on the DGX when prompted while running the bootstrap playbook.
-The default password for `dgxuser` can be found in the file `containers/dgxie/configuration`:
+Type the default password for `dgxuser` on the DGX when prompted while running the bootstrap playbook.
+The default password for `dgxuser` is `DgxUser123`:
 
 ```sh
 ansible-playbook -k -K -l dgx-servers ansible/playbooks/bootstrap.yml
 ```
 
 After running the first command, you may omit the `-K` flag on subsequent runs. The password
-for the `deepops` user will also change to the one set in the `groups_vars/all.yml` file.
-Run the site playbook to finish configuring the DGX:
+for the `deepops` user will also change to the one set in the `groups_vars/all.yml` file
+(by default, this password is `deepops`). Run the site playbook to finish configuring the DGX:
 
 ```sh
 ansible-playbook -k -l dgx-servers ansible/site.yml
@@ -665,8 +655,7 @@ __Adding DGX to Kubernetes:__
 Create the NVIDIA GPU k8s device plugin daemon set (just need to do this once):
 
 ```sh
-# deploy nvidia GPU device plugin (only need to do this the first time, can leave it deployed)
-kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.9/nvidia-device-plugin.yml
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
 ```
 
 If the DGX is a member of the Slurm cluster, be sure to drain node in Slurm so that it does
@@ -685,13 +674,15 @@ Re-run Kubespray to install Kubernetes on the DGX:
 ansible-playbook -l k8s-cluster -k -v -b --flush-cache --extra-vars "@config/kube.yml" kubespray/cluster.yml
 ```
 
+> Note: If the kubesray run fails for any reason, try running again
+
 Check that the installation was successful:
 
 ```sh
 $ kubectl get nodes
 NAME      STATUS    ROLES         AGE       VERSION
-dgx01     Ready     node          6m        v1.9.2+coreos.0
-mgmt01    Ready     master,node   19h       v1.9.2+coreos.0
+dgx01     Ready     node          3m        v1.11.0
+mgmt01    Ready     master,node   2d        v1.11.0
 ```
 
 Place a hold on the `docker-ce` package so it doesn't get upgraded:
@@ -709,89 +700,92 @@ ansible-playbook -l k8s-gpu -k -v -b --flush-cache --extra-vars "@config/kube.ym
 Test that GPU support is working:
 
 ```sh
-kubectl apply -f tests/gpu
+kubectl apply -f tests/gpu-test-job.yml
 kubectl exec -ti gpu-pod -- nvidia-smi -L
 kubectl delete pod gpu-pod
 ```
 
 ### 5. Login server:
 
-> If you do not require a login node, you may skip this section
+> Note: If you do not require a login node, you may skip this section
+
+> Note: By default the login node(s) are not part of the kubernetes cluster. If you need to
+add login node(s) to the kubernetes cluster, add login servers to the kubernetes categories
+in the `config/inventory` file and re-run the ansible playbooks as above for management and
+DGX servers.
 
 __Provisioning:__
 
-The login server must be set to UEFI boot, including the Network interfaces in EFI mode.
+Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node
+if required. IP addresses should match those used in the `config/inventory` file.
 
-Provision the login server with the official DGX ISO over PXE boot using DGXie.
-Use the default password for `dgxuser`
-
-Modify `config/dhcpd.hosts.conf` to add a host entry for the login node. Configure the
-login node with a reserved IP lease and set the MAC address of the login node.
-
-Store the DHCP hosts config file as config-map in Kubernetes:
+Update the `dhcpd.hosts.conf` config map if modified and restart the DGXie POD:
 
 ```sh
-kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf
+kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf -o yaml --dry-run | kubectl replace -f -
+kubectl delete pod -l app=dgxie
 ```
 
-If you already have a `dhcpd.hosts.conf` config map, you can delete it and then re-create it:
+Modify `config/machines.json` to add a PXE entry for each login node.
+Copy the `64-bit-ubuntu-example` section and modify
+the MAC address for each login node you would like to boot. You can modify boot parameters or install
+alternate operating systems if required.
+
+Update the PXE server config map:
 
 ```sh
-kubectl delete configmap dhcpd
-kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf
+kubectl create configmap pxe-machines --from-file=config/machines.json -o yaml --dry-run | kubectl replace -f -
 ```
 
-In order to provision systems other than DGX (i.e. the login node), you will need to create a custom
-PXE boot configuration file. Modify the `config/pxelinux.cfg/*` file(s) and store a config map.
-You will also need to uncomment the specific volume mounts in the `services/dgxie.conf` file.
+Set login nodes to boot from the network for the next boot only and power on the systems.
+The login nodes should receive a response from the DGXie service and begin the OS install process.
 
-Rename the PXE config file to match the MAC address of the login node, for example:
+> Note: Be sure to either monitor the PXE install or configure servers to boot from the network
+on the next boot only to avoid a re-install loop
 
-```sh
-git mv config/pxelinux.cfg/01-01-23-45-67-89-ab config/pxelinux.cfg/01-00-50-56-bb-6f-74
-```
-
-Edit this PXE config file to set the value of `netcfg/choose_interface` to the primary NIC of the login
-node which will be used to connect to the network during the install (i.e. `eth1`)
-
-Store the new PXE config as a config map in kubernetes:
-
-```sh
-kubectl create configmap pxe-login --from-file=config/pxelinux.cfg/01-00-50-56-bb-6f-74
-```
-
-Edit `services/dgxie.yml` and uncomment/modify the `pxe-config-volume` volume to mount the config map in the DGXie
-container. For example:
-
-```sh
-	volumes:
-	...
-	- name: pxe-config-volume
-	  configMap:
-		name: pxe-login
-		items:
-		- key: 01-00-50-56-bb-6f-74
-		  path: 01-00-50-56-bb-6f-74
-```
-
-Re-deploy the DGXie service:
-
-```sh
-kubectl delete -f services/dgxie.yml
-kubectl apply -f services/dgxie.yml
-```
-
-Set the login node to boot from the network and power on the system. The login node should receive a response
-from the DGXie service and begin the DGX OS install process.
-
+If manually configuring the install, be sure the initial user matches the user in `config/group_vars/login.yml`.
 
 __Configuration:__
 
-Once OS installation is complete, bootstrap and configure the login node(s) via Ansible:
+Once OS installation is complete, bootstrap and configure the login node(s) via Ansible.
+
+If your login nodes are on an un-routable subnet, uncomment the `ansible_ssh_common_args` variable in the
+`config/group_vars/login.yml` file and modify the IP address to the IP address of the managment server
+with access to the private subnet, i.e.
+
+```sh
+ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
+```
+
+Various playbooks to install components are available in `ansible/playbooks`.
+Modify the file `ansible/site.yml` to enable or disable various playbooks, or run playbooks
+directly:
 
 ```sh
 ansible-playbook -k -K -l login ansible/playbooks/bootstrap.yml
 ansible-playbook -k -l login ansible/site.yml
+```
+
+### 6. Additional Components
+
+#### __Slurm:__
+
+Slurm overview: https://slurm.schedmd.com/overview.html
+
+"Slurm is an open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters."
+
+> Note: For more information on Slurm and GPUs, see: https://github.com/dholt/slurm-gpu
+
+To install Slurm, configure nodes in `config/inventory` and run the Ansible playbook:
+
+```sh
+ansible-playbook -k -l slurm-cluster ansible/playbooks/slurm.yml
+```
+
+DGX nodes may appear 'down' in Slurm after install due to rebooting. Set nodes to idle if required:
+
+```sh
+sudo scontrol update node=dgx01 state=idle
 ```
 
 ## Cluster Usage
@@ -1098,6 +1092,17 @@ ansible all -m debug -a "var=ansible_default_ipv4"
 
 Where `ansible_default_ipv4` is the variable in question
 
+__Rook:__
+
+If you need to remove Rook for any reason, here are the steps:
+
+```sh
+kubectl delete -f services/rook-cluster.yml
+helm del --purge rook-ceph
+ansible mgmt -b -m file -a "path=/var/lib/rook state=absent"
+```
+
+
 ## Open Source Software
 
 Software used in this project:
@@ -1109,6 +1114,7 @@ Software used in this project:
   * SSH: https://github.com/weareinteractive/ansible-ssh
 * Kubespray: https://github.com/kubernetes-incubator/kubespray
 * Ceph: https://github.com/ceph/ceph-ansible
+* Pixiecore: https://github.com/google/netboot/tree/master/pixiecore
 
 ## Copyright and License
 
