@@ -422,7 +422,7 @@ Once you have [provisioned DGX servers](#4.-DGX-compute-nodes),
 configure them to allow access to the local (insecure) container registry:
 
 ```sh
-ansible-playbook -l dgx-servers -k --tag docker playbooks/extra.yml
+ansible-playbook -k ansible/playbooks/docker.yml
 ```
 
 You can check the container registry logs with:
