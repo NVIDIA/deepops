@@ -1,0 +1,32 @@
+prometheus:
+  ingress:
+    enabled: true
+    hosts:
+    - prometheus.local
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/rewrite-target: /
+    # Support HTTPS (required)
+    tls:
+    - hosts:
+      -  prometheus.local
+  nodeSelector:
+    node-role.kubernetes.io/master: "true"
+
+alertmanager:
+  ingress:
+    enabled: true
+
+    hosts:
+    - alertmanager.local
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/rewrite-target: /
+    # Support HTTPS (required)
+    tls:
+    - hosts:
+      -  alertmanager.local
+  nodeSelector:
+    node-role.kubernetes.io/master: "true"
