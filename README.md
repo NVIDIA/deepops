@@ -447,39 +447,31 @@ docker push registry.local/busybox
 
 #### __Monitoring:__
 
-Cluster monitoring is provided by Collectd, Prometheus and Grafana
+Cluster monitoring is provided by Prometheus and Grafana
 
 Service addresses:
 
 * Grafana: http://mgmt:30200
 * Prometheus: http://mgmt:30500
 * Alertmanager: http://mgmt:30400
-* Collectd metrics: http://mgmt:30301/metrics
 
-> Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster
+Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
+The default login for Grafana is `admin` for the username and password.
 
-__Prometheus:__
-
-Modify the `services/prometheus-monitor.yml` file to set hostnames/IP addresses.
-You will want to modify the `web.external-url` flags as well as the various
-`targets` in the config map.
-
-Launch Prometheus which collects and stores data:
+Modify `config/prometheus-operator.yml` and `config/kube-prometheus.yml` if desired and deploy the monitoring
+and alerting stack:
 
 ```sh
-kubectl apply -f services/prometheus-monitor.yml
+helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/prometheus-operator.yml
+helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/kube-prometheus.yml
 ```
 
-Patch the prometheus volume to retain if the volume claim is deleted
+To collect GPU metrics, label each GPU node and deploy the DCGM Prometheus exporter:
 
 ```sh
-kubectl patch pv $(kubectl get pv | grep prometheus | awk '{print $1}') -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
-```
-
-Launch the node-exporter on each management node to monitor them with prometheus:
-
-```sh
-kubectl apply -f services/node-exporter.yml
+kubectl label nodes <gpu-node-name> hardware-type=NVIDIAGPU
+kubectl create -f services/dcgm-exporter.yml
 ```
 
 Enable the Ceph prometheus exporter:
@@ -488,53 +480,10 @@ Enable the Ceph prometheus exporter:
 kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 ```
 
-__Grafana:__
-
-Launch Grafana web dashboard:
-
-```sh
-kubectl apply -f services/grafana.yml
-```
-
 Patch the grafana volume to retain if the volume claim is deleted
 
 ```sh
 kubectl patch pv $(kubectl get pv | grep grafana | awk '{print $1}') -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
-```
-
-Sign in to Grafana via the web interface using the password for the `admin` user defined
-in the `services/grafana.yml` spec file.
-
-Add a Prometheus data source to Grafana with the following settings (the remainder of
-the options can be left as default):
-
-* name: `prometheus`
-* type: `prometheus`
-* url: `http://prometheus:9090`
-
-Some dashboards can be found by importing from the 'Dashboards' tab on the Prometheus data source page,
-or by visiting the public Grafana dashboard registry:
-
-* Kubernetes monitoring Grafana dashboard: https://grafana.com/dashboards/315
-* Ceph monitoring Grafana dashboard (out of date): https://grafana.com/dashboards/917
-
-__Notes on monitoring tools:__
-
-If using collectd for metrics collection on the DGX and if the prometheus deployment is restarted,
-it may take a while before collectd metrics show up again. You can speed this up by restarting collectd:
-
-```sh
-ansible dgx-servers -k -b -a 'systemctl restart collectd'
-```
-
-If the prometheus or alertmanager config-map is updated, you can tell them to reload without
-removing the entire pod
-
-```sh
-kubectl apply -f services/prometheus-monitor.yml
-curl -X POST http://mgmt:30500/-/reload
-# tell alertmanager to re-read config
-curl -X POST http://mgmt:30400/-/reload
 ```
 
 ### 4. DGX compute nodes:
