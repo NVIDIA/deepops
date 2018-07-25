@@ -464,6 +464,7 @@ and alerting stack:
 ```sh
 helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
 helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/prometheus-operator.yml
+kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dashboard.json -n monitoring
 helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/kube-prometheus.yml
 ```
 
@@ -473,23 +474,13 @@ To collect GPU metrics, label each GPU node and deploy the DCGM Prometheus expor
 kubectl label nodes <gpu-node-name> hardware-type=NVIDIAGPU
 kubectl create -f services/dcgm-exporter.yml
 ```
-
-```sh
-kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dashboard.json -n monitoring
-```
-
+<!--
 Enable the Ceph prometheus exporter:
 
 ```sh
 kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 ```
-
-Patch the grafana volume to retain if the volume claim is deleted
-
-```sh
-kubectl patch pv $(kubectl get pv | grep grafana | awk '{print $1}') -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
-```
-
+-->
 ### 4. DGX compute nodes:
 
 __Provisioning:__
