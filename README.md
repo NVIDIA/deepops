@@ -474,6 +474,10 @@ kubectl label nodes <gpu-node-name> hardware-type=NVIDIAGPU
 kubectl create -f services/dcgm-exporter.yml
 ```
 
+```sh
+kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dashboard.json -n monitoring
+```
+
 Enable the Ceph prometheus exporter:
 
 ```sh
