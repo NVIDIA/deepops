@@ -1,0 +1,6 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - { role: ansible-role-osquery, tags: osquery }
+
