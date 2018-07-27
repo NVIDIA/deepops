@@ -2,3 +2,9 @@
 # Osquery
 - src: https://github.com/apolloclark/ansible-role-osquery.git
   name: osquery
+  version: 7fb6547b8813a3d51d0f327eb2fdb54c1031177d
+
+# Docker
+- src: https://github.com/angstwad/docker.ubuntu.git
+  name: docker
+  version: v3.5.2
