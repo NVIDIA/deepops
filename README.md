@@ -481,6 +481,23 @@ Enable the Ceph prometheus exporter:
 kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 ```
 -->
+
+#### __Logging:__
+
+```sh
+helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+helm install --name elk --values config/elk.yml incubator/elastic-stack
+# this takes a few minutes, wait for elasticsearch to be ready in Kibana...
+helm install --name log --values config/filebeat.yml stable/filebeat
+```
+
+```sh
+helm del --purge log
+helm del --purge elk
+kubectl delete pvc -l app=elasticsearch
+# wait for all statefulsets to be removed before re-installing...
+```
+
 ### 4. DGX compute nodes:
 
 __Provisioning:__
