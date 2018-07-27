@@ -5,6 +5,7 @@ inventory.cfg
 kubectl
 *.retry
 roles/community
+ansible/galaxy
 .terraform
 *.tf*
 config

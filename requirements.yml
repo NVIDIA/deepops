@@ -1,0 +1,4 @@
+
+# Osquery
+- src: https://github.com/apolloclark/ansible-role-osquery.git
+  name: osquery

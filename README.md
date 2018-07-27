@@ -116,6 +116,7 @@ files so that you can make local changes:
 ```sh
 git clone --recursive https://github.com/NVIDIA/deepops.git
 cp -r config.example/ config/
+ansible-galaxy install -r requirements.yml
 ```
 
 > Note: In Git 2.16.2 or later, use `--recurse-submodules` instead of `--recursive`.
