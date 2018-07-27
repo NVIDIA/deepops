@@ -27,3 +27,6 @@ config:
     # auth entries show up anyway so don't need it
     authlog:
       enabled: false
+  filebeat.prospectors:
+  - type: log
+    enabled: false

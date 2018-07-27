@@ -484,16 +484,48 @@ kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 
 #### __Logging:__
 
+Centralized logging is provided by Filebeat, Elasticsearch and Kibana
+
+*todo:*
+  * filebeat seems to be in UTC? set filebeat/elk TZ
+  * fix kibana nodeport issue
+
+Make sure all systems are set to the same timezone:
+
+```sh
+ansible all -k -b -a 'timedatectl status'
+```
+
+To update, use: `ansible <hostname> -k -b -a 'timedatectl set-timezone <timezone>'
+
+Install [Osquery](https://osquery.io/):
+
+```sh
+ansible-playbook -k ansible/playbooks/osquery.yml
+```
+
+Deploy Elasticsearch and Kibana:
+
 ```sh
 helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
 helm install --name elk --values config/elk.yml incubator/elastic-stack
-# this takes a few minutes, wait for elasticsearch to be ready in Kibana...
+```
+
+The ELK stack will take several minutes to install,
+wait for elasticsearch to be ready in Kibana before proceeding.
+
+Launch Filebeat, which will create an Elasticsearch index automatically:
+
+```sh
 helm install --name log --values config/filebeat.yml stable/filebeat
 ```
+
+The logging stack can be deleted with:
 
 ```sh
 helm del --purge log
 helm del --purge elk
+kubectl delete statefulset/elk-elasticsearch-data
 kubectl delete pvc -l app=elasticsearch
 # wait for all statefulsets to be removed before re-installing...
 ```
@@ -1073,6 +1105,7 @@ Software used in this project:
   * Docker: https://github.com/angstwad/docker.ubuntu
   * Kerberos: https://github.com/bennojoy/kerberos_client
   * SSH: https://github.com/weareinteractive/ansible-ssh
+  * Osquery: https://github.com/apolloclark/ansible-role-osquery
 * Kubespray: https://github.com/kubernetes-incubator/kubespray
 * Ceph: https://github.com/ceph/ceph-ansible
 * Pixiecore: https://github.com/google/netboot/tree/master/pixiecore
