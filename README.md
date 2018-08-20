@@ -58,7 +58,9 @@ For more information on deploying DGX in the datacenter, consult the
 
 * 1 or more CPU-only servers for management
   * 3 or more servers can be used for high-availability
-  * Minimum: 200GB hard disk, 8GB RAM
+  * Minimum: 4 CPU cores, 16GB RAM, 100GB hard disk
+    * More storage required if storing containers in registry, etc.
+    * More RAM required if running more services on kubernetes or using one/few servers
   * Ubuntu 16.04 LTS installed
 * 1 or more DGX compute nodes
 * Laptop or workstation for provisioning/deployment
@@ -487,8 +489,11 @@ kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 
 Centralized logging is provided by Filebeat, Elasticsearch and Kibana
 
+> Note: The ELK Helm chart is current out of date and does not provide support for
+> setting the Kibana NodePort
+
 *todo:*
-  * filebeat seems to be in UTC? set filebeat/elk TZ
+  * filebeat syslog module needs to be in UTC somehow, syslog in UTC?
   * fix kibana nodeport issue
 
 Make sure all systems are set to the same timezone:
@@ -509,7 +514,7 @@ Deploy Elasticsearch and Kibana:
 
 ```sh
 helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
-helm install --name elk --values config/elk.yml incubator/elastic-stack
+helm install --name elk --namespace logging --values config/elk.yml incubator/elastic-stack
 ```
 
 The ELK stack will take several minutes to install,
@@ -518,7 +523,7 @@ wait for elasticsearch to be ready in Kibana before proceeding.
 Launch Filebeat, which will create an Elasticsearch index automatically:
 
 ```sh
-helm install --name log --values config/filebeat.yml stable/filebeat
+helm install --name log --namespace logging --values config/filebeat.yml stable/filebeat
 ```
 
 The logging stack can be deleted with:
