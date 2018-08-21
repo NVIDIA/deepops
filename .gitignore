@@ -10,4 +10,3 @@ ansible/galaxy
 *.tf*
 config
 get_helm.sh
-.vault-pass
