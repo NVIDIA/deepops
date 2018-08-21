@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
 
+echo "
+
+██████╗ ███████╗███████╗██████╗  ██████╗ ██████╗ ███████╗
+██╔══██╗██╔════╝██╔════╝██╔══██╗██╔═══██╗██╔══██╗██╔════╝
+██║  ██║█████╗  █████╗  ██████╔╝██║   ██║██████╔╝███████╗
+██║  ██║██╔══╝  ██╔══╝  ██╔═══╝ ██║   ██║██╔═══╝ ╚════██║
+██████╔╝███████╗███████╗██║     ╚██████╔╝██║     ███████║
+╚═════╝ ╚══════╝╚══════╝╚═╝      ╚═════╝ ╚═╝     ╚══════╝
+                                                         
+"
+
 host_path=${DEEPOPS_HOST_ROOT_PATH:-`pwd`}
 
 docker="docker run --rm -ti --net=host -v ${host_path}/config:/source/deepops/config -v ${host_path}/ssh:/root/.ssh"
@@ -39,17 +50,21 @@ case "$1" in
         if [ "x${ssh_key}" != "x" ] ; then
             echo "SSH key authentication"
             echo -e "Using SSH key:\t\t\t${ssh_key}"
-            if [ -d ${host_path}/ssh ] ; then
-                if ! [ -f ${ssh_key} ] ; then
-                    echo
-                    echo "ERROR: SSH (${ssh_key}) does not exist"
-                    exit 1
-                fi
-                cp ${ssh_key} ssh/bootstrap_rsa
-                echo -e "Coppied SSH key to:\t\t`pwd`/ssh/bootstrap_rsa"
+            if ! [ -f ${ssh_key} ] ; then
+                echo
+                echo "ERROR: SSH (${ssh_key}) does not exist"
+                exit 1
             fi
+            cp ${ssh_key} ssh/bootstrap_rsa
+            echo -e "Coppied SSH key to:\t\t`pwd`/ssh/bootstrap_rsa"
+            ssh_key="--ssh-key /root/.ssh/bootstrap_rsa"
         fi
-        #${docker} deepops_deploy setup_deepops_user --ssh-key /root/.ssh/bootstrap_rsa "$@"
+
+        # run bootstrap playbook
+        echo
+        ${docker} deepops_deploy setup_deepops_user ${ssh_key} "$@"
+
+        # remove copied ssh private key
         if [ -f ssh/bootstrap_rsa ] ; then
             rm -f ssh/bootstrap_rsa
             echo -e "Removed SSH key:\t\t`pwd`/ssh/bootstrap_rsa"
@@ -63,16 +78,9 @@ case "$1" in
         ${docker} deepops_deploy $@
         ;;
     *)
-        curl -s https://gist.githubusercontent.com/hoserdude/9661c9cdc4b59cf5f001/raw/5972d4d838691c1a1f33fb274f97fa0b403d10bd/doge.txt | lolcat
+        echo "Usage: $0 bootstrap [OPTIONS]"
         echo
-        echo "Usage: $0 [setup|bootstrap]"
-        echo
-        echo "Setup initial configuration directories"
-        echo "Options:"
-        echo -e "  setup [~/.ssh/id_rsa]\t\tpath to SSH key used to connect to systems"
-        echo
-        echo "Bootstrap management system(s)"
-        ${docker} deepops_deploy setup_deepops_user --help | tail -n+3
+        ${docker} deepops_deploy setup_deepops_user --help | tail -n+3 | grep -v ssh
         echo
         ;;
 esac

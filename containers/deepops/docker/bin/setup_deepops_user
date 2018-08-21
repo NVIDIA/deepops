@@ -30,7 +30,7 @@ def main(*, password, progress_uri, output_dir, **config):
         click.echo("Please provide either a --hostname or an --ip")
     config["hostname"] = config.get("hostname", "node")
     if password:
-        password = "-k"
+        password = "-k -K"
     else:
         password = ""
     if config.get("ssh_key"):
