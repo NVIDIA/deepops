@@ -1,0 +1,10 @@
+{
+  "inventory_name": "inventory",
+  "username": "ubuntu",
+  "password": "password",
+  "hostname": "node",
+  "ip": "10.0.0.1",
+  "airgapped": true,
+  "ssh_key": "ssh-key",
+  "config": {}
+}
