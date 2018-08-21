@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+host_path=${DEEPOPS_HOST_ROOT_PATH:-`pwd`}
+
+docker="docker run --rm -ti --net=host -v ${host_path}/config:/source/deepops/config -v ${host_path}/ssh:/root/.ssh"
+
+case "$1" in
+    bootstrap)
+        shift
+
+        # create default configuration directory if not exists
+        echo -en "Creating default configuration directory:\t`pwd`/config\t"
+        if ! [ -d ${host_path}/config ] ; then
+            mkdir -p ${host_path}/config
+            ${docker} -u $(id -u):$(id -g) deepops_deploy cp -r config.example/. config/
+            echo "[created]"
+        else
+            echo "[exists, not creating]"
+        fi
+
+        # create default ssh key directory if not exists
+        echo -en "Creating default SSH directory:\t\t\t`pwd`/ssh\t"
+        if ! [ -d ${host_path}/ssh ] ; then
+            mkdir -p ${host_path}/ssh
+            ssh-keygen -f ssh/deepops_rsa -P "" >/dev/null 2>&1
+            echo "[created]"
+        else
+            echo "[exists, not creating]"
+        fi
+
+        # copy specified or default ssh key if not using password auth
+        ssh_key=${SSH_KEY:-~/.ssh/id_rsa}
+        for arg in "$@" ; do
+            if [ "$arg" == "--password" ] ; then
+                ssh_key=
+                echo "Password authentication"
+            fi
+        done
+        if [ "x${ssh_key}" != "x" ] ; then
+            echo "SSH key authentication"
+            echo -e "Using SSH key:\t\t\t${ssh_key}"
+            if [ -d ${host_path}/ssh ] ; then
+                if ! [ -f ${ssh_key} ] ; then
+                    echo
+                    echo "ERROR: SSH (${ssh_key}) does not exist"
+                    exit 1
+                fi
+                cp ${ssh_key} ssh/bootstrap_rsa
+                echo -e "Coppied SSH key to:\t\t`pwd`/ssh/bootstrap_rsa"
+            fi
+        fi
+        #${docker} deepops_deploy setup_deepops_user --ssh-key /root/.ssh/bootstrap_rsa "$@"
+        if [ -f ssh/bootstrap_rsa ] ; then
+            rm -f ssh/bootstrap_rsa
+            echo -e "Removed SSH key:\t\t`pwd`/ssh/bootstrap_rsa"
+        fi
+        ;;
+    bash)
+        ${docker} deepops_deploy bash
+        ;;
+    cmd)
+        shift
+        ${docker} deepops_deploy $@
+        ;;
+    *)
+        curl -s https://gist.githubusercontent.com/hoserdude/9661c9cdc4b59cf5f001/raw/5972d4d838691c1a1f33fb274f97fa0b403d10bd/doge.txt | lolcat
+        echo
+        echo "Usage: $0 [setup|bootstrap]"
+        echo
+        echo "Setup initial configuration directories"
+        echo "Options:"
+        echo -e "  setup [~/.ssh/id_rsa]\t\tpath to SSH key used to connect to systems"
+        echo
+        echo "Bootstrap management system(s)"
+        ${docker} deepops_deploy setup_deepops_user --help | tail -n+3
+        echo
+        ;;
+esac
