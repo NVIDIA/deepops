@@ -56,7 +56,7 @@ def main(*, password, progress_uri, output_dir, **config):
             my_env = os.environ.copy()
             
             subprocess.check_call(
-                shlex.split("ansible-playbook -vvv -i {output}/inventory {ansible}/playbooks/setup_deepops_user.yml".format(
+                shlex.split("ansible-playbook -k -i {output}/inventory {ansible}/playbooks/setup_deepops_user.yml".format(
                     ansible=ansible_path(), output=output_dir
                 )),
                 stdout=sys.stdout, stderr=sys.stderr

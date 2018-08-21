@@ -6,8 +6,8 @@
   vars:
     ansible_python_interpreter: /usr/bin/python3
   roles:
-    - { role: local-apt, when: is_airgapped }
-    - ssh
+    #- { role: local-apt, when: is_airgapped }
+    #- ssh
   tasks:
     - name: install python for ansible
       raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
@@ -41,7 +41,7 @@
       authorized_key:
         user: deepops
         state: present
-        key: "{{ lookup('file', '~/.ssh/deepops.pub') }}"
+        key: "{{ lookup('file', '~/.ssh/deepops_rsa.pub') }}"
 
 
 
@@ -53,7 +53,7 @@
   gather_facts: True
   vars:
     ansible_user: deepops
-    ansible_ssh_private_key_file: ~/.ssh/deepops
+    ansible_ssh_private_key_file: ~/.ssh/deepops_rsa
   tasks:
 
     - name: check for state file
@@ -67,26 +67,26 @@
         file_type: directory
       register: local_users
 
-    - name: delete local users
-      user:
-        name: "{{ item.path|basename }}"
-        state: absent
-        remove: yes
-      with_items: "{{ local_users.files }}"
-      when: delete_local_users and has_run.stat.exists == False
-
-    - name: move local users
-      block:
-      - command: killall -u "{{ item.path|basename }}"
-        ignore_errors: True
-        with_items: "{{ local_users.files }}"
-      - user:
-          name: "{{ item.path|basename }}"
-          home: "/local/{{ item.path|basename }}"
-          move_home: yes
-          state: present
-        with_items: "{{ local_users.files }}"
-      when: not delete_local_users and has_run.stat.exists == False
+#    - name: delete local users
+#      user:
+#        name: "{{ item.path|basename }}"
+#        state: absent
+#        remove: yes
+#      with_items: "{{ local_users.files }}"
+#      when: delete_local_users and has_run.stat.exists == False
+#
+#    - name: move local users
+#      block:
+#      - command: killall -u "{{ item.path|basename }}"
+#        ignore_errors: True
+#        with_items: "{{ local_users.files }}"
+#      - user:
+#          name: "{{ item.path|basename }}"
+#          home: "/local/{{ item.path|basename }}"
+#          move_home: yes
+#          state: present
+#        with_items: "{{ local_users.files }}"
+#      when: not delete_local_users and has_run.stat.exists == False
 
     - name: generate state file
       file:
