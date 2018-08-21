@@ -5,6 +5,7 @@ import shlex
 import subprocess
 import sys
 import tempfile
+import shutil
 
 import click
 from cookiecutter.main import cookiecutter
@@ -28,36 +29,31 @@ def main(*, password, progress_uri, output_dir, **config):
     if config.get("hostname") is None and config.get("ip") is None:
         click.echo("Please provide either a --hostname or an --ip")
     config["hostname"] = config.get("hostname", "node")
-    if password and not config.get("ssh-key", None):
-        password = click.prompt("Password", hide_input=True, confirmation_prompt=False)
-    if config.get("ssh-key"):
+    if password:
+        password = "-k"
+    else:
+        password = ""
+    if config.get("ssh_key"):
         tmp_key = "/tmp/cli-ssh-key"
-        shutil.copyfile(config.get("ssh-key"), tmp_key)
+        shutil.copyfile(config.get("ssh_key"), tmp_key)
         os.chmod(tmp_key, 0o600)
-        config["ssh-key"] = tmp_key
+        os.chown(tmp_key, 0, 0)
+        config["ssh_key"] = tmp_key
     with tempfile.TemporaryDirectory() as tmp_dir:
         output_dir = output_dir or tmp_dir
         progress = Progress(uri=progress_uri)
         progress.add_step(key="inventory", header="Generating Ansible inventory")
         progress.add_step(key="ansible", header="Running Ansible")
-        click.echo(config)
+        #click.echo(config)
         with progress.run_step(key="inventory"):
             cookiecutter(ansible_path("templates/setup_deepops_user/"), output_dir=output_dir, no_input=True,
                          extra_context=config, overwrite_if_exists=True)
-            if password:
-                with open(os.path.join(output_dir, "inventory", "host_vars", config["hostname"]), "w") as vars_file:
-                    p = subprocess.Popen("/scripts/bin/generate_hostvar_file",
-                                         stdout=vars_file, stdin=subprocess.PIPE,
-                                         stderr=subprocess.PIPE, universal_newlines=True)
-                    p.communicate("{}\n{}".format(config.get("username"), password))
-                    if p.wait() != 0:
-                        raise RuntimeError("Unable to generate ansible inventory")
         with progress.run_step(key="ansible"):
             my_env = os.environ.copy()
             
             subprocess.check_call(
-                shlex.split("ansible-playbook -k -i {output}/inventory {ansible}/playbooks/setup_deepops_user.yml".format(
-                    ansible=ansible_path(), output=output_dir
+                shlex.split("ansible-playbook {password} -i {output}/inventory {ansible}/playbooks/setup_deepops_user.yml".format(
+                    ansible=ansible_path(), output=output_dir, password=password
                 )),
                 stdout=sys.stdout, stderr=sys.stderr
             )
