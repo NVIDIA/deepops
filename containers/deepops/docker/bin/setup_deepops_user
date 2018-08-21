@@ -46,7 +46,7 @@ def main(*, password, progress_uri, output_dir, **config):
                          extra_context=config, overwrite_if_exists=True)
             if password:
                 with open(os.path.join(output_dir, "inventory", "host_vars", config["hostname"]), "w") as vars_file:
-                    p = subprocess.Popen(ansible_path("scripts/generate_hostvar_file"),
+                    p = subprocess.Popen("/scripts/bin/generate_hostvar_file",
                                          stdout=vars_file, stdin=subprocess.PIPE,
                                          stderr=subprocess.PIPE, universal_newlines=True)
                     p.communicate("{}\n{}".format(config.get("username"), password))
@@ -56,7 +56,7 @@ def main(*, password, progress_uri, output_dir, **config):
             my_env = os.environ.copy()
             
             subprocess.check_call(
-                shlex.split("ANSIBLE_CONFIG={ansible}/docker/ansible.cfg ansible-playbook -i {output}/inventory {ansible}/playbooks/setup_deepops_user.yml".format(
+                shlex.split("ansible-playbook -vvv -i {output}/inventory {ansible}/playbooks/setup_deepops_user.yml".format(
                     ansible=ansible_path(), output=output_dir
                 )),
                 stdout=sys.stdout, stderr=sys.stderr

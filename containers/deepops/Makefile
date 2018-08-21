@@ -1,7 +1,8 @@
-BASE_IMAGE ?= deepops/python
-IMAGE_NAME ?= deepops_ansible
-RELEASE_IMAGE ?= deepops/ansible
+BASE_IMAGE ?= python:3.6-slim
+IMAGE_NAME ?= deepops_deploy
+RELEASE_IMAGE ?= deepops/deploy
 RELEASE_VERSION = '0.1.0'
+DEEPOPS_VERSION ?= dev
 
 APT_PROXY ?= "false"
 APT_CACHE="RUN echo 'Acquire::HTTP::Proxy \"${APT_PROXY}\";' >> /etc/apt/apt.conf.d/01proxy"
@@ -19,6 +20,7 @@ build: Dockerfile
 	@echo FROM ${BASE_IMAGE} > .Dockerfile
 	@echo ${APT_CACHE} >> .Dockerfile
 	@echo ${PYPI_CACHE} >> .Dockerfile
+	@echo ENV DEEPOPS_VERSION=${DEEPOPS_VERSION} >> .Dockerfile
 	@cat Dockerfile >> .Dockerfile
 	@echo "RUN rm -f /etc/apt/apt.conf.d/01proxy" >> .Dockerfile
 	@echo "RUN rm -rf ~/.pip" >> .Dockerfile
