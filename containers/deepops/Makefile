@@ -2,7 +2,7 @@ BASE_IMAGE ?= python:3.6-slim
 IMAGE_NAME ?= deepops_deploy
 RELEASE_IMAGE ?= deepops/deploy
 RELEASE_VERSION = '0.1.0'
-DEEPOPS_VERSION ?= dev
+DEEPOPS_VERSION ?= pkg #dev
 
 APT_PROXY ?= "false"
 APT_CACHE="RUN echo 'Acquire::HTTP::Proxy \"${APT_PROXY}\";' >> /etc/apt/apt.conf.d/01proxy"

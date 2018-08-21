@@ -12,8 +12,8 @@ from nvidia_deepops import Progress
 
 def ansible_path(path=None):
     if path:
-        return os.path.join(os.environ.get("DEEPOPS_SOURCE_ANSIBLE", "/ansible"), path)
-    return os.environ.get("DEEPOPS_SOURCE_ANSIBLE", "/ansible")
+        return os.path.join(os.environ.get("DEEPOPS_SOURCE_ANSIBLE", "/source/deepops/ansible"), path)
+    return os.environ.get("DEEPOPS_SOURCE_ANSIBLE", "/source/deepops/ansible")
 
 @click.command()
 @click.option("--hostname")

@@ -1,4 +1,0 @@
-is_airgapped: {{ cookiecutter.airgapped|default(false) }}
-local_apt_host: {{ cookiecutter.config.apt_host|default("localhost:13370") }}
-local_apt_path: {{ cookiecutter.config.apt_path|default("dgx-baseos3") }}
-delete_local_users: {{ cookiecutter.config.delete_local_users|default(false) }}
