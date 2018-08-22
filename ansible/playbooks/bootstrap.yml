@@ -33,6 +33,8 @@
       lineinfile: dest=/etc/sudoers regexp="^%sudo" line="%sudo ALL=(ALL) NOPASSWD:ALL"
     - name: remove swap from fstab
       lineinfile: path=/etc/fstab regexp='swap' state=absent
+    - name: disable swap
+      command: swapoff -a
     - name: create /local
       file:
         path: /local
