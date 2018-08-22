@@ -1,8 +1,5 @@
 ---
 
-- name: set sudo without password
-  lineinfile: dest=/etc/sudoers regexp="^%sudo" line="%sudo ALL=(ALL) NOPASSWD:ALL"
-
 - name: create groups
   group:
     name: "{{ item.1 }}"
