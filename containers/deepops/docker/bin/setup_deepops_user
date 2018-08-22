@@ -17,8 +17,8 @@ def ansible_path(path=None):
     return os.environ.get("DEEPOPS_SOURCE_ANSIBLE", "/source/deepops/ansible")
 
 @click.command()
-@click.option("--hostname")
-@click.option("--ip")
+#@click.option("--hostname")
+@click.option("--ip", multiple=True, required=True)
 @click.option("--airgapped/--no-airgapped", default=True)
 @click.option("--username", required=True)
 @click.option("--password", is_flag=True)
@@ -26,9 +26,16 @@ def ansible_path(path=None):
 @click.option("--progress-uri")
 @click.option("--output-dir")
 def main(*, password, progress_uri, output_dir, **config):
-    if config.get("hostname") is None and config.get("ip") is None:
-        click.echo("Please provide either a --hostname or an --ip")
+    #if config.get("hostname") is None and config.get("ip") is None:
+        #click.echo("Please provide either a --hostname or an --ip")
     config["hostname"] = config.get("hostname", "node")
+    if config.get("ip"):
+        mgmt={}
+        i=1
+        for host in list(config["ip"]):
+            mgmt["mgmt{i}".format(i=i)] = host
+            i=i+1
+        config["ip"] = mgmt
     if password:
         password = "-k -K"
     else:
@@ -51,6 +58,12 @@ def main(*, password, progress_uri, output_dir, **config):
         with progress.run_step(key="ansible"):
             my_env = os.environ.copy()
             
+#            subprocess.check_call(
+#                shlex.split("cat {output}/inventory/inventory".format(
+#                    ansible=ansible_path(), output=output_dir, password=password
+#                )),
+#                stdout=sys.stdout, stderr=sys.stderr
+#            )
             subprocess.check_call(
                 shlex.split("ansible-playbook {password} -i {output}/inventory {ansible}/playbooks/setup_deepops_user.yml".format(
                     ansible=ansible_path(), output=output_dir, password=password

@@ -62,13 +62,16 @@ case "$1" in
 
         # run bootstrap playbook
         echo
-        ${docker} deepops_deploy setup_deepops_user ${ssh_key} "$@"
+        ${docker} -v `pwd`/templates:/source/deepops/ansible/templates deepops_deploy setup_deepops_user ${ssh_key} "$@"
 
         # remove copied ssh private key
         if [ -f ssh/bootstrap_rsa ] ; then
             rm -f ssh/bootstrap_rsa
             echo -e "Removed SSH key:\t\t`pwd`/ssh/bootstrap_rsa"
         fi
+        ;;
+    k8s|kube|kubernetes)
+        ${docker} deepops_deploy
         ;;
     bash)
         ${docker} deepops_deploy bash
