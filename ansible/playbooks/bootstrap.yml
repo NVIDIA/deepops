@@ -50,7 +50,6 @@
         state: present
         groups:
           - sudo
-          - docker
     - name: set authorized key for deepops user
       authorized_key:
         user: deepops
