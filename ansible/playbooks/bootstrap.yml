@@ -18,7 +18,6 @@
       systemd: state=stopped enabled=no name=fail2ban
 
 # set system hostname
-# gather additional custom facts used for Slurm GRES config
 # configure ssh
 # configure sudo
 - hosts: all
@@ -27,7 +26,6 @@
     - hostname:
         name: "{{ inventory_hostname }}"
   roles:
-    - facts
     - ssh
   tasks:
     - name: allow sudo without password for users in the sudo group

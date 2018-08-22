@@ -2,8 +2,9 @@
 
 # Default user account on all systems
 #  you can define per-group values in the other configuration files
-user: ubuntu
-ansible_user: ubuntu
+user: deepops
+ansible_user: deepops
+ansible_ssh_private_key_file: ~/.ssh/deepops_rsa
 
 # Amount of time to allow between updating Ubuntu APT cache
 cache_valid_time: 3600
@@ -24,9 +25,12 @@ local_apt_host: 192.168.1.1:30000
 # local apt repo path
 local_apt_path: deepops-online
 
-# Cluster nameserver
+# Cluster nameservers
 # Set to the IP address of your management node
-resolv_conf_nameserver: 192.168.1.1
+resolvconf_resolver_ips:
+  - 192.168.1.1
+  - 8.8.8.8
+resolvconf_search_domains: ['example.com']
 
 # NIS configuration (optional)
 #nisdomain: example.com
@@ -46,7 +50,7 @@ resolv_conf_nameserver: 192.168.1.1
 # Slurm job scheduler configuration
 slurm_user_home: /local/slurm
 slurm_manage_gpus: no
-slurm_cluster_name: ngc
+slurm_cluster_name: deepops
 slurm_username: slurm
 slurm_password: ReplaceWithASecurePasswordInTheVault
 slurm_db_username: slurm
@@ -62,29 +66,8 @@ slurm_exclusive: "yes"
 #  You may also add SSH public keys to each user account
 #  The default password here is 'deepops'
 user_list:
-  - name: "root"
-    username: "root"
-    state: present
-    shell: "/bin/bash"
-    password: "$6$5kCSHqdf.Du19uvz$cGTX4JijfiILr9QkN917sVJcJHGJILBkRVljEyTzF6L/nF6zAdJ.7U5dRIkz2aKb/7RxsPjdtlkMZOQQwNqzt."
-    groups:
-      - root
-    #keys:
-    #  active:
-    #    - "ssh-rsa ..."
-  - name: "ubuntu"
-    username: "ubuntu"
-    state: present
-    shell: "/bin/bash"
-    password: "$6$5kCSHqdf.Du19uvz$cGTX4JijfiILr9QkN917sVJcJHGJILBkRVljEyTzF6L/nF6zAdJ.7U5dRIkz2aKb/7RxsPjdtlkMZOQQwNqzt."
-    groups:
-      - sudo
-      - docker
-    #keys:
-    #  active:
-    #    - "ssh-rsa ..."
-  - name: "dgxuser"
-    username: "dgxuser"
+  - name: "deepops"
+    username: "deepops"
     state: present
     shell: "/bin/bash"
     password: "$6$5kCSHqdf.Du19uvz$cGTX4JijfiILr9QkN917sVJcJHGJILBkRVljEyTzF6L/nF6zAdJ.7U5dRIkz2aKb/7RxsPjdtlkMZOQQwNqzt."
@@ -130,9 +113,9 @@ nfs_mounts: []
 
 # Configure SSH
 ssh_port: [22]
-ssh_permit_root_login: 'yes'
+#ssh_permit_root_login: 'yes'
 ssh_pubkey_authentication: 'yes'
-ssh_password_authentication: 'yes'
+#ssh_password_authentication: 'yes'
 ssh_known_hosts: []
 
 # Configure Collectd
@@ -154,8 +137,8 @@ ssh_known_hosts: []
 #driver_version: 384.111-1
 
 ## settings to use latest CUDA 9.2 driver:
-use_latest_gpu_driver: true
-driver_version: "396.26-1"
-apt_key_url: http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
-apt_repo_url: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_9.2.88-1_amd64.deb
-apt_repo_name: cuda-repo-ubuntu1604=9.2.88-1
+#use_latest_gpu_driver: true
+#driver_version: "396.26-1"
+#apt_key_url: http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
+#apt_repo_url: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_9.2.88-1_amd64.deb
+#apt_repo_name: cuda-repo-ubuntu1604=9.2.88-1
