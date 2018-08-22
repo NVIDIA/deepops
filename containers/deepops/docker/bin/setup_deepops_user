@@ -55,6 +55,21 @@ def main(*, password, progress_uri, output_dir, **config):
         with progress.run_step(key="inventory"):
             cookiecutter(ansible_path("templates/setup_deepops_user/"), output_dir=output_dir, no_input=True,
                          extra_context=config, overwrite_if_exists=True)
+            # generate kubespray inventory
+            k8s_env = os.environ.copy()
+            k8s_env["CONFIG_FILE"] = "config/kube-mgmt-hosts.ini".format(ansible=ansible_path())
+            subprocess.check_call(
+                shlex.split("python3 kubespray/contrib/inventory_builder/inventory.py {ips}".format(
+                    ansible=ansible_path(), ips=' '.join(config.get("ip").values())
+                )),
+                stdout=sys.stdout, stderr=sys.stderr, env=k8s_env
+            )
+#            subprocess.check_call(
+#                shlex.split("cat config/kube-mgmt-hosts.ini".format(
+#                    ansible=ansible_path(), ips=' '.join(config.get("ip").values())
+#                )),
+#                stdout=sys.stdout, stderr=sys.stderr, env=k8s_env
+#            )
         with progress.run_step(key="ansible"):
             my_env = os.environ.copy()
             

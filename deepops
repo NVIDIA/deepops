@@ -26,6 +26,7 @@ case "$1" in
         if ! [ -d ${host_path}/config ] ; then
             mkdir -p ${host_path}/config
             ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) deepops_deploy cp -r config.example/. config/
+            ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) deepops_deploy cp -r kubespray/inventory/sample/hosts.ini config/kube-mgmt-hosts.ini
             echo "[created]"
         else
             echo "[exists, not creating]"
@@ -73,7 +74,7 @@ case "$1" in
         fi
         ;;
     k8s|kube|kubernetes)
-        ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy
+        ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy ansible-playbook -b -i config/kube-mgmt-hosts.ini --extra-vars "@config/kube.yml" kubespray/cluster.yml
         ;;
     bash)
         ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy bash
