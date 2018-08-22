@@ -58,7 +58,7 @@ For more information on deploying DGX in the datacenter, consult the
 To bootstrap the cluster:
 
 ```sh
-./dogectl bootstrap --ip 10.31.241.171 --username ubuntu --password
+./dogectl bootstrap --ip 10.0.0.1 --username ubuntu --password
 ```
 
 ## Prerequisites
