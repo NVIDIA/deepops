@@ -84,6 +84,8 @@ case "$1" in
         echo "Usage: $0 bootstrap [OPTIONS]"
         echo
         ${docker} deepops_deploy setup_deepops_user --help | tail -n+3 | grep -v ssh
+        echo "Environment variables:"
+        echo -e "  SSH_KEY=/path/to/ssh/key\tUse alternate SSH key (default: ~/.ssh/id_rsa) instead of password"
         echo
         ;;
 esac
