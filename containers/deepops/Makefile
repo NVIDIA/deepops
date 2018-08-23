@@ -3,6 +3,8 @@ IMAGE_NAME ?= deepops_deploy
 RELEASE_IMAGE ?= deepops/deploy
 RELEASE_VERSION = '0.1.0'
 DEEPOPS_VERSION ?= pkg #dev
+#HELM_VERSION ?= 2.10.0
+HELM_VERSION ?= 2.9.1
 
 APT_PROXY ?= "false"
 APT_CACHE="RUN echo 'Acquire::HTTP::Proxy \"${APT_PROXY}\";' >> /etc/apt/apt.conf.d/01proxy"
@@ -21,6 +23,7 @@ build: Dockerfile
 	@echo ${APT_CACHE} >> .Dockerfile
 	@echo ${PYPI_CACHE} >> .Dockerfile
 	@echo ENV DEEPOPS_VERSION=${DEEPOPS_VERSION} >> .Dockerfile
+	@echo ENV HELM_VERSION=${HELM_VERSION} >> .Dockerfile
 	@cat Dockerfile >> .Dockerfile
 	@echo "RUN rm -f /etc/apt/apt.conf.d/01proxy" >> .Dockerfile
 	@echo "RUN rm -rf ~/.pip" >> .Dockerfile

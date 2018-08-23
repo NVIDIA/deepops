@@ -17,6 +17,14 @@ docker="docker run --rm -ti --net=host"
 docker_mnt_config="-v ${host_path}/config:/source/deepops/config"
 docker_mnt_ssh="-v ${host_path}/ssh:/root/.ssh"
 
+kubectl() {
+    ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy kubectl --kubeconfig=/source/deepops/config/admin.conf
+}
+
+helm() {
+    ${docker} ${docker_mnt_config} ${docker_mnt_ssh} -e KUBECONFIG=/source/deepops/config/admin.conf deepops_deploy helm --home /source/deepops/config/.helm
+}
+
 case "$1" in
     bootstrap)
         shift
@@ -75,6 +83,14 @@ case "$1" in
         ;;
     k8s|kube|kubernetes)
         ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy ansible-playbook -b -i config/kube-mgmt-hosts.ini --extra-vars "@config/kube.yml" kubespray/cluster.yml
+        ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy ansible -i config/kube-mgmt-hosts.ini all -b -m fetch -a "src=/etc/kubernetes/admin.conf flat=yes dest=./config/"
+        if [ -f ./kubectl ] ; then
+            curl -sLO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+        fi
+        mv ~/.kube/config{,.bak} && KUBECONFIG=./config/admin.conf:~/.kube/config.bak ./kubectl config view --flatten | tee ~/.kube/config >/dev/null
+        echo
+        ./kubectl get nodes
         ;;
     bash)
         ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy bash
@@ -82,6 +98,22 @@ case "$1" in
     cmd)
         shift
         ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy $@
+        ;;
+    helm)
+        shift
+        if ! [ -d config/.helm ] ; then
+            ${docker} -u $(id -u):$(id -g) ${docker_mnt_config} ${docker_mnt_ssh} -e KUBECONFIG=/source/deepops/config/admin.conf deepops_deploy helm --home /source/deepops/config/.helm init --client-only
+        fi
+        helm $@
+        ;;
+    kubectl)
+        shift
+        kubectl $@
+        ;;
+    ceph)
+        helm repo add rook-master https://charts.rook.io/master
+        helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph --version v0.7.0-284.g863c10f --set agent.flexVolumeDirPath=/var/lib/kubelet/volume-plugins/
+        kubectl create -f services/rook-cluster.yml
         ;;
     *)
         echo "Usage: $0 bootstrap [OPTIONS]"

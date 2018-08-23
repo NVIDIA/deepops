@@ -1,6 +1,6 @@
 RUN pip install --upgrade pip
 
-RUN apt update && apt install -y --no-install-recommends git curl tar vim-tiny make sudo openssh-client sshpass lolcat && \
+RUN apt-get update && apt-get install -y --no-install-recommends git curl tar vim-tiny make sudo openssh-client sshpass lolcat wget && \
     rm -rf /var/cache/apt/*
 
 ENV DOCKER_CHANNEL stable
@@ -26,6 +26,14 @@ RUN git clone --recursive https://github.com/NVIDIA/deepops.git && \
     git checkout ${DEEPOPS_VERSION} && \
     ansible-galaxy install -r requirements.yml
 
+WORKDIR /workspace
+RUN wget --no-check-certificate https://storage.googleapis.com/kubernetes-helm/helm-v${HELM_VERSION}-linux-amd64.tar.gz && \
+    tar xvzf helm-v${HELM_VERSION}-linux-amd64.tar.gz && \
+    rm -rf helm-v${HELM_VERSION}-linux-amd64.tar.gz && \
+    mkdir -p /scripts/bin && \
+    mv linux-amd64/helm /scripts/bin && \
+    rm -rf linux-amd64
+
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
@@ -39,6 +47,10 @@ WORKDIR /scripts
 COPY docker .
 
 ENV DEEPOPS_SOURCE_ANSIBLE=/source/deepops/ansible
+
+WORKDIR /scripts/bin
+RUN curl -sLO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
+    chmod +x ./kubectl
 
 WORKDIR /source/deepops
 
