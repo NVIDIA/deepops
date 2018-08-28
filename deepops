@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
-echo "
-
-██████╗ ███████╗███████╗██████╗  ██████╗ ██████╗ ███████╗
-██╔══██╗██╔════╝██╔════╝██╔══██╗██╔═══██╗██╔══██╗██╔════╝
-██║  ██║█████╗  █████╗  ██████╔╝██║   ██║██████╔╝███████╗
-██║  ██║██╔══╝  ██╔══╝  ██╔═══╝ ██║   ██║██╔═══╝ ╚════██║
-██████╔╝███████╗███████╗██║     ╚██████╔╝██║     ███████║
-╚═════╝ ╚══════╝╚══════╝╚═╝      ╚═════╝ ╚═╝     ╚══════╝
-                                                         
-"
+#echo "
+#
+#██████╗ ███████╗███████╗██████╗  ██████╗ ██████╗ ███████╗
+#██╔══██╗██╔════╝██╔════╝██╔══██╗██╔═══██╗██╔══██╗██╔════╝
+#██║  ██║█████╗  █████╗  ██████╔╝██║   ██║██████╔╝███████╗
+#██║  ██║██╔══╝  ██╔══╝  ██╔═══╝ ██║   ██║██╔═══╝ ╚════██║
+#██████╔╝███████╗███████╗██║     ╚██████╔╝██║     ███████║
+#╚═════╝ ╚══════╝╚══════╝╚═╝      ╚═════╝ ╚═╝     ╚══════╝
+                                                         #
+#"
 
 host_path=${DEEPOPS_HOST_ROOT_PATH:-`pwd`}
 
@@ -18,11 +18,11 @@ docker_mnt_config="-v ${host_path}/config:/source/deepops/config"
 docker_mnt_ssh="-v ${host_path}/ssh:/root/.ssh"
 
 kubectl() {
-    ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy kubectl --kubeconfig=/source/deepops/config/admin.conf
+    ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy kubectl --kubeconfig=/source/deepops/config/admin.conf $@
 }
 
 helm() {
-    ${docker} ${docker_mnt_config} ${docker_mnt_ssh} -e KUBECONFIG=/source/deepops/config/admin.conf deepops_deploy helm --home /source/deepops/config/.helm
+    ${docker} ${docker_mnt_config} ${docker_mnt_ssh} -e KUBECONFIG=/source/deepops/config/admin.conf deepops_deploy helm --home /source/deepops/config/.helm $@
 }
 
 case "$1" in
