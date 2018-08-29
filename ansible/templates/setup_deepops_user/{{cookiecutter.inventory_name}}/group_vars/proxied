@@ -1,1 +1,1 @@
-ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q {{ cookiecutter.config.bastion|default("ubuntu@10.0.0.1") }}"'
+ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q {{ cookiecutter.bastion|default("ubuntu@10.0.0.1") }}"'
