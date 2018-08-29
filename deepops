@@ -81,7 +81,9 @@ case "$1" in
             compute)
                 shift
                 echo
+                set -x
                 ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy setup_deepops_user ${ssh_key} "$@"
+                set +x
                 ;;
         esac
         
