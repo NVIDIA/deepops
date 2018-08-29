@@ -82,7 +82,7 @@ case "$1" in
                 shift
                 echo
                 set -x
-                ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy setup_deepops_user ${ssh_key} "$@"
+                ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy setup_deepops_user --ssh-key /root/.ssh/deepops_rsa "$@"
                 set +x
                 ;;
         esac
