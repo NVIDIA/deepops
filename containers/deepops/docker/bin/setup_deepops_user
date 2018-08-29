@@ -74,12 +74,12 @@ def main(*, password, progress_uri, output_dir, **config):
         with progress.run_step(key="ansible"):
             my_env = os.environ.copy()
             
-#            subprocess.check_call(
-#                shlex.split("cat {output}/inventory/inventory".format(
-#                    ansible=ansible_path(), output=output_dir, password=password
-#                )),
-#                stdout=sys.stdout, stderr=sys.stderr
-#            )
+            subprocess.check_call(
+                shlex.split("cat {output}/inventory/inventory".format(
+                    ansible=ansible_path(), output=output_dir, password=password
+                )),
+                stdout=sys.stdout, stderr=sys.stderr
+            )
             subprocess.check_call(
                 shlex.split("ansible-playbook {password} -vvv -i {output}/inventory {ansible}/playbooks/bootstrap.yml".format(
                     ansible=ansible_path(), output=output_dir, password=password

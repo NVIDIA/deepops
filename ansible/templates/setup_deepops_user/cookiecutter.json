@@ -6,5 +6,6 @@
   "ip": {},
   "airgapped": true,
   "ssh_key": "ssh-key",
+  "bastion": "ubuntu@10.0.0.1",
   "config": {}
 }
