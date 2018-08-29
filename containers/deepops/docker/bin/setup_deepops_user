@@ -75,7 +75,7 @@ def main(*, password, progress_uri, output_dir, **config):
             my_env = os.environ.copy()
             
             subprocess.check_call(
-                shlex.split("cat {output}/inventory/inventory".format(
+                shlex.split("cat {output}/inventory/group_vars/proxied".format(
                     ansible=ansible_path(), output=output_dir, password=password
                 )),
                 stdout=sys.stdout, stderr=sys.stderr
