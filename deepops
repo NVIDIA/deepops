@@ -81,7 +81,17 @@ case "$1" in
             compute)
                 shift
                 echo
-                ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy setup_deepops_user ${ssh_key} "$@"
+                dgxie_host=$(kubectl describe pod -l app=dgxie | grep Node: | awk '{print $2}' | cut -d\/ -f2)
+                bastion=
+                for arg in "$@" ; do
+                    if [ "$arg" == "--bastion" ] ; then
+                        bastion="--bastion deepops@${dgxie_host}"
+                    fi
+                done
+                set -x
+                args=$(echo $@ | sed 's/--bastion//g')
+                ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy setup_deepops_user ${ssh_key} ${bastion} ${args}
+                set +x
                 ;;
         esac
         
