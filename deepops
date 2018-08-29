@@ -72,9 +72,19 @@ case "$1" in
         fi
 
         # run bootstrap playbook
-        echo
-        ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy setup_deepops_user ${ssh_key} "$@"
-
+        case "$1" in
+            mgmt)
+                shift
+                echo
+                ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy setup_deepops_user ${ssh_key} "$@"
+                ;;
+            compute)
+                shift
+                echo
+                ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy setup_deepops_user ${ssh_key} "$@"
+                ;;
+        esac
+        
         # remove copied ssh private key
         if [ -f ssh/bootstrap_rsa ] ; then
             rm -f ssh/bootstrap_rsa
