@@ -13,7 +13,5 @@
 {% if cookiecutter.bastion is defined -%}
     {% for host in cookiecutter.ip -%}
         {{ host -}}
-            {% if cookiecutter.username is defined and cookiecutter.username %} ansible_user={{ cookiecutter.username }}{% endif -%}
-            {% if cookiecutter.ip is defined and cookiecutter.ip %} ansible_host={{ cookiecutter.ip[host] }}{% endif -%}
     {% endfor %}
 {% endif %}
