@@ -4,3 +4,6 @@
 [submodule "ceph-ansible"]
 	path = ceph-ansible
 	url = https://github.com/ceph/ceph-ansible.git
+[submodule "containers/deepops/ngc-container-replicator"]
+	path = containers/deepops/ngc-container-replicator
+	url = https://github.com/NVIDIA/ngc-container-replicator.git
