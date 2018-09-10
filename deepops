@@ -25,7 +25,7 @@ helm() {
     ${docker} ${docker_mnt_config} ${docker_mnt_ssh} -e KUBECONFIG=/source/deepops/config/admin.conf deepops_deploy helm --home /source/deepops/config/.helm $@
 }
 
-type dockers >/dev/null 2>&1
+type docker >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
     echo
     echo "ERROR: Docker is required"
@@ -36,6 +36,7 @@ if [ $? -ne 0 ] ; then
         Y|y|yes|"")
             echo
             echo "Installing Docker in 5 sec..."
+            echo "Be sure to add your user to the Docker group after the install is finished and run the $0 command again"
             sleep 5
             get_docker=$(mktemp)
             curl -fsSL get.docker.com -o ${get_docker}
