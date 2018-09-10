@@ -12,17 +12,18 @@
 #"
 
 host_path=${DEEPOPS_HOST_ROOT_PATH:-`pwd`}
+container=${DEEPOPS_CONTAINER:-deepops/deploy:latest}
 
 docker="docker run --rm -ti --net=host"
 docker_mnt_config="-v ${host_path}/config:/source/deepops/config"
 docker_mnt_ssh="-v ${host_path}/ssh:/root/.ssh"
 
 kubectl() {
-    ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy kubectl --kubeconfig=/source/deepops/config/admin.conf $@
+    ${docker} ${docker_mnt_config} ${docker_mnt_ssh} ${container} kubectl --kubeconfig=/source/deepops/config/admin.conf $@
 }
 
 helm() {
-    ${docker} ${docker_mnt_config} ${docker_mnt_ssh} -e KUBECONFIG=/source/deepops/config/admin.conf deepops_deploy helm --home /source/deepops/config/.helm $@
+    ${docker} ${docker_mnt_config} ${docker_mnt_ssh} -e KUBECONFIG=/source/deepops/config/admin.conf ${container} helm --home /source/deepops/config/.helm $@
 }
 
 type docker >/dev/null 2>&1
@@ -61,8 +62,8 @@ case "$1" in
         echo -en "Creating default configuration directory:\t`pwd`/config\t"
         if ! [ -d ${host_path}/config ] ; then
             mkdir -p ${host_path}/config
-            ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) deepops_deploy cp -r config.example/. config/
-            ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) deepops_deploy cp -r kubespray/inventory/sample/hosts.ini config/kube-mgmt-hosts.ini
+            ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) ${container} cp -r config.example/. config/
+            ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) ${container} cp -r kubespray/inventory/sample/hosts.ini config/kube-mgmt-hosts.ini
             echo "[created]"
         else
             echo "[exists, not creating]"
@@ -104,7 +105,7 @@ case "$1" in
             mgmt)
                 shift
                 echo
-                ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy setup_deepops_user ${ssh_key} "$@"
+                ${docker} ${docker_mnt_config} ${docker_mnt_ssh} ${container} setup_deepops_user ${ssh_key} "$@"
                 ;;
             compute)
                 shift
@@ -118,7 +119,7 @@ case "$1" in
                 done
                 set -x
                 args=$(echo $@ | sed 's/--bastion//g')
-                ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy setup_deepops_user ${ssh_key} ${bastion} ${args}
+                ${docker} ${docker_mnt_config} ${docker_mnt_ssh} ${container} setup_deepops_user ${ssh_key} ${bastion} ${args}
                 set +x
                 ;;
         esac
@@ -130,8 +131,8 @@ case "$1" in
         fi
         ;;
     k8s|kube|kubernetes)
-        ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy ansible-playbook -b -i config/kube-mgmt-hosts.ini --extra-vars "@config/kube.yml" kubespray/cluster.yml
-        ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy ansible -i config/kube-mgmt-hosts.ini all -b -m fetch -a "src=/etc/kubernetes/admin.conf flat=yes dest=./config/"
+        ${docker} ${docker_mnt_config} ${docker_mnt_ssh} ${container} ansible-playbook -b -i config/kube-mgmt-hosts.ini --extra-vars "@config/kube.yml" kubespray/cluster.yml
+        ${docker} ${docker_mnt_config} ${docker_mnt_ssh} ${container} ansible -i config/kube-mgmt-hosts.ini all -b -m fetch -a "src=/etc/kubernetes/admin.conf flat=yes dest=./config/"
         if [ -f ./kubectl ] ; then
             curl -sLO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
             chmod +x ./kubectl
@@ -141,16 +142,16 @@ case "$1" in
         ./kubectl get nodes
         ;;
     bash)
-        ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy bash
+        ${docker} ${docker_mnt_config} ${docker_mnt_ssh} ${container} bash
         ;;
     cmd)
         shift
-        ${docker} ${docker_mnt_config} ${docker_mnt_ssh} deepops_deploy $@
+        ${docker} ${docker_mnt_config} ${docker_mnt_ssh} ${container} $@
         ;;
     helm)
         shift
         if ! [ -d config/.helm ] ; then
-            ${docker} -u $(id -u):$(id -g) ${docker_mnt_config} ${docker_mnt_ssh} -e KUBECONFIG=/source/deepops/config/admin.conf deepops_deploy helm --home /source/deepops/config/.helm init --client-only
+            ${docker} -u $(id -u):$(id -g) ${docker_mnt_config} ${docker_mnt_ssh} -e KUBECONFIG=/source/deepops/config/admin.conf ${container} helm --home /source/deepops/config/.helm init --client-only
         fi
         helm $@
         ;;
@@ -166,7 +167,7 @@ case "$1" in
     *)
         echo "Usage: $0 bootstrap [OPTIONS]"
         echo
-        ${docker} deepops_deploy setup_deepops_user --help | tail -n+3 | grep -v ssh
+        ${docker} ${container} setup_deepops_user --help | tail -n+3 | grep -v ssh
         echo "Environment variables:"
         echo -e "  SSH_KEY=/path/to/ssh/key\tUse alternate SSH key (default: ~/.ssh/id_rsa) instead of password"
         echo
