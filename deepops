@@ -37,7 +37,7 @@ if [ $? -ne 0 ] ; then
             echo
             echo "Installing Docker in 5 sec..."
             sleep 5
-            get-docker=$(mktemp -f)
+            get-docker=$(mktemp)
             curl -fsSL get.docker.com -o ${get-docker}
             sudo sh ${get-docker}
             sudo rm -f ${get-docker}
