@@ -58,8 +58,10 @@ For more information on deploying DGX in the datacenter, consult the
 To bootstrap the cluster:
 
 ```sh
+wget https://raw.githubusercontent.com/NVIDIA/deepops/pkg/deepops
+chmod +x ./deepops
 ./deepops bootstrap mgmt --ip 10.0.0.1 --username ubuntu --password
-./deepops bootstrap compute --ip 192.168.1.20 --bastion ubuntu@10.0.0.1 --username dgxuser --password
+./deepops bootstrap compute --ip 192.168.1.20 --bastion --username dgxuser --password
 ```
 
 ## Prerequisites

@@ -25,6 +25,33 @@ helm() {
     ${docker} ${docker_mnt_config} ${docker_mnt_ssh} -e KUBECONFIG=/source/deepops/config/admin.conf deepops_deploy helm --home /source/deepops/config/.helm $@
 }
 
+type dockers >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+    echo
+    echo "ERROR: Docker is required"
+    echo
+    echo -n "Install Docker? [Y/n] "
+    read install_docker
+    case "${install_docker}" in
+        Y|y|yes|"")
+            echo
+            echo "Installing Docker in 5 sec..."
+            sleep 5
+            get-docker=$(mktemp -f)
+            curl -fsSL get.docker.com -o ${get-docker}
+            sudo sh ${get-docker}
+            sudo rm -f ${get-docker}
+            ;;
+        *)
+            echo
+            echo "You can install Docker yourself with:"
+            echo "$ curl -fsSL get.docker.com -o get-docker.sh"
+            echo "$ sudo sh ./get-docker.sh"
+            ;;
+    esac
+    exit 1
+fi
+
 case "$1" in
     bootstrap)
         shift
