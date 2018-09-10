@@ -59,7 +59,7 @@ To bootstrap the cluster:
 
 ```sh
 ./deepops bootstrap mgmt --ip 10.0.0.1 --username ubuntu --password
-./deepops bootstrap compute --ip 192.168.1.20 --bastion ubuntu@10.31.241.165 --username dgxuser --password
+./deepops bootstrap compute --ip 192.168.1.20 --bastion ubuntu@10.0.0.1 --username dgxuser --password
 ```
 
 ## Prerequisites
