@@ -1,0 +1,32 @@
+config:
+  output.file:
+    enabled: false
+  output.elasticsearch:
+    enabled: true
+    hosts: ["http://elk-elasticsearch-client:9200"]
+    #index: "filebeat-%{[beat.version]}-%{+yyyy.MM.dd}"
+  output.logstash:
+    enabled: false
+    hosts:
+      elk-logstash:5044
+  setup.kibana:
+    host: "elk-kibana:5601"
+  setup.dashboards.enabled: true
+  setup.dashboards.retry.enabled: true
+  setup.dashboards.retry.interval: 10s
+  setup.dashboards.retry.maximum: 10
+  filebeat.config:
+    modules:
+      enabled: true
+      reload.enabled: true
+  filebeat.modules:
+  - module: system
+    syslog:
+      enabled: true
+    # authlog causes failures if enabled
+    # auth entries show up anyway so don't need it
+    authlog:
+      enabled: false
+  filebeat.prospectors:
+  - type: log
+    enabled: false

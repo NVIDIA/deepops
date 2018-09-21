@@ -58,7 +58,9 @@ For more information on deploying DGX in the datacenter, consult the
 
 * 1 or more CPU-only servers for management
   * 3 or more servers can be used for high-availability
-  * Minimum: 200GB hard disk, 8GB RAM
+  * Minimum: 4 CPU cores, 16GB RAM, 100GB hard disk
+    * More storage required if storing containers in registry, etc.
+    * More RAM required if running more services on kubernetes or using one/few servers
   * Ubuntu 16.04 LTS installed
 * 1 or more DGX compute nodes
 * Laptop or workstation for provisioning/deployment
@@ -116,6 +118,7 @@ files so that you can make local changes:
 ```sh
 git clone --recursive https://github.com/NVIDIA/deepops.git
 cp -r config.example/ config/
+ansible-galaxy install -r requirements.yml
 ```
 
 > Note: In Git 2.16.2 or later, use `--recurse-submodules` instead of `--recursive`.
@@ -422,7 +425,7 @@ Once you have [provisioned DGX servers](#4.-DGX-compute-nodes),
 configure them to allow access to the local (insecure) container registry:
 
 ```sh
-ansible-playbook -l dgx-servers -k --tag docker playbooks/extra.yml
+ansible-playbook -k ansible/playbooks/docker.yml
 ```
 
 You can check the container registry logs with:
@@ -447,94 +450,90 @@ docker push registry.local/busybox
 
 #### __Monitoring:__
 
-Cluster monitoring is provided by Collectd, Prometheus and Grafana
+Cluster monitoring is provided by Prometheus and Grafana
 
 Service addresses:
 
 * Grafana: http://mgmt:30200
 * Prometheus: http://mgmt:30500
 * Alertmanager: http://mgmt:30400
-* Collectd metrics: http://mgmt:30301/metrics
 
-> Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster
+Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
+The default login for Grafana is `admin` for the username and password.
 
-__Prometheus:__
-
-Modify the `services/prometheus-monitor.yml` file to set hostnames/IP addresses.
-You will want to modify the `web.external-url` flags as well as the various
-`targets` in the config map.
-
-Launch Prometheus which collects and stores data:
+Modify `config/prometheus-operator.yml` and `config/kube-prometheus.yml` if desired and deploy the monitoring
+and alerting stack:
 
 ```sh
-kubectl apply -f services/prometheus-monitor.yml
+helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/prometheus-operator.yml
+kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dashboard.json -n monitoring
+helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/kube-prometheus.yml
 ```
 
-Patch the prometheus volume to retain if the volume claim is deleted
+To collect GPU metrics, label each GPU node and deploy the DCGM Prometheus exporter:
 
 ```sh
-kubectl patch pv $(kubectl get pv | grep prometheus | awk '{print $1}') -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+kubectl label nodes <gpu-node-name> hardware-type=NVIDIAGPU
+kubectl create -f services/dcgm-exporter.yml
 ```
-
-Launch the node-exporter on each management node to monitor them with prometheus:
-
-```sh
-kubectl apply -f services/node-exporter.yml
-```
-
+<!--
 Enable the Ceph prometheus exporter:
 
 ```sh
 kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 ```
+-->
 
-__Grafana:__
+#### __Logging:__
 
-Launch Grafana web dashboard:
+Centralized logging is provided by Filebeat, Elasticsearch and Kibana
+
+> Note: The ELK Helm chart is current out of date and does not provide support for
+> setting the Kibana NodePort
+
+*todo:*
+  * filebeat syslog module needs to be in UTC somehow, syslog in UTC?
+  * fix kibana nodeport issue
+
+Make sure all systems are set to the same timezone:
 
 ```sh
-kubectl apply -f services/grafana.yml
+ansible all -k -b -a 'timedatectl status'
 ```
 
-Patch the grafana volume to retain if the volume claim is deleted
+To update, use: `ansible <hostname> -k -b -a 'timedatectl set-timezone <timezone>'
+
+Install [Osquery](https://osquery.io/):
 
 ```sh
-kubectl patch pv $(kubectl get pv | grep grafana | awk '{print $1}') -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+ansible-playbook -k ansible/playbooks/osquery.yml
 ```
 
-Sign in to Grafana via the web interface using the password for the `admin` user defined
-in the `services/grafana.yml` spec file.
-
-Add a Prometheus data source to Grafana with the following settings (the remainder of
-the options can be left as default):
-
-* name: `prometheus`
-* type: `prometheus`
-* url: `http://prometheus:9090`
-
-Some dashboards can be found by importing from the 'Dashboards' tab on the Prometheus data source page,
-or by visiting the public Grafana dashboard registry:
-
-* Kubernetes monitoring Grafana dashboard: https://grafana.com/dashboards/315
-* Ceph monitoring Grafana dashboard (out of date): https://grafana.com/dashboards/917
-
-__Notes on monitoring tools:__
-
-If using collectd for metrics collection on the DGX and if the prometheus deployment is restarted,
-it may take a while before collectd metrics show up again. You can speed this up by restarting collectd:
+Deploy Elasticsearch and Kibana:
 
 ```sh
-ansible dgx-servers -k -b -a 'systemctl restart collectd'
+helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+helm install --name elk --namespace logging --values config/elk.yml incubator/elastic-stack
 ```
 
-If the prometheus or alertmanager config-map is updated, you can tell them to reload without
-removing the entire pod
+The ELK stack will take several minutes to install,
+wait for elasticsearch to be ready in Kibana before proceeding.
+
+Launch Filebeat, which will create an Elasticsearch index automatically:
 
 ```sh
-kubectl apply -f services/prometheus-monitor.yml
-curl -X POST http://mgmt:30500/-/reload
-# tell alertmanager to re-read config
-curl -X POST http://mgmt:30400/-/reload
+helm install --name log --namespace logging --values config/filebeat.yml stable/filebeat
+```
+
+The logging stack can be deleted with:
+
+```sh
+helm del --purge log
+helm del --purge elk
+kubectl delete statefulset/elk-elasticsearch-data
+kubectl delete pvc -l app=elasticsearch
+# wait for all statefulsets to be removed before re-installing...
 ```
 
 ### 4. DGX compute nodes:
@@ -1112,6 +1111,7 @@ Software used in this project:
   * Docker: https://github.com/angstwad/docker.ubuntu
   * Kerberos: https://github.com/bennojoy/kerberos_client
   * SSH: https://github.com/weareinteractive/ansible-ssh
+  * Osquery: https://github.com/apolloclark/ansible-role-osquery
 * Kubespray: https://github.com/kubernetes-incubator/kubespray
 * Ceph: https://github.com/ceph/ceph-ansible
 * Pixiecore: https://github.com/google/netboot/tree/master/pixiecore

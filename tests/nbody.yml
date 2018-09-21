@@ -1,0 +1,24 @@
+# kubectl apply -f tests/nbody.yml
+# kubectl scale deploy/cuda-nbody --replicas=2
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cuda-nbody
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cuda-nbody
+  template:
+    metadata:
+      labels:
+        app: cuda-nbody
+    spec:
+      nodeSelector:
+        hardware-type: NVIDIAGPU
+      containers:
+        - name: cuda-nbody-container
+          image: nvcr.io/nvidia/k8s/cuda-sample:nbody
+          resources:
+            limits:
+              nvidia.com/gpu: 1
