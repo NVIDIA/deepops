@@ -10,14 +10,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.hostmanager.ignore_private_ip = false
   config.hostmanager.include_offline = true
   
-  #config.vm.define "mgmt01" do |mgmt|
-  #  mgmt.vm.provider "virtualbox" do |vb|
-  #    vb.memory = 2048
-  #  end
-  #  mgmt.vm.box = BOX_IMAGE
-  #  mgmt.vm.hostname = "mgmt01"
-  #  mgmt.vm.network :private_network, ip: "10.0.0.2"
-  #end
+  config.vm.define "mgmt01" do |mgmt|
+    mgmt.vm.provider "virtualbox" do |vb|
+      vb.memory = 2048
+    end
+    mgmt.vm.box = BOX_IMAGE
+    mgmt.vm.hostname = "mgmt01"
+    mgmt.vm.network :private_network, ip: "10.0.0.2"
+  end
 
   config.vm.define "login01" do |login|
     login.vm.box = BOX_IMAGE
