@@ -2,7 +2,7 @@
 set -x
 
 # TODO: include vagrant install, ansible etc
-vagrant up
+vagrant up --no-parallel
 #sudo pip install netaddr
 
 cd ..
@@ -42,7 +42,7 @@ chmod +x ./kubectl && mv ./kubectl ./vagrant/kubectl
 KUBECONFIG=$KUBECONFIG ./vagrant/kubectl apply -f services/apt.yml
 
 # Set up software
-ansible-playbook -k -l login,dgx-servers --skip-tags skip-for-virtual ansible/playbooks/software.yml
+ansible-playbook -l login,dgx-servers --skip-tags skip-for-virtual ansible/playbooks/software.yml
 
 # Install slurm
-ansible-playbook -k -l slurm-cluster ansible/playbooks/slurm.yml
+ansible-playbook -l slurm-cluster ansible/playbooks/slurm.yml
