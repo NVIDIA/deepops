@@ -37,7 +37,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ansible.inventory_path = "../config/inventory"
     ansible.config_file = "../ansible.cfg"
     ansible.playbook = "../ansible/playbooks/bootstrap.yml"
-    ansible.skip_tags = ["dgx-os"]
+    ansible.skip_tags = ["skip-for-virtual"]
     #ansible.limit = "mgmt"
   end
 end
