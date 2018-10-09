@@ -10,3 +10,5 @@ ansible/galaxy
 *.tf*
 config
 get_helm.sh
+vagrant/.vagrant
+vagrant/*.log
