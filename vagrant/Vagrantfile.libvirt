@@ -1,0 +1,52 @@
+VAGRANTFILE_API_VERSION = "2"
+#BOX_IMAGE = "tknerr/baseimage-ubuntu-16.04"
+#BOX_IMAGE = "ubuntu/xenial64"
+BOX_IMAGE = "generic/ubuntu1604"
+LIBVIRT_POOL = "fast"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.hostmanager.enabled = true
+  config.hostmanager.manage_host = true
+  config.hostmanager.manage_guest = true
+  config.hostmanager.ignore_private_ip = false
+  config.hostmanager.include_offline = true
+
+  #config.vm.define "mgmt01" do |mgmt|
+  #  mgmt.vm.provider "libvirt" do |lv|
+  #    lv.memory = 2048
+  #  end
+  #  mgmt.vm.box = BOX_IMAGE
+  #  mgmt.vm.hostname = "mgmt01"
+  #  mgmt.vm.network :private_network, ip: "10.0.0.2"
+  #end
+
+  #config.vm.define "login01" do |login|
+  #  login.vm.box = BOX_IMAGE
+  #  login.vm.hostname = "login01"
+  #  login.vm.network :private_network, ip: "10.0.0.4"
+  #end
+
+  config.vm.define "dgx01" do |dgx|
+    config.vm.provider "virtualbox" do |v|
+    #config.vm.provider "libvirt" do |v|
+      #v.storage_pool_name = LIBVIRT_POOL
+      #v.memory = 16384
+      #v.cpus = 4
+      #v.machine_type = "q35"
+      #v.cpu_mode = "host-passthrough"
+      #v.kvm_hidden = true
+      v.pci :bus => '0x07', :slot => '0x00', :function => '0x0'
+    end
+    dgx.vm.box = BOX_IMAGE
+    dgx.vm.hostname = "dgx01"
+    dgx.vm.network :private_network, ip: "10.0.0.11"
+  end
+
+  #config.vm.provision "ansible" do |ansible|
+  #  ansible.inventory_path = "../config/inventory"
+  #  ansible.config_file = "../ansible.cfg"
+  #  ansible.playbook = "../ansible/playbooks/bootstrap.yml"
+  #  ansible.skip_tags = ["skip-for-virtual"]
+  #  #ansible.limit = "mgmt"
+  #end
+end
