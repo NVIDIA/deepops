@@ -1,14 +1,8 @@
 #!/bin/bash
 set -x
 
-# install dependencies
-#sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
-#sudo apt update
-#sudo apt install -y ansible
-#sudo apt install -y virtualbox virtualbox-ext-pack vagrant
-
-vagrant up --no-parallel
-#sudo pip install netaddr
+# start vagrant
+vagrant up --no-parallel --provider=libvirt
 
 cd ..
 
