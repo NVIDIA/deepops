@@ -33,6 +33,8 @@
 
 - hosts: dgx-servers
   become: true
+  tags:
+  - skip-for-virtual
   roles:
     - { role: dgx-software, tags: software }
     - { role: cachefilesd, when: not is_official }
