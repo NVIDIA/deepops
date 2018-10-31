@@ -29,7 +29,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       v.cpus = 2
       v.machine_type = "q35"
       v.cpu_mode = "host-passthrough"
-      v.kvm_hidden = true
       # comment in for pci passthrough (and change bus according
       # to local hw setup - `lspci -nnk | grep NVIDIA`)
       #v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
