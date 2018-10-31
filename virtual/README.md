@@ -2,9 +2,9 @@
 
 Set up a virtual cluster with DeepOps. Useful for...
 
-1.) Learning how to deploy DeepOps on limited hardware
-2.) Testing new features in DeepOps
-3.) Tailoring DeepOps in a local environment before deploying it to the production cluster
+1. Learning how to deploy DeepOps on limited hardware
+2. Testing new features in DeepOps
+3. Tailoring DeepOps in a local environment before deploying it to the production cluster
 
 ## Prerequisites
 
