@@ -22,6 +22,7 @@ DHCP_START=${DHCP_START:-192.168.1.100}
 DHCP_END=${DHCP_END:-192.168.1.199}
 LEASETIME=${LEASETIME:-7200}
 DOMAIN=${DOMAIN:-local}
+HTTPS_PROXY=${HTTPS_PROXY:-}
 ###
 
 mkdir -p "${ISO}"
@@ -50,6 +51,7 @@ if [ $? -eq 0 ] ; then
     # Try to get install process to fix BIOS boot order on pre-3.18 BMC firmwares; sets DGX to boot from first disk
     # Turn off chassis identify light
     sed -i "s/in-target sh -c \"logger preseed\/late_command: end\"\;/modprobe -v ipmi_devintf\; \\\\\n\\t in-target sh -c \"sudo ipmitool raw 0x00 0x08 0x05 0xe0 0x08 0x00 0x00 0x00\"\; \\\\\n\\t in-target sh -c \"sudo ipmitool chassis identify 0\"\; \\\\\n\\t in-target sh -c \"curl -X POST -d action=end ${IP}:${HTTP_PORT}\/install\"\; \\\\\n\\tin-target sh -c \"logger preseed\/late_command: end\"\;/g" ${PRESEED}
+    sed -i "s~^d-i mirror/https/proxy.*~d-i mirror/https/proxy string ${HTTPS_PROXY}~g" ${PRESEED}
 
     # Add early command to log install start
     #sed -i "s/^# Use default/d-i preseed\/early_command string wget --post-data action=start ${IP}\/install\\n\\n# Use default/g" ${PRESEED}
