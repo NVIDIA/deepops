@@ -583,7 +583,7 @@ kubectl logs -l app=dgxie
 ```
 
 If your DGX are on an un-routable subnet, uncomment the `ansible_ssh_common_args` variable in the
-`config/group_vars/dgx-servers.yml` file and modify the IP address to the IP address of the managment server
+`config/group_vars/dgx-servers.yml` file and modify the IP address to the IP address of the management server
 with access to the private subnet, i.e.
 
 ```sh
@@ -749,7 +749,7 @@ __Configuration:__
 Once OS installation is complete, bootstrap and configure the login node(s) via Ansible.
 
 If your login nodes are on an un-routable subnet, uncomment the `ansible_ssh_common_args` variable in the
-`config/group_vars/login.yml` file and modify the IP address to the IP address of the managment server
+`config/group_vars/login.yml` file and modify the IP address to the IP address of the management server
 with access to the private subnet, i.e.
 
 ```sh
