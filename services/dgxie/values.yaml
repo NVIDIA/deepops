@@ -23,6 +23,7 @@ netPrvDhcpStart: 192.168.1.100
 netPrvDhcpEnd: 192.168.1.199
 netPrvDhcpLease: 7200
 httpPort: 13370
+httpsProxy: ''
 
 # Deployment config
 replicaCount: 1
