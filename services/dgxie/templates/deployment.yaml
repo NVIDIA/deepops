@@ -98,6 +98,8 @@ spec:
             # HTTP port for HTTP server
             - name: HTTP_PORT
               value: "{{ .Values.httpPort }}"
+            - name: HTTPS_PROXY
+              value: "{{ .Values.httpsProxy }}"
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}

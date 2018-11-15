@@ -52,3 +52,6 @@ netPrvDhcpEnd: 192.168.1.199
 
 # DHCP lease time
 netPrvDhcpLease: 7200
+
+# HTTPS proxy to use in preseed
+#httpsProxy: "http://192.168.2.1:3128"
