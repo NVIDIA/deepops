@@ -1,5 +1,5 @@
 # Kubernetes Version
-kube_version: v1.11.0
+kube_version: v1.11.3
 
 # Valid bootstrap options (required): ubuntu, coreos, centos, none
 bootstrap_os: ubuntu
@@ -10,9 +10,9 @@ gpus_enabled: true
 ## List of key=value pairs that describe feature gates for
 ## the k8s cluster.
 # Add DevicePlugins to enable NVIDIA k8s device plugin
-kube_feature_gates: ['Initializers={{ istio_enabled|string }}', 'PersistentLocalVolumes={{ local_volume_provisioner_enabled|string }}', 'DevicePlugins=true']
+kube_feature_gates: ['PersistentLocalVolumes={{ local_volume_provisioner_enabled|string }}', 'DevicePlugins=true']
 
-etcd_version: v3.3.1
+etcd_version: v3.3.10
  
 # Authorization
 rbac_enabled: true
@@ -38,7 +38,7 @@ dashboard_enabled: false
 
 # Helm deployment
 helm_enabled: true
-helm_version: v2.9.1
+helm_version: v2.11.0
 # Set node selector options for Tiller Deployment manifest.
 tiller_node_selectors: "node-role.kubernetes.io/master=true"
 
@@ -48,11 +48,12 @@ tiller_node_selectors: "node-role.kubernetes.io/master=true"
 docker_dns_servers_strict: no
 
 ## Override Docker to install version compatible with nvidia-docker2
-docker_version: '18.03.1'
+docker_version: '18.06.1'
 
 docker_versioned_pkg:
   '17.03.2': docker-ce=17.03.2~ce-0~ubuntu-xenial
   '18.03.1': docker-ce=18.03.1~ce-0~ubuntu
+  '18.06.1': docker-ce=18.06.1~ce~3-0~ubuntu
 
 docker_package_info:
   pkg_mgr: apt
