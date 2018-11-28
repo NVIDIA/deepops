@@ -55,3 +55,6 @@ netPrvDhcpLease: 7200
 
 # HTTPS proxy to use in preseed
 #httpsProxy: "http://192.168.2.1:3128"
+
+# Install extra packages
+extraPackages: "aptitude"
