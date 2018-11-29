@@ -150,8 +150,8 @@ with IPoIB in a single bonded interface
 Configure cluster parameters by modifying the various yaml files in the `config/group_vars`
 directory. The cluster-wide global config resides in the `all.yml` file, while
 group-specific options reside in the other files. File names correspond to groups
-in the inventory file, i.e. `[dgxservers]` in the inventory file corresponds with
-`config/group_vars/dgxservers.yml`.
+in the inventory file, i.e. `[dgx-servers]` in the inventory file corresponds with
+`config/group_vars/dgx-servers.yml`.
 
 ### 2. Management server setup
 
