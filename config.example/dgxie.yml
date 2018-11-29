@@ -57,4 +57,4 @@ netPrvDhcpLease: 7200
 #httpsProxy: "http://192.168.2.1:3128"
 
 # Install extra packages
-extraPackages: "aptitude"
+extraPackages: "aptitude ubuntu-minimal"
