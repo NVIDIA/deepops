@@ -7,7 +7,7 @@
     ansible_python_interpreter: /usr/bin/python3
   tasks:
     - name: Install Python for Ansible
-      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      raw: "test -e /usr/bin/python || (http_proxy={{proxy_env.http_proxy if (proxy_env is defined and proxy_env.http_proxy is defined) else \"\"}} https_proxy={{proxy_env.https_proxy if (proxy_env is defined and proxy_env.https_proxy is defined) else \"\"}} apt -y update && apt install -y python-minimal)"
       register: output
       changed_when: output.stdout != ""
 
@@ -38,8 +38,10 @@
       lineinfile: path=/etc/fstab regexp='swap' state=absent
     - name: install nfs tools
       apt: name=nfs-common state=latest
+      environment: "{{proxy_env if proxy_env is defined else {}}}"
     - name: remove resolvconf
       apt: name=resolvconf state=absent
+      environment: "{{proxy_env if proxy_env is defined else {}}}"
  
 # configure root ssh keys so local user home directory can be modified
 # root ssh keys should be set in group_vars/all

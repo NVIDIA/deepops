@@ -8,3 +8,4 @@
     - openssh-server
     - openssh-client
   when: ansible_os_family == "Debian"
+  environment: "{{proxy_env if proxy_env is defined else {}}}"

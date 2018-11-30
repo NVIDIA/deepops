@@ -27,6 +27,7 @@
   with_items: "{{ default_ubuntu_packages }}"
   tags:
     - packages
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
 
 - name: install smart monitoring tools
   apt:
@@ -37,6 +38,7 @@
     - smartmontools
   tags:
     - packages
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
 
 - name: install nvidia drivers and datacenter manager
   apt:
@@ -49,6 +51,7 @@
     - nvidia-sysinfo-dgx
   tags:
     - packages
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
   when: not is_official
 
 - name: install nvidia peer memory
@@ -60,5 +63,6 @@
     - nvidia-peer-memory-dkms
   tags:
     - packages
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
   when: not is_official
 
