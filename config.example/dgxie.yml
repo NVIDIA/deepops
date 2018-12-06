@@ -30,9 +30,6 @@ mgmtIntPrv: eth1
 # Network domain
 netDomain: local
 
-# IP address of private network interface on management server
-netPrvIp: 192.168.1.1
-
 # Private Network
 netPrvNet: 192.168.1.0
 
@@ -52,6 +49,8 @@ netPrvDhcpEnd: 192.168.1.199
 
 # DHCP lease time
 netPrvDhcpLease: 7200
+
+replicaCount: 2
 
 # HTTPS proxy to use in preseed
 #httpsProxy: "http://192.168.2.1:3128"
