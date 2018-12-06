@@ -1,5 +1,13 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pixiecore
+type: Opaque
+data:
+  signingkey: {{ .Values.pixiecoreSigningKey | b64enc | b64enc }}
+---
 apiVersion: apps/v1beta2
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ template "dgxie.fullname" . }}
   labels:
@@ -72,7 +80,9 @@ spec:
               value: "{{ .Values.netDomain }}"
             # IP address of private network interface on management server
             - name: IP
-              value: "{{ .Values.netPrvIp }}"
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
             # Private Network
             - name: NETWORK
               value: "{{ .Values.netPrvNet }}"
@@ -102,6 +112,17 @@ spec:
               value: "{{ .Values.httpsProxy }}"
             - name: EXTRA_PACKAGES
               value: "{{ .Values.extraPackages }}"
+            - name: NUM_OF_REPLICAS
+              value: "{{ .Values.replicaCount }}"
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: PIXIECORE_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pixiecore
+                  key: signingkey
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}
@@ -132,21 +153,6 @@ spec:
               clusterName: rook-ceph
               path: /iso
         - name: dhcp-leases
-          persistentVolumeClaim:
-            claimName: dhcp-leases
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: dhcp-leases
-  labels:
-    app: {{ template "dgxie.name" . }}
-  annotations:
-    volume.alpha.kubernetes.io/storage-class: default
-spec:
-  storageClassName: rook-ceph-block
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10M
+          hostPath:
+            path: /mnt/dhcp-leases
+            type: DirectoryOrCreate

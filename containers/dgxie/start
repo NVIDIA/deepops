@@ -24,7 +24,42 @@ LEASETIME=${LEASETIME:-7200}
 DOMAIN=${DOMAIN:-local}
 HTTPS_PROXY=${HTTPS_PROXY:-}
 EXTRA_PACKAGES=${EXTRA_PACKAGES:-}
+MY_POD_NAME=${MY_POD_NAME:-}
+NUM_OF_REPLICAS=${NUM_OF_REPLICAS:-1}
 ###
+
+iptoi()
+{
+  a=$(echo "${1}" | cut -d"." -f1)
+  b=$(echo "${1}" | cut -d"." -f2)
+  c=$(echo "${1}" | cut -d"." -f3)
+  d=$(echo "${1}" | cut -d"." -f4)
+
+  echo "$(((a<<24)+(b<<16)+(c<<8)+d))"
+}
+
+itoip()
+{
+  #returns the dotted-decimal ascii form of an IP arg passed in integer format
+  echo -n $(($(($(($((${1}/256))/256))/256))%256)).
+  echo -n $(($(($((${1}/256))/256))%256)).
+  echo -n $(($((${1}/256))%256)).
+  echo $((${1}%256))
+}
+
+SHARD_IDX=$(( ${MY_POD_NAME##*-} ))
+
+if [ "${NUM_OF_REPLICAS}" -gt 1 ]; then
+  STARTINT=$(iptoi ${DHCP_START})
+  ENDINT=$(iptoi ${DHCP_END})
+
+  IPCOUNT=$(( ${ENDINT} - ${STARTINT} + 1 ))
+
+  SHARDIPCOUNT=$(( ${IPCOUNT} / ${NUM_OF_REPLICAS} ))
+
+  DHCP_START=$(itoip $(( STARTINT + (SHARD_IDX * SHARDIPCOUNT) )))
+  DHCP_END=$(itoip $(( STARTINT + ((SHARD_IDX + 1) * (SHARDIPCOUNT) - 1) )))
+fi
 
 mkdir -p "${ISO}"
 
@@ -100,6 +135,6 @@ nginx &
 /usr/sbin/vsftpd /etc/vsftpd.conf &
 /usr/local/bin/rest_api.py >/dev/null 2>&1 &
 python /api.py &
-/usr/bin/pixiecore api http://127.0.0.1:${HTTP_PORT} --dhcp-no-bind -p 81 &
+/usr/bin/pixiecore api http://127.0.0.1:${HTTP_PORT} --dhcp-no-bind -p 81 --signing-key ${PIXIECORE_SIGNING_KEY} &
 dnsmasq
 tail -f /var/log/dnsmasq.log

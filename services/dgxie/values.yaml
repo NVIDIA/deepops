@@ -13,7 +13,6 @@ dgxKernExtra: ''
 mgmtIntPub: eth0
 mgmtIntPrv: eth1
 netDomain: local
-netPrvIp: 192.168.1.1
 netPrvNet: 192.168.1.0
 netPrvNetmask: 255.255.255.0
 netPrvGateway: 192.168.1.1
@@ -28,6 +27,8 @@ extraPackages: ''
 
 # Deployment config
 replicaCount: 1
+
+pixiecoreSigningKey: 'mysecret'
 
 image:
   repository: deepops/dgxie
