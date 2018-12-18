@@ -50,6 +50,8 @@ netPrvDns2: 8.8.4.4
 netPrvDhcpStart: 192.168.1.100
 netPrvDhcpEnd: 192.168.1.199
 
+#ntp: 192.168.1.10
+
 # DHCP lease time
 netPrvDhcpLease: 7200
 

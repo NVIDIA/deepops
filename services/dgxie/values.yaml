@@ -29,6 +29,8 @@ extraPackages: ''
 # Deployment config
 replicaCount: 1
 
+ntp: ''
+
 image:
   repository: deepops/dgxie
   tag: latest
