@@ -9,3 +9,5 @@ mkdir -p ${HELM_INSTALL_DIR}
 HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v2.9.1 /tmp/get_helm.sh
 
 echo Add ${HELM_INSTALL_DIR} to your PATH
+
+helm init
