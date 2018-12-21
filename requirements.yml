@@ -8,3 +8,8 @@
 - src: https://github.com/angstwad/docker.ubuntu.git
   name: docker
   version: v3.5.2
+
+# Netplan
+- src: https://github.com/mrlesmithjr/ansible-netplan.git
+  name: netplan
+  version: 371fc43d98f7f92f4aaf2b7a50f21ff5cb2d229c
