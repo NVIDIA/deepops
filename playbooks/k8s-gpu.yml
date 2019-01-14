@@ -18,7 +18,8 @@
     - name: nvidia-docker | apt key
       apt_key:
         url: https://nvidia.github.io/nvidia-docker/gpgkey
-        state: latest
+        state: present
+      environment: "{{proxy_env if proxy_env is defined else {}}}"
     - name: nvidia-docker | apt repo
       apt_repository:
         repo: "{{ item }}"
@@ -29,6 +30,7 @@
         - "deb https://nvidia.github.io/libnvidia-container/ubuntu16.04/amd64 /"
         - "deb https://nvidia.github.io/nvidia-container-runtime/ubuntu16.04/amd64 /"
         - "deb https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64 /"
+      environment: "{{proxy_env if proxy_env is defined else {}}}"
     - name: nvidia-docker | install
       apt:
         name: "{{ item }}"
@@ -36,6 +38,7 @@
       with_items:
         - "nvidia-docker2=2.0.3+docker18.03.1-1"
         - "nvidia-container-runtime=2.0.0+docker18.03.1-1"
+      environment: "{{proxy_env if proxy_env is defined else {}}}"
     - name: set docker default runtime
       copy:
         content: "{{ daemon_json | to_nice_json }}"

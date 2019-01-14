@@ -7,7 +7,7 @@
     ansible_python_interpreter: /usr/bin/python3
   tasks:
     - name: Install Python for Ansible
-      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      raw: "test -e /usr/bin/python || (http_proxy={{proxy_env.http_proxy if (proxy_env is defined and proxy_env.http_proxy is defined) else \"\"}} https_proxy={{proxy_env.https_proxy if (proxy_env is defined and proxy_env.https_proxy is defined) else \"\"}} apt -y update && apt install -y python-minimal)"
       register: output
       changed_when: output.stdout != ""
 

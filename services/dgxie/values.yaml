@@ -24,9 +24,12 @@ netPrvDhcpEnd: 192.168.1.199
 netPrvDhcpLease: 7200
 httpPort: 13370
 httpsProxy: ''
+extraPackages: ''
 
 # Deployment config
 replicaCount: 1
+
+ntp: ''
 
 image:
   repository: deepops/dgxie

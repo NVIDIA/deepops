@@ -82,11 +82,10 @@ chmod +x ./deepops
 
 The administrator's provisioning system should have the following installed:
 
-* Ansible 2.5 or later
+* python pip
 * git
 * docker (to build containers)
 * ipmitool
-* python-netaddr (for kubespray)
 
 The management server(s) should be pre-installed with Ubuntu 16.04 LTS before
 starting the installation steps. If you already have a bare-metal provisioning system,
@@ -130,6 +129,7 @@ files so that you can make local changes:
 ```sh
 git clone --recursive https://github.com/NVIDIA/deepops.git
 cp -r config.example/ config/
+pip install --user -r kubespray/requirements.txt
 ansible-galaxy install -r requirements.yml
 ```
 
@@ -162,8 +162,8 @@ with IPoIB in a single bonded interface
 Configure cluster parameters by modifying the various yaml files in the `config/group_vars`
 directory. The cluster-wide global config resides in the `all.yml` file, while
 group-specific options reside in the other files. File names correspond to groups
-in the inventory file, i.e. `[dgxservers]` in the inventory file corresponds with
-`config/group_vars/dgxservers.yml`.
+in the inventory file, i.e. `[dgx-servers]` in the inventory file corresponds with
+`config/group_vars/dgx-servers.yml`.
 
 ### 2. Management server setup
 

@@ -100,6 +100,10 @@ spec:
               value: "{{ .Values.httpPort }}"
             - name: HTTPS_PROXY
               value: "{{ .Values.httpsProxy }}"
+            - name: EXTRA_PACKAGES
+              value: "{{ .Values.extraPackages }}"
+            - name: NTP
+              value: "{{ .Values.ntp }}"
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}
