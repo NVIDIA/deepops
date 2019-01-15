@@ -51,16 +51,18 @@ install_rook() {
         helm repo add rook-master https://charts.rook.io/master
         helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph --version ${ROOK_VERSION} --set agent.flexVolumeDirPath=/var/lib/kubelet/volume-plugins/
         count=0
-        while true ; do
-            kubectl --namespace rook-ceph-system get pods -l "app=rook-ceph-operator" | grep -i running
-            [[ $? -eq 0 ]] && break
-            if [ $count -eq 30 ] ; then
-                echo "Failed to install Rook"
-                failed=1
-                break
-            fi
-            count=$((count+1))
-            sleep 1
+        for app in rook-ceph-operator rook-ceph-agent rook-discover ; do
+            while true ; do
+                kubectl --namespace rook-ceph-system get pods -l "app=${app}" | grep -i running
+                [[ $? -eq 0 ]] && break
+                if [ $count -eq 30 ] ; then
+                    echo "Failed to install Rook"
+                    failed=1
+                    break
+                fi
+                count=$((count+1))
+                sleep 1
+            done
         done
         if [ ! $failed ] ; then
             kubectl create -f services/rook-cluster.yml
