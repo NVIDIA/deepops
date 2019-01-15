@@ -1,17 +1,7 @@
 #!/usr/bin/env bash
 
-#echo "
-#
-#██████╗ ███████╗███████╗██████╗  ██████╗ ██████╗ ███████╗
-#██╔══██╗██╔════╝██╔════╝██╔══██╗██╔═══██╗██╔══██╗██╔════╝
-#██║  ██║█████╗  █████╗  ██████╔╝██║   ██║██████╔╝███████╗
-#██║  ██║██╔══╝  ██╔══╝  ██╔═══╝ ██║   ██║██╔═══╝ ╚════██║
-#██████╔╝███████╗███████╗██║     ╚██████╔╝██║     ███████║
-#╚═════╝ ╚══════╝╚══════╝╚═╝      ╚═════╝ ╚═╝     ╚══════╝
-                                                         #
-#"
-
-host_path=${DEEPOPS_HOST_ROOT_PATH:-`pwd`}
+#host_path=${DEEPOPS_HOST_ROOT_PATH:-`pwd`}
+host_path=${DEEPOPS_HOST_ROOT_PATH:-/tmp/deepops}
 container=${DEEPOPS_CONTAINER:-deepops/deploy:latest}
 
 docker="docker run --rm -ti --net=host"
@@ -24,6 +14,17 @@ kubectl() {
 
 helm() {
     ${docker} ${docker_mnt_config} ${docker_mnt_ssh} -e KUBECONFIG=/source/deepops/config/admin.conf ${container} helm --home /source/deepops/config/.helm $@
+}
+
+logo() {
+    echo "
+    ██████╗ ███████╗███████╗██████╗  ██████╗ ██████╗ ███████╗
+    ██╔══██╗██╔════╝██╔════╝██╔══██╗██╔═══██╗██╔══██╗██╔════╝
+    ██║  ██║█████╗  █████╗  ██████╔╝██║   ██║██████╔╝███████╗
+    ██║  ██║██╔══╝  ██╔══╝  ██╔═══╝ ██║   ██║██╔═══╝ ╚════██║
+    ██████╔╝███████╗███████╗██║     ╚██████╔╝██║     ███████║
+    ╚═════╝ ╚══════╝╚══════╝╚═╝      ╚═════╝ ╚═╝     ╚══════╝
+    "
 }
 
 type docker >/dev/null 2>&1
@@ -58,8 +59,11 @@ case "$1" in
     bootstrap)
         shift
 
+        mkdir -p ${host_path}
+        chmod 0700 ${host_path}
+
         # create default configuration directory if not exists
-        echo -en "Creating default configuration directory:\t`pwd`/config\t"
+        echo -en "Creating default configuration directory:\t${host_path}/config\t"
         if ! [ -d ${host_path}/config ] ; then
             mkdir -p ${host_path}/config
             ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) ${container} cp -r config.example/. config/
@@ -70,10 +74,10 @@ case "$1" in
         fi
 
         # create default ssh key directory if not exists
-        echo -en "Creating default SSH directory:\t\t\t`pwd`/ssh\t"
+        echo -en "Creating default SSH directory:\t\t\t${host_path}/ssh\t"
         if ! [ -d ${host_path}/ssh ] ; then
             mkdir -p ${host_path}/ssh
-            ssh-keygen -f ssh/deepops_rsa -P "" >/dev/null 2>&1
+            ssh-keygen -f ${host_path}/ssh/deepops_rsa -P "" >/dev/null 2>&1
             echo "[created]"
         else
             echo "[exists, not creating]"
@@ -95,8 +99,8 @@ case "$1" in
                 echo "ERROR: SSH (${ssh_key}) does not exist"
                 exit 1
             fi
-            cp ${ssh_key} ssh/bootstrap_rsa
-            echo -e "Coppied SSH key to:\t\t`pwd`/ssh/bootstrap_rsa"
+            cp ${ssh_key} ${host_path}/ssh/bootstrap_rsa
+            echo -e "Coppied SSH key to:\t\t${host_path}/ssh/bootstrap_rsa"
             ssh_key="--ssh-key /root/.ssh/bootstrap_rsa"
         fi
 
@@ -125,9 +129,9 @@ case "$1" in
         esac
         
         # remove copied ssh private key
-        if [ -f ssh/bootstrap_rsa ] ; then
-            rm -f ssh/bootstrap_rsa
-            echo -e "Removed SSH key:\t\t`pwd`/ssh/bootstrap_rsa"
+        if [ -f ${host_path}/ssh/bootstrap_rsa ] ; then
+            rm -f ${host_path}/ssh/bootstrap_rsa
+            echo -e "Removed SSH key:\t\t${host_path}/ssh/bootstrap_rsa"
         fi
         ;;
     k8s|kube|kubernetes)
@@ -153,7 +157,7 @@ case "$1" in
         ;;
     helm)
         shift
-        if ! [ -d config/.helm ] ; then
+        if ! [ -d ${host_path}/config/.helm ] ; then
             ${docker} -u $(id -u):$(id -g) ${docker_mnt_config} ${docker_mnt_ssh} -e KUBECONFIG=/source/deepops/config/admin.conf ${container} helm --home /source/deepops/config/.helm init --client-only
         fi
         helm $@
@@ -168,6 +172,7 @@ case "$1" in
         kubectl create -f services/rook-cluster.yml
         ;;
     *)
+        logo
         echo "Usage: $0 bootstrap [OPTIONS]"
         echo
         ${docker} ${container} setup_deepops_user --help | tail -n+3 | grep -v ssh

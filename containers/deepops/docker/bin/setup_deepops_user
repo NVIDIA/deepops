@@ -26,7 +26,8 @@ def ansible_path(path=None):
 @click.option("--ssh-key", type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True))
 @click.option("--progress-uri")
 @click.option("--output-dir")
-def main(*, password, progress_uri, output_dir, **config):
+@click.option("--verbose", is_flag=True)
+def main(*, password, progress_uri, output_dir, verbose, **config):
     #if config.get("hostname") is None and config.get("ip") is None:
         #click.echo("Please provide either a --hostname or an --ip")
     config["hostname"] = config.get("hostname", "node")
@@ -41,6 +42,8 @@ def main(*, password, progress_uri, output_dir, **config):
         password = "-k -K"
     else:
         password = ""
+    if verbose:
+        verbose = "-vvv"
     if config.get("ssh_key"):
         tmp_key = "/tmp/cli-ssh-key"
         shutil.copyfile(config.get("ssh_key"), tmp_key)
@@ -81,8 +84,8 @@ def main(*, password, progress_uri, output_dir, **config):
                 stdout=sys.stdout, stderr=sys.stderr
             )
             subprocess.check_call(
-                shlex.split("ansible-playbook {password} -i {output}/inventory {ansible}/playbooks/bootstrap.yml".format(
-                    ansible=ansible_path(), output=output_dir, password=password
+                shlex.split("ansible-playbook {verbose} {password} -i {output}/inventory {ansible}/playbooks/bootstrap.yml".format(
+                    ansible=ansible_path(), output=output_dir, password=password, verbose=verbose
                 )),
                 stdout=sys.stdout, stderr=sys.stderr
             )
