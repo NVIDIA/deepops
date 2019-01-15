@@ -50,10 +50,24 @@ install_rook() {
     if [ $? -ne 0 ] ; then
         helm repo add rook-master https://charts.rook.io/master
         helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph --version ${ROOK_VERSION} --set agent.flexVolumeDirPath=/var/lib/kubelet/volume-plugins/
-        kubectl create -f services/rook-cluster.yml
-        if [ $? -ne 0 ] ; then
-            echo "Failed to install Rook"
-            failed=1
+        count=0
+        while true ; do
+            kubectl --namespace rook-ceph-system get pods -l "app=rook-ceph-operator" | grep -i running
+            [[ $? -eq 0 ]] && break
+            if [ $count -eq 30 ] ; then
+                echo "Failed to install Rook"
+                failed=1
+                break
+            fi
+            count=$((count+1))
+            sleep 1
+        done
+        if [ ! $failed ] ; then
+            kubectl create -f services/rook-cluster.yml
+            if [ $? -ne 0 ] ; then
+                echo "Failed to install Rook"
+                failed=1
+            fi
         fi
     fi
 }
@@ -178,13 +192,11 @@ case "$1" in
         
         # install k8s
         if [ ! $failed ] ; then
-            echo "Installing Kubernetes"
             install_k8s
         fi
 
         # install rook
         if [ ! $failed ] ; then
-            echo "Installing Rook"
             install_rook
         fi
 
@@ -221,7 +233,7 @@ case "$1" in
         echo -e "  SSH_KEY=/path/to/ssh/key\tUse alternate SSH key (default: ~/.ssh/id_rsa) instead of password"
         echo
         echo "Notes:"
-        echo -e "  You can pass the '--ip' flag multiple times for multiple management servers"
-        echo -e "  Omit the '--password' flag to use an SSH key"
+        echo -e "  You can pass the '--ip' flag multiple times for multiple servers"
+        echo -e "  Use the '--password' flag to use passwords instead of an SSH key"
         ;;
 esac
