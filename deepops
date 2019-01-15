@@ -137,13 +137,14 @@ case "$1" in
     k8s|kube|kubernetes)
         ${docker} ${docker_mnt_config} ${docker_mnt_ssh} ${container} ansible-playbook -b -i config/kube-mgmt-hosts.ini --extra-vars "@config/kube.yml" kubespray/cluster.yml
         ${docker} ${docker_mnt_config} ${docker_mnt_ssh} ${container} ansible -i config/kube-mgmt-hosts.ini all -b -m fetch -a "src=/etc/kubernetes/admin.conf flat=yes dest=./config/"
-        if [ -f ./kubectl ] ; then
-            curl -sLO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-            chmod +x ./kubectl
-        fi
-        mv ~/.kube/config{,.bak} && KUBECONFIG=./config/admin.conf:~/.kube/config.bak ./kubectl config view --flatten | tee ~/.kube/config >/dev/null
+        #if [ -f ./kubectl ] ; then
+            #curl -sLO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+            #chmod +x ./kubectl
+        #fi
+        #mv ~/.kube/config{,.bak} && KUBECONFIG=./config/admin.conf:~/.kube/config.bak ./kubectl config view --flatten | tee ~/.kube/config >/dev/null
         echo
-        ./kubectl get nodes
+        #./kubectl get nodes
+        kubectl get nodes
         ;;
     slurm)
         ${docker} ${docker_mnt_config} ${docker_mnt_ssh} ${container} ansible-playbook -k -K ansible/playbooks/slurm.yml
