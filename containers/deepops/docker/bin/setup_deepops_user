@@ -44,6 +44,8 @@ def main(*, password, progress_uri, output_dir, verbose, **config):
         password = ""
     if verbose:
         verbose = "-vvv"
+    else:
+        verbose = ""
     if config.get("ssh_key"):
         tmp_key = "/tmp/cli-ssh-key"
         shutil.copyfile(config.get("ssh_key"), tmp_key)

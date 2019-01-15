@@ -1,6 +1,7 @@
 kube_api_anonymous_auth: true
 helm_enabled: true
 tiller_node_selectors: "node-role.kubernetes.io/master=''"
+docker_dns_servers_strict: no
 
 kube_apiserver_admission_control:
   - Initializers
