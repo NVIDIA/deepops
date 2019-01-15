@@ -24,6 +24,8 @@ WORKDIR /source
 RUN git clone --recursive https://github.com/NVIDIA/deepops.git && \
     cd deepops && \
     git checkout ${DEEPOPS_VERSION} && \
+    git submodule update && \
+    pip install --user -r kubespray/requirements.txt && \
     ansible-galaxy install -r requirements.yml
 
 WORKDIR /workspace
