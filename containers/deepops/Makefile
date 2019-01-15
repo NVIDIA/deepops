@@ -1,7 +1,7 @@
 BASE_IMAGE ?= python:3.6-slim
 IMAGE_NAME ?= deepops_deploy
 RELEASE_IMAGE ?= deepops/deploy
-RELEASE_VERSION = '0.1.0'
+RELEASE_VERSION = '0.1.1'
 DEEPOPS_VERSION ?= pkg #dev
 #HELM_VERSION ?= 2.10.0
 HELM_VERSION ?= 2.9.1

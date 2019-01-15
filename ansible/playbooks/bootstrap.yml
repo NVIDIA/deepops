@@ -25,9 +25,9 @@
 # create deepops user
 - hosts: all
   become: yes
-  pre_tasks:
-    - hostname:
-        name: "{{ inventory_hostname }}"
+  #pre_tasks:
+  #  - hostname:
+  #      name: "{{ inventory_hostname }}"
   roles:
     - ssh
   tasks:

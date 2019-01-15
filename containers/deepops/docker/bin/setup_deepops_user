@@ -32,12 +32,12 @@ def main(*, password, progress_uri, output_dir, verbose, **config):
         #click.echo("Please provide either a --hostname or an --ip")
     config["hostname"] = config.get("hostname", "node")
     if config.get("ip"):
-        mgmt={}
+        node={}
         i=1
         for host in list(config["ip"]):
-            mgmt["mgmt{i}".format(i=i)] = host
+            node["node{i}".format(i=i)] = host
             i=i+1
-        config["ip"] = mgmt
+        config["ip"] = node
     if password:
         password = "-k -K"
     else:
