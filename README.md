@@ -288,19 +288,7 @@ kubectl create -f services/rook-cluster.yml
 > Note: It will take a few minutes for containers to be pulled and started.
 > Wait for Rook to be fully installed before proceeding
 
-You can check Ceph status with:
-
-```sh
-kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status
-```
-<!--
-Once the Ceph filesystem is up, it is safe to continue, i.e:
-
-```sh
-$ kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status | grep mds
-    mds: cephfs-1/1/1 up  {0=cephfs-54949bc7c4-8jv4t=up:active}, 1 up:standby-replay
-```
--->
+You can poll the Ceph status by running `scripts/ceph_poll.sh`:
 
 ### 3. Services
 
