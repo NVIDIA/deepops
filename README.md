@@ -632,24 +632,6 @@ ansible-playbook -k -l all ansible/playbooks/hosts.yml
 ```
 -->
 
-__Updating Firmware:__
-
-Firmware on the DGX can be updated through the firmware update container(s) and Ansible.
-
-1. Download the firmware update container package from the NVIDIA Enterprise Support Portal.
-Updates are published as announcements on the support portal (example: https://goo.gl/3zimCk).
-Make sure you download the correct package depending on the GPU in the DGX-1:
-   - For V100 (Volta), download the '0102' package - for example: https://dgxdownloads.nvidia.com/custhelp/dgx1/NVIDIA_Containers/nvidia-dgx-fw-0102-20180424.tar.gz
-   - For P100 (Pascal), download the '0101' package - for example: https://dgxdownloads.nvidia.com/custhelp/dgx1/NVIDIA_Containers/nvidia-dgx-fw-0101-20180424.tar.gz
-2. Once you've download the `.tar.gz` file, copy or move it inside `containers/dgx-firmware`
-3. Edit the value of `firmware_update_container` in the file `ansible/roles/nvidia-dgx-firmware/vars/main.yml` to match
-the name of the downloaded firmware container.
-4. Run the Ansible playbook to update DGX firmware:
-
-```sh
-ansible-playbook -k -l dgx-servers ansible/playbooks/firmware.yml
-```
-
 __Adding DGX to Kubernetes:__
 
 Create the NVIDIA GPU k8s device plugin daemon set (just need to do this once):
@@ -791,6 +773,24 @@ sudo scontrol update node=dgx01 state=idle
 ## Cluster Usage
 
 ### Maintenance
+
+__Updating Firmware:__
+
+Firmware on the DGX can be updated through the firmware update container(s) and Ansible.
+
+1. Download the firmware update container package from the NVIDIA Enterprise Support Portal.
+Updates are published as announcements on the support portal (example: https://goo.gl/3zimCk).
+Make sure you download the correct package depending on the GPU in the DGX-1:
+   - For V100 (Volta), download the '0102' package - for example: https://dgxdownloads.nvidia.com/custhelp/dgx1/NVIDIA_Containers/nvidia-dgx-fw-0102-20180424.tar.gz
+   - For P100 (Pascal), download the '0101' package - for example: https://dgxdownloads.nvidia.com/custhelp/dgx1/NVIDIA_Containers/nvidia-dgx-fw-0101-20180424.tar.gz
+2. Once you've download the `.tar.gz` file, copy or move it inside `containers/dgx-firmware`
+3. Edit the value of `firmware_update_container` in the file `ansible/roles/nvidia-dgx-firmware/vars/main.yml` to match
+the name of the downloaded firmware container.
+4. Run the Ansible playbook to update DGX firmware:
+
+```sh
+ansible-playbook -k -l dgx-servers ansible/playbooks/firmware.yml
+```
 
 #### Login server
 
