@@ -421,7 +421,7 @@ helm repo add stable https://kubernetes-charts.storage.googleapis.com
 helm install --values config/registry.yml stable/docker-registry --version 1.4.3
 ```
 
-Once you have [provisioned DGX servers](#4.-DGX-compute-nodes),
+Once you have [provisioned DGX servers](#4-DGX-compute-nodes),
 configure them to allow access to the local (insecure) container registry:
 
 ```sh
