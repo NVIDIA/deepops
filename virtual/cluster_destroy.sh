@@ -1,3 +1,4 @@
 #!/bin/bash
+set -ex
 
-vagrant destroy -f
+sudo vagrant destroy -f

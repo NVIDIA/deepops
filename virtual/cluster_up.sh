@@ -1,8 +1,8 @@
 #!/bin/bash
-set -x
+set -ex
 
 # start vagrant
-vagrant up --no-parallel --provider=libvirt
+sudo vagrant up --no-parallel --provider=libvirt
 
 cd ..
 
