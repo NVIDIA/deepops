@@ -19,7 +19,7 @@ fi
 sudo apt install -y python-netaddr
 
 # install kvm packages
-sudo apt install -y qemu-kvm libvirt-bin bridge-utils libguestfs-tools
+sudo apt install -y qemu-kvm libvirt-bin libvirt-dev bridge-utils libguestfs-tools
 sudo apt install -y qemu ovmf virt-manager firewalld
 
 # install vagrant plugins
