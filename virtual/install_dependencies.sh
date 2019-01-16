@@ -6,7 +6,7 @@ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
 sudo apt update
 sudo apt install -y ansible
 sudo apt install -y vagrant
-sudo pip install netaddr
+sudo apt install -y python-netaddr
 
 # install kvm packages
 sudo apt install -y qemu-kvm libvirt-bin bridge-utils libguestfs-tools
