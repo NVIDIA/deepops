@@ -527,6 +527,10 @@ Launch Filebeat, which will create an Elasticsearch index automatically:
 helm install --name log --namespace logging --values config/filebeat.yml stable/filebeat
 ```
 
+Service addresses:
+
+* Kibana: http://mgmt:30700
+
 The logging stack can be deleted with:
 
 ```sh
