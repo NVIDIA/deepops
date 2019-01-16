@@ -22,10 +22,10 @@ dgxKbd: us
 dgxKernExtra: ''
 
 # Network interface of public network on management servers
-mgmtIntPub: eth0
+mgmtIntPub: eth0i # TODO: Change this.
 
 # Network interface of private network where DGX are connected on management servers
-mgmtIntPrv: eth1
+mgmtIntPrv: eth1 # TODO: Change this.
 
 # Network domain
 netDomain: local
