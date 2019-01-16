@@ -68,18 +68,12 @@ For more information on deploying DGX in the datacenter, consult the
 
 ### Software Requirements
 
-The administrator's provisioning system should have the following installed (example steps below depend on your system):
-
-* [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) 2.5 or later
-* [Docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) (to build containers)
-* git (`sudo apt install -y git`)
-* ipmitool (`sudo apt install -y ipmitool`)
-* python-netaddr (for kubespray `sudo apt install -y python-netaddr python3-netaddr`)
-
 The management server(s) should be pre-installed with Ubuntu 16.04 LTS before
 starting the installation steps. If you already have a bare-metal provisioning system,
 it can be used to install Ubuntu on the management server(s). Integrating the DGX Base OS
 with other bare-metal provisioning systems is outside the scope of this project.
+
+We will be installing a few software package on the administrator's provisioning system at the begining of the configuration step.
 
 ### Network Requirements
 
@@ -112,27 +106,48 @@ segment and subnet which can be controlled by the DHCP server.
 
 ### 1. Download and configure
 
-Download the DeepOps repo onto the provisioning system and copy the example configuration
-files so that you can make local changes:
+To use DeepOps we will need to download the repository onto the administrator's provisioning system and install the following software packages:
+
+* Ansible
+* Docker
+* Git
+* ipmitool
+* python-netaddr (required by kubespray)
+
+Start by downloading the DeepOps repo onto the provisioning system:
 
 ```sh
 git clone --recursive https://github.com/NVIDIA/deepops.git
 cd deepops
-cp -r config.example/ config/
-ansible-galaxy install -r requirements.yml
 ```
 
 > Note: In Git 2.16.2 or later, use `--recurse-submodules` instead of `--recursive`.
 > If you did a non-recursive clone, you can later run `git submodule update --init --recursive`
 > to pull down submodules
 
-The `config/` directory is ignored by the deepops git repo. Create a seperate git repo to track local configuration changes.
+Install Ansible (if the below script fails follow the official [Ansible installation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) steps to install version 2.5 or later):
 
 ```sh
+scripts/install_ansible.sh
+```
+
+Install other dependencies (the example commands below may be different depending on your system):
+
+```sh
+sudo apt install -y ipmitool
+sudo apt install -y python-netaddr python3-netaddr
+
+ansible-galaxy install -r requirements.yml
+```
+
+Now we will copy and version control the configuration files. The `config/` directory is ignored by the deepops git repo. Create a seperate git repo to track local configuration changes.
+
+```sh
+cp -r config.example/ config/
 cd config/
 git init .
 git add .
-git commit -am 'initial commit'
+git commit -am 'initial commit' && cd ..
 ```
 
 Modify the `config/inventory` file to set the cluster server hostnames, and optional
