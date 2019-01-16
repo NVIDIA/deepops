@@ -126,8 +126,7 @@ ansible-galaxy install -r requirements.yml
 > If you did a non-recursive clone, you can later run `git submodule update --init --recursive`
 > to pull down submodules
 
-The `config/` directory is ignored by git, so a new git repository can be created in this
-directory to track local changes:
+The `config/` directory is ignored by the deepops git repo. Create a seperate git repo to track local configuration changes.
 
 ```sh
 cd config/
