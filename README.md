@@ -243,6 +243,7 @@ If you have an existing Kubernetes configuration file, you can merge the two wit
 
 ```sh
 mkdir -p ~/.kube && mv ~/.kube/config{,.bak} && KUBECONFIG=./admin.conf:~/.kube/config.bak kubectl config view --flatten | tee ~/.kube/config
+if [ "$?" != "0" ]; then cp admin.conf ~/.kube/config; fi
 ```
 
 Test you can access the kubernetes cluster:
