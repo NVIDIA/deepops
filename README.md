@@ -405,6 +405,8 @@ If you make changes to `machines.json`, you can update the file without having t
 kubectl create configmap pxe-machines --from-file=config/machines.json -o yaml --dry-run | kubectl replace -f -
 ```
 
+At this point, if you have not already provisioned your DGX servers you should skip ahead and [provision your DGX servers](#4-DGX-compute-nodes) before continuing.
+
 #### __APT Repo:__
 
 Launch service. Runs on port `30000`: http://mgmt:30000
@@ -422,8 +424,7 @@ helm repo add stable https://kubernetes-charts.storage.googleapis.com
 helm install --values config/registry.yml stable/docker-registry --version 1.4.3
 ```
 
-Once you have [provisioned DGX servers](#4-DGX-compute-nodes),
-configure them to allow access to the local (insecure) container registry:
+Now we will configure the DGX servers to allow access to the local (insecure) container registry:
 
 ```sh
 ansible-playbook -k ansible/playbooks/docker.yml
@@ -690,6 +691,8 @@ kubectl apply -f tests/gpu-test-job.yml
 kubectl exec -ti gpu-pod -- nvidia-smi -L
 kubectl delete pod gpu-pod
 ```
+
+If you came to this step after deploying your DGXie service you can continue by returning to [services bootstrap section](#apt-repo).
 
 ### 5. Login server:
 
