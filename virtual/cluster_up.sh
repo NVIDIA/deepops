@@ -2,7 +2,7 @@
 set -ex
 
 # start vagrant
-sudo vagrant up --no-parallel --provider=libvirt
+vagrant up --no-parallel --provider=libvirt
 
 cd ..
 
