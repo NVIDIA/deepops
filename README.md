@@ -242,7 +242,7 @@ Otherwise, you may use the `kubectl` flag `--kubeconfig=./admin.conf` instead of
 If you have an existing Kubernetes configuration file, you can merge the two with:
 
 ```sh
-mv ~/.kube/config{,.bak} && KUBECONFIG=./admin.conf:~/.kube/config.bak kubectl config view --flatten | tee ~/.kube/config
+mkdir -p ~/.kube && mv ~/.kube/config{,.bak} && KUBECONFIG=./admin.conf:~/.kube/config.bak kubectl config view --flatten | tee ~/.kube/config
 ```
 
 Test you can access the kubernetes cluster:
