@@ -407,6 +407,8 @@ kubectl create configmap pxe-machines --from-file=config/machines.json -o yaml -
 
 At this point, if you have not already provisioned your DGX servers you should skip ahead and [provision your DGX servers](#4-DGX-compute-nodes) before continuing.
 
+Optionally, after provisioning your DGX servers you can delete the iso-loader deployment by running  `kubectl delete deployments iso-loader`.
+
 #### __APT Repo:__
 
 Launch service. Runs on port `30000`: http://mgmt:30000
