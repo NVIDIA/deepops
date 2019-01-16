@@ -135,7 +135,7 @@ git add .
 git commit -am 'initial commit'
 ```
 
-Use the `config/inventory` file to set the cluster server hostnames, and optional
+Modify the `config/inventory` file to set the cluster server hostnames, and optional
 per-host info like IP addresses and network interfaces. The cluster should
 ideally use DNS, but you can also explicitly set server IP addresses in the
 inventory file.
