@@ -647,13 +647,6 @@ Create the NVIDIA GPU k8s device plugin daemon set (just need to do this once):
 kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
 ```
 
-If the DGX is a member of the Slurm cluster, be sure to drain node in Slurm so that it does
-not accept Slurm jobs. From the login node, run:
-
-```sh
-sudo scontrol update node=dgx01 state=drain reason=k8s
-```
-
 Modify the `config/inventory` file to add the DGX to the `kube-node` and `k8s-gpu` categories by uncommenting
 the `dgx-servers` entry in these sections
 
@@ -780,6 +773,14 @@ DGX nodes may appear 'down' in Slurm after install due to rebooting. Set nodes t
 ```sh
 sudo scontrol update node=dgx01 state=idle
 ```
+
+If you are running both Slurm and kubernetes on the same DGX, you may want to reserve the system for kubernetes use only. You can do this with the following command:
+
+```sh
+sudo scontrol update node=dgx01 state=drain reason=k8s
+```
+
+It is also possible to remove the DGX from kubernetes and reserve the resources only for Slurm or to run a mixed hybrid mode.
 
 ## Cluster Usage
 
