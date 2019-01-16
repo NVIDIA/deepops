@@ -682,6 +682,8 @@ ansible dgx-servers -k -b -a "apt-mark hold docker-ce"
 
 Install the nvidia-container-runtime on the DGX:
 
+> Note the the nvidia-container-runtime is already installed on DGX with OS version 4.04 or later and this step can be ignored.
+
 ```sh
 ansible-playbook -l k8s-gpu -k -v -b --flush-cache --extra-vars "@config/kube.yml" playbooks/k8s-gpu.yml
 ```
