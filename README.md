@@ -117,6 +117,7 @@ files so that you can make local changes:
 
 ```sh
 git clone --recursive https://github.com/NVIDIA/deepops.git
+cd deepops
 cp -r config.example/ config/
 ansible-galaxy install -r requirements.yml
 ```
