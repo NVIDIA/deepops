@@ -74,7 +74,7 @@ The administrator's provisioning system should have the following installed (exa
 * [Docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) (to build containers)
 * git (`sudo apt install -y git`)
 * ipmitool (`sudo apt install -y ipmitool`)
-* python-netaddr (for kubespray `sudo apt install -y python3-netaddr`)
+* python-netaddr (for kubespray `sudo apt install -y python-netaddr python3-netaddr`)
 
 The management server(s) should be pre-installed with Ubuntu 16.04 LTS before
 starting the installation steps. If you already have a bare-metal provisioning system,
