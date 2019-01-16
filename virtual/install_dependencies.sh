@@ -17,6 +17,7 @@ else
 fi
 
 sudo apt install -y python-netaddr
+sudo apt install -y sshpass
 
 # install kvm packages
 sudo apt install -y qemu-kvm libvirt-bin libvirt-dev bridge-utils libguestfs-tools
