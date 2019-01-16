@@ -405,9 +405,9 @@ If you make changes to `machines.json`, you can update the file without having t
 kubectl create configmap pxe-machines --from-file=config/machines.json -o yaml --dry-run | kubectl replace -f -
 ```
 
-At this point, if you have not already provisioned your DGX servers you should skip ahead and [provision your DGX servers](#4-DGX-compute-nodes) before continuing.
+At this point, if you have not already provisioned your DGX servers or added it to your kubernetes cluster you should [skip ahead](#4-DGX-compute-nodes) before continuing.
 
-Optionally, after provisioning your DGX servers you can delete the iso-loader deployment by running  `kubectl delete deployments iso-loader`.
+Optionally, after provisioning your DGX servers you can delete the iso-loader deployment by running `kubectl delete deployments iso-loader`.
 
 #### __APT Repo:__
 
