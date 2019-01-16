@@ -2,6 +2,7 @@
 
 # Default user account on all systems
 #  you can define per-group values in the other configuration files
+# TODO: Modify user and ansible_user to be the username currently configured for your management servers
 user: ubuntu
 ansible_user: ubuntu
 
