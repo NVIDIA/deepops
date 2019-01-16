@@ -58,7 +58,7 @@ For more information on deploying DGX in the datacenter, consult the
 
 * 1 or more CPU-only servers for management
   * 3 or more servers can be used for high-availability
-  * Minimum: 4 CPU cores, 16GB RAM, 100GB hard disk
+  * Minimum: 8 CPU cores, 16GB RAM, 100GB hard disk
     * More storage required if storing containers in registry, etc.
     * More RAM required if running more services on kubernetes or using one/few servers
   * Ubuntu 16.04 LTS installed
