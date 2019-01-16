@@ -68,13 +68,13 @@ For more information on deploying DGX in the datacenter, consult the
 
 ### Software Requirements
 
-The administrator's provisioning system should have the following installed:
+The administrator's provisioning system should have the following installed (example steps below depend on your system):
 
-* Ansible 2.5 or later
-* git
-* docker (to build containers)
-* ipmitool
-* python-netaddr (for kubespray)
+* [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) 2.5 or later
+* [Docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) (to build containers)
+* git (`sudo apt install -y git`)
+* ipmitool (`sudo apt install -y ipmitool`)
+* python-netaddr (for kubespray `sudo apt install -y python3-netaddr`)
 
 The management server(s) should be pre-installed with Ubuntu 16.04 LTS before
 starting the installation steps. If you already have a bare-metal provisioning system,
