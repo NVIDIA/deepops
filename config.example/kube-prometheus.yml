@@ -12,7 +12,7 @@ prometheus:
     - hosts:
       -  prometheus.local
   nodeSelector:
-    node-role.kubernetes.io/master: "true"
+    node-role.kubernetes.io/master: ""
   service:
     type: NodePort
     nodePort: 30500
@@ -43,7 +43,7 @@ alertmanager:
     - hosts:
       -  alertmanager.local
   nodeSelector:
-    node-role.kubernetes.io/master: "true"
+    node-role.kubernetes.io/master: ""
   service:
     type: NodePort
     nodePort: 30400
@@ -62,7 +62,7 @@ grafana:
     - hosts:
       -  grafana.local
   nodeSelector:
-    node-role.kubernetes.io/master: "true"
+    node-role.kubernetes.io/master: ""
   service:
     type: NodePort
     nodePort: 30200

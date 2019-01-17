@@ -95,6 +95,39 @@ install_rook() {
     fi
 }
 
+install_ingress() {
+    helm install --values config/ingress.yml stable/nginx-ingress
+}
+
+install_apt_repo() {
+    kubectl apply -f services/apt.yml
+}
+
+install_registry() {
+    helm repo add stable https://kubernetes-charts.storage.googleapis.com
+    helm install --values config/registry.yml stable/docker-registry --version 1.4.3
+}
+
+install_monitoring() {
+    helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+    #helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/prometheus-operator.yml
+    # removed master node selector
+    helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring
+    kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dashboard.json -n monitoring
+    helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/kube-prometheus.yml
+    #kubectl label nodes <gpu-node-name> hardware-type=NVIDIAGPU
+    #kubectl create -f services/dcgm-exporter.yml
+}
+
+install_logging() {
+    ansible-playbook -k ansible/playbooks/osquery.yml
+    helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+    helm install --name elk --namespace logging --values config/elk.yml incubator/elastic-stack
+    echo "Waiting for ELK to initiate..."
+    sleep 60
+    helm install --name log --namespace logging --values config/filebeat.yml stable/filebeat
+}
+
 logo() {
     echo "
     ██████╗ ███████╗███████╗██████╗  ██████╗ ██████╗ ███████╗
@@ -246,6 +279,9 @@ case "$1" in
     kubectl)
         shift
         kubectl $@
+        ;;
+    monitoring)
+        install_monitoring
         ;;
     *)
         logo
