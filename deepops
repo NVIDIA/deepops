@@ -110,9 +110,7 @@ install_registry() {
 
 install_monitoring() {
     helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
-    #helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/prometheus-operator.yml
-    # removed master node selector
-    helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring
+    helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/prometheus-operator.yml
     kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dashboard.json -n monitoring
     helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/kube-prometheus.yml
     #kubectl label nodes <gpu-node-name> hardware-type=NVIDIAGPU
@@ -256,6 +254,11 @@ case "$1" in
             install_rook
         fi
 
+        # install monitoring
+        if [ ! $failed ] ; then
+            install_monitoring
+        fi
+
         # remove copied ssh private key
         if [ -f ${host_path}/ssh/bootstrap_rsa ] ; then
             rm -f ${host_path}/ssh/bootstrap_rsa
@@ -279,9 +282,6 @@ case "$1" in
     kubectl)
         shift
         kubectl $@
-        ;;
-    monitoring)
-        install_monitoring
         ;;
     *)
         logo
