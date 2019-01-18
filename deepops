@@ -74,16 +74,17 @@ install_rook() {
         if [ ! $failed ] ; then
             echo
             echo "Waiting for Rook cluster to be ready..."
-            ceph_tools=`echo $(kubectl -n rook-ceph get pod -l app=rook-ceph-tools -o name) | cut -d \/ -f2`
+            ceph_tools=`echo $(kubectl -n rook-ceph get pod -l app=rook-ceph-tools -o name) | cut -d \/ -f2 | sed -e 's/\\r$//g'`
             if [ "x${ceph_tools}" == "x" ] ; then
                 failed=1
             else
                 count=0
                 while true ; do
-                    kubectl -n rook-ceph ${ceph_tools} ceph status | grep "up:active" >/dev/null
+                    kubectl -n rook-ceph exec -ti ${ceph_tools} ceph status | grep "up:active" >/dev/null
                     [[ $? -eq 0 ]] && break
-                    if [ $count -eq 240 ] ; then
+                    if [ $count -eq 300 ] ; then
                         echo "Failed to install Rook"
+                        kubectl -n rook-ceph exec -ti ${ceph_tools} ceph status
                         failed=1
                         break
                     fi
