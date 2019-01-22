@@ -179,7 +179,7 @@ case "$1" in
             mkdir -p ${host_path}/config
             ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) ${container} cp -r config.example/. config/
             ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) ${container} cp -r kubespray/inventory/sample/group_vars/. config/group_vars/
-            ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) ${container} /bin/bash -c "cat config/group_vars/all.yml >> config/group_vars/all/all.yml && rm -f config/group_vars/all.yml"
+            ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) ${container} /bin/bash -c "cat config/installer.yml >> config/group_vars/all/all.yml && rm -f config/group_vars/all.yml"
             ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) ${container} cp -r kubespray/inventory/sample/hosts.ini config/kube-mgmt-hosts.ini
             echo "[created]"
         else
