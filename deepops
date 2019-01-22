@@ -1,0 +1,299 @@
+#!/usr/bin/env bash
+
+ROOK_VERSION=v0.9.0-66.g80b2451
+
+#host_path=${DEEPOPS_HOST_ROOT_PATH:-`pwd`}
+host_path=${DEEPOPS_HOST_ROOT_PATH:-/tmp/deepops}
+container=${DEEPOPS_CONTAINER:-deepops/deploy:latest}
+
+docker="docker run --rm -ti --net=host"
+docker_mnt_config="-v ${host_path}/config:/source/deepops/config"
+docker_mnt_ssh="-v ${host_path}/ssh:/root/.ssh"
+
+failed=
+
+## Container wrappers
+run_root() {
+    ${docker} ${docker_mnt_config} ${docker_mnt_ssh} -e KUBECONFIG=/source/deepops/config/admin.conf ${container} "$@"
+}
+
+run_user() {
+    ${docker} -u $(id -u):$(id -g) ${docker_mnt_config} ${docker_mnt_ssh} -e KUBECONFIG=/source/deepops/config/admin.conf ${container} "$@"
+}
+
+## Binary overrides
+kubectl() {
+    run_user kubectl $@
+}
+
+helm() {
+    if ! [ -d ${host_path}/config/.helm ] ; then
+        run_user helm --home /source/deepops/config/.helm init --client-only
+    fi
+    run_root helm --home /source/deepops/config/.helm $@
+}
+
+## Install functions
+install_k8s() {
+    run_root ansible-playbook -b -i config/kube-mgmt-hosts.ini --extra-vars "@config/kube.yml" kubespray/cluster.yml
+    if [ $? -ne 0 ] ; then
+        echo "Failed to install Kubernetes"
+        failed=1
+    fi
+    run_root ansible all -i config/kube-mgmt-hosts.ini -b -m fetch -a "src=/etc/kubernetes/admin.conf flat=yes dest=./config/"
+    echo
+    kubectl get nodes
+}
+
+install_rook() {
+    helm ls --all rook-ceph | grep DEPLOYED
+    if [ $? -ne 0 ] ; then
+        helm repo add rook-master https://charts.rook.io/master
+        helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph --version ${ROOK_VERSION} --set agent.flexVolumeDirPath=/var/lib/kubelet/volume-plugins/
+        count=0
+        for app in rook-ceph-operator rook-ceph-agent rook-discover ; do
+            while true ; do
+                kubectl -n rook-ceph-system get pods -l "app=${app}" | grep -i running
+                [[ $? -eq 0 ]] && break
+                if [ $count -eq 30 ] ; then
+                    echo "Failed to install Rook"
+                    failed=1
+                    break
+                fi
+                count=$((count+1))
+                sleep 1
+            done
+        done
+        if [ ! $failed ] ; then
+            kubectl create -f services/rook-cluster.yml
+            if [ $? -ne 0 ] ; then
+                echo "Failed to install Rook"
+                failed=1
+            fi
+        fi
+        if [ ! $failed ] ; then
+            echo
+            echo "Waiting for Rook cluster to be ready..."
+            ceph_tools=`echo $(kubectl -n rook-ceph get pod -l app=rook-ceph-tools -o name) | cut -d \/ -f2 | sed -e 's/\\r$//g'`
+            if [ "x${ceph_tools}" == "x" ] ; then
+                failed=1
+            else
+                count=0
+                while true ; do
+                    kubectl -n rook-ceph exec -ti ${ceph_tools} ceph status | grep "up:active" >/dev/null
+                    [[ $? -eq 0 ]] && break
+                    if [ $count -eq 300 ] ; then
+                        echo "Failed to install Rook"
+                        kubectl -n rook-ceph exec -ti ${ceph_tools} ceph status
+                        failed=1
+                        break
+                    fi
+                    count=$((count+1))
+                    sleep 1
+                done
+            fi
+        fi
+    fi
+}
+
+install_ingress() {
+    helm install --values config/ingress.yml stable/nginx-ingress
+}
+
+install_apt_repo() {
+    kubectl apply -f services/apt.yml
+}
+
+install_registry() {
+    helm repo add stable https://kubernetes-charts.storage.googleapis.com
+    helm install --values config/registry.yml stable/docker-registry --version 1.4.3
+}
+
+install_monitoring() {
+    helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+    helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/prometheus-operator.yml
+    kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dashboard.json -n monitoring
+    helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/kube-prometheus.yml
+    #kubectl label nodes <gpu-node-name> hardware-type=NVIDIAGPU
+    #kubectl create -f services/dcgm-exporter.yml
+}
+
+install_logging() {
+    ansible-playbook -k ansible/playbooks/osquery.yml
+    helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+    helm install --name elk --namespace logging --values config/elk.yml incubator/elastic-stack
+    echo "Waiting for ELK to initiate..."
+    sleep 60
+    helm install --name log --namespace logging --values config/filebeat.yml stable/filebeat
+}
+
+logo() {
+    echo "
+    ██████╗ ███████╗███████╗██████╗  ██████╗ ██████╗ ███████╗
+    ██╔══██╗██╔════╝██╔════╝██╔══██╗██╔═══██╗██╔══██╗██╔════╝
+    ██║  ██║█████╗  █████╗  ██████╔╝██║   ██║██████╔╝███████╗
+    ██║  ██║██╔══╝  ██╔══╝  ██╔═══╝ ██║   ██║██╔═══╝ ╚════██║
+    ██████╔╝███████╗███████╗██║     ╚██████╔╝██║     ███████║
+    ╚═════╝ ╚══════╝╚══════╝╚═╝      ╚═════╝ ╚═╝     ╚══════╝
+    "
+}
+
+type docker >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+    echo
+    echo "ERROR: Docker is required"
+    echo
+    echo -n "Install Docker? [Y/n] "
+    read install_docker
+    case "${install_docker}" in
+        Y|y|yes|"")
+            echo
+            echo "Installing Docker in 5 sec..."
+            echo "Be sure to add your user to the Docker group after the install is finished and run the $0 command again"
+            sleep 5
+            get_docker=$(mktemp)
+            curl -fsSL get.docker.com -o ${get_docker}
+            sudo sh ${get_docker}
+            sudo rm -f ${get_docker}
+            ;;
+        *)
+            echo
+            echo "You can install Docker yourself with:"
+            echo "$ curl -fsSL get.docker.com -o get-docker.sh"
+            echo "$ sudo sh ./get-docker.sh"
+            ;;
+    esac
+    exit 1
+fi
+
+case "$1" in
+    install)
+        shift
+
+        mkdir -p ${host_path}
+        chmod 0700 ${host_path}
+
+        # create default configuration directory if not exists
+        echo -en "Creating default configuration directory:\t${host_path}/config\t"
+        if ! [ -d ${host_path}/config ] ; then
+            mkdir -p ${host_path}/config
+            ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) ${container} cp -r config.example/. config/
+            ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) ${container} cp -r kubespray/inventory/sample/group_vars/. config/group_vars/
+            ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) ${container} /bin/bash -c "cat config/group_vars/all.yml >> config/group_vars/all/all.yml && rm -f config/group_vars/all.yml"
+            ${docker} ${docker_mnt_config} -u $(id -u):$(id -g) ${container} cp -r kubespray/inventory/sample/hosts.ini config/kube-mgmt-hosts.ini
+            echo "[created]"
+        else
+            echo "[exists, not creating]"
+        fi
+
+        # create default ssh key directory if not exists
+        echo -en "Creating default SSH directory:\t\t\t${host_path}/ssh\t"
+        if ! [ -d ${host_path}/ssh ] ; then
+            mkdir -p ${host_path}/ssh
+            ssh-keygen -f ${host_path}/ssh/deepops_rsa -P "" >/dev/null 2>&1
+            echo "[created]"
+        else
+            echo "[exists, not creating]"
+        fi
+
+        # copy specified or default ssh key if not using password auth
+        ssh_key=${SSH_KEY:-~/.ssh/id_rsa}
+        for arg in "$@" ; do
+            if [ "$arg" == "--password" ] ; then
+                ssh_key=
+                echo "Password authentication"
+            fi
+        done
+        if [ "x${ssh_key}" != "x" ] ; then
+            echo "SSH key authentication"
+            echo -e "Using SSH key:\t\t\t${ssh_key}"
+            if ! [ -f ${ssh_key} ] ; then
+                echo
+                echo "ERROR: SSH (${ssh_key}) does not exist"
+                exit 1
+            fi
+            cp ${ssh_key} ${host_path}/ssh/bootstrap_rsa
+            echo -e "Coppied SSH key to:\t\t${host_path}/ssh/bootstrap_rsa"
+            ssh_key="--ssh-key /root/.ssh/bootstrap_rsa"
+        fi
+
+        # run bootstrap playbook
+        case "$1" in
+            compute)
+                shift
+                echo
+                dgxie_host=$(kubectl describe pod -l app=dgxie | grep Node: | awk '{print $2}' | cut -d\/ -f2)
+                bastion=
+                for arg in "$@" ; do
+                    if [ "$arg" == "--bastion" ] ; then
+                        bastion="--bastion deepops@${dgxie_host}"
+                    fi
+                done
+                set -x
+                args=$(echo $@ | sed 's/--bastion//g')
+                run_root setup_deepops_user ${ssh_key} ${bastion} ${args}
+                set +x
+                ;;
+            *)
+                echo
+                echo "Bootstrapping systems"
+                run_root setup_deepops_user ${ssh_key} "$@"
+                if [ $? -ne 0 ] ; then
+                    echo "Failed to bootstrap"
+                    failed=1
+                fi
+                ;;
+        esac
+        
+        # install k8s
+        if [ ! $failed ] ; then
+            install_k8s
+        fi
+
+        # install rook
+        if [ ! $failed ] ; then
+            install_rook
+        fi
+
+        # install monitoring
+        if [ ! $failed ] ; then
+            install_monitoring
+        fi
+
+        # remove copied ssh private key
+        if [ -f ${host_path}/ssh/bootstrap_rsa ] ; then
+            rm -f ${host_path}/ssh/bootstrap_rsa
+            echo -e "Removed SSH key:\t\t${host_path}/ssh/bootstrap_rsa"
+        fi
+        ;;
+    slurm)
+        ${docker} ${docker_mnt_config} ${docker_mnt_ssh} ${container} ansible-playbook -k -K ansible/playbooks/slurm.yml
+        ;;
+    shell)
+        run_root bash
+        ;;
+    cmd)
+        shift
+        run_root $@
+        ;;
+    helm)
+        shift
+        helm $@
+        ;;
+    kubectl)
+        shift
+        kubectl $@
+        ;;
+    *)
+        logo
+        echo "Usage: $0 install [OPTIONS]"
+        echo
+        ${docker} ${container} setup_deepops_user --help | tail -n+3 | grep -v ssh
+        echo "Environment variables:"
+        echo -e "  SSH_KEY=/path/to/ssh/key\tUse alternate SSH key (default: ~/.ssh/id_rsa) instead of password"
+        echo
+        echo "Notes:"
+        echo -e "  You can pass the '--ip' flag multiple times for multiple servers"
+        echo -e "  Use the '--password' flag to use passwords instead of an SSH key"
+        ;;
+esac

@@ -1,0 +1,29 @@
+######
+# All Nodes
+######
+[all]
+mgmt01      ansible_host=10.31.241.171
+dgx01       ansible_host=192.168.1.20
+
+######
+# Management Nodes
+######
+[mgmt]
+mgmt01
+
+######
+# Login Nodes
+######
+[login]
+mgmt01
+
+######
+# DGX Nodes
+######
+[dgx-servers]
+dgx01
+
+######
+# non-DGX GPU Nodes
+######
+[tesla-servers]

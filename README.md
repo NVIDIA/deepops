@@ -6,6 +6,7 @@ Deploy a scalable DGX cluster on-prem or in the cloud
 ## Contents
 
 * [Overview](#overview)
+* [Quickstart](#quickstart)
 * [Prerequisites](#prerequisites)
   * [Hardware Requirements](#hardware-requirements)
   * [Software Requirements](#software-requirements)
@@ -51,6 +52,17 @@ to facilitate easier large-scale training jobs or more traditional HPC workloads
 
 For more information on deploying DGX in the datacenter, consult the
 [DGX Data Center Reference Design Whitepaper](https://nvidia-gpugenius.highspot.com/viewer/5b33fecf1279587c07d8ac86)
+
+## Quickstart
+
+To bootstrap the cluster:
+
+```sh
+wget https://raw.githubusercontent.com/NVIDIA/deepops/pkg/deepops
+chmod +x ./deepops
+./deepops install --ip 10.0.0.1 --username ubuntu --password
+./deepops install compute --ip 192.168.1.20 --bastion --username dgxuser --password
+```
 
 ## Prerequisites
 
