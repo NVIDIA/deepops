@@ -86,7 +86,13 @@ def main(*, password, progress_uri, output_dir, verbose, **config):
                 stdout=sys.stdout, stderr=sys.stderr
             )
             subprocess.check_call(
-                shlex.split("ansible-playbook {verbose} {password} -i {output}/inventory {ansible}/playbooks/bootstrap.yml".format(
+                shlex.split("ansible-playbook {verbose} {password} --skip-tags manual -i {output}/inventory {ansible}/playbooks/bootstrap.yml".format(
+                    ansible=ansible_path(), output=output_dir, password=password, verbose=verbose
+                )),
+                stdout=sys.stdout, stderr=sys.stderr
+            )
+            subprocess.check_call(
+                shlex.split("ansible-playbook {verbose} {password} -i {output}/inventory {ansible}/playbooks/bootstrap_installer.yml".format(
                     ansible=ansible_path(), output=output_dir, password=password, verbose=verbose
                 )),
                 stdout=sys.stdout, stderr=sys.stderr
