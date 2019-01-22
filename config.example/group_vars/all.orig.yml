@@ -1,0 +1,161 @@
+# Defaults
+
+# Default user account on all systems
+#  you can define per-group values in the other configuration files
+user: ubuntu
+ansible_user: ubuntu
+
+# Amount of time to allow between updating Ubuntu APT cache
+cache_valid_time: 3600
+
+# Will the cluster be air-gapped?
+is_airgapped: false
+
+# Does the cluster use an unofficial DGX-1 OS (i.e. vanilla Ubuntu)?
+is_unofficial: false # set 'true' when using non-official OS on DGX
+
+# Does the cluster use the official DGX-1 ISO?
+is_official: true
+
+# Use the on-prem apt repo?
+with_local_apt: true
+# Local apt repo host:port
+local_apt_host: mgmt01:30000
+# local apt repo path
+local_apt_path: deepops-online
+
+# Cluster nameserver
+# Set to the IP address of your management node
+resolv_conf_nameserver: 192.168.1.1
+
+# NIS configuration (optional)
+#nisdomain: example.com
+#nisserver: 10.0.0.1
+
+# Kerberos configuration (optional)
+#kerberos_client_realm_name: "example.com"
+#kerberos_client_kdc_hostname: "kerberos"
+#kerberos_client_admin_hostname: "kerberos"
+#idmapd_domain: example.com
+
+# AutoFS configuration (optional)
+#autofs_mount: "/home"
+#autofs_map: "auto.home_linux"
+
+########
+# Slurm job scheduler configuration
+slurm_user_home: /local/slurm
+slurm_manage_gpus: no
+slurm_cluster_name: ngc
+slurm_username: slurm
+slurm_password: ReplaceWithASecurePasswordInTheVault
+slurm_db_username: slurm
+slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
+# slurm_return_to_service: 0
+slurm_exclusive: "yes"
+# slurm_max_job_timelimit: INFINITE
+# slurm_default_job_timelimit:
+########
+
+# Configure system users
+#  You can generate a new password with `mkpasswd -m sha-512`
+#  You may also add SSH public keys to each user account
+#  The default password here is 'deepops'
+user_list:
+  - name: "root"
+    username: "root"
+    state: present
+    shell: "/bin/bash"
+    password: "$6$5kCSHqdf.Du19uvz$cGTX4JijfiILr9QkN917sVJcJHGJILBkRVljEyTzF6L/nF6zAdJ.7U5dRIkz2aKb/7RxsPjdtlkMZOQQwNqzt."
+    groups:
+      - root
+    #keys:
+    #  active:
+    #    - "ssh-rsa ..."
+  - name: "ubuntu"
+    username: "ubuntu"
+    state: present
+    shell: "/bin/bash"
+    password: "$6$5kCSHqdf.Du19uvz$cGTX4JijfiILr9QkN917sVJcJHGJILBkRVljEyTzF6L/nF6zAdJ.7U5dRIkz2aKb/7RxsPjdtlkMZOQQwNqzt."
+    groups:
+      - sudo
+      - docker
+    #keys:
+    #  active:
+    #    - "ssh-rsa ..."
+  - name: "dgxuser"
+    username: "dgxuser"
+    state: present
+    shell: "/bin/bash"
+    password: "$6$5kCSHqdf.Du19uvz$cGTX4JijfiILr9QkN917sVJcJHGJILBkRVljEyTzF6L/nF6zAdJ.7U5dRIkz2aKb/7RxsPjdtlkMZOQQwNqzt."
+    groups:
+      - sudo
+      - docker
+    #keys:
+    #  active:
+    #    - "ssh-rsa ..."
+# Optionally add users to groups but don't create accounts, i.e. when using NIS
+# - name: "test"
+#   groups:
+#     - sudo
+#     - docker
+
+# Configure Docker
+#  Additional optional configuration parameters:
+#   fixed_cidr: 192.168.99.0/24
+#   storage_driver: overlay2
+#   disable_legacy_registry: false
+daemon_json:
+  bip: 192.168.99.1/24
+  default-runtime: nvidia
+  runtimes:
+    nvidia:
+      path: /usr/bin/nvidia-container-runtime
+      runtimeArgs: []
+
+####
+# NFS
+####
+# Configure NFS server
+nfs_exports: []
+#- path: /export/shared
+#  options: "*(rw,sync,no_root_squash)"
+
+# Configure NFS clients
+nfs_mounts: []
+#- mountpoint: /shared
+#  server: 10.0.0.1
+#  path: /export/shared
+#  options: async,vers=3
+
+# Configure SSH
+ssh_port: [22]
+ssh_permit_root_login: 'yes'
+ssh_pubkey_authentication: 'yes'
+ssh_password_authentication: 'yes'
+ssh_known_hosts: []
+
+# Configure Collectd
+#collectd_network_server: "deepops-mgmt.example.com"
+#collectd_network_port: "30300"
+#collectd_python_module_path: "/usr/lib/collectd/dcgm"
+#collectd_python_modules: []
+#collectd_config_dir: "/etc/collectd/collectd.conf.d"
+#with_dcgm_collectd: false
+
+# Configure Lmod modules
+#lmod_modulepath: /shared/modules/all
+
+####
+# GPU driver
+####
+## settings to use stock DGX-1 driver:
+#use_latest_gpu_driver: false
+#driver_version: 384.111-1
+
+## settings to use latest CUDA 9.2 driver:
+use_latest_gpu_driver: true
+driver_version: "396.26-1"
+apt_key_url: http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
+apt_repo_url: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_9.2.88-1_amd64.deb
+apt_repo_name: cuda-repo-ubuntu1604=9.2.88-1
