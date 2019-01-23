@@ -288,7 +288,7 @@ Ceph is provisioned using Rook to simplify deployment:
 <!-- https://github.com/rook/rook/blob/master/Documentation/helm-operator.md -->
 ```sh
 helm repo add rook-master https://charts.rook.io/master
-helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph --version v0.9.0-79.g1a1ffdd --set agent.flexVolumeDirPath=/var/lib/kubelet/volume-plugins/
+helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph --version v0.9.0-79.g1a1ffdd
 kubectl create -f services/rook-cluster.yml
 ```
 
