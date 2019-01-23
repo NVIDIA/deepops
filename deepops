@@ -49,7 +49,7 @@ install_rook() {
     helm ls --all rook-ceph | grep DEPLOYED
     if [ $? -ne 0 ] ; then
         helm repo add rook-master https://charts.rook.io/master
-        helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph --version ${ROOK_VERSION} --set agent.flexVolumeDirPath=/var/lib/kubelet/volume-plugins/
+        helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph --version ${ROOK_VERSION}
         count=0
         for app in rook-ceph-operator rook-ceph-agent rook-discover ; do
             while true ; do
