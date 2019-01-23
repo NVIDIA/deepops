@@ -128,6 +128,7 @@ files so that you can make local changes:
 
 ```sh
 git clone --recursive https://github.com/NVIDIA/deepops.git
+cd deepops
 cp -r config.example/ config/
 pip install --user -r kubespray/requirements.txt
 ansible-galaxy install -r requirements.yml
@@ -204,12 +205,6 @@ ansible mgmt -a hostname
 
 > For more info, see: https://docs.ansible.com/ansible/latest/user_guide/intro_adhoc.html
 
-Apply additional changes to management servers to disable swap (required for Kubernetes):
-
-```sh
-ansible mgmt -b -a "swapoff -a"
-```
-
 If you need to configure a secondary network interface for the private DGX network,
 modify `/etc/network/interfaces`. For example:
 
@@ -262,7 +257,7 @@ Test you can access the kubernetes cluster:
 ```sh
 $ kubectl get nodes
 NAME      STATUS    ROLES         AGE       VERSION
-mgmt01    Ready     master,node   7m        v1.11.0
+mgmt01    Ready     master,node   7m        v1.12.4
 ```
 
 __Helm:__
