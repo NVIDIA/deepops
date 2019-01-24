@@ -131,7 +131,7 @@ spec:
             fsType: ceph
             options:
               fsName: cephfs
-              clusterName: rook-ceph
+              clusterNamespace: rook-ceph
               path: /iso
         - name: dhcp-leases
           persistentVolumeClaim:
