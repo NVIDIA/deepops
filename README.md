@@ -391,13 +391,13 @@ Check the DGXie logs to make sure the services were started without errors:
 ```sh
 kubectl logs -l app=dgxie
 ```
-
+<!--
 Configure the management server(s) to use DGXie for cluster-wide DNS:
 
 ```sh
 ansible-playbook -l mgmt ansible/playbooks/resolv.yml
 ```
-
+-->
 If you later make changes to `config/dhcpd.hosts.conf`, you can update the file in Kubernetes
 and restart the service with:
 
@@ -582,6 +582,12 @@ Power cycle/on the DGX to begin the install process
 
 ```sh
 ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> power cycle
+```
+
+You can monitor install progress via the Java web console on the BMC or the Serial-over-LAN interface:
+
+```sh
+ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> sol activate
 ```
 
 The DGX install process will take approximately 15 minutes. You can check the DGXie logs with:
