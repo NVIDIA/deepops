@@ -1,0 +1,2 @@
+apt_http_proxy: "false"
+apt_https_proxy: "false"
