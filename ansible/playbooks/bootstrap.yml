@@ -11,6 +11,14 @@
       register: output
       changed_when: output.stdout != ""
 
+- hosts: dgx-servers
+  become: yes
+  tasks:
+    - name: disable fail2ban
+      systemd: state=stopped enabled=no name=fail2ban
+  tags:
+    - skip-for-virtual
+
 - hosts: all
   become: yes
   #pre_tasks:
