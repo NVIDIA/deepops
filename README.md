@@ -53,17 +53,6 @@ to facilitate easier large-scale training jobs or more traditional HPC workloads
 For more information on deploying DGX in the datacenter, consult the
 [DGX Data Center Reference Design Whitepaper](https://nvidia-gpugenius.highspot.com/viewer/5b33fecf1279587c07d8ac86)
 
-## Quickstart
-
-To bootstrap the cluster:
-
-```sh
-wget https://raw.githubusercontent.com/NVIDIA/deepops/pkg/deepops
-chmod +x ./deepops
-./deepops install --ip 10.0.0.1 --username ubuntu --password
-./deepops install compute --ip 192.168.1.20 --bastion --username dgxuser --password
-```
-
 ## Prerequisites
 
 ### Hardware Requirements
@@ -82,6 +71,7 @@ chmod +x ./deepops
 
 The administrator's provisioning system should have the following installed:
 
+* ansible
 * python pip
 * git
 * docker (to build containers)
@@ -129,6 +119,9 @@ files so that you can make local changes:
 ```sh
 git clone --recursive https://github.com/NVIDIA/deepops.git
 cd deepops
+git checkout training
+git submodule update
+./scripts/bootstrap-mgmt.sh
 cp -r config.example/ config/
 pip install --user -r kubespray/requirements.txt
 ansible-galaxy install -r requirements.yml
@@ -246,7 +239,12 @@ To make administration easier, you may want to copy the `kubectl` binary to some
 and copy the `admin.conf` configuration file to `~/.kube/config` so that it is used by default.
 Otherwise, you may use the `kubectl` flag `--kubeconfig=./admin.conf` instead of copying the configuration file.
 
-If you have an existing Kubernetes configuration file, you can merge the two with:
+```sh
+mkdir -p ~/.kube/
+mv admin.conf ~/.kube/config
+```
+
+(OPTIONAL) If you have an existing Kubernetes configuration file, you can merge the two with:
 
 ```sh
 mv ~/.kube/config{,.bak} && KUBECONFIG=./admin.conf:~/.kube/config.bak kubectl config view --flatten | tee ~/.kube/config
