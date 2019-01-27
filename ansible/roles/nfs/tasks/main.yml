@@ -10,15 +10,15 @@
     dest: /etc/idmapd.conf
     regexp: "^Domain"
     insertafter: "^# Domain"
-    line: "Domain = {{ idmapd_domain }}"
+    line: "Domain = {{ nfs_idmapd_domain }}"
     backup: yes
-  when: idmapd_domain is defined
+  when: nfs_idmapd_domain is defined
   tags:
     - nfs
 
 - include: server.yml
-  when: is_server
+  when: nfs_is_server
 
 - include: client.yml
-  when: is_client
+  when: nfs_is_client
 

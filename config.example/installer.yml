@@ -40,7 +40,7 @@ resolvconf_search_domains: ['example.com']
 #kerberos_client_realm_name: "example.com"
 #kerberos_client_kdc_hostname: "kerberos"
 #kerberos_client_admin_hostname: "kerberos"
-#idmapd_domain: example.com
+#nfs_idmapd_domain: example.com
 
 # AutoFS configuration (optional)
 #autofs_mount: "/home"
