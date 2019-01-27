@@ -244,7 +244,7 @@ mkdir -p ~/.kube/
 mv admin.conf ~/.kube/config
 ```
 
-(OPTIONAL) If you have an existing Kubernetes configuration file, you can merge the two with:
+(Optional) If you have an existing Kubernetes configuration file, you can merge the two with:
 
 ```sh
 mv ~/.kube/config{,.bak} && KUBECONFIG=./admin.conf:~/.kube/config.bak kubectl config view --flatten | tee ~/.kube/config
