@@ -297,6 +297,7 @@ You can check Ceph status with:
 
 ```sh
 kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status
+kubectl -n rook-ceph exec -ti $(kubectl -n rook-ceph get pod -l app=rook-ceph-tools -o name | cut -d \/ -f2 | sed -e 's/\\r$//g') ceph status
 ```
 <!--
 Once the Ceph filesystem is up, it is safe to continue, i.e:
@@ -341,7 +342,7 @@ to be in the *Running* state before attempting to copy the ISO):
 
 ```sh
 kubectl apply -f services/iso-loader.yml
-kubectl cp /path/to/DGXServer-3.1.2.170902_f8777e.iso $(kubectl get pod -l app=iso-loader -o custom-columns=:metadata.name --no-headers):/data/iso/
+kubectl cp /local/DGXServer-4.0.4.181116_cc1114.iso $(kubectl get pod -l app=iso-loader -o custom-columns=:metadata.name --no-headers):/data/iso/
 ```
 
 > Note: If the `iso-loader` POD fails to mount the CephFS volume, you may need to restart the kubelet service on the master node(s): `ansible mgmt -b -a "systemctl restart kubelet"`
