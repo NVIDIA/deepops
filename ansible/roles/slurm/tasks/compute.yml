@@ -3,8 +3,8 @@
 - name: add cgroups to grub options
   lineinfile:
     dest: /etc/default/grub
-    regexp: "^GRUB_CMDLINE_LINUX="
-    line: 'GRUB_CMDLINE_LINUX="cgroup_enable=memory swapaccount=1"'
+    insertafter: '^GRUB_CMDLINE_LINUX=[^\\$]'
+    line: 'GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX} cgroup_enable=memory swapaccount=1"'
   register: update_grub
 
 - name: update grub
