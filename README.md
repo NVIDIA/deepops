@@ -73,7 +73,7 @@ starting the installation steps. If you already have a bare-metal provisioning s
 it can be used to install Ubuntu on the management server(s). Integrating the DGX Base OS
 with other bare-metal provisioning systems is outside the scope of this project.
 
-We will be installing a few software package on the administrator's provisioning system at the begining of the configuration step.
+A few software package will be installed on the administrator's provisioning system at the begining of the configuration step.
 
 ### Network Requirements
 
