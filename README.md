@@ -296,7 +296,6 @@ kubectl create -f services/rook-cluster.yml
 You can check Ceph status with:
 
 ```sh
-kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status
 kubectl -n rook-ceph exec -ti $(kubectl -n rook-ceph get pod -l app=rook-ceph-tools -o name | cut -d \/ -f2 | sed -e 's/\\r$//g') ceph status
 ```
 <!--
