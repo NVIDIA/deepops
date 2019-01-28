@@ -341,7 +341,7 @@ to be in the *Running* state before attempting to copy the ISO):
 
 ```sh
 kubectl apply -f services/iso-loader.yml
-kubectl cp /local/DGXServer-4.0.4.181116_cc1114.iso $(kubectl get pod -l app=iso-loader -o custom-columns=:metadata.name --no-headers):/data/iso/
+kubectl cp /local/DGXServer-4.0.2.180925_6acd9c.iso $(kubectl get pod -l app=iso-loader -o custom-columns=:metadata.name --no-headers):/data/iso/
 ```
 
 > Note: If the `iso-loader` POD fails to mount the CephFS volume, you may need to restart the kubelet service on the master node(s): `ansible mgmt -b -a "systemctl restart kubelet"`
