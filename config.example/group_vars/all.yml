@@ -21,6 +21,7 @@ is_official: true
 # Use the on-prem apt repo?
 with_local_apt: true
 # Local apt repo host:port
+# TODO: Change this to match mgmt node hostname
 local_apt_host: mgmt01:30000
 # local apt repo path
 local_apt_path: deepops-online
