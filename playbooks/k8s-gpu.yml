@@ -36,8 +36,8 @@
         name: "{{ item }}"
         state: present
       with_items:
-        - "nvidia-docker2=2.0.3+docker18.03.1-1"
-        - "nvidia-container-runtime=2.0.0+docker18.03.1-1"
+        - "nvidia-docker2=2.0.3+docker18.06.1-1"
+        - "nvidia-container-runtime=2.0.0+docker18.06.1-1"
       environment: "{{proxy_env if proxy_env is defined else {}}}"
     - name: set docker default runtime
       copy:
