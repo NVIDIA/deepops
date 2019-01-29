@@ -6,7 +6,7 @@
   vars:
     use_internal_repo: true
     use_latest_gpu_driver: true
-    driver_version: 418.31-0
+    driver_version: 410.79-1
     apt_key_url: http://172.20.244.13/repos/r10.1/official/ubuntu1804/x86_64/7fa2af80.pub
     apt_key_id: 7FA2AF80
     apt_repo_url: http://172.20.244.13/repos/r10.1/official/ubuntu1804/x86_64/cuda-repo-ubuntu1804_10.1.94-1_amd64.deb
