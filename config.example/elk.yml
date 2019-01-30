@@ -13,7 +13,7 @@ logstash:
 #    - hosts:
 #      -  logstash.local
 #  nodeSelector:
-#    node-role.kubernetes.io/master: "true"
+#    node-role.kubernetes.io/master: ""
 #  service:
 #    type: NodePort
 #    nodePort: 30600
@@ -34,7 +34,7 @@ kibana:
     - hosts:
       -  kibana.local
   nodeSelector:
-    node-role.kubernetes.io/master: "true"
+    node-role.kubernetes.io/master: ""
   service:
     type: NodePort
     nodePort: 30700
