@@ -1,0 +1,3 @@
+#!/bin/bash
+read -s string
+ansible-vault encrypt_string --output=- ${string}

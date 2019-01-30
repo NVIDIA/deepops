@@ -1,0 +1,11 @@
+#!/bin/bash
+(>&2 echo -n "Username: ")
+read username
+
+(>&2 echo -n "Password: ")
+password=$(encrypt_string)
+
+echo "ansible_user: $username"
+echo "ansible_ssh_pass: $password"
+echo "ansible_become_pass: $password"
+

@@ -147,3 +147,17 @@ ssh_known_hosts: []
 
 # Configure Lmod modules
 #lmod_modulepath: /shared/modules/all
+
+####
+# GPU driver
+####
+## settings to use stock DGX-1 driver:
+#use_latest_gpu_driver: false
+#driver_version: 384.111-1
+
+## settings to use latest CUDA 9.2 driver:
+use_latest_gpu_driver: true
+driver_version: "396.26-1"
+apt_key_url: http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
+apt_repo_url: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_9.2.88-1_amd64.deb
+apt_repo_name: cuda-repo-ubuntu1604=9.2.88-1

@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import os
+import shlex
+import subprocess
+import sys
+import tempfile
+import shutil
+
+import click
+from cookiecutter.main import cookiecutter
+from nvidia_deepops import Progress
+
+def ansible_path(path=None):
+    if path:
+        return os.path.join(os.environ.get("DEEPOPS_SOURCE_ANSIBLE", "/source/deepops/ansible"), path)
+    return os.environ.get("DEEPOPS_SOURCE_ANSIBLE", "/source/deepops/ansible")
+
+@click.command()
+#@click.option("--hostname")
+@click.option("--ip", multiple=True, required=True)
+@click.option("--bastion")
+@click.option("--airgapped/--no-airgapped", default=True)
+@click.option("--username", required=True)
+@click.option("--password", is_flag=True)
+@click.option("--ssh-key", type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True))
+@click.option("--progress-uri")
+@click.option("--output-dir")
+@click.option("--verbose", is_flag=True)
+def main(*, password, progress_uri, output_dir, verbose, **config):
+    #if config.get("hostname") is None and config.get("ip") is None:
+        #click.echo("Please provide either a --hostname or an --ip")
+    config["hostname"] = config.get("hostname", "node")
+    if config.get("ip"):
+        node={}
+        i=1
+        for host in list(config["ip"]):
+            node["node{i}".format(i=i)] = host
+            i=i+1
+        config["ip"] = node
+    if password:
+        password = "-k -K"
+    else:
+        password = ""
+    if verbose:
+        verbose = "-vvv"
+    else:
+        verbose = ""
+    if config.get("ssh_key"):
+        tmp_key = "/tmp/cli-ssh-key"
+        shutil.copyfile(config.get("ssh_key"), tmp_key)
+        os.chmod(tmp_key, 0o600)
+        os.chown(tmp_key, 0, 0)
+        config["ssh_key"] = tmp_key
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        output_dir = output_dir or tmp_dir
+        progress = Progress(uri=progress_uri)
+        progress.add_step(key="inventory", header="Generating Ansible inventory")
+        progress.add_step(key="ansible", header="Running Ansible")
+        #click.echo(config)
+        with progress.run_step(key="inventory"):
+            cookiecutter(ansible_path("templates/setup_deepops_user/"), output_dir=output_dir, no_input=True,
+                         extra_context=config, overwrite_if_exists=True)
+            # generate kubespray inventory
+            k8s_env = os.environ.copy()
+            k8s_env["CONFIG_FILE"] = "config/kube-mgmt-hosts.ini".format(ansible=ansible_path())
+            subprocess.check_call(
+                shlex.split("python3 kubespray/contrib/inventory_builder/inventory.py {ips}".format(
+                    ansible=ansible_path(), ips=' '.join(config.get("ip").values())
+                )),
+                stdout=sys.stdout, stderr=sys.stderr, env=k8s_env
+            )
+#            subprocess.check_call(
+#                shlex.split("cat config/kube-mgmt-hosts.ini".format(
+#                    ansible=ansible_path(), ips=' '.join(config.get("ip").values())
+#                )),
+#                stdout=sys.stdout, stderr=sys.stderr, env=k8s_env
+#            )
+        with progress.run_step(key="ansible"):
+            my_env = os.environ.copy()
+            
+            subprocess.check_call(
+                shlex.split("cat {output}/inventory/inventory".format(
+                    ansible=ansible_path(), output=output_dir, password=password
+                )),
+                stdout=sys.stdout, stderr=sys.stderr
+            )
+            subprocess.check_call(
+                shlex.split("ansible-playbook {verbose} {password} --skip-tags manual -i {output}/inventory {ansible}/playbooks/bootstrap.yml".format(
+                    ansible=ansible_path(), output=output_dir, password=password, verbose=verbose
+                )),
+                stdout=sys.stdout, stderr=sys.stderr
+            )
+            subprocess.check_call(
+                shlex.split("ansible-playbook {verbose} {password} -i {output}/inventory {ansible}/playbooks/bootstrap_installer.yml".format(
+                    ansible=ansible_path(), output=output_dir, password=password, verbose=verbose
+                )),
+                stdout=sys.stdout, stderr=sys.stderr
+            )
+
+
+if __name__ == "__main__":
+    main()

@@ -11,7 +11,7 @@ addusers:
     name: kube
     comment: "Kubernetes user"
     shell: /sbin/nologin
-    home: /local/kube
+    home: /home/kube
     system: yes
     group: "{{ kube_cert_group }}"
     create_home: no

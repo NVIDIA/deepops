@@ -1,4 +1,5 @@
-
+# ansible roles
+#
 # Osquery
 - src: https://github.com/apolloclark/ansible-role-osquery.git
   name: osquery
@@ -8,3 +9,8 @@
 - src: https://github.com/angstwad/docker.ubuntu.git
   name: docker
   version: v3.5.2
+
+# resolvconf
+- src: https://github.com/logan2211/ansible-resolvconf.git
+  name: resolvconf
+  version: a2ff5ba59b47f96ddddcb7a3a67de93687c317a6

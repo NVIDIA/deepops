@@ -32,16 +32,10 @@
 mgmt01
 #mgmt02     ansible_host=10.0.0.2
 #mgmt03     ansible_host=10.0.0.3
-login01
-dgx01
+#login01
+#dgx01
 #dgx02
 #dgx03
-#dgx04
-#dgx05
-#dgx06
-#dgx07
-#dgx08
-#dgx09
 
 ######
 # Management Nodes
@@ -55,35 +49,23 @@ mgmt01
 # Login Nodes
 ######
 [login]
-login01
+#login01
 
 ######
 # DGX Nodes
 ######
 [dgx-servers]
-dgx01
+#dgx01
 #dgx02
 #dgx03
-#dgx04
-#dgx05
-#dgx06
-#dgx07
-#dgx08
-#dgx09
 
 ######
 # non-DGX GPU Nodes
 ######
 [tesla-servers]
 
-######
-# Ceph
-######
-[ceph-mgrs]
-mgmt01
-
 # Configure nodes for Kubernetes
-# Only add 'dgx-servers' once the DGX nodes are up and available
+# Only add the 'dgx-servers' group once the DGX nodes are up and available
 # Kubespray may fail otherwise
 [kube-node:children]
 mgmt
@@ -130,20 +112,3 @@ kube-node
 
 [vault:children]
 mgmt
-
-######
-# CEPH
-######
-[mgrs:children]
-ceph-mgrs
-
-[mons:children]
-mgmt
-
-[osds:children]
-mgmt
-
-[ceph-cluster:children]
-mgrs
-mons
-osds
