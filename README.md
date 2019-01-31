@@ -248,7 +248,7 @@ mkdir -p ~/.kube/
 mv admin.conf ~/.kube/config
 ```
 
-(Optional) If you have an existing Kubernetes configuration file, you can merge the two with:
+__Optionally__, If you have an existing Kubernetes configuration file, you can merge the two with:
 
 ```sh
 mkdir -p ~/.kube && mv ~/.kube/config{,.bak} && KUBECONFIG=./admin.conf:~/.kube/config.bak kubectl config view --flatten | tee ~/.kube/config
@@ -273,12 +273,11 @@ If you did not modify your `config/kube.yml` file to disable the `helm_enabled` 
 helm init
 ```
 
-**Optionally** If you disabled the `helm_enabled` field you can follow [these steps](docs/helm.md) to manually install and configure helm.
+__Optionally__, If you disabled the `helm_enabled` field you can follow [these steps](docs/helm.md) to manually install and configure helm.
 
 __Ceph:__
 
-Persistent storage for Kubernetes on the management nodes is supplied by Ceph.
-Ceph is provisioned using Rook to simplify deployment:
+Persistent storage for Kubernetes on the management nodes is supplied by Ceph. Ceph is provisioned using Rook to simplify deployment:
 <!-- find latest rook version with: helm search rook-ceph -->
 <!-- https://github.com/rook/rook/blob/master/Documentation/helm-operator.md -->
 ```sh
@@ -287,10 +286,13 @@ helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph
 kubectl create -f services/rook-cluster.yml
 ```
 
-> Note: It will take a few minutes for containers to be pulled and started.
-> Wait for Rook to be fully installed before proceeding
+> Caution, wait for the polling script to complete or later steps will fail. It may take up to 10 minutes.
 
-You can poll the Ceph status by running `scripts/ceph_poll.sh`:
+Poll the Ceph status by running:
+
+```sh
+.scripts/ceph_poll.sh
+```
 
 ### 3. Services
 
@@ -382,23 +384,15 @@ Configure the management server(s) to use DGXie for cluster-wide DNS:
 ansible-playbook -l mgmt ansible/playbooks/resolv.yml
 ```
 -->
-If you later make changes to `config/dhcpd.hosts.conf`, you can update the file in Kubernetes
-and restart the service with:
 
+If you later make changes to `config/dhcpd.hosts.conf` or `machines.json` you can follow the [steps](docs/dgxie.md) to update the dgxie service.
+
+__Important__, if you have not already provisioned your DGX servers or added them to your kubernetes cluster you must [skip ahead](#4-DGX-compute-nodes) before continuing.
+
+__Optionally__, after provisioning your DGX servers you can delete the iso-loader deployment by running:
 ```sh
-kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf -o yaml --dry-run | kubectl replace -f -
-kubectl delete pod -l app=dgxie
+kubectl delete deployments iso-loader
 ```
-
-If you make changes to `machines.json`, you can update the file without having to restart the DGXie POD:
-
-```sh
-kubectl create configmap pxe-machines --from-file=config/machines.json -o yaml --dry-run | kubectl replace -f -
-```
-
-At this point, if you have not already provisioned your DGX servers or added it to your kubernetes cluster you should [skip ahead](#4-DGX-compute-nodes) before continuing.
-
-Optionally, after provisioning your DGX servers you can delete the iso-loader deployment by running `kubectl delete deployments iso-loader`.
 
 #### __APT Repo:__
 
@@ -417,7 +411,7 @@ helm repo add stable https://kubernetes-charts.storage.googleapis.com
 helm install --values config/registry.yml stable/docker-registry --version 1.4.3
 ```
 
-Now we will configure the DGX servers to allow access to the local (insecure) container registry:
+Configure the DGX servers to allow access to the local (insecure) container registry:
 
 ```sh
 ansible-playbook -k ansible/playbooks/docker.yml
@@ -525,15 +519,7 @@ Service addresses:
 
 * Kibana: http://mgmt:30700
 
-The logging stack can be deleted with:
-
-```sh
-helm del --purge log
-helm del --purge elk
-kubectl delete statefulset/elk-elasticsearch-data
-kubectl delete pvc -l app=elasticsearch
-# wait for all statefulsets to be removed before re-installing...
-```
+If there is an issue, follow these [docs](docs/elk.md) to delete the logging stack.
 
 ### 4. DGX compute nodes:
 
@@ -588,7 +574,7 @@ kubectl logs -l app=dgxie
 ```
 
 If your DGX are on an un-routable subnet, uncomment the `ansible_ssh_common_args` variable in the
-`config/group_vars/dgx-servers.yml` file and modify the IP address to the IP address of the management server
+`config/group_vars/dgx-servers.yml` file and __modify__ the IP address to the IP address of the management server
 with access to the private subnet, i.e.
 
 ```sh
