@@ -128,7 +128,7 @@ git submodule update
 > If you did a non-recursive clone, you can later run `git submodule update --init --recursive`
 > to pull down submodules
 
-Install Ansible (if the below script fails follow the official [Ansible installation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) steps to install version 2.5 or later):
+Install Ansible and other dependencies (if the below script fails follow the official [Ansible installation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) steps to install version 2.5 or later):
 
 ```sh
 ./scripts/bootstrap-mgmt.sh
