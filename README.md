@@ -120,6 +120,8 @@ Start by downloading the DeepOps repo onto the provisioning system:
 ```sh
 git clone --recursive https://github.com/NVIDIA/deepops.git
 cd deepops
+git checkout training
+git submodule update
 ```
 
 > Note: In Git 2.16.2 or later, use `--recurse-submodules` instead of `--recursive`.
@@ -129,7 +131,7 @@ cd deepops
 Install Ansible (if the below script fails follow the official [Ansible installation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) steps to install version 2.5 or later):
 
 ```sh
-scripts/install_ansible.sh
+./scripts/bootstrap-mgmt.sh
 ```
 
 Install other dependencies (the example commands below may be different depending on your system):
