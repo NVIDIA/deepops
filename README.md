@@ -128,22 +128,13 @@ git submodule update
 > If you did a non-recursive clone, you can later run `git submodule update --init --recursive`
 > to pull down submodules
 
-Install Ansible (if the below script fails follow the official [Ansible installation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) steps to install version 2.5 or later):
+Install Ansible and other dependencies (if the below script fails follow the official [Ansible installation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) steps to install version 2.5 or later):
 
 ```sh
 ./scripts/bootstrap-mgmt.sh
 ```
 
-Install other dependencies (the example commands below may be different depending on your system):
-
-```sh
-sudo apt install -y ipmitool
-sudo apt install -y python-netaddr python3-netaddr
-
-ansible-galaxy install -r requirements.yml
-```
-
-Now we will copy and version control the configuration files. The `config/` directory is ignored by the deepops git repo. Create a seperate git repo to track local configuration changes.
+Copy and version control the configuration files. The `config/` directory is ignored by the deepops git repo. Create a seperate git repo to track local configuration changes.
 
 ```sh
 cp -r config.example/ config/
