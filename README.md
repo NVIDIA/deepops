@@ -267,21 +267,13 @@ __Helm:__
 
 Some services are installed using [Helm](https://helm.sh/), a package manager for Kubernetes.
 
-Install the Helm client by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
-
-If you're using Linux, the script `scripts/helm_install_linux.sh` will set up Helm for the current user
-
-Be sure to install a version of Helm matching the version in `config/kube.yml`
-
-(Optional) If `helm_enabled` is `true` in `config/kube.yml`,
-the Helm server will already be deployed in Kubernetes.
-If it needs to be installed manually for some reason, run:
+If you did not modify your `config/kube.yml` file to disable the `helm_enabled` flag you can now initialize helm.
 
 ```sh
-kubectl create sa tiller --namespace kube-system
-kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-helm init --service-account tiller --node-selectors node-role.kubernetes.io/master=true
+helm init
 ```
+
+**Optionally** If you disabled the `helm_enabled` field you can follow [these steps](docs/helm.md) to manually install and configure helm.
 
 __Ceph:__
 
