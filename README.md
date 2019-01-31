@@ -108,7 +108,7 @@ segment and subnet which can be controlled by the DHCP server.
 
 ### 1. Download and configure
 
-To use DeepOps we will need to download the repository onto the administrator's provisioning system and install the following software packages:
+To use DeepOps we will need to download the repository onto the administrator's provisioning system and run the `bootstrap-mgmt.sh` script to install the following software packages:
 
 * Ansible
 * Docker
