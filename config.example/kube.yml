@@ -1,81 +1,8 @@
-# Kubernetes Version
-kube_version: v1.11.3
-
-# Valid bootstrap options (required): ubuntu, coreos, centos, none
-bootstrap_os: ubuntu
-
-# Enable GPU scheduling
-gpus_enabled: true
-
-## List of key=value pairs that describe feature gates for
-## the k8s cluster.
-# Add DevicePlugins to enable NVIDIA k8s device plugin
-kube_feature_gates: ['PersistentLocalVolumes={{ local_volume_provisioner_enabled|string }}', 'DevicePlugins=true']
-
-etcd_version: v3.3.10
- 
-# Authorization
-rbac_enabled: true
-
-# Authentication
-# Standard authentication
-kube_basic_auth: true
-# OAUTH2 Authentication (optional)
-#kube_oidc_auth: true
-#kube_oidc_url: https://accounts.google.com
-#kube_oidc_client_id: <api-key>.apps.googleusercontent.com
-## Optional settings for OIDC
-# kube_oidc_ca_file: {{ kube_cert_dir }}/ca.pem
-#kube_oidc_username_claim: email
-# kube_oidc_groups_claim: groups
-
-
-# Choose network plugin (calico, contiv, weave or flannel)
-# Can also be set to 'cloud', which lets the cloud provider setup appropriate routing
-kube_network_plugin: flannel
-
-dashboard_enabled: false
-
-# Helm deployment
+kube_api_anonymous_auth: true
 helm_enabled: true
-helm_version: v2.11.0
-# Set node selector options for Tiller Deployment manifest.
-tiller_node_selectors: "node-role.kubernetes.io/master=true"
-
-## Needed for OpenStack only
-#local_volume_base_dir: /tmp/disks
-
+tiller_node_selectors: "node-role.kubernetes.io/master=''"
 docker_dns_servers_strict: no
 
-## Override Docker to install version compatible with nvidia-docker2
-docker_version: '18.06.1'
-
-docker_versioned_pkg:
-  '17.03.2': docker-ce=17.03.2~ce-0~ubuntu-xenial
-  '18.03.1': docker-ce=18.03.1~ce-0~ubuntu
-  '18.06.1': docker-ce=18.06.1~ce~3-0~ubuntu
-
-docker_package_info:
-  pkg_mgr: apt
-  pkgs:
-    - name: "{{ docker_versioned_pkg[docker_version | string] }}"
-      force: yes
-
-docker_apt_repo_gpgkey: 'https://download.docker.com/linux/ubuntu/gpg'
-docker_apt_repo_base_url: 'https://download.docker.com/linux'
-docker_repo_key_info:
-  pkg_key: apt_key
-  url: '{{ docker_apt_repo_gpgkey }}'
-  repo_keys:
-    - 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
-
-docker_repo_info:
-  pkg_repo: apt_repository
-  repos:
-    - deb [arch=amd64] {{ docker_apt_repo_base_url }}/{{ ansible_distribution|lower }} {{ ansible_distribution_release|lower }} stable
-
-# configure PodNodeSelector Admission Controller plugin
-# https://kubernetes.io/docs/admin/admission-controllers/#podnodeselector
 kube_apiserver_admission_control:
   - Initializers
   - NamespaceLifecycle
@@ -85,3 +12,14 @@ kube_apiserver_admission_control:
   - PodNodeSelector
   - ValidatingAdmissionWebhook
   - ResourceQuota
+
+nvidia_accelerator_enabled: true
+nvidia_gpu_flavor: tesla
+# nvidia_driver_version: "384.111"
+docker_storage_options: -s overlay2
+
+## Array with nvida_gpu_nodes, leave empty or comment if you dont't want to install drivers.
+## Labels and taints won't be set to nodes if they are not in the array.
+#nvidia_gpu_nodes:
+#  - kube-gpu-001
+

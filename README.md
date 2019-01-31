@@ -6,6 +6,7 @@ Deploy a scalable DGX cluster on-prem or in the cloud
 ## Contents
 
 * [Overview](#overview)
+* [Quickstart](#quickstart)
 * [Prerequisites](#prerequisites)
   * [Hardware Requirements](#hardware-requirements)
   * [Software Requirements](#software-requirements)
@@ -51,6 +52,17 @@ to facilitate easier large-scale training jobs or more traditional HPC workloads
 
 For more information on deploying DGX in the datacenter, consult the
 [DGX Data Center Reference Design Whitepaper](https://nvidia-gpugenius.highspot.com/viewer/5b33fecf1279587c07d8ac86)
+
+## Quickstart
+
+To bootstrap the cluster:
+
+```sh
+wget https://raw.githubusercontent.com/NVIDIA/deepops/dev/deepops
+chmod +x ./deepops
+./deepops install --ip 10.0.0.1 --username ubuntu --password
+./deepops install compute --ip 192.168.1.20 --bastion --username dgxuser --password
+```
 
 ## Prerequisites
 
@@ -116,6 +128,7 @@ files so that you can make local changes:
 
 ```sh
 git clone --recursive https://github.com/NVIDIA/deepops.git
+cd deepops
 cp -r config.example/ config/
 pip install --user -r kubespray/requirements.txt
 ansible-galaxy install -r requirements.yml
@@ -192,12 +205,6 @@ ansible mgmt -a hostname
 
 > For more info, see: https://docs.ansible.com/ansible/latest/user_guide/intro_adhoc.html
 
-Apply additional changes to management servers to disable swap (required for Kubernetes):
-
-```sh
-ansible mgmt -b -a "swapoff -a"
-```
-
 If you need to configure a secondary network interface for the private DGX network,
 modify `/etc/network/interfaces`. For example:
 
@@ -250,7 +257,7 @@ Test you can access the kubernetes cluster:
 ```sh
 $ kubectl get nodes
 NAME      STATUS    ROLES         AGE       VERSION
-mgmt01    Ready     master,node   7m        v1.11.0
+mgmt01    Ready     master,node   7m        v1.12.4
 ```
 
 __Helm:__
@@ -277,10 +284,11 @@ __Ceph:__
 
 Persistent storage for Kubernetes on the management nodes is supplied by Ceph.
 Ceph is provisioned using Rook to simplify deployment:
-
+<!-- find latest rook version with: helm search rook-ceph -->
+<!-- https://github.com/rook/rook/blob/master/Documentation/helm-operator.md -->
 ```sh
 helm repo add rook-master https://charts.rook.io/master
-helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph --version v0.7.0-284.g863c10f --set agent.flexVolumeDirPath=/var/lib/kubelet/volume-plugins/
+helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph --version v0.9.0-79.g1a1ffdd
 kubectl create -f services/rook-cluster.yml
 ```
 
@@ -383,13 +391,13 @@ Check the DGXie logs to make sure the services were started without errors:
 ```sh
 kubectl logs -l app=dgxie
 ```
-
+<!--
 Configure the management server(s) to use DGXie for cluster-wide DNS:
 
 ```sh
 ansible-playbook -l mgmt ansible/playbooks/resolv.yml
 ```
-
+-->
 If you later make changes to `config/dhcpd.hosts.conf`, you can update the file in Kubernetes
 and restart the service with:
 
@@ -574,6 +582,12 @@ Power cycle/on the DGX to begin the install process
 
 ```sh
 ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> power cycle
+```
+
+You can monitor install progress via the Java web console on the BMC or the Serial-over-LAN interface:
+
+```sh
+ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> sol activate
 ```
 
 The DGX install process will take approximately 15 minutes. You can check the DGXie logs with:

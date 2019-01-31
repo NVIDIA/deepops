@@ -3,7 +3,7 @@
         "mac": "01:02:03:04:05:06",
         "kernel": "/iso/install/netboot/ubuntu-installer/amd64/linux",
         "initrd": ["/iso/install/netboot/ubuntu-installer/amd64/initrd.gz"],
-        "cmdline": "quiet url={{ URL \"/dgx.seed\" }} ramdisk_size=100000 locale=en_US.UTF-8 auto=true priority=critical kbd-chooser/method=us netcfg/choose_interface=enp1s0f0 netcfg/get_hostname=dgx06 netcfg/dhcp_timeout=120",
+        "cmdline": "quiet url={{ URL \"/dgx.seed\" }} ramdisk_size=100000 locale=en_US.UTF-8 auto=true priority=critical kbd-chooser/method=us netcfg/choose_interface=enp1s0f0 console=tty0 console=ttyS1,115200n8 netcfg/dhcp_timeout=120 netcfg/get_hostname=dgx06",
         "message": "DGX Server 3.1.2"
     },
     "64-bit-ubuntu-example": {

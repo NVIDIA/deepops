@@ -6,6 +6,6 @@ curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > /tmp
 chmod +x /tmp/get_helm.sh
 sed -i 's/sudo//g' /tmp/get_helm.sh
 mkdir -p ${HELM_INSTALL_DIR}
-HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v2.9.1 /tmp/get_helm.sh
+HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v2.11.0 /tmp/get_helm.sh
 
 echo Add ${HELM_INSTALL_DIR} to your PATH

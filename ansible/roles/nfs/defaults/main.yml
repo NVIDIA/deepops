@@ -1,4 +1,4 @@
-idmapd_domain: localdomain
+nfs_idmapd_domain: localdomain
 
-is_server: no
-is_client: no
+nfs_is_server: no
+nfs_is_client: no

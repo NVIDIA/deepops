@@ -1,3 +1,0 @@
-#!/bin/bash
-read -s string
-ANSIBLE_CONFIG=${DEEPOPS_SOURCE_ANSIBLE}/docker/ansible.cfg ansible-vault encrypt_string --output=- ${string}
