@@ -21,6 +21,7 @@ Deploy a scalable DGX cluster on-prem or in the cloud
   * [6, Additional Components](#6-additional-components)
 * [Cluster Usage](#cluster-usage)
   * [Maintenance](#maintenance)
+    * [Updating Firmare](#updating-firmware)
     * [Login Server](#login-server)
     * [Cluster-wide](#cluster-wide)
   * [Kubernetes](#kubernetes)
