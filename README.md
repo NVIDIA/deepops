@@ -472,7 +472,7 @@ Service addresses:
 * Prometheus: http://mgmt:30500
 * Alertmanager: http://mgmt:30400
 
-Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
+> Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
 The default login for Grafana is `admin` for the username and password.
 
 #### __Logging:__
@@ -507,7 +507,7 @@ helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubato
 helm install --name elk --namespace logging --values config/elk.yml incubator/elastic-stack
 ```
 
-The ELK stack will take several minutes to install,
+> Important: The ELK stack will take several minutes to install,
 wait for elasticsearch to be ready in Kibana before proceeding.
 
 Launch Filebeat, which will create an Elasticsearch index automatically:
