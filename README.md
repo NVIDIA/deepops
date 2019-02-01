@@ -439,16 +439,7 @@ docker push registry.local/busybox
 
 #### __Monitoring:__
 
-Cluster monitoring is provided by Prometheus and Grafana
-
-Service addresses:
-
-* Grafana: http://mgmt:30200
-* Prometheus: http://mgmt:30500
-* Alertmanager: http://mgmt:30400
-
-Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
-The default login for Grafana is `admin` for the username and password.
+Cluster monitoring is provided by Prometheus and Grafana.
 
 __Optionally__, Modify `config/prometheus-operator.yml` and `config/kube-prometheus.yml`.
 
@@ -474,6 +465,15 @@ Enable the Ceph prometheus exporter:
 kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 ```
 -->
+
+Service addresses:
+
+* Grafana: http://mgmt:30200
+* Prometheus: http://mgmt:30500
+* Alertmanager: http://mgmt:30400
+
+Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
+The default login for Grafana is `admin` for the username and password.
 
 #### __Logging:__
 
