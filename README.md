@@ -450,8 +450,9 @@ Service addresses:
 Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
 The default login for Grafana is `admin` for the username and password.
 
-Modify `config/prometheus-operator.yml` and `config/kube-prometheus.yml` if desired and deploy the monitoring
-and alerting stack:
+__Optionally__, Modify `config/prometheus-operator.yml` and `config/kube-prometheus.yml`.
+
+Deploy the monitoring and alerting stack:
 
 ```sh
 helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
