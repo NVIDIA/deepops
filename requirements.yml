@@ -14,3 +14,8 @@
 - src: https://github.com/logan2211/ansible-resolvconf.git
   name: resolvconf
   version: a2ff5ba59b47f96ddddcb7a3a67de93687c317a6
+
+# Netplan
+- src: https://github.com/mrlesmithjr/ansible-netplan.git
+  name: netplan
+  version: 371fc43d98f7f92f4aaf2b7a50f21ff5cb2d229c
