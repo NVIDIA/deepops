@@ -456,6 +456,14 @@ docker tag $(docker images -f reference=busybox --format "{{.ID}}") registry.loc
 docker push registry.local/busybox
 ```
 
+#### NGC Container Replicator
+
+The NGC container replicator makes offline clones of NGC/DGX container registry images.
+
+For instructions, see:
+
+https://github.com/NVIDIA/ngc-container-replicator#kubernetes-deployment
+
 #### __Monitoring:__
 
 Cluster monitoring is provided by Prometheus and Grafana
