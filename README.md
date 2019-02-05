@@ -17,8 +17,9 @@ Deploy a scalable DGX cluster on-prem or in the cloud
   * [2. Management Server Setup](#2-management-server-setup)
   * [3. Services bootstrap](#3-services)
   * [4. DGX Setup](#4-DGX-compute-nodes)
-  * [5. Login Server](#5-login-server)
-  * [6, Additional Components](#6-additional-components)
+  * [5. Monitoring and Logging](#5-monitoring-and-logging)
+  * [6. Login Server](#6-login-server)
+  * [7. Additional Components](#7-additional-components)
 * [Cluster Usage](#cluster-usage)
   * [Maintenance](#maintenance)
     * [Updating Firmare](#updating-firmware)
@@ -401,13 +402,6 @@ Launch service. Runs on port `30000`: http://mgmt:30000
 kubectl apply -f services/apt.yml
 ```
 
-__Important__, if you have not already provisioned your DGX servers or added them to your kubernetes cluster you must [skip ahead](#4-DGX-compute-nodes) before continuing.
-
-__Optionally__, after provisioning your DGX servers you can delete the iso-loader deployment by running:
-```sh
-kubectl delete deployments iso-loader
-```
-
 #### __Container Registry:__
 
 Modify `config/registry.yml` if needed and launch the container registry:
@@ -415,12 +409,6 @@ Modify `config/registry.yml` if needed and launch the container registry:
 ```sh
 helm repo add stable https://kubernetes-charts.storage.googleapis.com
 helm install --values config/registry.yml stable/docker-registry --version 1.4.3
-```
-
-Configure the DGX servers to allow access to the local (insecure) container registry:
-
-```sh
-ansible-playbook -k ansible/playbooks/docker.yml
 ```
 
 You can check the container registry logs with:
@@ -442,97 +430,6 @@ docker tag $(docker images -f reference=busybox --format "{{.ID}}") registry.loc
 # push image to local container registry
 docker push registry.local/busybox
 ```
-
-#### __Monitoring:__
-
-Cluster monitoring is provided by Prometheus and Grafana.
-
-__Optionally__, Modify `config/prometheus-operator.yml` and `config/kube-prometheus.yml`.
-
-Deploy the monitoring and alerting stack:
-
-```sh
-helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
-helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/prometheus-operator.yml
-kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dashboard.json -n monitoring
-helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/kube-prometheus.yml
-```
-
-To collect GPU metrics, label each GPU node and deploy the DCGM Prometheus exporter:
-
-```sh
-kubectl label nodes <gpu-node-name> hardware-type=NVIDIAGPU
-kubectl create -f services/dcgm-exporter.yml
-```
-<!--
-Enable the Ceph prometheus exporter:
-
-```sh
-kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
-```
--->
-
-Service addresses:
-
-* Grafana: http://mgmt:30200
-* Prometheus: http://mgmt:30500
-* Alertmanager: http://mgmt:30400
-
-> Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
-The default login for Grafana is `admin` for the username and password.
-
-#### __Logging:__
-
-Centralized logging is provided by Filebeat, Elasticsearch and Kibana
-
-> Note: The ELK Helm chart is current out of date and does not provide support for
-> setting the Kibana NodePort
-
-*todo:*
-  * filebeat syslog module needs to be in UTC somehow, syslog in UTC?
-  * fix kibana nodeport issue
-
-Make sure all systems are set to the same timezone:
-
-```sh
-ansible all -k -b -a 'timedatectl status'
-```
-
-To update, use: `ansible <hostname> -k -b -a 'timedatectl set-timezone <timezone>'
-
-Install [Osquery](https://osquery.io/):
-
-```sh
-ansible-playbook -k ansible/playbooks/osquery.yml
-```
-
-Deploy Elasticsearch and Kibana:
-
-```sh
-helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
-helm install --name elk --namespace logging --values config/elk.yml incubator/elastic-stack
-```
-
-> Important: The ELK stack will take several minutes to install,
-wait for elasticsearch to be ready in Kibana before proceeding.
-
-Verify that all of the ELK services are `RUNNING` with:
-
-```sh
-kubectl get pods -n logging
-```
-
-Launch Filebeat, which will create an Elasticsearch index automatically:
-
-```sh
-helm install --name log --namespace logging --values config/filebeat.yml stable/filebeat
-```
-
-Service addresses:
-
-* Kibana: http://mgmt:30700
-
-If there is an issue, follow these [docs](docs/elk.md) to delete the logging stack.
 
 ### 4. DGX compute nodes:
 
@@ -685,9 +582,111 @@ kubectl exec -ti gpu-pod -- nvidia-smi -L
 kubectl delete pod gpu-pod
 ```
 
-If you came to this step after deploying your DGXie service you can continue by returning to [services bootstrap section](#apt-repo).
+Configure the DGX servers to allow access to the local (insecure) container registry:
 
-### 5. Login server:
+```sh
+ansible-playbook -k ansible/playbooks/docker.yml
+```
+
+__Optionally__, after provisioning your DGX servers you can delete the iso-loader deployment by running:
+```sh
+kubectl delete deployments iso-loader
+```
+
+### 5. Monitoring and Logging
+
+#### __Monitoring:__
+
+Cluster monitoring is provided by Prometheus and Grafana.
+
+__Optionally__, Modify `config/prometheus-operator.yml` and `config/kube-prometheus.yml`.
+
+Deploy the monitoring and alerting stack:
+
+```sh
+helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/prometheus-operator.yml
+kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dashboard.json -n monitoring
+helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/kube-prometheus.yml
+```
+
+To collect GPU metrics, label each GPU node and deploy the DCGM Prometheus exporter:
+
+```sh
+kubectl label nodes <gpu-node-name> hardware-type=NVIDIAGPU
+kubectl create -f services/dcgm-exporter.yml
+```
+<!--
+Enable the Ceph prometheus exporter:
+
+```sh
+kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
+```
+-->
+
+Service addresses:
+
+* Grafana: http://mgmt:30200
+* Prometheus: http://mgmt:30500
+* Alertmanager: http://mgmt:30400
+
+> Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
+The default login for Grafana is `admin` for the username and password.
+
+#### __Logging:__
+
+Centralized logging is provided by Filebeat, Elasticsearch and Kibana
+
+> Note: The ELK Helm chart is current out of date and does not provide support for
+> setting the Kibana NodePort
+
+*todo:*
+  * filebeat syslog module needs to be in UTC somehow, syslog in UTC?
+  * fix kibana nodeport issue
+
+Make sure all systems are set to the same timezone:
+
+```sh
+ansible all -k -b -a 'timedatectl status'
+```
+
+To update, use: `ansible <hostname> -k -b -a 'timedatectl set-timezone <timezone>'
+
+Install [Osquery](https://osquery.io/):
+
+```sh
+ansible-playbook -k ansible/playbooks/osquery.yml
+```
+
+Deploy Elasticsearch and Kibana:
+
+```sh
+helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+helm install --name elk --namespace logging --values config/elk.yml incubator/elastic-stack
+```
+
+> Important: The ELK stack will take several minutes to install,
+wait for elasticsearch to be ready in Kibana before proceeding.
+
+Verify that all of the ELK services are `RUNNING` with:
+
+```sh
+kubectl get pods -n logging
+```
+
+Launch Filebeat, which will create an Elasticsearch index automatically:
+
+```sh
+helm install --name log --namespace logging --values config/filebeat.yml stable/filebeat
+```
+
+Service addresses:
+
+* Kibana: http://mgmt:30700
+
+If there is an issue, follow these [docs](docs/elk.md) to delete the logging stack.
+
+### 6. Login server:
 
 > Note: If you do not require a login node, you may skip this section
 
@@ -748,7 +747,7 @@ ansible-playbook -k -K -l login ansible/playbooks/bootstrap.yml
 ansible-playbook -k -l login ansible/site.yml
 ```
 
-### 6. Additional Components
+### 7. Additional Components
 
 #### __Slurm:__
 
