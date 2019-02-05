@@ -12,10 +12,10 @@ controller:
     type: NodePort
   # Always run on master nodes
   nodeSelector:
-    node-role.kubernetes.io/master: "true"
+    node-role.kubernetes.io/master: ""
 
 # Ingress back-end
 defaultBackend:
   # Always run on master nodes
   nodeSelector:
-    node-role.kubernetes.io/master: "true"
+    node-role.kubernetes.io/master: ""
