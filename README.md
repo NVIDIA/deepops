@@ -337,11 +337,13 @@ kubectl cp /local/DGXServer-4.0.2.180925_6acd9c.iso $(kubectl get pod -l app=iso
 __Configure__
 
 Modify the DGXie configuration in `config/dgxie.yml` to set values for the DHCP server
-and DGX install process
+and DGX install process.
 
 Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node and DGX
 server in the cluster if required. IP addresses should match those used in the `config/inventory` file.
 You may also add other valid configuration options for dnsmasq to this file.
+
+> Note: There are several `TODO` comments in these configuration files where you will like need to make changes.
 
 You can get the MAC address of DGX system interfaces via the BMC, for example:
 
