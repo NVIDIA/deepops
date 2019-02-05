@@ -291,7 +291,7 @@ kubectl create -f services/rook-cluster.yml
 Poll the Ceph status by running:
 
 ```sh
-.scripts/ceph_poll.sh
+./scripts/ceph_poll.sh
 ```
 
 ### 3. Services
