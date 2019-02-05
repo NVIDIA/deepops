@@ -343,7 +343,11 @@ Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node an
 server in the cluster if required. IP addresses should match those used in the `config/inventory` file.
 You may also add other valid configuration options for dnsmasq to this file.
 
-> Note: There are several `TODO` comments in these configuration files where you will like need to make changes.
+```sh
+grep TODO config/*
+```
+
+> Note: There are several `TODO` comments in these configuration files where that will likely need to be changed. Depending on the system architecture there may be additional required config changes.
 
 You can get the MAC address of DGX system interfaces via the BMC, for example:
 
