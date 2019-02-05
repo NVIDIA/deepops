@@ -568,10 +568,10 @@ You can monitor install progress via the Java web console on the BMC or the Seri
 ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> sol activate
 ```
 
-The DGX install process will take approximately 15 minutes. You can check the DGXie logs with:
+The DGX install process will take approximately 15 minutes. You can tail the DGXie logs with:
 
 ```sh
-kubectl logs -l app=dgxie
+kubectl logs -f $(kubectl get pod -l app=dgxie -o custom-columns=:metadata.name --no-headers)
 ```
 
 If your DGX are on an un-routable subnet, uncomment the `ansible_ssh_common_args` variable in the
