@@ -387,19 +387,19 @@ ansible-playbook -l mgmt ansible/playbooks/resolv.yml
 
 If you later make changes to `config/dhcpd.hosts.conf` or `machines.json` you can follow the [steps](docs/dgxie.md) to update the dgxie service.
 
-__Important__, if you have not already provisioned your DGX servers or added them to your kubernetes cluster you must [skip ahead](#4-DGX-compute-nodes) before continuing.
-
-__Optionally__, after provisioning your DGX servers you can delete the iso-loader deployment by running:
-```sh
-kubectl delete deployments iso-loader
-```
-
 #### __APT Repo:__
 
 Launch service. Runs on port `30000`: http://mgmt:30000
 
 ```sh
 kubectl apply -f services/apt.yml
+```
+
+__Important__, if you have not already provisioned your DGX servers or added them to your kubernetes cluster you must [skip ahead](#4-DGX-compute-nodes) before continuing.
+
+__Optionally__, after provisioning your DGX servers you can delete the iso-loader deployment by running:
+```sh
+kubectl delete deployments iso-loader
 ```
 
 #### __Container Registry:__
