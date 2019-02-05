@@ -347,7 +347,7 @@ You may also add other valid configuration options for dnsmasq to this file.
 grep TODO config/*
 ```
 
-> Note: There are several `TODO` comments in these configuration files where that will likely need to be changed. Depending on the system architecture there may be additional required config changes.
+> Note: There are several `TODO` comments in these configuration files that will likely need to be changed. Depending on the system architecture there may be additional required config changes.
 
 You can get the MAC address of DGX system interfaces via the BMC, for example:
 
