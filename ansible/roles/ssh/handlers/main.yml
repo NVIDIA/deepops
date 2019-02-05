@@ -5,10 +5,8 @@
 
 - name: restart ssh
   action: service name=ssh state=restarted
-  when: ssh_service_state != 'stopped'
-  when: ansible_os_family == "Debian"
+  when: (ssh_service_state != 'stopped' and ansible_os_family == "Debian")
 
 - name: restart ssh
   action: service name=sshd state=restarted
-  when: ssh_service_state != 'stopped'
-  when: ansible_os_family == "Redhat"
+  when: (ssh_service_state != 'stopped' and ansible_os_family == "Redhat")
