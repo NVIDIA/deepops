@@ -21,6 +21,7 @@ Deploy a scalable DGX cluster on-prem or in the cloud
   * [6, Additional Components](#6-additional-components)
 * [Cluster Usage](#cluster-usage)
   * [Maintenance](#maintenance)
+    * [Updating Firmare](#updating-firmware)
     * [Login Server](#login-server)
     * [Cluster-wide](#cluster-wide)
   * [Kubernetes](#kubernetes)
@@ -107,7 +108,7 @@ segment and subnet which can be controlled by the DHCP server.
 
 ### 1. Download and configure
 
-To use DeepOps we will need to download the repository onto the administrator's provisioning system and install the following software packages:
+To use DeepOps we will need to download the repository onto the administrator's provisioning system and run the `bootstrap-mgmt.sh` script to install the following software packages:
 
 * Ansible
 * Docker
@@ -247,7 +248,7 @@ mkdir -p ~/.kube/
 mv admin.conf ~/.kube/config
 ```
 
-(Optional) If you have an existing Kubernetes configuration file, you can merge the two with:
+__Optionally__, If you have an existing Kubernetes configuration file, you can merge the two with:
 
 ```sh
 mkdir -p ~/.kube && mv ~/.kube/config{,.bak} && KUBECONFIG=./admin.conf:~/.kube/config.bak kubectl config view --flatten | tee ~/.kube/config
@@ -266,26 +267,17 @@ __Helm:__
 
 Some services are installed using [Helm](https://helm.sh/), a package manager for Kubernetes.
 
-Install the Helm client by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
-
-If you're using Linux, the script `scripts/helm_install_linux.sh` will set up Helm for the current user
-
-Be sure to install a version of Helm matching the version in `config/kube.yml`
-
-(Optional) If `helm_enabled` is `true` in `config/kube.yml`,
-the Helm server will already be deployed in Kubernetes.
-If it needs to be installed manually for some reason, run:
+If you did not modify your `config/kube.yml` file to disable the `helm_enabled` flag you can now initialize helm.
 
 ```sh
-kubectl create sa tiller --namespace kube-system
-kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-helm init --service-account tiller --node-selectors node-role.kubernetes.io/master=true
+helm init
 ```
+
+__Optionally__, If you disabled the `helm_enabled` field you can follow [these steps](docs/helm.md) to manually install and configure helm.
 
 __Ceph:__
 
-Persistent storage for Kubernetes on the management nodes is supplied by Ceph.
-Ceph is provisioned using Rook to simplify deployment:
+Persistent storage for Kubernetes on the management nodes is supplied by Ceph. Ceph is provisioned using Rook to simplify deployment:
 <!-- find latest rook version with: helm search rook-ceph -->
 <!-- https://github.com/rook/rook/blob/master/Documentation/helm-operator.md -->
 ```sh
@@ -294,10 +286,13 @@ helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph
 kubectl create -f services/rook-cluster.yml
 ```
 
-> Note: It will take a few minutes for containers to be pulled and started.
-> Wait for Rook to be fully installed before proceeding
+> Caution, wait for the polling script to complete or later steps will fail. It may take up to 10 minutes.
 
-You can poll the Ceph status by running `scripts/ceph_poll.sh`:
+Poll the Ceph status by running:
+
+```sh
+./scripts/ceph_poll.sh
+```
 
 ### 3. Services
 
@@ -342,11 +337,17 @@ kubectl cp /local/DGXServer-4.0.2.180925_6acd9c.iso $(kubectl get pod -l app=iso
 __Configure__
 
 Modify the DGXie configuration in `config/dgxie.yml` to set values for the DHCP server
-and DGX install process
+and DGX install process.
 
 Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node and DGX
 server in the cluster if required. IP addresses should match those used in the `config/inventory` file.
 You may also add other valid configuration options for dnsmasq to this file.
+
+```sh
+grep TODO config/*
+```
+
+> Note: There are several `TODO` comments in these configuration files where that will likely need to be changed. Depending on the system architecture there may be additional required config changes.
 
 You can get the MAC address of DGX system interfaces via the BMC, for example:
 
@@ -389,23 +390,8 @@ Configure the management server(s) to use DGXie for cluster-wide DNS:
 ansible-playbook -l mgmt ansible/playbooks/resolv.yml
 ```
 -->
-If you later make changes to `config/dhcpd.hosts.conf`, you can update the file in Kubernetes
-and restart the service with:
 
-```sh
-kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf -o yaml --dry-run | kubectl replace -f -
-kubectl delete pod -l app=dgxie
-```
-
-If you make changes to `machines.json`, you can update the file without having to restart the DGXie POD:
-
-```sh
-kubectl create configmap pxe-machines --from-file=config/machines.json -o yaml --dry-run | kubectl replace -f -
-```
-
-At this point, if you have not already provisioned your DGX servers or added it to your kubernetes cluster you should [skip ahead](#4-DGX-compute-nodes) before continuing.
-
-Optionally, after provisioning your DGX servers you can delete the iso-loader deployment by running `kubectl delete deployments iso-loader`.
+If you later make changes to `config/dhcpd.hosts.conf` or `machines.json` you can follow the [steps](docs/dgxie.md) to update the dgxie service.
 
 #### __APT Repo:__
 
@@ -413,6 +399,13 @@ Launch service. Runs on port `30000`: http://mgmt:30000
 
 ```sh
 kubectl apply -f services/apt.yml
+```
+
+__Important__, if you have not already provisioned your DGX servers or added them to your kubernetes cluster you must [skip ahead](#4-DGX-compute-nodes) before continuing.
+
+__Optionally__, after provisioning your DGX servers you can delete the iso-loader deployment by running:
+```sh
+kubectl delete deployments iso-loader
 ```
 
 #### __Container Registry:__
@@ -424,7 +417,7 @@ helm repo add stable https://kubernetes-charts.storage.googleapis.com
 helm install --values config/registry.yml stable/docker-registry --version 1.4.3
 ```
 
-Now we will configure the DGX servers to allow access to the local (insecure) container registry:
+Configure the DGX servers to allow access to the local (insecure) container registry:
 
 ```sh
 ansible-playbook -k ansible/playbooks/docker.yml
@@ -452,19 +445,11 @@ docker push registry.local/busybox
 
 #### __Monitoring:__
 
-Cluster monitoring is provided by Prometheus and Grafana
+Cluster monitoring is provided by Prometheus and Grafana.
 
-Service addresses:
+__Optionally__, Modify `config/prometheus-operator.yml` and `config/kube-prometheus.yml`.
 
-* Grafana: http://mgmt:30200
-* Prometheus: http://mgmt:30500
-* Alertmanager: http://mgmt:30400
-
-Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
-The default login for Grafana is `admin` for the username and password.
-
-Modify `config/prometheus-operator.yml` and `config/kube-prometheus.yml` if desired and deploy the monitoring
-and alerting stack:
+Deploy the monitoring and alerting stack:
 
 ```sh
 helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
@@ -486,6 +471,15 @@ Enable the Ceph prometheus exporter:
 kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
 ```
 -->
+
+Service addresses:
+
+* Grafana: http://mgmt:30200
+* Prometheus: http://mgmt:30500
+* Alertmanager: http://mgmt:30400
+
+> Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
+The default login for Grafana is `admin` for the username and password.
 
 #### __Logging:__
 
@@ -519,7 +513,7 @@ helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubato
 helm install --name elk --namespace logging --values config/elk.yml incubator/elastic-stack
 ```
 
-The ELK stack will take several minutes to install,
+> Important: The ELK stack will take several minutes to install,
 wait for elasticsearch to be ready in Kibana before proceeding.
 
 Launch Filebeat, which will create an Elasticsearch index automatically:
@@ -532,15 +526,7 @@ Service addresses:
 
 * Kibana: http://mgmt:30700
 
-The logging stack can be deleted with:
-
-```sh
-helm del --purge log
-helm del --purge elk
-kubectl delete statefulset/elk-elasticsearch-data
-kubectl delete pvc -l app=elasticsearch
-# wait for all statefulsets to be removed before re-installing...
-```
+If there is an issue, follow these [docs](docs/elk.md) to delete the logging stack.
 
 ### 4. DGX compute nodes:
 
@@ -588,18 +574,18 @@ You can monitor install progress via the Java web console on the BMC or the Seri
 ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> sol activate
 ```
 
-The DGX install process will take approximately 15 minutes. You can check the DGXie logs with:
+The DGX install process will take approximately 15 minutes. You can tail the DGXie logs with:
 
 ```sh
-kubectl logs -l app=dgxie
+kubectl logs -f $(kubectl get pod -l app=dgxie -o custom-columns=:metadata.name --no-headers)
 ```
 
 If your DGX are on an un-routable subnet, uncomment the `ansible_ssh_common_args` variable in the
-`config/group_vars/dgx-servers.yml` file and modify the IP address to the IP address of the management server
+`config/group_vars/dgx-servers.yml` file and __modify__ the IP address to the IP address of the management server
 with access to the private subnet, i.e.
 
 ```sh
-ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
+ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@192.168.1.1"'
 ```
 
 Test the connection to the DGX servers via the bastion host (management server). Type the password
@@ -744,7 +730,7 @@ If your login nodes are on an un-routable subnet, uncomment the `ansible_ssh_com
 with access to the private subnet, i.e.
 
 ```sh
-ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
+ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@192.168.1.1"'
 ```
 
 Various playbooks to install components are available in `ansible/playbooks`.

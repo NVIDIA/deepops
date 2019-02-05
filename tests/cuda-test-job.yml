@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cuda-job
+spec:
+  backoffLimit: 5
+  template:
+    spec:
+      imagePullSecrets:
+        - name: nvcr.dgxkey
+      containers:
+        - name: cuda-container
+          image: nvcr.io/nvidia/cuda:9.0-cudnn7.1-devel-ubuntu16.04
+          command: ["nvidia-smi"]
+          args: ["-L"]
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+      restartPolicy: Never
