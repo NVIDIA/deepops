@@ -1,0 +1,49 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: False
+  vars:
+    ansible_user: ubuntu
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    - name: Install Python for Ansible
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      register: output
+      changed_when: output.stdout != ""
+
+- hosts: all
+  become: true
+  become_method: sudo
+  vars:
+    ansible_user: ubuntu
+    user_list:
+      - name: "ubuntu"
+        username: "ubuntu"
+        state: present
+          # dgxtraining
+          #password: "$6$KnKMe5jfFk2A3/R$Kp/AMWlpw9ef2X7J.xvzxeDVLruJbYIPVj098L.otTKGkrotAsWCbjMAUcZoiE56lQ4tXSjwWeDn..9NSJj0d1"
+          # deepops
+        password: "$6$5kCSHqdf.Du19uvz$cGTX4JijfiILr9QkN917sVJcJHGJILBkRVljEyTzF6L/nF6zAdJ.7U5dRIkz2aKb/7RxsPjdtlkMZOQQwNqzt."
+        groups:
+          - sudo
+    ssh_password_authentication: 'yes'
+  roles:
+    - users
+    - ssh
+  tasks:
+    - name: create /local
+      file:
+        path: /local
+        state: directory
+        mode: 0755
+    - name: copy DGX ISO
+      copy:
+        #src: /local/DGXServer-4.0.4.181116_cc1114.iso
+        #src: /local/DGXServer-4.0.2.180925_6acd9c.iso
+        src: /local/DGXServer-3.1.2.170902_f8777e.iso
+        #dest: /local/DGXServer-4.0.4.181116_cc1114.iso
+        #dest: /local/DGXServer-4.0.2.180925_6acd9c.iso
+        dest: /local/DGXServer-3.1.2.170902_f8777e.iso
+        owner: ubuntu
+        group: ubuntu
+        mode: 0644
