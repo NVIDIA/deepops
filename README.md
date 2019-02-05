@@ -579,7 +579,7 @@ If your DGX are on an un-routable subnet, uncomment the `ansible_ssh_common_args
 with access to the private subnet, i.e.
 
 ```sh
-ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
+ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@192.168.1.1"'
 ```
 
 Test the connection to the DGX servers via the bastion host (management server). Type the password
@@ -724,7 +724,7 @@ If your login nodes are on an un-routable subnet, uncomment the `ansible_ssh_com
 with access to the private subnet, i.e.
 
 ```sh
-ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
+ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@192.168.1.1"'
 ```
 
 Various playbooks to install components are available in `ansible/playbooks`.

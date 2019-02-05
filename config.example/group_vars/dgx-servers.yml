@@ -2,7 +2,7 @@
 user: dgxuser
 ansible_user: dgxuser
 
-#ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
+#ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@192.168.1.1"'
 
 # Collectd
 collectd_python_modules:
