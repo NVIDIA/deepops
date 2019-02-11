@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set -ex
 
 # start vagrant
 vagrant up --no-parallel --provider=libvirt
