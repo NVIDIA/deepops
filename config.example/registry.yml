@@ -11,7 +11,7 @@ persistence:
 
 # Run container registry service only on master nodes
 nodeSelector:
-  node-role.kubernetes.io/master: "true"
+  node-role.kubernetes.io/master: ""
 
 # Data ingress
 ingress:
