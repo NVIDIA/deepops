@@ -9,11 +9,20 @@
         state: present
     - name: add nvidia-docker repo source
       get_url:
+        url: https://nvidia.github.io/nvidia-docker/ubuntu16.04/nvidia-docker.list
+        dest: /etc/apt/sources.list.d/nvidia-docker.list
+        mode: 0644
+        owner: root
+        group: root
+      when: (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] == '16')
+    - name: add nvidia-docker repo source
+      get_url:
         url: https://nvidia.github.io/nvidia-docker/ubuntu18.04/nvidia-docker.list
         dest: /etc/apt/sources.list.d/nvidia-docker.list
         mode: 0644
         owner: root
         group: root
+      when: (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] == '18')
     - name: install nvidia-docker2
       apt:
         name: nvidia-docker2
