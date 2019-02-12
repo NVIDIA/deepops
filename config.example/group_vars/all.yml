@@ -51,18 +51,18 @@ enable_sudo_without_password: true
 #  You can generate a new password with `mkpasswd -m sha-512`
 #  You may also add SSH public keys to each user account
 #  The default password here is 'deepops'
-user_list:
-  - name: "ubuntu"
-    username: "ubuntu"
-    state: present
-    shell: "/bin/bash"
-    password: "$6$5kCSHqdf.Du19uvz$cGTX4JijfiILr9QkN917sVJcJHGJILBkRVljEyTzF6L/nF6zAdJ.7U5dRIkz2aKb/7RxsPjdtlkMZOQQwNqzt."
-    groups:
-      - sudo
-      - docker
-    #keys:
-    #  active:
-    #    - "ssh-rsa ..."
+#user_list:
+#  - name: "ubuntu"
+#    username: "ubuntu"
+#    state: present
+#    shell: "/bin/bash"
+#    password: "$6$5kCSHqdf.Du19uvz$cGTX4JijfiILr9QkN917sVJcJHGJILBkRVljEyTzF6L/nF6zAdJ.7U5dRIkz2aKb/7RxsPjdtlkMZOQQwNqzt."
+#    groups:
+#      - sudo
+#      - docker
+#    #keys:
+#    #  active:
+#    #    - "ssh-rsa ..."
 # Optionally add users to groups but don't create accounts, i.e. when using NIS
 # - name: "test"
 #   groups:
