@@ -1,10 +1,2 @@
 ---
-user: ubuntu
-ansible_user: ubuntu
-
-#ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
-
-daemon_json:
-  bip: 192.168.99.1/24
-  insecure-registries:
-    - "registry.local"
+# Login Server Configuration

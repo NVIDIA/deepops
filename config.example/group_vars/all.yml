@@ -1,10 +1,30 @@
-# Defaults
+# Configuration common to all hosts
+# Define per-group or per-host values in the other configuration files
 
-# Default user account on all systems
-#  you can define per-group values in the other configuration files
-user: ubuntu
+# Account to use for SSH connections
 ansible_user: ubuntu
 
+# Groups for the default user
+ansible_user_groups:
+  - sudo
+  - docker
+
+# SSH Configuration
+ssh_password_authentication: 'yes'
+
+# Configure SUDO to not require a password for users in the `sudo` group
+# If this is `false`, pass the `-K` flag to all Ansible commands to prompt for the SUDO password
+enable_sudo_without_password: true
+
+# Configure Ansible to use a proxy if remote machines are unroutable
+#ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
+
+# Docker Configuration
+daemon_json:
+  bip: 192.168.99.1/24
+  insecure-registries:
+    - "registry.local"
+      # ##########################
 # Amount of time to allow between updating Ubuntu APT cache
 cache_valid_time: 3600
 
@@ -128,12 +148,6 @@ nfs_mounts: []
 #  path: /export/shared
 #  options: async,vers=3
 
-# Configure SSH
-ssh_port: [22]
-ssh_permit_root_login: 'yes'
-ssh_pubkey_authentication: 'yes'
-ssh_password_authentication: 'yes'
-ssh_known_hosts: []
 
 # Configure Collectd
 #collectd_network_server: "deepops-mgmt.example.com"

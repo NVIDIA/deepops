@@ -1,12 +1,8 @@
 ---
-# DGX Server Configuration
+# GPU Server Configuration
 
-ansible_user: dgxuser
-
-# Collectd
-collectd_python_modules:
-  - dcgm_collectd
-with_dcgm_collectd: true
+# NVIDIA GPU Driver configuration
+nv_gpu_apt_repo_url: ppa:graphics-drivers/ppa
 
 # Docker Configuration
 daemon_json:
