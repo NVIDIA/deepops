@@ -81,9 +81,15 @@ node1                      : ok=401  changed=121  unreachable=0    failed=0
 _Create server inventory_
 
 ```sh
-# Copy the default configuration and edit
-cp configuration.yml.example configuration.yml
-vi configuration.yml
+# Copy the default configuration
+cp -r config.example config
+
+# Review and edit the inventory file to set IPs/hostnames for servers
+cat config/inventory
+
+# Review and edit configuration under config/group_vars/*.yml
+cat config/group_vars/all.yml
+cat config/group_vars/gpu-servers.yml
 ```
 
 _Configure GPU Servers_
