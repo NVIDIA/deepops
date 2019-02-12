@@ -1,12 +1,9 @@
-DeepOps
+Deployment Guide
 ===
-
-Deploy a scalable DGX cluster on-prem or in the cloud
 
 ## Contents
 
 * [Overview](#overview)
-* [Quickstart](#quickstart)
 * [Prerequisites](#prerequisites)
   * [Hardware Requirements](#hardware-requirements)
   * [Software Requirements](#software-requirements)
@@ -31,10 +28,6 @@ Deploy a scalable DGX cluster on-prem or in the cloud
 
 ## Overview
 
-The DeepOps project aims to facilitate deployment of multi-node GPU clusters for
-Deep Learning and HPC environments, in an on-prem, optionally air-gapped
-datacenter or in the cloud.
-
 This document is written as a step-by-step guide which should allow for a person with
 minimal Linux system administration experience to install and configure an entire cluster
 from scratch. More experienced administrators should be able to pick and choose items that
@@ -52,17 +45,6 @@ to facilitate easier large-scale training jobs or more traditional HPC workloads
 
 For more information on deploying DGX in the datacenter, consult the
 [DGX Data Center Reference Design Whitepaper](https://nvidia-gpugenius.highspot.com/viewer/5b33fecf1279587c07d8ac86)
-
-## Quickstart
-
-To bootstrap the cluster:
-
-```sh
-wget https://raw.githubusercontent.com/NVIDIA/deepops/dev/deepops
-chmod +x ./deepops
-./deepops install --ip 10.0.0.1 --username ubuntu --password
-./deepops install compute --ip 192.168.1.20 --bastion --username dgxuser --password
-```
 
 ## Prerequisites
 
@@ -841,7 +823,7 @@ Assuming you created or used an existing NFS share during cluster bootstrap, cre
 to hold software builds and create a `direnv` file to facilitate easier EasyBuild builds:
 
 EasyBuild environment file:
- 
+
 ```sh
 $ cat /shared/.envrc
 export EASYBUILD_PREFIX=/shared/sw

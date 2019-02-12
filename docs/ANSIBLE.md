@@ -1,4 +1,4 @@
-[Ansible](https://www.ansible.com/overview/how-ansible-works)
+[Ansible Guide](https://www.ansible.com/overview/how-ansible-works)
 ===
 
 Ansible is an automation tool that simplifies configuration of computers.
@@ -8,15 +8,23 @@ small virtual machine, or cluster management server.
 
 ## Ansible Setup
 
+### Requirements
+
+  * Control machine with supported OS to run Ansible
+  * [Passwordless](docs/ANSIBLE.md#passwordless-configuration-using-ssh-keys) (SSH key) access from Ansible system to Universal GPU servers
+
 A script is provided to install Ansible on Ubuntu and RHEL/CentOS machines. Ansible can
-also be installed on Mac OS and Windows (via WSL).
+also be installed on Mac OS and Windows (WSL).
 
 ```sh
+# Installation script for Ubuntu/RHEL
 ./scripts/install_ansible.sh
+
+# Install required Ansible roles
 ansible-galaxy install -r requirements.yml
 ```
 
-See the [documentation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+See the [Ansible documentation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 for more detailed installation information.
 
 ### Passwordless configuration using SSH keys
@@ -66,6 +74,23 @@ and indicate no failures, for example:
 PLAY RECAP ************************************************************************************************************
 localhost                  : ok=1    changed=0    unreachable=0    failed=0
 node1                      : ok=401  changed=121  unreachable=0    failed=0
+```
+
+## Ansible Usage
+
+_Create server inventory_
+
+```sh
+# Copy the default configuration and edit
+cp configuration.yml.example configuration.yml
+vi configuration.yml
+```
+
+_Configure GPU Servers_
+
+```sh
+# If sudo requires a password, add the -K flag
+ansible-playbook playbooks/setup-gpu-servers.yml
 ```
 
 ### Useful commands

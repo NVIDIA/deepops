@@ -3,86 +3,41 @@ DeepOps
 
 GPU cluster infrastructure and automation tools
 
+## Overview
+
+The DeepOps project facilitates deployment of GPU servers and multi-node
+GPU clusters for Deep Learning and HPC environments, in an on-prem,
+optionally air-gapped datacenter or in the cloud.
+
+See the [Deployment Guide](docs/DEPLOYMENT.md) for step-by-step instructions and setup information
+
+For more information on deploying DGX in the datacenter, consult the
+[DGX Data Center Reference Design Whitepaper](https://nvidia-gpugenius.highspot.com/viewer/5b33fecf1279587c07d8ac86)
+
 ## Components:
 
   * [Operating System Installation](#operating-system-installation)
   * [Operating System Configuration](#operating-system-configuration)
   * [Orchestration Layer Installation](#orchestration-layer-installation)
-
-**See the [Getting Started Guide](docs/GETTINGSTARTED.md) for step-by-step instructions and more
-detailed setup information.**
+  * [Application Layer Installation](#application-layer-installation)
 
 ## Operating System Installation
 
-Install a supported operating system (Ubuntu/RHEL) on GPU servers via
-a 3rd-party solution or utilize the provided OS install container
+DeepOps currently supports Ubuntu and RHEL/CentOS operating systems and should work with
+both vanilla installs or custom OS images.
 
-### OS Install via 3rd-party solutions:
+**Installation methods**
 
-  * [MAAS](https://maas.io/)
-  * [Foreman](https://www.theforeman.org/)
-
-### OS Install Container
-
-#### Working with an existing DHCP server
-
-Modify `pxe/docker-compose.yml`
-
-Start the PXE server:
-
-```sh
-docker-compose -f pxe/docker-compose.yml up -d pxe-ubuntu
-```
-
-#### Working with no existing DHCP server
-
-Modify `pxe/docker-compose.yml`
-
-Modify `pxe/dhcp/dnsmasq.conf`
-
-Start the DHCP and PXE servers:
-
-```sh
-docker-compose -f pxe/docker-compose.yml up -d dhcp pxe-ubuntu
-```
-
-For more information on PXE installation, see the [docs](docs/PXE.md)
+  * Manual OS install
+  * 3rd-party tools ([MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/), etc.)
+  * [Minimal PXE container](docs/PXE.md)
+  * [DGXie](docs/DGXIE.md) (DGX OS specific install automation)
 
 ## Operating System Configuration
 
-Server configuration is done via Ansible. Go here for detailed instructions: [docs/ANSIBLE.md](docs/ANSIBLE.md)
+DeepOps uses Ansible for configuration management and automation.
 
-### Requirements
-
-  * Control machine with supported OS to run Ansible
-  * [Passwordless](docs/ANSIBLE.md#passwordless-configuration-using-ssh-keys) (SSH key) access from Ansible system to Universal GPU servers
-
-### Installation and Usage
-
-_Install Ansible_
-
-```sh
-# Installation script for Ubuntu/RHEL
-./scripts/install_ansible.sh
-
-# Install required Ansible roles
-ansible-galaxy install -r requirements.yml
-```
-
-_Create server inventory_
-
-```sh
-# Copy the default configuration and edit
-cp configuration.yml.example configuration.yml
-vi configuration.yml
-```
-
-_Configure GPU Servers_
-
-```sh
-# If sudo requires a password, add the -K flag
-ansible-playbook playbooks/setup-gpu-servers.yml
-```
+See the [Ansible Guide](docs/ANSIBLE.md) for information on installing and using Ansible
 
 ## Orchestration Layer Installation
 
@@ -90,41 +45,10 @@ ansible-playbook playbooks/setup-gpu-servers.yml
 
 Kubernetes is installed via the Kubespray project, which uses Ansible
 
-#### Requirements
+See the [Kubespray Guide](docs/KUBESPRAY.md) for information on installing Kubernetes
 
-  * Control machine with Ansible installed and configured: [docs/ANSIBLE.md](docs/ANSIBLE.md)
-  * Systems configured per [Operating System Configuration](#operating-system-configuration) section
-
-#### Installation
-
-```sh
-# Make sure kubespray is up to date
-git submodule update --init
-
-# Copy the kubespray default configuration
-cp -rfp kubespray/inventory/sample/ k8s-config
-
-# Update Ansible inventory file and configuration with inventory builder
-declare -a IPS=(10.0.0.1 10.0.0.2 10.0.0.3)
-CONFIG_FILE=k8s-config/hosts.ini python3 kubespray/contrib/inventory_builder/inventory.py ${IPS[@]}
-
-# Modify `k8s-config/hosts.ini` to configure hosts for specific roles
-# Make sure the [etcd] group has an odd number of hosts
-
-# Install Kubernetes
-ansible-playbook -b kubespray/cluster.yml
-```
-
-For more information on Kubespray, see the [docs](docs/KUBESPRAY.md)
-
-#### Accessing Kubernetes
-
-```sh
-# Obtain the Kubernetes admin user config file
-./scripts/setup_remote_k8s.sh
-
-# Test access is working
-kubectl get nodes
-```
+See the [Kubernetes Guide](docs/KUBERNETES.md) for information on using Kubernetes
 
 ### Slurm
+
+## Application Layer Installation
