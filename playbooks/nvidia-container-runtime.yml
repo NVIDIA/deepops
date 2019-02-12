@@ -1,0 +1,21 @@
+---
+- hosts: gpu-servers
+  become: true
+  become_method: sudo
+  tasks:
+    - name: add nvidia-docker repo key
+      apt_key:
+        url: https://nvidia.github.io/nvidia-docker/gpgkey
+        state: present
+    - name: add nvidia-docker repo source
+      get_url:
+        url: https://nvidia.github.io/nvidia-docker/ubuntu18.04/nvidia-docker.list
+        dest: /etc/apt/sources.list.d/nvidia-docker.list
+        mode: 0644
+        owner: root
+        group: root
+    - name: install nvidia-docker2
+      apt:
+        name: nvidia-docker2
+        state: latest
+        update_cache: yes

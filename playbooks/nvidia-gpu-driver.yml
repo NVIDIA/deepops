@@ -1,0 +1,34 @@
+---
+- hosts: gpu-servers
+  become: true
+  become_method: sudo
+  tasks:
+    - name: unload nouveau driver
+      modprobe:
+        name: nouveau
+        state: absent
+    - name: blacklist nouveau driver
+      kernel_blacklist:
+        name: nouveau
+        state: present
+    - name: add nvidia driver ppa
+      apt_repository:
+        repo: "{{ nv_gpu_apt_repo_url }}"
+    - name: install nvidia driver
+      apt:
+        name: "{{ item }}"
+        update_cache: yes
+        cache_valid_time: 3600
+        state: latest
+      with_items:
+        - nvidia-driver-410
+        - nvidia-utils-410
+    - name: load nvidia driver
+      modprobe:
+        name: nvidia
+        state: present
+    - name: enable and start nvidia persistence daemon
+      systemd:
+        name: nvidia-persistenced
+        enabled: yes
+        state: started

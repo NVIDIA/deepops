@@ -1,5 +1,0 @@
----
-cachefilesd_package_state: present
-cache_valid_time: 3600
-cachefilesd_cache_dir: /raid
-cachefilesd_cache_tag: dgx1cache

@@ -1,2 +1,0 @@
-#
-%dip ALL=(ALL) NOPASSWD: /shared/bin/k8s_user.sh

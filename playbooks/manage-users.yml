@@ -1,0 +1,17 @@
+---
+- hosts: all
+  become: true
+  become_method: sudo
+  gather_facts: false
+  tasks:
+    - set_fact:
+        passwd: "{{ pwgen }}"
+
+- hosts: all
+  become: true
+  become_method: sudo
+  roles:
+    - users 
+  tasks:
+    - debug:
+       msg: "Set password to: {{ passwd }}"

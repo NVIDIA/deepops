@@ -1,2 +1,0 @@
-#!/bin/bash
-echo "{ \"total_mb\": $(free -m | grep Mem: | awk '{print $2*0.95}') }"
