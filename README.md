@@ -1,9 +1,7 @@
-NVIO
+DeepOps
 ===
 
-*"NVIDIA Infrastructure Ops"*
-
-Universal GPU Server Software Stack
+GPU cluster infrastructure and automation tools
 
 ## Components:
 
