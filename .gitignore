@@ -13,3 +13,12 @@ get_helm.sh
 virtual/.vagrant
 virtual/*.log
 @eaDir
+
+roles/*
+!roles/users/
+!roles/slurm/
+
+*.retry
+
+configuration.yml
+k8s-config

@@ -1,6 +1,3 @@
 [submodule "kubespray"]
 	path = kubespray
 	url = https://github.com/kubernetes-incubator/kubespray.git
-[submodule "containers/deepops/ngc-container-replicator"]
-	path = containers/deepops/ngc-container-replicator
-	url = https://github.com/NVIDIA/ngc-container-replicator.git
