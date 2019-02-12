@@ -92,11 +92,16 @@ cat config/group_vars/all.yml
 cat config/group_vars/gpu-servers.yml
 ```
 
-_Configure GPU Servers_
+_Configure Servers_
 
 ```sh
 # If sudo requires a password, add the -K flag
-ansible-playbook playbooks/setup-gpu-servers.yml
+
+# For servers in the `[management]` group
+ansible-playbook playbooks/management.yml
+
+# For servers in the `[gpu-servers]` group
+ansible-playbook playbooks/gpu-servers.yml
 ```
 
 ### Useful commands
