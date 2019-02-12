@@ -4,7 +4,6 @@ Deployment Guide
 ## Contents
 
 * [Overview](#overview)
-* [Quickstart](#quickstart)
 * [Prerequisites](#prerequisites)
   * [Hardware Requirements](#hardware-requirements)
   * [Software Requirements](#software-requirements)
@@ -116,7 +115,6 @@ Download the DeepOps repo onto the provisioning system:
 ```sh
 git clone --recursive https://github.com/NVIDIA/deepops.git
 cd deepops
-git checkout training
 git submodule update
 ```
 
@@ -268,7 +266,7 @@ If you did not modify your `config/kube.yml` file to disable the `helm_enabled` 
 helm init
 ```
 
-__Optionally__, If you disabled the `helm_enabled` field you can follow [these steps](docs/helm.md) to manually install and configure helm.
+__Optionally__, If you disabled the `helm_enabled` field you can follow [these steps](helm.md) to manually install and configure helm.
 
 __Ceph:__
 
@@ -386,7 +384,7 @@ ansible-playbook -l mgmt ansible/playbooks/resolv.yml
 ```
 -->
 
-If you later make changes to `config/dhcpd.hosts.conf` or `machines.json` you can follow the [steps](docs/dgxie.md) to update the dgxie service.
+If you later make changes to `config/dhcpd.hosts.conf` or `machines.json` you can follow the [steps](dgxie.md) to update the dgxie service.
 
 #### __APT Repo:__
 
@@ -690,7 +688,7 @@ Service addresses:
 
 * Kibana: http://mgmt:30700
 
-If there is an issue, follow these [docs](docs/elk.md) to delete the logging stack.
+If there is an issue, follow these [docs](elk.md) to delete the logging stack.
 
 ### 6. Login server:
 
@@ -719,7 +717,7 @@ alternate operating systems if required.
 grep TODO config/machines.json
 ```
 
-__Important:__ Follow the [steps listed here ](docs/dgxie.md)  to update the DGXie with the new dhcp and PXE configurations. 
+__Important:__ Follow the [steps listed here ](dgxie.md)  to update the DGXie with the new dhcp and PXE configurations. 
 
 Set login nodes to boot from the network for the next boot only and power on the systems.
 The login nodes should receive a response from the DGXie service and begin the OS install process.
