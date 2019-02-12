@@ -3,14 +3,12 @@ PXE
 
 Minimal containers for OS installation
 
-## OS Install Container
-
-### Requirements
+## Requirements
 
   * Control machine connected to the same VLAN/subnet as target machines
   * Docker installed on control machine
 
-### Working with an existing DHCP server
+## Working with an existing DHCP server
 
 Modify `containers/pxe/docker-compose.yml`
 
@@ -20,7 +18,7 @@ Start the PXE server:
 docker-compose -f containers/pxe/docker-compose.yml up -d pxe-ubuntu
 ```
 
-### Working with no existing DHCP server
+## Working with no existing DHCP server
 
 Modify `containers/pxe/docker-compose.yml`
 
