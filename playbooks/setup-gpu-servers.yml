@@ -5,3 +5,6 @@
 - include: docker.yml
 - include: nvidia-gpu-driver.yml
 - include: nvidia-container-runtime.yml
+
+# leave this one last to see the user password
+- include: manage-users.yml

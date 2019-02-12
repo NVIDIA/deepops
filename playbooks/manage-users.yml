@@ -10,6 +10,15 @@
 - hosts: all
   become: true
   become_method: sudo
+  vars:
+    # User Configuration
+    pwgen: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+    user_list:
+      - name: "{{ ansible_user }}"
+        username: "{{ ansible_user }}"
+        state: present
+        password: "{{ passwd | password_hash('sha512', 'salty') }}"
+        groups: "{{ ansible_user_groups }}"
   roles:
     - users 
   tasks:
