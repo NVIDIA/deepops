@@ -17,8 +17,10 @@
       - name: "{{ ansible_user }}"
         username: "{{ ansible_user }}"
         state: present
+        # You can also generate a password with `mkpasswd -m sha-512` and set that here
         password: "{{ passwd | password_hash('sha512', 'salty') }}"
-        groups: "{{ ansible_user_groups }}"
+        groups:
+          - docker
   roles:
     - users 
   tasks:

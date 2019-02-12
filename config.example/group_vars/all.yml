@@ -4,11 +4,6 @@
 # Account to use for SSH connections
 ansible_user: ubuntu
 
-# Groups for the default user
-ansible_user_groups:
-  - sudo
-  - docker
-
 # SSH Configuration
 ssh_password_authentication: 'yes'
 
@@ -20,91 +15,45 @@ enable_sudo_without_password: true
 #ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
 
 # Docker Configuration
-daemon_json:
-  bip: 192.168.99.1/24
-  insecure-registries:
-    - "registry.local"
-      # ##########################
-# Amount of time to allow between updating Ubuntu APT cache
-cache_valid_time: 3600
+#daemon_json:
+#  bip: 192.168.99.1/24
+#  insecure-registries:
+#    - "registry.local"
 
-# Will the cluster be air-gapped?
-is_airgapped: false
-
-# Does the cluster use an unofficial DGX-1 OS (i.e. vanilla Ubuntu)?
-is_unofficial: false # set 'true' when using non-official OS on DGX
-
-# Does the cluster use the official DGX-1 ISO?
-is_official: true
-
-# Use the on-prem apt repo?
-with_local_apt: true
-# Local apt repo host:port
-local_apt_host: mgmt01:30000
-# local apt repo path
-local_apt_path: deepops-online
-
-# Cluster nameserver
-# Set to the IP address of your management node
-resolv_conf_nameserver: 192.168.1.1
-
-# NIS configuration (optional)
+# NIS configuration
 #nisdomain: example.com
 #nisserver: 10.0.0.1
 
-# Kerberos configuration (optional)
+# Kerberos configuration
 #kerberos_client_realm_name: "example.com"
 #kerberos_client_kdc_hostname: "kerberos"
 #kerberos_client_admin_hostname: "kerberos"
 #nfs_idmapd_domain: example.com
 
-# AutoFS configuration (optional)
+# AutoFS configuration
 #autofs_mount: "/home"
 #autofs_map: "auto.home_linux"
 
-########
 # Slurm job scheduler configuration
-slurm_user_home: /local/slurm
-slurm_manage_gpus: no
-slurm_cluster_name: ngc
-slurm_username: slurm
-slurm_password: ReplaceWithASecurePasswordInTheVault
-slurm_db_username: slurm
-slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
-# slurm_return_to_service: 0
-slurm_exclusive: "yes"
-# slurm_max_job_timelimit: INFINITE
-# slurm_default_job_timelimit:
-########
+#slurm_user_home: /local/slurm
+#slurm_manage_gpus: no
+#slurm_cluster_name: deepops
+#slurm_username: slurm
+#slurm_password: ReplaceWithASecurePasswordInTheVault
+#slurm_db_username: slurm
+#slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
+#slurm_return_to_service: 0
+#slurm_exclusive: "NO"
+#slurm_max_job_timelimit: INFINITE
+#slurm_default_job_timelimit:
 
-# Configure system users
+# System users
 #  You can generate a new password with `mkpasswd -m sha-512`
 #  You may also add SSH public keys to each user account
 #  The default password here is 'deepops'
 user_list:
-  - name: "root"
-    username: "root"
-    state: present
-    shell: "/bin/bash"
-    password: "$6$5kCSHqdf.Du19uvz$cGTX4JijfiILr9QkN917sVJcJHGJILBkRVljEyTzF6L/nF6zAdJ.7U5dRIkz2aKb/7RxsPjdtlkMZOQQwNqzt."
-    groups:
-      - root
-    #keys:
-    #  active:
-    #    - "ssh-rsa ..."
   - name: "ubuntu"
     username: "ubuntu"
-    state: present
-    shell: "/bin/bash"
-    password: "$6$5kCSHqdf.Du19uvz$cGTX4JijfiILr9QkN917sVJcJHGJILBkRVljEyTzF6L/nF6zAdJ.7U5dRIkz2aKb/7RxsPjdtlkMZOQQwNqzt."
-    groups:
-      - sudo
-      - docker
-    #keys:
-    #  active:
-    #    - "ssh-rsa ..."
-  - name: "dgxuser"
-    username: "dgxuser"
     state: present
     shell: "/bin/bash"
     password: "$6$5kCSHqdf.Du19uvz$cGTX4JijfiILr9QkN917sVJcJHGJILBkRVljEyTzF6L/nF6zAdJ.7U5dRIkz2aKb/7RxsPjdtlkMZOQQwNqzt."
@@ -120,36 +69,19 @@ user_list:
 #     - sudo
 #     - docker
 
-# Configure Docker
-#  Additional optional configuration parameters:
-#   fixed_cidr: 192.168.99.0/24
-#   storage_driver: overlay2
-#   disable_legacy_registry: false
-daemon_json:
-  bip: 192.168.99.1/24
-  default-runtime: nvidia
-  runtimes:
-    nvidia:
-      path: /usr/bin/nvidia-container-runtime
-      runtimeArgs: []
-
-####
-# NFS
-####
-# Configure NFS server
+# NFS server
 nfs_exports: []
 #- path: /export/shared
 #  options: "*(rw,sync,no_root_squash)"
 
-# Configure NFS clients
+# NFS clients
 nfs_mounts: []
 #- mountpoint: /shared
 #  server: 10.0.0.1
 #  path: /export/shared
 #  options: async,vers=3
 
-
-# Configure Collectd
+# Collectd
 #collectd_network_server: "deepops-mgmt.example.com"
 #collectd_network_port: "30300"
 #collectd_python_module_path: "/usr/lib/collectd/dcgm"
@@ -157,19 +89,5 @@ nfs_mounts: []
 #collectd_config_dir: "/etc/collectd/collectd.conf.d"
 #with_dcgm_collectd: false
 
-# Configure Lmod modules
+# Lmod modules
 #lmod_modulepath: /shared/modules/all
-
-####
-# GPU driver
-####
-## settings to use stock DGX-1 driver:
-#use_latest_gpu_driver: false
-#driver_version: 384.111-1
-
-## settings to use latest CUDA 9.2 driver:
-use_latest_gpu_driver: true
-driver_version: "396.26-1"
-apt_key_url: http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
-apt_repo_url: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_9.2.88-1_amd64.deb
-apt_repo_name: cuda-repo-ubuntu1604=9.2.88-1
