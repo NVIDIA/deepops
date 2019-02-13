@@ -1,7 +1,7 @@
 Kubernetes Cluster Build
 ===
 
-Step-by-step instructions for deploying a Kubernetes GPU cluster
+Minimal step-by-step instructions for deploying a Kubernetes GPU cluster
 
 ## Overview
 
