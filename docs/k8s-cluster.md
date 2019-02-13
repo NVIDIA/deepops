@@ -119,7 +119,7 @@ CONFIG_FILE=k8s-config/hosts.ini python3 kubespray/contrib/inventory_builder/inv
 ansible-playbook -b kubespray/cluster.yml
 ```
 
-For more information on Kubespray, see the [docs](docs/KUBESPRAY.md)
+For more information on Kubespray, see the [docs](docs/KUBERNETES.md)
 
 ### Accessing Kubernetes
 

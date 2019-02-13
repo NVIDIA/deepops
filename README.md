@@ -43,12 +43,14 @@ See the [Ansible Guide](docs/ANSIBLE.md) for information on installing and using
 
 ### Kubernetes
 
-Kubernetes is installed via the Kubespray project, which uses Ansible
+[Kubernetes (k8s)](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/) is an open-source system for automating deployment, scaling, and management of containerized applications.
 
-See the [Kubespray Guide](docs/KUBESPRAY.md) for information on installing Kubernetes
-
-See the [Kubernetes Guide](docs/KUBERNETES.md) for information on using Kubernetes
+See the [Kubernetes Guide](docs/KUBERNETES.md) for information on installing and using Kubernetes
 
 ### Slurm
+
+[Slurm](https://slurm.schedmd.com/overview.html) is an open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters.
+
+See the [Slurm Guide](docs/SLURM.md) for information on installing and using Slurm
 
 ## Application Layer Installation
