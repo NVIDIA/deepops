@@ -1,0 +1,8 @@
+---
+
+- name: Configuring service
+  service:
+    name: ssh
+    state: "{{ ssh_service_state }}"
+    enabled: "{{ ssh_service_enabled }}"
+  when: ansible_os_family == "Debian"

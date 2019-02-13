@@ -1,0 +1,24 @@
+---
+- name: install ubuntu packages
+  action: apt name=nfs-common state=latest
+  when: ansible_os_family == "Debian"
+  tags:
+    - nfs
+
+- name: configure idmapd domain for nfsv4
+  lineinfile:
+    dest: /etc/idmapd.conf
+    regexp: "^Domain"
+    insertafter: "^# Domain"
+    line: "Domain = {{ nfs_idmapd_domain }}"
+    backup: yes
+  when: nfs_idmapd_domain is defined
+  tags:
+    - nfs
+
+- include: server.yml
+  when: nfs_is_server
+
+- include: client.yml
+  when: nfs_is_client
+
