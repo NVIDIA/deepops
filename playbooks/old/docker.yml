@@ -1,5 +1,5 @@
 ---
-- hosts: dgx-servers
+- hosts: dgx-servers:tesla-servers
   become: true
   roles:
     - { role: docker, tags: docker }
