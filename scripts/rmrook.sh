@@ -10,4 +10,4 @@ dops kubectl -n rook-ceph delete cephcluster rook-ceph
 dops kubectl -n rook-ceph delete storageclass rook-ceph-block
 dops kubectl delete ns rook-ceph-system
 dops kubectl delete ns rook-ceph
-dops ansible mgmt -b -m file -a "path=/var/lib/rook state=absent"
+dops ansible management -b -m file -a "path=/var/lib/rook state=absent"
