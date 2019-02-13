@@ -97,7 +97,7 @@ _Configure Servers_
 ```sh
 # If sudo requires a password, add the -K flag
 
-# For servers in the `[management]` group
+# For servers in the `[mgmt]` group
 ansible-playbook playbooks/setup-mgmt-servers.yml
 
 # For servers in the `[gpu-servers]` group
