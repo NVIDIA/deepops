@@ -1019,9 +1019,9 @@ Source: https://docs.bitnami.com/kubernetes/how-to/configure-rbac-in-your-kubern
 Copy the script to one of the management nodes and run to create a user:
 
 ```sh
-scp scripts/add_user.sh mgmt-01:/tmp
-ssh mgmt-01 /tmp/add_user.sh <username>
-scp mgmt-01:~/<username>.kubeconfig ~/.kube/config
+scp scripts/add_user.sh mgmt01:/tmp
+ssh mgmt01 /tmp/add_user.sh <username>
+scp mgmt01:~/<username>.kubeconfig ~/.kube/config
 ```
 
 Where `<username>` is the name of the new user account being created
