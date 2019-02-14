@@ -1,0 +1,15 @@
+---
+
+- import_playbook: ../kubespray/cluster.yml
+  vars:
+    ansible_become: yes
+    helm_enabled: true
+    tiller_node_selectors: "node-role.kubernetes.io/master=''"
+    docker_dns_servers_strict: no
+    nvidia_accelerator_enabled: true
+    nvidia_gpu_flavor: tesla
+    docker_version: 18.06
+    docker_storage_options: -s overlay2
+
+- include: nvidia-gpu-driver.yml
+- include: nvidia-container-runtime.yml
