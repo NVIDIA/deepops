@@ -1,8 +1,5 @@
 ---
 
-- include: bootstrap-ansible.yml
-- include: manage-users.yml
-
 - hosts: all
   become: true
   tasks:
