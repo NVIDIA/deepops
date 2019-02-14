@@ -10,16 +10,3 @@
       raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
       register: output
       changed_when: output.stdout != ""
-
-- hosts: all
-  become: true
-  tasks:
-    - name: Allow password-less sudo to "{{ ansible_user }}"
-      copy:
-        content: "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL"
-        dest: "/etc/sudoers.d/{{ ansible_user }}"
-    - name: Add my pubkey to "{{ ansible_user }}" user authorized keys
-      authorized_key:
-        user: "{{ ansible_user }}"
-        state: present
-        key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"

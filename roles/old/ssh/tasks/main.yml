@@ -1,0 +1,22 @@
+---
+
+- include: install.yml
+  tags:
+    - system
+    - networking
+    - ssh
+    - ssh-install
+
+- include: config.yml
+  tags:
+    - system
+    - networking
+    - ssh
+    - ssh-config
+
+- include: service.yml
+  tags:
+    - system
+    - networking
+    - ssh
+    - ssh-service

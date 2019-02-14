@@ -1,0 +1,5 @@
+---
+# file roles/autofs/handlers/main.yml
+
+- name: restart autofs
+  service: name=autofs state=restarted enabled=yes

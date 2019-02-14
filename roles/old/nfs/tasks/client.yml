@@ -1,0 +1,21 @@
+---
+- name: ensure mountpoint exists
+  file:
+    path: '{{ item.mountpoint }}'
+    state: directory
+  with_items: '{{ nfs_mounts }}'
+  when: nfs_mounts|length
+  tags:
+    - nfs
+
+- name: configure /etc/fstab on clients
+  mount:
+    name: "{{ item.mountpoint}}"
+    src: "{{ item.server|default(groups['slurm-masters'][0]) }}:{{ item.path }}"
+    opts: "{{ item.options }}"
+    fstype: nfs 
+    state: mounted
+  with_items: '{{ nfs_mounts }}'
+  when: nfs_mounts|length
+  tags:
+    - nfs
