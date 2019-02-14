@@ -17,6 +17,7 @@ virtual/*.log
 roles/*
 !roles/users/
 !roles/slurm/
+!roles/old/
 
 *.retry
 

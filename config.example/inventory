@@ -9,10 +9,11 @@
 [management]
 #mgmt       ansible_host=10.0.0.1
 
+
 # Login Servers
 # See group_vars/login.yml for configuration
 [login]
-#login      ansible_host=10.0.0.2
+#login01    ansible_host=10.0.0.2
 
 # GPU Servers - All GPU servers, including DGX if desired
 # See group_vars/gpu-servers.yml for configuration

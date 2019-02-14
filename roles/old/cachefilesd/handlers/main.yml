@@ -1,0 +1,6 @@
+---
+- name: start cachefilesd
+  service: name=cachefilesd state=started enabled=yes
+
+- name: restart cachefilesd
+  service: name=cachefilesd state=restarted enabled=yes

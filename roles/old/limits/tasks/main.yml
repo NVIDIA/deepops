@@ -1,0 +1,12 @@
+---
+
+- name: limits | configure limits.conf
+  template:
+    src: templates/limits.conf
+    dest: /etc/security
+    owner: root
+    group: root
+    mode: 0644
+  notify: "restart slurmd"
+  tags:
+    - configuration

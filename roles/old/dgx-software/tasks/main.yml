@@ -1,0 +1,68 @@
+---
+# - name: overwrite sources.list
+#   template:
+#     src: sources.list.j2
+#     dest: /etc/apt/sources.list
+#     owner: root
+#     mode: 0644
+#
+# - name: apt update
+#   apt:
+#     update_cache: yes
+#     cache_valid_time: 3600
+#
+# - name: install aptitude
+#   apt:
+#     name: aptitude
+#     state: latest
+#
+# - name: apt upgrade
+#   apt:
+#     upgrade: safe
+
+- name: install default software
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items: "{{ default_ubuntu_packages }}"
+  tags:
+    - packages
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
+- name: install smart monitoring tools
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - lshw
+    - smartmontools
+  tags:
+    - packages
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
+- name: install nvidia drivers and datacenter manager
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - cuda-drivers
+    - cuda-drivers-diagnostic 
+    - datacenter-gpu-manager 
+    - nvidia-sysinfo-dgx
+  tags:
+    - packages
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  when: not is_official
+
+- name: install nvidia peer memory
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - nvidia-peer-memory 
+    - nvidia-peer-memory-dkms
+  tags:
+    - packages
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  when: not is_official
+

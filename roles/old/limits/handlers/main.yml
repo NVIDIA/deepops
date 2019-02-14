@@ -1,0 +1,5 @@
+---
+# file roles/limits/handlers/main.yml
+
+- name: restart slurmd
+  service: name=slurmd state=restarted
