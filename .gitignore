@@ -15,7 +15,9 @@ virtual/*.log
 @eaDir
 
 roles/*
+!roles/facts/
 !roles/users/
+!roles/reboot/
 !roles/slurm/
 !roles/old/
 
