@@ -21,10 +21,14 @@
 - hosts: slurm-masters
   become: yes
   roles:
-    - { role: slurm, is_controller: yes }
+    - role: slurm
+      user: "{{ ansible_user }}"
+      is_controller: yes
 
 - hosts: compute-nodes
   become: yes
   roles:
-    - { role: slurm, is_compute: yes }
+    - role: slurm
+      user: "{{ ansible_user }}"
+      is_compute: yes
     - reboot
