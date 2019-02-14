@@ -15,8 +15,15 @@ Minimal step-by-step instructions for deploying a Kubernetes GPU cluster
 # Install Ansible (installation script for Ubuntu/RHEL)
 ./scripts/install_ansible.sh
 
-# Make sure kubespray is up to date
-git submodule update --init
+cp config.example/k8s-config.yml .
+# edit k8s-config.yml
+# edit list of hosts
+
+# Install Kubernetes
+ansible-playbook playbooks/k8s-cluser.yml
+# ansible: takes host list, generates inventory
+# ansible: ./scripts/setup_remote_k8s.sh
+# ansible: includes kubespray/inventory/sample/
 
 # Copy the kubespray default configuration
 cp -rfp kubespray/inventory/sample/ k8s-config
@@ -27,12 +34,6 @@ CONFIG_FILE=k8s-config/hosts.ini python3 kubespray/contrib/inventory_builder/inv
 
 # Modify `k8s-config/hosts.ini` to configure hosts for specific roles
 # Make sure the [etcd] group has an odd number of hosts
-
-# Install Kubernetes
-ansible-playbook playbooks/k8s-cluser.yml
-
-# Access the Kubernetes cluster by obtaining the admin user config file
-./scripts/setup_remote_k8s.sh
 
 # Test access is working
 kubectl get nodes
