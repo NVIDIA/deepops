@@ -68,40 +68,6 @@ _Install Ansible_
 ansible-galaxy install -r requirements.yml
 ```
 
-_Create server inventory_
-
-```sh
-# Copy the default configuration
-cp -r config.example config
-
-# Review and edit the inventory file to set IPs/hostnames for servers
-cat config/inventory
-
-# Review and edit configuration under config/group_vars/*.yml
-cat config/group_vars/all.yml
-cat config/group_vars/management.yml
-cat config/group_vars/gpu-servers.yml
-```
-
-_Configure Servers_
-
-```sh
-# If sudo requires a password, add the -K flag
-
-# For servers in the `[management]` group
-ansible-playbook playbooks/setup-management-servers.yml
-
-# For servers in the `[gpu-servers]` group
-ansible-playbook playbooks/setup-gpu-servers.yml
-```
-
-_Check GPU driver was installed correctly_
-
-```sh
-# You should see all GPUs listed on all GPU servers
-ansible gpu-servers -a 'nvidia-smi -L'
-```
-
 ## Step 3: Kubernetes installation
 
 Kubernetes is installed via the Kubespray project, which uses Ansible
@@ -136,3 +102,39 @@ kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.
 ```
 
 For more information on Kubespray, see the [docs](KUBERNETES.md)
+
+<!--
+_Create server inventory_
+
+```sh
+# Copy the default configuration
+cp -r config.example config
+
+# Review and edit the inventory file to set IPs/hostnames for servers
+cat config/inventory
+
+# Review and edit configuration under config/group_vars/*.yml
+cat config/group_vars/all.yml
+cat config/group_vars/management.yml
+cat config/group_vars/gpu-servers.yml
+```
+
+_Configure Servers_
+
+```sh
+# If sudo requires a password, add the -K flag
+
+# For servers in the `[management]` group
+ansible-playbook playbooks/setup-management-servers.yml
+
+# For servers in the `[gpu-servers]` group
+ansible-playbook playbooks/setup-gpu-servers.yml
+```
+
+_Check GPU driver was installed correctly_
+
+```sh
+# You should see all GPUs listed on all GPU servers
+ansible gpu-servers -a 'nvidia-smi -L'
+```
+-->
