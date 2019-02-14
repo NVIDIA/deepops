@@ -89,7 +89,7 @@ _Configure Servers_
 # If sudo requires a password, add the -K flag
 
 # For servers in the `[management]` group
-ansible-playbook playbooks/setup-mgmt-servers.yml
+ansible-playbook playbooks/setup-management-servers.yml
 
 # For servers in the `[gpu-servers]` group
 ansible-playbook playbooks/setup-gpu-servers.yml
