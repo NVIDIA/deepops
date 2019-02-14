@@ -13,3 +13,4 @@
 
 - include: nvidia-gpu-driver.yml
 - include: nvidia-container-runtime.yml
+- include: k8s-gpu-plugin.yml
