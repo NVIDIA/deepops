@@ -20,8 +20,8 @@
         update_cache: yes
         cache_valid_time: 3600
         state: latest
-      with_items:
-        - nvidia-410
+      # The PPA has different package names for different distros
+      with_items: "{{ (ansible_facts['distribution_major_version'] == '18') | ternary(['nvidia-driver-410', 'nvidia-utils-410'], 'nvidia-410') }}"
     - name: load nvidia driver
       modprobe:
         name: nvidia
