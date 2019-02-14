@@ -14,10 +14,12 @@ Deployment Guide
   * [2. Management Server Setup](#2-management-server-setup)
   * [3. Services bootstrap](#3-services)
   * [4. DGX Setup](#4-DGX-compute-nodes)
-  * [5. Login Server](#5-login-server)
-  * [6, Additional Components](#6-additional-components)
+  * [5. Monitoring and Logging](#5-monitoring-and-logging)
+  * [6. Login Server](#6-login-server)
+  * [7. Additional Components](#7-additional-components)
 * [Cluster Usage](#cluster-usage)
   * [Maintenance](#maintenance)
+    * [Updating Firmare](#updating-firmware)
     * [Login Server](#login-server)
     * [Cluster-wide](#cluster-wide)
   * [Kubernetes](#kubernetes)
@@ -62,17 +64,12 @@ For more information on deploying DGX in the datacenter, consult the
 
 ### Software Requirements
 
-The administrator's provisioning system should have the following installed:
-
-* python pip
-* git
-* docker (to build containers)
-* ipmitool
-
 The management server(s) should be pre-installed with Ubuntu 16.04 LTS before
 starting the installation steps. If you already have a bare-metal provisioning system,
 it can be used to install Ubuntu on the management server(s). Integrating the DGX Base OS
 with other bare-metal provisioning systems is outside the scope of this project.
+
+A few software package will be installed on the administrator's provisioning system at the begining of the configuration step.
 
 ### Network Requirements
 
@@ -105,32 +102,43 @@ segment and subnet which can be controlled by the DHCP server.
 
 ### 1. Download and configure
 
-Download the DeepOps repo onto the provisioning system and copy the example configuration
-files so that you can make local changes:
+To use DeepOps this repository will need to be downloaded onto the administrator's provisioning system. The `bootstrap-mgmt.sh` script will then install the following software packages:
+
+* Ansible
+* Docker
+* Git
+* ipmitool
+* python-netaddr (required by kubespray)
+
+Download the DeepOps repo onto the provisioning system:
 
 ```sh
 git clone --recursive https://github.com/NVIDIA/deepops.git
 cd deepops
-cp -r config.example/ config/
-pip install --user -r kubespray/requirements.txt
-ansible-galaxy install -r requirements.yml
+git submodule update
 ```
 
 > Note: In Git 2.16.2 or later, use `--recurse-submodules` instead of `--recursive`.
 > If you did a non-recursive clone, you can later run `git submodule update --init --recursive`
 > to pull down submodules
 
-The `config/` directory is ignored by git, so a new git repository can be created in this
-directory to track local changes:
+Install Ansible and other dependencies (if the below script fails follow the official [Ansible installation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) steps to install version 2.5 or later):
 
 ```sh
+./scripts/bootstrap-mgmt.sh
+```
+
+Copy and version control the configuration files. The `config/` directory is ignored by the deepops git repo. Create a seperate git repo to track local configuration changes.
+
+```sh
+cp -r config.example/ config/
 cd config/
 git init .
 git add .
-git commit -am 'initial commit'
+git commit -am 'initial commit' && cd ..
 ```
 
-Use the `config/inventory` file to set the cluster server hostnames, and optional
+Modify the `config/inventory` file to set the cluster server hostnames, and optional
 per-host info like IP addresses and network interfaces. The cluster should
 ideally use DNS, but you can also explicitly set server IP addresses in the
 inventory file.
@@ -228,10 +236,16 @@ To make administration easier, you may want to copy the `kubectl` binary to some
 and copy the `admin.conf` configuration file to `~/.kube/config` so that it is used by default.
 Otherwise, you may use the `kubectl` flag `--kubeconfig=./admin.conf` instead of copying the configuration file.
 
-If you have an existing Kubernetes configuration file, you can merge the two with:
+```sh
+mkdir -p ~/.kube/
+mv admin.conf ~/.kube/config
+```
+
+__Optionally__, If you have an existing Kubernetes configuration file, you can merge the two with:
 
 ```sh
-mv ~/.kube/config{,.bak} && KUBECONFIG=./admin.conf:~/.kube/config.bak kubectl config view --flatten | tee ~/.kube/config
+mkdir -p ~/.kube && mv ~/.kube/config{,.bak} && KUBECONFIG=./admin.conf:~/.kube/config.bak kubectl config view --flatten | tee ~/.kube/config
+if [ "$?" != "0" ]; then cp admin.conf ~/.kube/config; fi
 ```
 
 Test you can access the kubernetes cluster:
@@ -246,26 +260,17 @@ __Helm:__
 
 Some services are installed using [Helm](https://helm.sh/), a package manager for Kubernetes.
 
-Install the Helm client by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
-
-If you're using Linux, the script `scripts/helm_install_linux.sh` will set up Helm for the current user
-
-Be sure to install a version of Helm matching the version in `config/kube.yml`
-
-(Optional) If `helm_enabled` is `true` in `config/kube.yml`,
-the Helm server will already be deployed in Kubernetes.
-If it needs to be installed manually for some reason, run:
+If you did not modify your `config/kube.yml` file to disable the `helm_enabled` flag you can now initialize helm.
 
 ```sh
-kubectl create sa tiller --namespace kube-system
-kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-helm init --service-account tiller --node-selectors node-role.kubernetes.io/master=true
+helm init
 ```
+
+__Optionally__, If you disabled the `helm_enabled` field you can follow [these steps](helm.md) to manually install and configure helm.
 
 __Ceph:__
 
-Persistent storage for Kubernetes on the management nodes is supplied by Ceph.
-Ceph is provisioned using Rook to simplify deployment:
+Persistent storage for Kubernetes on the management nodes is supplied by Ceph. Ceph is provisioned using Rook to simplify deployment:
 <!-- find latest rook version with: helm search rook-ceph -->
 <!-- https://github.com/rook/rook/blob/master/Documentation/helm-operator.md -->
 ```sh
@@ -274,22 +279,13 @@ helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph
 kubectl create -f services/rook-cluster.yml
 ```
 
-> Note: It will take a few minutes for containers to be pulled and started.
-> Wait for Rook to be fully installed before proceeding
+> Caution, wait for the polling script to complete or later steps will fail. It may take up to 10 minutes.
 
-You can check Ceph status with:
-
-```sh
-kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status
-```
-<!--
-Once the Ceph filesystem is up, it is safe to continue, i.e:
+Poll the Ceph status by running:
 
 ```sh
-$ kubectl -n rook-ceph exec -ti rook-ceph-tools ceph status | grep mds
-    mds: cephfs-1/1/1 up  {0=cephfs-54949bc7c4-8jv4t=up:active}, 1 up:standby-replay
+./scripts/ceph_poll.sh
 ```
--->
 
 ### 3. Services
 
@@ -325,19 +321,26 @@ to be in the *Running* state before attempting to copy the ISO):
 
 ```sh
 kubectl apply -f services/iso-loader.yml
-kubectl cp /path/to/DGXServer-3.1.2.170902_f8777e.iso $(kubectl get pod -l app=iso-loader -o custom-columns=:metadata.name --no-headers):/data/iso/
+kubectl cp /local/DGXServer-4.0.2.180925_6acd9c.iso $(kubectl get pod -l app=iso-loader -o custom-columns=:metadata.name --no-headers):/data/iso/
 ```
 
-> Note: If the `iso-loader` POD fails to mount the CephFS volume, you may need to restart the kubelet service on the master node(s): `ansible management -b -a "systemctl restart kubelet"`
+> Note: If the `iso-loader` POD fails to mount the CephFS volume, you may need to restart the kubelet service on the master node(s): `ansible mgmt -b -a "systemctl restart kubelet"`
+> You may see an error that looks like this in your syslog file: `failed to get Plugin from volumeSpec for volume "cephfs" err=no volume plugin matched`
 
 __Configure__
 
 Modify the DGXie configuration in `config/dgxie.yml` to set values for the DHCP server
-and DGX install process
+and DGX install process.
 
 Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node and DGX
 server in the cluster if required. IP addresses should match those used in the `config/inventory` file.
 You may also add other valid configuration options for dnsmasq to this file.
+
+```sh
+grep TODO config/*
+```
+
+> Note: There are several `TODO` comments in these configuration files that will likely need to be changed. Depending on the system architecture there may be additional required config changes.
 
 You can get the MAC address of DGX system interfaces via the BMC, for example:
 
@@ -380,19 +383,8 @@ Configure the management server(s) to use DGXie for cluster-wide DNS:
 ansible-playbook -l management ansible/playbooks/resolv.yml
 ```
 -->
-If you later make changes to `config/dhcpd.hosts.conf`, you can update the file in Kubernetes
-and restart the service with:
 
-```sh
-kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf -o yaml --dry-run | kubectl replace -f -
-kubectl delete pod -l app=dgxie
-```
-
-If you make changes to `machines.json`, you can update the file without having to restart the DGXie POD:
-
-```sh
-kubectl create configmap pxe-machines --from-file=config/machines.json -o yaml --dry-run | kubectl replace -f -
-```
+If you later make changes to `config/dhcpd.hosts.conf` or `machines.json` you can follow the [steps](dgxie.md) to update the dgxie service.
 
 #### __APT Repo:__
 
@@ -409,13 +401,6 @@ Modify `config/registry.yml` if needed and launch the container registry:
 ```sh
 helm repo add stable https://kubernetes-charts.storage.googleapis.com
 helm install --values config/registry.yml stable/docker-registry --version 1.4.3
-```
-
-Once you have [provisioned DGX servers](#4.-DGX-compute-nodes),
-configure them to allow access to the local (insecure) container registry:
-
-```sh
-ansible-playbook -k ansible/playbooks/docker.yml
 ```
 
 You can check the container registry logs with:
@@ -445,94 +430,6 @@ The NGC container replicator makes offline clones of NGC/DGX container registry 
 For instructions, see:
 
 https://github.com/NVIDIA/ngc-container-replicator#kubernetes-deployment
-
-#### __Monitoring:__
-
-Cluster monitoring is provided by Prometheus and Grafana
-
-Service addresses:
-
-* Grafana: http://mgmt:30200
-* Prometheus: http://mgmt:30500
-* Alertmanager: http://mgmt:30400
-
-Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
-The default login for Grafana is `admin` for the username and password.
-
-Modify `config/prometheus-operator.yml` and `config/kube-prometheus.yml` if desired and deploy the monitoring
-and alerting stack:
-
-```sh
-helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
-helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/prometheus-operator.yml
-kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dashboard.json -n monitoring
-helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/kube-prometheus.yml
-```
-
-To collect GPU metrics, label each GPU node and deploy the DCGM Prometheus exporter:
-
-```sh
-kubectl label nodes <gpu-node-name> hardware-type=NVIDIAGPU
-kubectl create -f services/dcgm-exporter.yml
-```
-<!--
-Enable the Ceph prometheus exporter:
-
-```sh
-kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
-```
--->
-
-#### __Logging:__
-
-Centralized logging is provided by Filebeat, Elasticsearch and Kibana
-
-> Note: The ELK Helm chart is current out of date and does not provide support for
-> setting the Kibana NodePort
-
-*todo:*
-  * filebeat syslog module needs to be in UTC somehow, syslog in UTC?
-  * fix kibana nodeport issue
-
-Make sure all systems are set to the same timezone:
-
-```sh
-ansible all -k -b -a 'timedatectl status'
-```
-
-To update, use: `ansible <hostname> -k -b -a 'timedatectl set-timezone <timezone>'
-
-Install [Osquery](https://osquery.io/):
-
-```sh
-ansible-playbook -k ansible/playbooks/osquery.yml
-```
-
-Deploy Elasticsearch and Kibana:
-
-```sh
-helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
-helm install --name elk --namespace logging --values config/elk.yml incubator/elastic-stack
-```
-
-The ELK stack will take several minutes to install,
-wait for elasticsearch to be ready in Kibana before proceeding.
-
-Launch Filebeat, which will create an Elasticsearch index automatically:
-
-```sh
-helm install --name log --namespace logging --values config/filebeat.yml stable/filebeat
-```
-
-The logging stack can be deleted with:
-
-```sh
-helm del --purge log
-helm del --purge elk
-kubectl delete statefulset/elk-elasticsearch-data
-kubectl delete pvc -l app=elasticsearch
-# wait for all statefulsets to be removed before re-installing...
-```
 
 ### 4. DGX compute nodes:
 
@@ -580,18 +477,18 @@ You can monitor install progress via the Java web console on the BMC or the Seri
 ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> sol activate
 ```
 
-The DGX install process will take approximately 15 minutes. You can check the DGXie logs with:
+The DGX install process will take approximately 15 minutes. You can tail the DGXie logs with:
 
 ```sh
-kubectl logs -l app=dgxie
+kubectl logs -f $(kubectl get pod -l app=dgxie -o custom-columns=:metadata.name --no-headers)
 ```
 
 If your DGX are on an un-routable subnet, uncomment the `ansible_ssh_common_args` variable in the
-`config/group_vars/dgx-servers.yml` file and modify the IP address to the IP address of the management server
+`config/group_vars/dgx-servers.yml` file and __modify__ the IP address to the IP address of the management server
 with access to the private subnet, i.e.
 
 ```sh
-ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
+ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@192.168.1.1"'
 ```
 
 Test the connection to the DGX servers via the bastion host (management server). Type the password
@@ -635,24 +532,6 @@ ansible-playbook -k -l all ansible/playbooks/hosts.yml
 ```
 -->
 
-__Updating Firmware:__
-
-Firmware on the DGX can be updated through the firmware update container(s) and Ansible.
-
-1. Download the firmware update container package from the NVIDIA Enterprise Support Portal.
-Updates are published as announcements on the support portal (example: https://goo.gl/3zimCk).
-Make sure you download the correct package depending on the GPU in the DGX-1:
-   - For V100 (Volta), download the '0102' package - for example: https://dgxdownloads.nvidia.com/custhelp/dgx1/NVIDIA_Containers/nvidia-dgx-fw-0102-20180424.tar.gz
-   - For P100 (Pascal), download the '0101' package - for example: https://dgxdownloads.nvidia.com/custhelp/dgx1/NVIDIA_Containers/nvidia-dgx-fw-0101-20180424.tar.gz
-2. Once you've download the `.tar.gz` file, copy or move it inside `containers/dgx-firmware`
-3. Edit the value of `firmware_update_container` in the file `ansible/roles/nvidia-dgx-firmware/vars/main.yml` to match
-the name of the downloaded firmware container.
-4. Run the Ansible playbook to update DGX firmware:
-
-```sh
-ansible-playbook -k -l dgx-servers ansible/playbooks/firmware.yml
-```
-
 __Adding DGX to Kubernetes:__
 
 Create the NVIDIA GPU k8s device plugin daemon set (just need to do this once):
@@ -661,15 +540,12 @@ Create the NVIDIA GPU k8s device plugin daemon set (just need to do this once):
 kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
 ```
 
-If the DGX is a member of the Slurm cluster, be sure to drain node in Slurm so that it does
-not accept Slurm jobs. From the login node, run:
-
-```sh
-sudo scontrol update node=dgx01 state=drain reason=k8s
-```
-
 Modify the `config/inventory` file to add the DGX to the `kube-node` and `k8s-gpu` categories by uncommenting
 the `dgx-servers` entry in these sections
+
+```sh
+grep TODO:2 config/inventory
+```
 
 Re-run Kubespray to install Kubernetes on the DGX:
 
@@ -696,6 +572,8 @@ ansible dgx-servers -k -b -a "apt-mark hold docker-ce"
 
 Install the nvidia-container-runtime on the DGX:
 
+> Note the the nvidia-container-runtime is already installed on DGX with OS version 4.04 or later and this step can be ignored.
+
 ```sh
 ansible-playbook -l k8s-gpu -k -v -b --flush-cache --extra-vars "@config/kube.yml" playbooks/k8s-gpu.yml
 ```
@@ -703,12 +581,116 @@ ansible-playbook -l k8s-gpu -k -v -b --flush-cache --extra-vars "@config/kube.ym
 Test that GPU support is working:
 
 ```sh
-kubectl apply -f tests/gpu-test-job.yml
-kubectl exec -ti gpu-pod -- nvidia-smi -L
+kubectl apply -f tests/gpu-test-job.yml # Note: this will take several minutes to pull down the docker image
+kubectl exec -ti gpu-pod -- nvidia-smi -L # Note: this may fail if the docker image is still downloading
 kubectl delete pod gpu-pod
 ```
 
-### 5. Login server:
+Configure the DGX servers to allow access to the local (insecure) container registry:
+
+```sh
+ansible-playbook -k ansible/playbooks/docker.yml
+```
+
+__Optionally__, after provisioning your DGX servers you can delete the iso-loader deployment by running:
+```sh
+kubectl delete deployments iso-loader
+```
+
+### 5. Monitoring and Logging
+
+#### __Monitoring:__
+
+Cluster monitoring is provided by Prometheus and Grafana.
+
+__Optionally__, Modify `config/prometheus-operator.yml` and `config/kube-prometheus.yml`.
+
+Deploy the monitoring and alerting stack:
+
+```sh
+helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/prometheus-operator.yml
+kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dashboard.json -n monitoring
+helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/kube-prometheus.yml
+```
+
+To collect GPU metrics, label each GPU node and deploy the DCGM Prometheus exporter:
+
+```sh
+kubectl label nodes <gpu-node-name> hardware-type=NVIDIAGPU
+kubectl create -f services/dcgm-exporter.yml
+```
+<!--
+Enable the Ceph prometheus exporter:
+
+```sh
+kubectl -n rook-ceph exec -ti rook-ceph-tools ceph mgr module enable prometheus
+```
+-->
+
+Service addresses:
+
+* Grafana: http://mgmt:30200
+* Prometheus: http://mgmt:30500
+* Alertmanager: http://mgmt:30400
+
+> Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
+The default login for Grafana is `admin` for the username and password.
+
+#### __Logging:__
+
+Centralized logging is provided by Filebeat, Elasticsearch and Kibana
+
+> Note: The ELK Helm chart is current out of date and does not provide support for
+> setting the Kibana NodePort
+
+*todo:*
+  * filebeat syslog module needs to be in UTC somehow, syslog in UTC?
+  * fix kibana nodeport issue
+
+Make sure all systems are set to the same timezone:
+
+```sh
+ansible all -k -b -a 'timedatectl status'
+```
+
+To update, use: `ansible <hostname> -k -b -a 'timedatectl set-timezone <timezone>'
+
+Install [Osquery](https://osquery.io/):
+
+```sh
+ansible-playbook -k ansible/playbooks/osquery.yml
+```
+
+Deploy Elasticsearch and Kibana:
+
+```sh
+helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+helm install --name elk --namespace logging --values config/elk.yml incubator/elastic-stack
+```
+
+> Important: The ELK stack will take several minutes to install,
+wait for elasticsearch to be ready in Kibana before proceeding.
+
+Verify that all of the ELK services are `RUNNING` with:
+
+```sh
+kubectl get pods -n logging
+```
+
+Launch Filebeat, which will create an Elasticsearch index automatically:
+
+```sh
+helm install --name log --namespace logging --values config/filebeat.yml stable/filebeat
+```
+
+Service addresses:
+
+* Kibana: http://mgmt:30700
+
+If there is an issue, follow these [docs](elk.md) to delete the logging stack.
+
+### 6. Login server:
 
 > Note: If you do not require a login node, you may skip this section
 
@@ -722,11 +704,8 @@ __Provisioning:__
 Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node
 if required. IP addresses should match those used in the `config/inventory` file.
 
-Update the `dhcpd.hosts.conf` config map if modified and restart the DGXie POD:
-
 ```sh
-kubectl create configmap dhcpd --from-file=config/dhcpd.hosts.conf -o yaml --dry-run | kubectl replace -f -
-kubectl delete pod -l app=dgxie
+grep TODO config/dhcpd.hosts.conf
 ```
 
 Modify `config/machines.json` to add a PXE entry for each login node.
@@ -734,11 +713,11 @@ Copy the `64-bit-ubuntu-example` section and modify
 the MAC address for each login node you would like to boot. You can modify boot parameters or install
 alternate operating systems if required.
 
-Update the PXE server config map:
-
 ```sh
-kubectl create configmap pxe-machines --from-file=config/machines.json -o yaml --dry-run | kubectl replace -f -
+grep TODO config/machines.json
 ```
+
+__Important:__ Follow the [steps listed here ](dgxie.md)  to update the DGXie with the new dhcp and PXE configurations. 
 
 Set login nodes to boot from the network for the next boot only and power on the systems.
 The login nodes should receive a response from the DGXie service and begin the OS install process.
@@ -757,7 +736,7 @@ If your login nodes are on an un-routable subnet, uncomment the `ansible_ssh_com
 with access to the private subnet, i.e.
 
 ```sh
-ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
+ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@192.168.1.1"'
 ```
 
 Various playbooks to install components are available in `ansible/playbooks`.
@@ -769,7 +748,7 @@ ansible-playbook -k -K -l login ansible/playbooks/bootstrap.yml
 ansible-playbook -k -l login ansible/site.yml
 ```
 
-### 6. Additional Components
+### 7. Additional Components
 
 #### __Slurm:__
 
@@ -791,9 +770,35 @@ DGX nodes may appear 'down' in Slurm after install due to rebooting. Set nodes t
 sudo scontrol update node=dgx01 state=idle
 ```
 
+If you are running both Slurm and kubernetes on the same DGX, you may want to reserve the system for kubernetes use only. You can do this with the following command:
+
+```sh
+sudo scontrol update node=dgx01 state=drain reason=k8s
+```
+
+It is also possible to remove the DGX from kubernetes and reserve the resources only for Slurm or to run a mixed hybrid mode.
+
 ## Cluster Usage
 
 ### Maintenance
+
+__Updating Firmware:__
+
+Firmware on the DGX can be updated through the firmware update container(s) and Ansible.
+
+1. Download the firmware update container package from the NVIDIA Enterprise Support Portal.
+Updates are published as announcements on the support portal (example: https://goo.gl/3zimCk).
+Make sure you download the correct package depending on the GPU in the DGX-1:
+   - For V100 (Volta), download the '0102' package - for example: https://dgxdownloads.nvidia.com/custhelp/dgx1/NVIDIA_Containers/nvidia-dgx-fw-0102-20180424.tar.gz
+   - For P100 (Pascal), download the '0101' package - for example: https://dgxdownloads.nvidia.com/custhelp/dgx1/NVIDIA_Containers/nvidia-dgx-fw-0101-20180424.tar.gz
+2. Once you've download the `.tar.gz` file, copy or move it inside `containers/dgx-firmware`
+3. Edit the value of `firmware_update_container` in the file `ansible/roles/nvidia-dgx-firmware/vars/main.yml` to match
+the name of the downloaded firmware container.
+4. Run the Ansible playbook to update DGX firmware:
+
+```sh
+ansible-playbook -k -l dgx-servers ansible/playbooks/firmware.yml
+```
 
 #### Login server
 
