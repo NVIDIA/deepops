@@ -10,6 +10,10 @@
   name: docker
   version: "2.5.2"
 
+- src: bertvv.hosts
+  name: hosts
+  version: "v1.2.0"
+
 ## NVIDIA GPU Driver - RHEL/CentOS
 #- src: https://github.com/gabethecabbage/ansible-role-nvidia-elrepo.git
 #  name: nvgpu-rhel
