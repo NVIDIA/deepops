@@ -1,5 +1,17 @@
 ---
 
+- name: install apt requirements
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - linux-tools-generic  # for cpupower, used in prolog+epilog
+
+- name: fail if NVIDIA driver not installed
+  shell: which nvidia-smi
+
+- name: fail if docker not installed
+  shell: which docker
+
 - name: add cgroups to grub options
   lineinfile:
     dest: /etc/default/grub
