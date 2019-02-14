@@ -95,6 +95,13 @@ ansible-playbook playbooks/setup-management-servers.yml
 ansible-playbook playbooks/setup-gpu-servers.yml
 ```
 
+_Check GPU driver was installed correctly_
+
+```sh
+# You should see all GPUs listed on all GPU servers
+ansible gpu-servers -a 'nvidia-smi -L'
+```
+
 ## Step 3: Kubernetes installation
 
 Kubernetes is installed via the Kubespray project, which uses Ansible
@@ -117,16 +124,15 @@ CONFIG_FILE=k8s-config/hosts.ini python3 kubespray/contrib/inventory_builder/inv
 
 # Install Kubernetes
 ansible-playbook -b kubespray/cluster.yml
-```
 
-For more information on Kubespray, see the [docs](docs/KUBERNETES.md)
-
-### Accessing Kubernetes
-
-```sh
-# Obtain the Kubernetes admin user config file
+# Access the Kubernetes cluster by obtaining the admin user config file
 ./scripts/setup_remote_k8s.sh
 
 # Test access is working
 kubectl get nodes
+
+# Add the GPU device plugin
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
 ```
+
+For more information on Kubespray, see the [docs](KUBERNETES.md)

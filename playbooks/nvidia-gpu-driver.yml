@@ -21,7 +21,8 @@
         cache_valid_time: 3600
         state: latest
       with_items:
-        - nvidia-410
+        - nvidia-driver-410
+        - nvidia-utils-410
     - name: load nvidia driver
       modprobe:
         name: nvidia
