@@ -79,7 +79,7 @@ cat config/inventory
 
 # Review and edit configuration under config/group_vars/*.yml
 cat config/group_vars/all.yml
-cat config/group_vars/mgmt.yml
+cat config/group_vars/management.yml
 cat config/group_vars/gpu-servers.yml
 ```
 
@@ -88,7 +88,7 @@ _Configure Servers_
 ```sh
 # If sudo requires a password, add the -K flag
 
-# For servers in the `[mgmt]` group
+# For servers in the `[management]` group
 ansible-playbook playbooks/setup-mgmt-servers.yml
 
 # For servers in the `[gpu-servers]` group

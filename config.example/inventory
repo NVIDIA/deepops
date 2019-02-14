@@ -6,8 +6,9 @@
 
 # Management Servers
 # See group_vars/management.yml for configuration
-[mgmt]
-#mgmt01     ansible_host=10.0.0.1
+[management]
+#mgmt       ansible_host=10.0.0.1
+
 
 # Login Servers
 # See group_vars/login.yml for configuration
@@ -32,7 +33,7 @@
 # Only add the 'gpu-servers' and 'dgx-servers' group once the GPU/DGX nodes are up and available
 # Kubespray may fail otherwise
 [kube-node:children]
-mgmt
+management
 #gpu-servers
 #dgx-servers
 
@@ -66,10 +67,10 @@ gpu-servers
 # KUBERNETES
 ######
 [kube-master:children]
-mgmt
+management
 
 [etcd:children]
-mgmt
+management
 
 [k8s-cluster:children]
 kube-node
@@ -77,4 +78,4 @@ kube-node
 [calico-rr]
 
 [vault:children]
-mgmt
+management

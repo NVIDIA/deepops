@@ -172,17 +172,17 @@ SSH keys and sudo does not require a password, you may omit the `-k` and `-K`
 flags
 
 ```sh
-ansible-playbook -l mgmt -k -K ansible/playbooks/bootstrap.yml
+ansible-playbook -l management -k -K ansible/playbooks/bootstrap.yml
 ```
 
-Where `mgmt` is the group of servers in your `config/inventory` file which will become
+Where `management` is the group of servers in your `config/inventory` file which will become
 management servers for the cluster.
 
 To run arbitrary commands in parallel across nodes in the cluster, you can use ansible
 and the groups or hosts defined in the inventory file, for example:
 
 ```sh
-ansible mgmt -a hostname
+ansible management -a hostname
 ```
 
 > For more info, see: https://docs.ansible.com/ansible/latest/user_guide/intro_adhoc.html
@@ -206,20 +206,20 @@ Deploy Kubernetes on management servers:
 Modify the file `config/kube.yml` if needed and deploy Kubernetes:
 
 ```sh
-ansible-playbook -l mgmt -v -b --flush-cache --extra-vars "@config/kube.yml" kubespray/cluster.yml
+ansible-playbook -l management -v -b --flush-cache --extra-vars "@config/kube.yml" kubespray/cluster.yml
 ```
 <!--
 Place a hold on the `docker-ce` package so it doesn't get upgraded:
 
 ```sh
-ansible mgmt -b -a "apt-mark hold docker-ce"
+ansible management -b -a "apt-mark hold docker-ce"
 ```
 -->
 
 Set up Kubernetes for remote administration:
 
 ```sh
-ansible mgmt -b -m fetch -a "src=/etc/kubernetes/admin.conf flat=yes dest=./"
+ansible management -b -m fetch -a "src=/etc/kubernetes/admin.conf flat=yes dest=./"
 curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
 chmod +x ./kubectl
 ```
@@ -328,7 +328,7 @@ kubectl apply -f services/iso-loader.yml
 kubectl cp /path/to/DGXServer-3.1.2.170902_f8777e.iso $(kubectl get pod -l app=iso-loader -o custom-columns=:metadata.name --no-headers):/data/iso/
 ```
 
-> Note: If the `iso-loader` POD fails to mount the CephFS volume, you may need to restart the kubelet service on the master node(s): `ansible mgmt -b -a "systemctl restart kubelet"`
+> Note: If the `iso-loader` POD fails to mount the CephFS volume, you may need to restart the kubelet service on the master node(s): `ansible management -b -a "systemctl restart kubelet"`
 
 __Configure__
 
@@ -377,7 +377,7 @@ kubectl logs -l app=dgxie
 Configure the management server(s) to use DGXie for cluster-wide DNS:
 
 ```sh
-ansible-playbook -l mgmt ansible/playbooks/resolv.yml
+ansible-playbook -l management ansible/playbooks/resolv.yml
 ```
 -->
 If you later make changes to `config/dhcpd.hosts.conf`, you can update the file in Kubernetes
@@ -1102,7 +1102,7 @@ If you need to remove Rook for any reason, here are the steps:
 ```sh
 kubectl delete -f services/rook-cluster.yml
 helm del --purge rook-ceph
-ansible mgmt -b -m file -a "path=/var/lib/rook state=absent"
+ansible management -b -m file -a "path=/var/lib/rook state=absent"
 ```
 
 
