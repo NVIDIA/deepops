@@ -28,3 +28,7 @@
         name: nvidia-docker2
         state: latest
         update_cache: yes
+    - name: 'nvidia-docker: reload docker service'
+      service:
+        name: docker
+        state: reloaded
