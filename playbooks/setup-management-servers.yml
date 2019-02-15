@@ -1,5 +1,0 @@
----
-
-- include: bootstrap-ansible.yml
-- include: ssh.yml
-- include: docker.yml
