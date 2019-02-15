@@ -60,9 +60,6 @@ _Install Ansible_
 ```sh
 # Installation script for Ubuntu/RHEL
 ./scripts/install_ansible.sh
-
-# Install required Ansible roles
-ansible-galaxy install -r requirements.yml
 ```
 
 _Create server inventory_
