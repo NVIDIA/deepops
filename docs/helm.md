@@ -6,7 +6,7 @@ Some services are installed using [Helm](https://helm.sh/), a package manager fo
 
 Install the Helm client by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
 
-If you're using Linux, the script `.scripts/helm_install_linux.sh` will set up Helm for the current user.
+If you're using Linux, the script `scripts/install_helm.sh` will set up Helm for the current user.
 
 Be sure to install a version of Helm matching the version in `config/kube.yml`.
 

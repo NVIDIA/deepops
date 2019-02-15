@@ -17,6 +17,7 @@ virtual/*.log
 roles/*
 !roles/facts/
 !roles/nvidia-docker/
+!roles/nvidia-driver/
 !roles/users/
 !roles/reboot/
 !roles/slurm/
