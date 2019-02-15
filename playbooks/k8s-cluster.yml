@@ -32,6 +32,7 @@
       copy:
         src: "../k8s-config/artifacts/admin.conf"
         dest: "{{ lookup('env','HOME') + '/.kube/config' }}"
+        backup: yes
 
 #- include: nvidia-gpu-driver.yml
 #- include: nvidia-container-runtime.yml
