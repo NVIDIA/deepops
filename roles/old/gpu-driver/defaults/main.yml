@@ -1,9 +1,0 @@
----
-use_internal_repo: false
-use_latest_gpu_driver: true
-driver_version: 390.30
-#driver_version: 384.111-1
-apt_key_url: http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
-apt_key_id: 7FA2AF80
-apt_repo_url: http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_9.1.85-1_amd64.deb
-apt_repo_name: cuda-repo-ubuntu1604=9.1.85-1

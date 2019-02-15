@@ -1,0 +1,4 @@
+# Pin the package version for "cuda-drivers"
+driver_package_version: ''
+
+persistence_mode_on: yes
