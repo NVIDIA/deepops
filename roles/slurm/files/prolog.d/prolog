@@ -21,14 +21,14 @@ fi
 if [ "$SLURM_JOB_PARTITION" == "maxp" ] ; then
     # Set CPU frequency to performance governor
     cpupower frequency-set -g performance
-    nvidia-smi -pl 300
+    /etc/slurm/shared/bin/set_gpu_power_levels.sh max
 # MAX-Q
 elif [ "$SLURM_JOB_PARTITION" == "maxq" ] ; then
     # Set CPU frequency to powersave governor
     cpupower frequency-set -g powersave
-    nvidia-smi -pl 180
+    /etc/slurm/shared/bin/set_gpu_power_levels.sh min
 # batch (temporary - need to consider settings for default queue)
 else
     cpupower frequency-set -g performance
-    nvidia-smi -pl 300
+    /etc/slurm/shared/bin/set_gpu_power_levels.sh max
 fi

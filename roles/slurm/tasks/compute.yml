@@ -35,6 +35,8 @@
     mode: 0755
   with_items:
     - /etc/slurm
+    - /etc/slurm/shared
+    - /etc/slurm/shared/bin
     - /var/log/slurm
     - /var/spool/slurm/d
 
@@ -44,6 +46,14 @@
     dest: "/etc/systemd/system/{{ item }}"
   with_items:
     - slurmd.service
+
+- name: copy shared scripts
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/shared/bin/
+    mode: 0755
+  with_fileglob:
+    - shared/bin/*
 
 - name: create prolog.d directory
   file:
