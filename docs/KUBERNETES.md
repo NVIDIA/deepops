@@ -1,48 +1,63 @@
 Kubernetes
 ===
 
-## Installation via Kubespray
+## Kubespray
 
 More information on Kubespray can be found in the official [Getting Started Guide](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md)
 
-### Requirements
-
-  * Control machine with Ansible installed and configured: [docs/ANSIBLE.md](docs/ANSIBLE.md)
-  * Systems configured per [Operating System Configuration](#operating-system-configuration) section
-
-### Installation
-
-```sh
-# Make sure kubespray is up to date
-git submodule update --init
-
-# Copy the kubespray default configuration
-cp -rfp kubespray/inventory/sample/ k8s-config
-
-# Update Ansible inventory file and configuration with inventory builder
-declare -a IPS=(10.0.0.1 10.0.0.2 10.0.0.3)
-CONFIG_FILE=k8s-config/hosts.ini python3 kubespray/contrib/inventory_builder/inventory.py ${IPS[@]}
-
-# Modify `k8s-config/hosts.ini` to configure hosts for specific roles
-# Make sure the [etcd] group has an odd number of hosts
-
-# Install Kubernetes
-ansible-playbook -b kubespray/cluster.yml
-```
-
-### Accessing Kubernetes
-
-```sh
-# Obtain the Kubernetes admin user config file
-./scripts/setup_remote_k8s.sh
-
-# Test access is working
-kubectl get nodes
-```
-
 ## Using Kubernetes
 
-### Kubernetes Dashboard
+__Test that GPU support is working:__
+
+```sh
+kubectl apply -f tests/gpu-test-job.yml
+kubectl exec -ti gpu-pod -- nvidia-smi -L
+kubectl delete pod gpu-pod
+```
+
+## Helm
+
+Helm is a Kubernetes package manager
+
+__Install the Helm client__
+
+```sh
+# Installs the helm binary in /usr/local/bin
+./scripts/install_helm.sh
+```
+
+## Monitoring
+
+Cluster monitoring is provided by Prometheus and Grafana
+
+__Deploy the monitoring and alerting stack:__
+
+Be sure the Helm client is installed
+
+```sh
+helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/prometheus-operator.yml
+kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dashboard.json -n monitoring
+helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/kube-prometheus.yml
+```
+
+To collect GPU metrics, label each GPU node and deploy the DCGM Prometheus exporter:
+
+```sh
+kubectl label nodes <gpu-node-name> hardware-type=NVIDIAGPU
+kubectl create -f services/dcgm-exporter.yml
+```
+
+Service addresses:
+
+* Grafana: http://mgmt:30200
+* Prometheus: http://mgmt:30500
+* Alertmanager: http://mgmt:30400
+
+> Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
+The default login for Grafana is `admin` for the username and password.
+
+## Kubernetes Dashboard
 
 You can access the Kubernetes Dashboard at the URL:
 
