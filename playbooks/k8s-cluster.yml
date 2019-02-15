@@ -7,18 +7,19 @@
   tasks:
     - name: make sure kubespray is at the correct version
       command: git submodule update --init
-#    - name: copy default kubespray configuration
-#      command: cp -rfp kubespray/inventory/sample/ k8s-config
 
-- import_playbook: ../kubespray/cluster.yml
-  vars:
-    ansible_become: yes
-    kube_api_anonymous_auth: true
-    helm_enabled: true
-    tiller_node_selectors: "node-role.kubernetes.io/master=''"
-    docker_version: 18.06
-    docker_dns_servers_strict: no
-    docker_storage_options: -s overlay2
+- include: bootstrap.yml
+
+#- import_playbook: ../kubespray/cluster.yml
+#  vars:
+#    ansible_become: yes
+#    kubectl_localhost: true
+#    kubeconfig_localhost: true
+#    helm_enabled: true
+#    tiller_node_selectors: "node-role.kubernetes.io/master=''"
+#    docker_version: 18.06
+#    docker_dns_servers_strict: no
+#    docker_storage_options: -s overlay2
  
 - hosts: 127.0.0.1
   connection: local
@@ -34,6 +35,6 @@
         dest: "{{ lookup('env','HOME') + '/.kube/config' }}"
         backup: yes
 
-#- include: nvidia-gpu-driver.yml
-#- include: nvidia-container-runtime.yml
-#- include: k8s-gpu-plugin.yml
+- include: nvidia-gpu-driver.yml
+- include: nvidia-container-runtime.yml
+- include: k8s-gpu-plugin.yml

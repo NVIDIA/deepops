@@ -1,19 +1,27 @@
 ---
-- hosts: gpu-servers
+- hosts: all
   become: true
   become_method: sudo
+  vars:
+    nv_gpu_apt_repo_url: ppa:graphics-drivers/ppa
   tasks:
+    - name: Check for GPUs
+      shell: lspci | grep -i nv
+      register: has_gpu
     - name: unload nouveau driver
       modprobe:
         name: nouveau
         state: absent
+      when: has_gpu
     - name: blacklist nouveau driver
       kernel_blacklist:
         name: nouveau
         state: present
+      when: has_gpu
     - name: add nvidia driver ppa
       apt_repository:
         repo: "{{ nv_gpu_apt_repo_url }}"
+      when: has_gpu
     - name: install nvidia driver
       apt:
         name: "{{ item }}"
@@ -22,12 +30,15 @@
         state: latest
       # The PPA has different package names for different distros
       with_items: "{{ (ansible_facts['distribution_major_version'] == '18') | ternary(['nvidia-driver-410', 'nvidia-utils-410'], 'nvidia-410') }}"
+      when: has_gpu
     - name: load nvidia driver
       modprobe:
         name: nvidia
         state: present
+      when: has_gpu
     - name: enable and start nvidia persistence daemon
       systemd:
         name: nvidia-persistenced
         enabled: yes
         state: started
+      when: has_gpu

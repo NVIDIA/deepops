@@ -1,5 +1,5 @@
 ---
-- hosts: gpu-servers
+- hosts: all
   become: true
   become_method: sudo
   vars:
@@ -11,15 +11,20 @@
           path: /usr/bin/nvidia-container-runtime
           runtimeArgs: []
   tasks:
+    - name: Check for GPUs
+      shell: lspci | grep -i nv
+      register: has_gpu
     - name: remove nvidia-docker v1
       apt:
         name: nvidia-docker
         state: removed
         purge: yes
+      when: has_gpu
     - name: add nvidia-docker repo key
       apt_key:
         url: https://nvidia.github.io/nvidia-docker/gpgkey
         state: present
+      when: has_gpu
     - name: add nvidia-docker repo source
       get_url:
         url: https://nvidia.github.io/nvidia-docker/ubuntu16.04/nvidia-docker.list
@@ -27,7 +32,7 @@
         mode: 0644
         owner: root
         group: root
-      when: (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] == '16')
+      when: (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] == '16' and has_gpu)
     - name: add nvidia-docker repo source
       get_url:
         url: https://nvidia.github.io/nvidia-docker/ubuntu18.04/nvidia-docker.list
@@ -35,7 +40,7 @@
         mode: 0644
         owner: root
         group: root
-      when: (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] == '18')
+      when: (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] == '18' and has_gpu)
     - name: install nvidia-docker2
       apt:
         name: "{{ item }}"
@@ -44,6 +49,7 @@
       with_items:
         - "nvidia-docker2=2.0.3+docker18.06.1-1"
         - "nvidia-container-runtime=2.0.0+docker18.06.1-1"
+      when: has_gpu
     - name: configure docker daemon.json
       copy:
         content: "{{ daemon_json | to_nice_json }}"
@@ -51,7 +57,9 @@
         owner: root
         group: root
         mode: 0644
+      when: has_gpu
     - name: 'nvidia-docker: reload docker service'
       service:
         name: docker
         state: reloaded
+      when: has_gpu

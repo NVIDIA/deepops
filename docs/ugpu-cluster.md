@@ -1,14 +1,14 @@
-Kubernetes Cluster Build
+Scale-out Universal GPU Cluster Deployment Guide
 ===
 
-Minimal step-by-step instructions for deploying a Kubernetes GPU cluster
+Instructions for deploying a scale-out GPU cluster with Kubernetes
 
 ## Overview
 
 **Install Process**
 
   * Install a supported operating system (Ubuntu/RHEL)
-  * Configure systems (default user, drivers, etc.)
+  * Configure systems
   * Install Kubernetes
 
 **Requirements**
@@ -52,11 +52,7 @@ docker-compose -f containers/pxe/docker-compose.yml up -d dhcp pxe-ubuntu
 
 For more information on PXE installation, see the [docs](PXE.md)
 
-## Step 2: Operating System Configuration
-
-Server configuration is done via Ansible. See the docs for detailed instructions: [ANSIBLE.md](ANSIBLE.md)
-
-The control machine should have [passwordless](ANSIBLE.md#passwordless-configuration-using-ssh-keys) (SSH key) access to each server it will configure.
+## Step 2: System Configuration
 
 _Install Ansible_
 
@@ -71,40 +67,6 @@ ansible-galaxy install -r requirements.yml
 _Create server inventory_
 
 ```sh
-# Copy the default configuration
-cp -r config.example config
-
-# Review and edit the inventory file to set IPs/hostnames for servers
-cat config/inventory
-
-# Review and edit configuration under config/group_vars/*.yml
-cat config/group_vars/all.yml
-cat config/group_vars/management.yml
-cat config/group_vars/gpu-servers.yml
-```
-
-_Configure Servers_
-
-```sh
-# If sudo requires a password, add the -K flag
-
-# For servers in the `[management]` group
-ansible-playbook playbooks/setup-management-servers.yml
-
-# For servers in the `[gpu-servers]` group
-ansible-playbook playbooks/setup-gpu-servers.yml
-```
-
-## Step 3: Kubernetes installation
-
-Kubernetes is installed via the Kubespray project, which uses Ansible
-
-### Installation
-
-```sh
-# Make sure kubespray is up to date
-git submodule update --init
-
 # Copy the kubespray default configuration
 cp -rfp kubespray/inventory/sample/ k8s-config
 
@@ -112,21 +74,38 @@ cp -rfp kubespray/inventory/sample/ k8s-config
 declare -a IPS=(10.0.0.1 10.0.0.2 10.0.0.3)
 CONFIG_FILE=k8s-config/hosts.ini python3 kubespray/contrib/inventory_builder/inventory.py ${IPS[@]}
 
-# Modify `k8s-config/hosts.ini` to configure hosts for specific roles
-# Make sure the [etcd] group has an odd number of hosts
-
-# Install Kubernetes
-ansible-playbook -b kubespray/cluster.yml
+# (optional) Modify `k8s-config/hosts.ini` to configure hosts for specific roles
+# 	     Make sure the [etcd] group has an odd number of hosts
 ```
+
+## Step 3: Kubernetes Installation
+
+_Configure Servers_
+
+```sh
+# Install Kubernetes
+# NOTE: If SSH requires a password, add the -k flag
+# NOTE: If sudo requires a password, add the -K flag
+ansible-playbook playbooks/k8s-cluster.yml
+```
+
+_Test access to Kubernetes cluster is working_
+
+```sh
+kubectl get nodes
+```
+
+Server configuration is done via Ansible. See the docs for detailed instructions: [ANSIBLE.md](ANSIBLE.md)
 
 For more information on Kubespray, see the [docs](docs/KUBERNETES.md)
 
-### Accessing Kubernetes
+<!--
+_Configure passwordless access_
+
+The control machine should have [passwordless](ANSIBLE.md#passwordless-configuration-using-ssh-keys) (SSH key) access to each server it will configure.
 
 ```sh
-# Obtain the Kubernetes admin user config file
-./scripts/setup_remote_k8s.sh
-
-# Test access is working
-kubectl get nodes
+# Configure servers for SSH access using keys
+ansible-playbook -k -K -e ansible_user=ubuntu playbooks/bootstrap.yml
 ```
+-->
