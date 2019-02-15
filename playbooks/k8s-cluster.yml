@@ -1,8 +1,10 @@
 ---
 # Kubernetes Cluster Playbook
 
+# Install python required for Ansible
 - include: bootstrap-ansible.yml
 
+# Make sure Kubespray submodule is correct
 - hosts: 127.0.0.1
   connection: local
   gather_facts: false
@@ -12,7 +14,7 @@
   vars:
     ansible_become: no
 
-
+# Set up passwordless sudo and SSH keys if needed
 - include: bootstrap.yml
   vars:
     ansible_user: "{{ lookup('env','USER') }}"
@@ -49,6 +51,7 @@
         line: "ansible_become: no"
         create: yes
 
+# Install Kubernetes
 - import_playbook: ../kubespray/cluster.yml
   vars:
     ansible_user: "{{ lookup('env','USER') }}"
@@ -60,6 +63,7 @@
     docker_dns_servers_strict: no
     docker_storage_options: -s overlay2
  
+# Manage Kubernetes cluster access config file
 - hosts: 127.0.0.1
   connection: local
   gather_facts: false
@@ -81,16 +85,37 @@
         backup: yes
       when: kubeconf.stat.exists
 
-- include: nvidia-gpu-driver.yml
+# Install driver and container runtime on GPU servers
+- hosts: all
+  become: true
   vars:
     ansible_user: "{{ lookup('env','USER') }}"
-- include: nvidia-container-runtime.yml
-  vars:
-    ansible_user: "{{ lookup('env','USER') }}"
+    daemon_json:
+      default-runtime: nvidia
+      runtimes:
+        nvidia:
+          path: /usr/bin/nvidia-container-runtime
+          runtimeArgs: []
+    nvidia_docker2_package_version: "2.0.3+docker18.06.1-1"
+    nvidia_container_runtime_package_version: "2.0.0+docker18.06.1-1"
+  tasks:
+    - name: Check for GPUs
+      shell: lspci | grep -i nvidia
+      register: has_gpu
+      ignore_errors: true
+    - include_role:
+        name: nvidia-driver
+      when: has_gpu.rc == 0
+    - include_role:
+        name: nvidia-docker
+      when: has_gpu.rc == 0
+
+# Install k8s GPU device plugin
 - include: k8s-gpu-plugin.yml
   vars:
     ansible_user: "{{ lookup('env','USER') }}"
 
+# Manage kubectl binary
 - hosts: 127.0.0.1
   connection: local
   gather_facts: false
