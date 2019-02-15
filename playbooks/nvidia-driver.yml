@@ -1,0 +1,10 @@
+- hosts: gpu-servers:dgx-servers
+  become: true
+  roles:
+    - nvidia-driver
+    - reboot
+
+- hosts: gpu-servers:dgx-servers
+  tasks:
+    - name: test nvidia-smi
+      shell: nvidia-smi
