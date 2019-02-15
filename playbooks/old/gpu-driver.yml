@@ -1,7 +1,0 @@
-# Have to manually remove for now to downgrade:
-# sudo apt-get -y remove cuda-drivers cuda-drivers-diagnostic libcuda1-390 nvidia-390 nvidia-390-dev nvidia-390-diagnostic nvidia-modprobe nvidia-opencl-icd-390 nvidia-settings
-- hosts: all #dgx-servers
-  become: true
-  become_method: sudo
-  roles:
-    - gpu-driver
