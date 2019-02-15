@@ -67,7 +67,7 @@ ansible-galaxy install -r requirements.yml
 _Create server inventory_
 
 ```sh
-# Generate an inventory file using default configuration
+# Specify IP addresses of Kubernetes nodes
 ./scripts/k8s_inventory.sh 10.0.0.1 10.0.0.2 10.0.0.3
 
 # (optional) Modify `k8s-config/hosts.ini` to configure hosts for specific roles
@@ -76,10 +76,9 @@ _Create server inventory_
 
 ## Step 3: Kubernetes Installation
 
-_Configure Servers_
+_Install Kubernetes_
 
 ```sh
-# Install Kubernetes
 # NOTE: If SSH requires a password, add: `-k`
 # NOTE: If sudo on remote machine requires a password, add: `-K`
 # NOTE: If SSH user is different than current user, add: `-e ansible_user=ubuntu`
