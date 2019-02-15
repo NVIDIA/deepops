@@ -1,0 +1,11 @@
+- hosts: all
+  become: true
+  tasks:
+    - name: Check for GPUs
+      shell: lspci | grep -i nv
+      register: has_gpu
+      ignore_errors: true
+
+    - include_role:
+        name: nvidia-docker
+      when: has_gpu.rc == 0
