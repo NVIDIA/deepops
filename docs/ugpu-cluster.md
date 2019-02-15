@@ -90,6 +90,12 @@ _Test access to Kubernetes cluster is working_
 kubectl get nodes
 ```
 
+__Deploy monitoring__
+
+```sh
+./scripts/k8s_deploy_monitoring.sh
+```
+
 ## Additional Documentation
 
   * [Ansible](ANSIBLE.md)
