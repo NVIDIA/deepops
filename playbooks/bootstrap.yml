@@ -2,6 +2,8 @@
 - hosts: 127.0.0.1
   connection: local
   gather_facts: false
+  vars:
+    ansible_become: false
   tasks:
     - name: Create SSH directory if it doesn't exist
       file:
