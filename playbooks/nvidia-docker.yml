@@ -2,7 +2,7 @@
   become: true
   tasks:
     - name: Check for GPUs
-      shell: lspci | grep -i nv
+      shell: lspci | grep -i nvidia
       register: has_gpu
       ignore_errors: true
 
