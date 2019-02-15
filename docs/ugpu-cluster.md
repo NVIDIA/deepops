@@ -67,12 +67,8 @@ ansible-galaxy install -r requirements.yml
 _Create server inventory_
 
 ```sh
-# Copy the kubespray default configuration
-cp -rfp kubespray/inventory/sample/ k8s-config
-
-# Update Ansible inventory file and configuration with inventory builder
-declare -a IPS=(10.0.0.1 10.0.0.2 10.0.0.3)
-CONFIG_FILE=k8s-config/hosts.ini python3 kubespray/contrib/inventory_builder/inventory.py ${IPS[@]}
+# Generate an inventory file using default configuration
+./scripts/k8s_inventory.sh 10.0.0.1 10.0.0.2 10.0.0.3
 
 # (optional) Modify `k8s-config/hosts.ini` to configure hosts for specific roles
 # 	     Make sure the [etcd] group has an odd number of hosts
