@@ -4,29 +4,28 @@
 sed -i "/${SLURM_JOB_USER}/d" /etc/localusers
 
 # Remove user from Docker group
-gpasswd -d "${SLURM_JOB_USER}" docker
+gpasswd -d "$SLURM_JOB_USER" docker
 
 # Remove user from subuid/subgid for rootless LXC support
-uid=$(id -u ${SLURM_JOB_USER})
-gid=$(id -g ${SLURM_JOB_USER})
+uid=$(id -u "$SLURM_JOB_USER")
+gid=$(id -g "$SLURM_JOB_USER")
 sed -i "/^${uid}/d" /etc/subuid
 sed -i "/^${gid}/d" /etc/subgid
 
 # Stop and remove docker containers
 for container in $(docker ps -qa) ; do
-    c=$(docker inspect ${container} --format '{{.HostConfig.CgroupParent}} {{.Name}}' | grep -v kube | tr -d '/')
-	if [ "z${c}" != "z" ] ; then
-		docker stop ${c}
-		docker rm ${c}
-	fi
+    c=$(docker inspect "$container" --format '{{.HostConfig.CgroupParent}} {{.Name}}' | grep -v kube | tr -d '/')
+    if [ "z${c}" != "z" ] ; then
+        docker stop "$c"
+        docker rm "$c"
+    fi
 done
 
 ## EPILOG CLEANUP
 # Reset access and kill stray processes
 USER=$SLURM_JOB_USER
-if [ $USER != root ]; then
-    killall -9 -u $USER
-    if [ $? -eq 0 ]; then
+if [ "$USER" != root ]; then
+    if killall -9 -u "$USER" ; then
         echo "Killed residual processes for $USER"
     fi
 fi
@@ -36,23 +35,23 @@ sync
 echo 3 > /proc/sys/vm/drop_caches
 
 # Clean up processes still running.  If processes don't exit node is drained.
-nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}' | grep -v - > /dev/null
-if [ $? -eq 0 ] ; then
-    for i in `nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}'`
-        do
-        kill -9 $i
+if nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}' | grep -v - > /dev/null
+then
+    for i in $(nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}')
+    do
+        kill -9 "$i"
     done
 fi
 sleep 5
-nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}' | grep -v - > /dev/null
-if [ $? -eq 0 ] ; then
+if nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}' | grep -v - > /dev/null
+then
     echo "Processes found"
-    scontrol update nodename=$HOSTNAME state=drain reason="Residual GPU processes found"
+    scontrol update nodename="$HOSTNAME" state=drain reason="Residual GPU processes found"
 else
     echo "No processes found"
 fi
 
-# Reset GPUs to default state 
+# Reset GPUs to default state
 nvidia-smi -rac 2>/dev/null         # Reset application clocks
 nvidia-smi -acp 0 2>/dev/null       # Reset application clock permissions
 nvidia-smi -c DEFAULT 2>/dev/null   # Reset compute mode to default
@@ -65,4 +64,4 @@ grep "/tmp " /etc/fstab && mount /tmp
 
 ## Performance settings - return to idle state
 cpupower frequency-set -g powersave
-nvidia-smi -pl 180
+/etc/slurm/shared/bin/set_gpu_power_levels.sh default
