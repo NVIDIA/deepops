@@ -1,10 +1,19 @@
-- hosts: gpu-servers:dgx-servers
+- hosts: all
   become: true
-  roles:
-    - nvidia-driver
-    - reboot
-
-- hosts: gpu-servers:dgx-servers
   tasks:
+    - name: Check for GPUs
+      shell: lspci | grep -i nvidia
+      register: has_gpu
+      ignore_errors: true
+
+    - include_role:
+        name: nvidia-driver
+      when: has_gpu.rc == 0
+
+    - include_role:
+        name: reboot
+      when: has_gpu.rc == 0
+
     - name: test nvidia-smi
       shell: nvidia-smi
+      when: has_gpu.rc == 0
