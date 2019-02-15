@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+git submodule update --init
+
 k8s_config_dir=./k8s-config
 
 if [ ! -d "${k8s_config_dir}" ] ; then

@@ -8,13 +8,14 @@ Instructions for deploying a scale-out GPU cluster with Kubernetes
 **Install Process**
 
   * Install a supported operating system (Ubuntu/RHEL)
-  * Configure systems
+  * Configure system
   * Install Kubernetes
 
 **Requirements**
 
   * Control system to run the install process
   * One or more servers on which to install Kubernetes
+  * Management server (if installing OS via PXE)
 
 ## Step 1: Operating System Installation
 
