@@ -84,15 +84,12 @@
 - include: nvidia-gpu-driver.yml
   vars:
     ansible_user: "{{ lookup('env','USER') }}"
-    ansible_become: no
 - include: nvidia-container-runtime.yml
   vars:
     ansible_user: "{{ lookup('env','USER') }}"
-    ansible_become: no
 - include: k8s-gpu-plugin.yml
   vars:
     ansible_user: "{{ lookup('env','USER') }}"
-    ansible_become: no
 
 - hosts: 127.0.0.1
   connection: local

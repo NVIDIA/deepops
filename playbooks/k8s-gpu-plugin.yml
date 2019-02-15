@@ -2,6 +2,8 @@
 - hosts: 127.0.0.1
   connection: local
   gather_facts: false
+  vars:
+    ansible_become: no
   tasks:
     - name: get GPU device plugin manifest
       get_url:
@@ -31,6 +33,8 @@
 - hosts: 127.0.0.1
   connection: local
   gather_facts: false
+  vars:
+    ansible_become: no
   tasks:
     - name: remove GPU device plugin manifest
       file:
