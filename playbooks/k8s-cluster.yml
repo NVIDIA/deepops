@@ -9,10 +9,13 @@
       command: git submodule update --init
 
 - include: bootstrap.yml
+  vars:
+    ansible_user: "{{ lookup('env','USER') }}"
 
 #- import_playbook: ../kubespray/cluster.yml
 #  vars:
 #    ansible_become: yes
+#    ansible_user: "{{ lookup('env','USER') }}"
 #    kubectl_localhost: true
 #    kubeconfig_localhost: true
 #    helm_enabled: true
@@ -29,12 +32,23 @@
       file:
         path: "{{ lookup('env','HOME') + '/.kube/' }}"
         state: directory
+    - name: check for kube config file
+      stat:
+        path: "../k8s-config/artifacts/admin.conf"
+      register: kubeconf
     - name: copy kube config file for current user
       copy:
         src: "../k8s-config/artifacts/admin.conf"
         dest: "{{ lookup('env','HOME') + '/.kube/config' }}"
         backup: yes
+      when: kubeconf.stat.exists
 
 - include: nvidia-gpu-driver.yml
+  vars:
+    ansible_user: "{{ lookup('env','USER') }}"
 - include: nvidia-container-runtime.yml
+  vars:
+    ansible_user: "{{ lookup('env','USER') }}"
 - include: k8s-gpu-plugin.yml
+  vars:
+    ansible_user: "{{ lookup('env','USER') }}"

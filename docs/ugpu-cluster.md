@@ -84,8 +84,9 @@ _Configure Servers_
 
 ```sh
 # Install Kubernetes
-# NOTE: If SSH requires a password, add the -k flag
-# NOTE: If sudo requires a password, add the -K flag
+# NOTE: If SSH requires a password, add: `-k`
+# NOTE: If sudo requires a password, add: `-K`
+# NOTE: If SSH user is different than current user, add: `-e ansible_user=ubuntu`
 ansible-playbook playbooks/k8s-cluster.yml
 ```
 
@@ -95,17 +96,7 @@ _Test access to Kubernetes cluster is working_
 kubectl get nodes
 ```
 
-Server configuration is done via Ansible. See the docs for detailed instructions: [ANSIBLE.md](ANSIBLE.md)
+## Additional Documentation
 
-For more information on Kubespray, see the [docs](docs/KUBERNETES.md)
-
-<!--
-_Configure passwordless access_
-
-The control machine should have [passwordless](ANSIBLE.md#passwordless-configuration-using-ssh-keys) (SSH key) access to each server it will configure.
-
-```sh
-# Configure servers for SSH access using keys
-ansible-playbook -k -K -e ansible_user=ubuntu playbooks/bootstrap.yml
-```
--->
+  * [Ansible](ANSIBLE.md)
+  * [Kubespray/Kubernetes](KUBERNETES.md)
