@@ -90,7 +90,7 @@ _Test access to Kubernetes cluster is working_
 kubectl get nodes
 ```
 
-__Deploy monitoring__
+_Deploy monitoring_
 
 ```sh
 ./scripts/k8s_deploy_monitoring.sh
