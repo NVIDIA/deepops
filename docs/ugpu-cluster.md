@@ -81,7 +81,7 @@ _Configure Servers_
 ```sh
 # Install Kubernetes
 # NOTE: If SSH requires a password, add: `-k`
-# NOTE: If sudo requires a password, add: `-K`
+# NOTE: If sudo on remote machine requires a password, add: `-K`
 # NOTE: If SSH user is different than current user, add: `-e ansible_user=ubuntu`
 ansible-playbook playbooks/k8s-cluster.yml
 ```
@@ -89,6 +89,7 @@ ansible-playbook playbooks/k8s-cluster.yml
 _Test access to Kubernetes cluster is working_
 
 ```sh
+# You may need to manually run: `sudo cp ./k8s-config/artifacts/kubectl /usr/local/bin`
 kubectl get nodes
 ```
 

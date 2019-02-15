@@ -1,7 +1,0 @@
----
-
-- include: bootstrap-ansible.yml
-- include: ssh.yml
-- include: docker.yml
-- include: nvidia-gpu-driver.yml
-- include: nvidia-container-runtime.yml
