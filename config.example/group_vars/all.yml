@@ -15,7 +15,7 @@ enable_sudo_without_password: true
 #ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
 
 # Docker Configuration
-#daemon_json:
+#docker_daemon_json:
 #  bip: 192.168.99.1/24
 #  insecure-registries:
 #    - "registry.local"
