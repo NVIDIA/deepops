@@ -109,7 +109,7 @@ kubectl get nodes
 _Test GPU job_
 
 ```sh
-kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda:9.0-devel --limits=nvidia.com/gpu=1 -- nvidia-smi
+kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
 ```
 
 _Deploy monitoring_
