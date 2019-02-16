@@ -90,7 +90,7 @@
   become: true
   vars:
     ansible_user: "{{ lookup('env','USER') }}"
-    daemon_json:
+    docker_daemon_json:
       default-runtime: nvidia
       runtimes:
         nvidia:
