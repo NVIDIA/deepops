@@ -1,6 +1,6 @@
 version: '3.2'
 services:
-  dhcpd:
+  dhcp:
     build: dhcp
     network_mode: "host"
     privileged: true
@@ -12,21 +12,17 @@ services:
     network_mode: "host"
     image: danderson/pixiecore
     command: ["boot",
-              "-l",
-              "192.168.1.62",
               "https://alpha.release.core-os.net/amd64-usr/current/coreos_production_pxe.vmlinuz",
               "https://alpha.release.core-os.net/amd64-usr/current/coreos_production_pxe_image.cpio.gz",
               "--cmdline",
               "coreos.autologin",
               "--dhcp-no-bind"]
-  pxe-ubuntu:
+  pxe:
     network_mode: "host"
-    image: danderson/pixiecore
+    image: deepops/pixiecore
     command: ["boot",
-              "-l",
-              "192.168.1.62",
     "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/ubuntu-installer/amd64/linux",
   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/ubuntu-installer/amd64/initrd.gz",
               "--cmdline",
-              "passwd/user-fullname=ubuntu passwd/username=ubuntu passwd/user-password=nvidia passwd/user-password-again=nvidia user-setup/allow-password-weak=true locale=en_US.UTF-8 priority=critical kbd-chooser/method=us auto=true netcfg/choose_interface=ens192 preseed/url=https://help.ubuntu.com/lts/installation-guide/example-preseed.txt pkgsel/include=openssh-server debian-installer/exit/halt=true",
+"auto=true priority=critical preseed/url=https://raw.githubusercontent.com/NVIDIA/deepops/pxe-updates/containers/pxe/preseed",
               "--dhcp-no-bind"]

@@ -52,7 +52,7 @@
         create: yes
 
 # Install Kubernetes
-- import_playbook: ../kubespray/cluster.yml
+- include: ../kubespray/cluster.yml
   vars:
     ansible_user: "{{ lookup('env','USER') }}"
     kubectl_localhost: true

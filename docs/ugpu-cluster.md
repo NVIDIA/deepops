@@ -8,48 +8,62 @@ Instructions for deploying a scale-out GPU cluster with Kubernetes
 **Install Process**
 
   * Install a supported operating system (Ubuntu/RHEL)
-  * Configure system
   * Install Kubernetes
 
 **Requirements**
 
   * Control system to run the install process
   * One or more servers on which to install Kubernetes
-  * Management server (if installing OS via PXE)
+  * (Optional) Management server (if installing OS via PXE)
 
 ## Step 1: Operating System Installation
 
-Install a supported operating system (Ubuntu/RHEL) on all servers via
-a 3rd-party solution or utilize the provided OS install container
-
-### OS Install via 3rd-party solutions:
-
-  * [MAAS](https://maas.io/)
-  * [Foreman](https://www.theforeman.org/)
+Install a supported operating system on all servers via
+a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)) or utilize the provided OS install container.
 
 ### OS Install Container
 
-#### Working with an existing DHCP server
+This process should run from a Linux system on the same network segment as the target nodes.
 
-Modify `containers/pxe/docker-compose.yml`
-
-Start the PXE server:
+_Install Docker_
 
 ```sh
-docker-compose -f containers/pxe/docker-compose.yml up -d pxe-ubuntu
+./scripts/install_docker.sh
 ```
 
-#### Working with no existing DHCP server
+_(Optional) Start DHCP server_
 
-Modify `containers/pxe/docker-compose.yml`
-
-Modify `containers/pxe/dhcp/dnsmasq.conf`
-
-Start the DHCP and PXE servers:
+If you have an existing DHCP server, skip this step
 
 ```sh
-docker-compose -f containers/pxe/docker-compose.yml up -d dhcp pxe-ubuntu
+# Modify listen interface, DHCP range, and network gateway IP
+docker-compose -f containers/pxe/docker-compose.yml run -d dhcp dnsmasq -d --interface=ens192 --dhcp-range=192.168.1.100,192.168.1.199,7200 --dhcp-option=3,192.168.1.1
 ```
+
+_(Optional) Configure NAT routing_
+
+If you have an existing network gateway, skip this step
+
+```sh
+# Set eth0 and eth1 to your public and private interfaces, respectively
+./scripts/setup_nat.sh eth0 eth1
+```
+
+_Start PXE server_
+
+```sh
+docker-compose -f containers/pxe/docker-compose.yml up -d pxe
+```
+
+_Install OS_
+
+Set servers to boot from the network for the next boot only (to avoid re-install loops)
+and reboot them to install the OS.
+
+The default credentials are:
+
+  * Username: `ubuntu`
+  * Password: `deepops`
 
 For more information on PXE installation, see the [docs](PXE.md)
 
@@ -88,6 +102,14 @@ _Test access to Kubernetes cluster is working_
 ```sh
 # You may need to manually run: `sudo cp ./k8s-config/artifacts/kubectl /usr/local/bin`
 kubectl get nodes
+```
+
+## Additional Components
+
+_Test GPU job_
+
+```sh
+kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda:9.0-devel --limits=nvidia.com/gpu=1 -- nvidia-smi
 ```
 
 _Deploy monitoring_
