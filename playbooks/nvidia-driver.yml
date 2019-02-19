@@ -15,5 +15,5 @@
       when: has_gpu.rc == 0
 
     - name: test nvidia-smi
-      shell: nvidia-smi
+      command: nvidia-smi
       when: has_gpu.rc == 0

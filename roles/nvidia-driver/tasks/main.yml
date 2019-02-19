@@ -1,80 +1,8 @@
-#
-# Checks
-#
+- name: check if driver already installed
+  command: nvidia-smi
+  register: nvidia_smi
+  ignore_errors: true
 
-- name: check distro
-  fail:
-    msg: "distro {{ ansible_facts['distribution'] }} not supported"
-  when: ansible_facts['distribution'] != 'Ubuntu'
-
-#
-# Cleanup
-#
-
-- name: remove apt packages
-  apt:
-    name: "{{ item }}"
-    state: absent
-    purge: yes
-    autoremove: yes
-  ignore_errors: yes
-
-  # Use a loop instead of a list here. We want to apply ignore_errors for each
-  #   package because ansible throws an error if it cannot complete the glob.
-  loop:
-    - cuda-drivers
-    - nvidia-3*
-    - nvidia-4*
-    - nvidia-driver-*
-    - nvidia-utils-*
-
-- name: remove ppa
-  apt_repository:
-    repo: ppa:graphics-drivers/ppa
-    state: absent
-
-- name: remove persistenced service override
-  file:
-    path: /etc/systemd/system/nvidia-persistenced.service.d/override.conf
-    state: absent
-
-#
-# Install
-#
-
-- name: add key
-  apt_key:
-    url: "https://developer.download.nvidia.com/compute/cuda/repos/{{ repo_dir }}/7fa2af80.pub"
-    id: 7fa2af80
-
-- name: add repo
-  apt_repository:
-    repo: "deb http://developer.download.nvidia.com/compute/cuda/repos/{{ repo_dir }} /"
-    update_cache: yes
-
-- name: install driver packages
-  apt:
-    name: "{{ item }}"
-    install_recommends: no
-  with_items:
-    - "{{ driver_package_version | ternary('cuda-drivers='+driver_package_version, 'cuda-drivers') }}"
-
-- name: create persistenced override dir
-  file:
-    path: /etc/systemd/system/nvidia-persistenced.service.d/
-    state: directory
-    recurse: yes
-
-- name: configure persistenced service to turn on persistence mode
-  copy:
-    src: nvidia-persistenced-override.conf
-    dest: /etc/systemd/system/nvidia-persistenced.service.d/override.conf
-  when: persistence_mode_on
-
-- name: enable persistenced
-  systemd:
-    name: nvidia-persistenced
-    enabled: yes
-
-# Rather than attempt to cleanup the kernel modules (noveau, nvidia), we
-#   recommend a reboot to be safe.
+- name: include install tasks
+  include_tasks: install.yml
+  when: nvidia_smi.rc != 0 or reinstall_nvidia_driver

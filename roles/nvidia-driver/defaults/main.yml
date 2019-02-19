@@ -2,3 +2,5 @@
 driver_package_version: ''
 
 persistence_mode_on: yes
+
+reinstall_nvidia_driver: no
