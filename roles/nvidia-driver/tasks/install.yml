@@ -57,7 +57,7 @@
     name: "{{ item }}"
     install_recommends: no
   with_items:
-    - "{{ driver_package_version | ternary('cuda-drivers='+driver_package_version, 'cuda-drivers') }}"
+    - "{{ nvidia_driver_package_version | ternary('cuda-drivers='+nvidia_driver_package_version, 'cuda-drivers') }}"
 
 - name: create persistenced override dir
   file:
@@ -69,7 +69,7 @@
   copy:
     src: nvidia-persistenced-override.conf
     dest: /etc/systemd/system/nvidia-persistenced.service.d/override.conf
-  when: persistence_mode_on
+  when: nvidia_driver_persistence_mode_on
 
 - name: enable persistenced
   systemd:
@@ -79,3 +79,4 @@
 # Reboot rather than attempt to cleanup the kernel modules (noveau, nvidia).
 - include_role:
     name: reboot
+  when: not nvidia_driver_skip_reboot

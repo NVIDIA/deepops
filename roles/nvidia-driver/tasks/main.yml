@@ -5,4 +5,4 @@
 
 - name: include install tasks
   include_tasks: install.yml
-  when: nvidia_smi.rc != 0 or reinstall_nvidia_driver
+  when: nvidia_smi.rc != 0 or nvidia_driver_force_reinstall
