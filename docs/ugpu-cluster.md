@@ -37,7 +37,7 @@ If you have an existing DHCP server, skip this step
 
 ```sh
 # Modify listen interface, DHCP range, and network gateway IP
-docker-compose -f containers/pxe/docker-compose.yml run -d dhcp dnsmasq -d --interface=ens192 --dhcp-range=192.168.1.100,192.168.1.199,7200 --dhcp-option=3,192.168.1.1
+docker-compose -f containers/pxe/docker-compose.yml run -d dhcp dnsmasq -d --interface=ens192 --dhcp-range=192.168.1.100,192.168.1.199,7200 --dhcp-option=6,8.8.8.8 --dhcp-option=3,192.168.1.1
 ```
 
 _(Optional) Configure NAT routing_
