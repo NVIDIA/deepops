@@ -8,12 +8,12 @@
     - mariadb-server
     - python-mysqldb
 
-- name: install mailx and ssmtp
+- name: install s-nail and ssmtp
   apt:
     name: "{{ item }}"
     state: latest
   with_items:
-    - heirloom-mailx
+    - s-nail
     - ssmtp
 
 - name: setup slurm db user
