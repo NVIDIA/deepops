@@ -51,6 +51,19 @@
         line: "ansible_become: no"
         create: yes
 
+# Disable swap (required for k8s), kubespray method doesn't quite cut it
+- hosts: all
+  become: true
+  vars:
+    ansible_user: "{{ lookup('env','USER') }}"
+  tasks:
+    - name: remove swap from fstab
+      lineinfile: path=/etc/fstab regexp='swap' state=absent
+    - name: disable swap
+      command: swapoff -a
+  tags:
+    - swap
+
 # Install Kubernetes
 - include: ../kubespray/cluster.yml
   vars:
