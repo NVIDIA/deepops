@@ -10,10 +10,6 @@
         name: nvidia-driver
       when: has_gpu.rc == 0
 
-    - include_role:
-        name: reboot
-      when: has_gpu.rc == 0
-
     - name: test nvidia-smi
       command: nvidia-smi
       when: has_gpu.rc == 0

@@ -76,5 +76,6 @@
     name: nvidia-persistenced
     enabled: yes
 
-# Rather than attempt to cleanup the kernel modules (noveau, nvidia), we
-#   recommend a reboot to be safe.
+# Reboot rather than attempt to cleanup the kernel modules (noveau, nvidia).
+- include_role:
+    name: reboot
