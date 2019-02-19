@@ -320,11 +320,7 @@ d-i partman/confirm_nooverwrite boolean true
 # specify a path for the installer to retrieve the filesystem image that will
 # be deployed to disk and used as a base system for the installation.
 #d-i live-installer/net-image string /install/filesystem.squashfs
-<<<<<<< HEAD
 
-=======
- 
->>>>>>> f3dc1f5e197c7abe60feeb709c44f2387cff06b6
 # Configure APT to not install recommended packages by default. Use of this
 # option can result in an incomplete system and should only be used by very
 # experienced users.
@@ -493,7 +489,3 @@ d-i finish-install/reboot_in_progress note
 # directly, or use the apt-install and in-target commands to easily install
 # packages and run commands in the target system.
 #d-i preseed/late_command string apt-install zsh; in-target chsh -s /bin/zsh
-<<<<<<< HEAD
-=======
-
->>>>>>> f3dc1f5e197c7abe60feeb709c44f2387cff06b6
