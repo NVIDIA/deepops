@@ -1,4 +1,4 @@
-# Pin the package version for "cuda-drivers"
-driver_package_version: ''
-
-persistence_mode_on: yes
+nvidia_driver_package_version: ''
+nvidia_driver_persistence_mode_on: yes
+nvidia_driver_force_reinstall: no
+nvidia_driver_skip_reboot: no
