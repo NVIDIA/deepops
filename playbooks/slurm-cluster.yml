@@ -21,6 +21,9 @@
 - include: hosts.yml
 
 - include: docker.yml
+
+- include: nvidia-driver.yml
+- include: nvidia-docker.yml
   vars:
     docker_daemon_json:
       default-runtime: nvidia
@@ -28,7 +31,4 @@
         nvidia:
           path: /usr/bin/nvidia-container-runtime
           runtimeArgs: []
-
-- include: nvidia-driver.yml
-- include: nvidia-docker.yml
 - include: slurm.yml
