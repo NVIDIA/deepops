@@ -14,7 +14,7 @@ _Install Slurm_
 # NOTE: If SSH requires a password, add: `-k`
 # NOTE: If sudo on remote machine requires a password, add: `-K`
 # NOTE: If SSH user is different than current user, add: `-e ansible_user=ubuntu`
-ansible-playbook playbooks/slurm-cluster.yml
+ansible-playbook -l slurm-cluster playbooks/slurm-cluster.yml
 ```
 
 After Slurm has been installed, use the `root` user to run the Slurm playbook
