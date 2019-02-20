@@ -1,0 +1,18 @@
+---
+
+- include: bootstrap-ansible.yml
+- include: bootstrap.yml
+- include: ssh.yml
+
+- include: docker.yml
+  vars:
+    docker_daemon_json:
+      default-runtime: nvidia
+      runtimes:
+        nvidia:
+          path: /usr/bin/nvidia-container-runtime
+          runtimeArgs: []
+- include: nvidia-driver.yml
+- include: nvidia-docker.yml
+
+- include: manage-users.yml
