@@ -63,6 +63,11 @@
     enabled: yes
     daemon-reload: yes
 
+- name: wait for slurmdbd to be available
+  wait_for:
+    port: 6819
+    delay: 5
+
 - name: create cluster
   command: sacctmgr -i add cluster {{ slurm_cluster_name }}
   register: create_cluster_result
