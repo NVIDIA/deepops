@@ -1,7 +1,7 @@
-Scale-out Universal GPU Cluster Deployment Guide
+Kubernetes GPU Cluster Deployment Guide
 ===
 
-Instructions for deploying a scale-out GPU cluster with Kubernetes
+Instructions for deploying a GPU cluster with Kubernetes
 
 ## Overview
 
@@ -19,53 +19,8 @@ Instructions for deploying a scale-out GPU cluster with Kubernetes
 ## Step 1: Operating System Installation
 
 Install a supported operating system on all servers via
-a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)) or utilize the provided OS install container.
-
-### OS Install Container
-
-This process should run from a Linux system on the same network segment as the target nodes.
-
-_Install Docker_
-
-```sh
-./scripts/install_docker.sh
-```
-
-_(Optional) Start DHCP server_
-
-If you have an existing DHCP server, skip this step
-
-```sh
-# Modify listen interface, DHCP range, and network gateway IP
-docker-compose -f containers/pxe/docker-compose.yml run -d dhcp dnsmasq -d --interface=ens192 --dhcp-range=192.168.1.100,192.168.1.199,7200 --dhcp-option=6,8.8.8.8 --dhcp-option=3,192.168.1.1
-```
-
-_(Optional) Configure NAT routing_
-
-If you have an existing network gateway, skip this step
-
-```sh
-# Set eth0 and eth1 to your public and private interfaces, respectively
-./scripts/setup_nat.sh eth0 eth1
-```
-
-_Start PXE server_
-
-```sh
-docker-compose -f containers/pxe/docker-compose.yml up -d pxe
-```
-
-_Install OS_
-
-Set servers to boot from the network for the next boot only (to avoid re-install loops)
-and reboot them to install the OS.
-
-The default credentials are:
-
-  * Username: `ubuntu`
-  * Password: `deepops`
-
-For more information on PXE installation, see the [docs](PXE.md)
+a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/))
+or utilize the provided [OS install container](PXE.md).
 
 ## Step 2: System Configuration
 
@@ -104,13 +59,13 @@ _Test access to Kubernetes cluster is working_
 kubectl get nodes
 ```
 
-## Additional Components
-
 _Test GPU job_
 
 ```sh
 kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
 ```
+
+### Monitoring
 
 _Deploy monitoring_
 
@@ -118,7 +73,20 @@ _Deploy monitoring_
 ./scripts/k8s_deploy_monitoring.sh
 ```
 
+### Kubernetes Dashboard
+
+You can access the Kubernetes Dashboard at the URL:
+
+https://first_master:6443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login
+
+For more information, see:
+
+  * [Kubespray Getting Started Guide](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md#accessing-kubernetes-dashboard)
+  * [Kubernetes Dashboard Documentation](https://github.com/kubernetes/dashboard)
+
 ## Additional Documentation
 
-  * [Ansible](ANSIBLE.md)
-  * [Kubespray/Kubernetes](KUBERNETES.md)
+[Ansible](ANSIBLE.md)
+
+More information on Kubespray can be found in the official [Getting Started Guide](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md)
+

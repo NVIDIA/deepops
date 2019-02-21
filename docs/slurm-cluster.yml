@@ -3,7 +3,27 @@ Slurm GPU Cluster Deployment Guide
 
 Instructions for deploying a GPU cluster with Slurm
 
-## Step 1: System Configuration
+## Overview
+
+**Install Process**
+
+  * Install a supported operating system (Ubuntu/RHEL)
+  * Install Slurm
+
+**Requirements**
+
+  * Control system to run the install process
+  * One server to act as the Slurm controller/login node
+  * One or more servers to act as the Slurm compute nodes
+  * (Optional) Management server (if installing OS via PXE)
+
+## Step 1: Operating System Installation
+
+Install a supported operating system on all servers via
+a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/))
+or utilize the provided [OS install container](PXE.md).
+
+## Step 2: System Configuration
 
 _Install Ansible_
 
@@ -12,7 +32,7 @@ _Install Ansible_
 ./scripts/install_ansible.sh
 ```
 
-_Configure_
+_Create server inventory and configure_
 
 ```sh
 # Copy default inventory and configuration
@@ -26,6 +46,8 @@ vi config/inventory
 # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
 ```
 
+## Step 3: Install Slurm
+
 _Install Slurm_ 
 
 ```sh
@@ -35,6 +57,10 @@ _Install Slurm_
 ansible-playbook -l slurm-cluster playbooks/slurm-cluster.yml
 ```
 
-After Slurm has been installed, use the `root` user to run the Slurm playbook
+> After Slurm has been installed, use the `root` user to run the Slurm playbook
 (`-e ansible_user=root`) since only the root user and users currently running a Slurm job will be allowed
 to SSH to nodes.
+
+## Additional Documentation
+
+[Ansible](ANSIBLE.md)
