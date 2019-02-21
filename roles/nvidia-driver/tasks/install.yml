@@ -77,6 +77,6 @@
     enabled: yes
 
 # Reboot rather than attempt to cleanup the kernel modules (noveau, nvidia).
-- include_role:
-    name: reboot
+- name: reboot after driver install
+  reboot:
   when: not nvidia_driver_skip_reboot

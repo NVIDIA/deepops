@@ -22,9 +22,8 @@
 - name: update grub
   block:
     - command: update-grub
-    - file:
-        path: /var/run/reboot-required
-        state: touch
+    - name: reboot after updating grub config
+      reboot:
   when: update_grub.changed
 
 - name: create slurm directories

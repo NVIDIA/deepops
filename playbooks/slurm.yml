@@ -31,4 +31,3 @@
     - role: slurm
       user: "{{ ansible_user }}"
       is_compute: yes
-    - reboot
