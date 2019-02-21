@@ -1,11 +1,29 @@
-Slurm
+Slurm GPU Cluster Deployment Guide
 ===
 
+Instructions for deploying a GPU cluster with Slurm
+
+## Step 1: System Configuration
+
+_Install Ansible_
+
 ```sh
+# Installation script for Ubuntu/RHEL
+./scripts/install_ansible.sh
+```
+
+_Configure_
+
+```sh
+# Copy default inventory and configuration
 cp -r config.example config
 
-# Edit inventory and add hosts to `login` and `gpu-servers`/`dgx-servers` host groups
+# Edit inventory
+# Add Slurm controller/login host to `login` group
+# Add Slurm worker/compute hosts to `gpu-servers` or `dgx-servers` groups
 vi config/inventory
+
+# (optional) Modify `config/group_vars/*.yml` to set configuration parameters
 ```
 
 _Install Slurm_ 
