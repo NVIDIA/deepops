@@ -5,6 +5,7 @@
       shell: lspci | grep -i nvidia
       register: has_gpu
       ignore_errors: true
+      changed_when: false
 
     - include_role:
         name: nvidia-driver
@@ -13,3 +14,4 @@
     - name: test nvidia-smi
       command: nvidia-smi
       when: has_gpu.rc == 0
+      changed_when: false
