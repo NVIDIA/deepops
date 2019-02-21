@@ -9,6 +9,8 @@ The DeepOps project facilitates deployment of GPU servers and multi-node
 GPU clusters for Deep Learning and HPC environments, in an on-prem,
 optionally air-gapped datacenter or in the cloud.
 
+## Deployment Options
+
 ### Kubernetes
 
 [Kubernetes (k8s)](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/) is an open-source system for automating deployment, scaling, and management of containerized applications.
