@@ -19,6 +19,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/pixiecore -ldflags "-w -s -v -extl
 FROM alpine:3.6
 MAINTAINER Douglas Holt <dholt@nvidia.com>
 
+RUN apk add --no-cache ca-certificates
 COPY --from=0 /bin/pixiecore /usr/bin/pixiecore
 RUN chmod +x /usr/bin/pixiecore
 
