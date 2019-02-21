@@ -3,6 +3,8 @@
 
 # Install python required for Ansible
 - include: bootstrap-ansible.yml
+  tags:
+    - bootstrap
 
 # Make sure Kubespray submodule is correct
 - hosts: 127.0.0.1
@@ -13,11 +15,15 @@
       command: git submodule update --init
   vars:
     ansible_become: no
+  tags:
+    - local
 
 # Set up passwordless sudo and SSH keys if needed
 - include: bootstrap.yml
   vars:
     ansible_user: "{{ lookup('env','USER') }}"
+  tags:
+    - bootstrap
 
 # Work around issues when sudo needs a password on local machine
 - hosts: 127.0.0.1
@@ -50,6 +56,8 @@
         path: "../k8s-config/host_vars/127.0.0.1"
         line: "ansible_become: no"
         create: yes
+  tags:
+    - local
 
 # Disable swap (required for k8s), kubespray method doesn't quite cut it
 - hosts: all
@@ -75,6 +83,11 @@
     docker_version: 18.06
     docker_dns_servers_strict: no
     docker_storage_options: -s overlay2
+  tasks:
+    - name: set kube config artifact
+      set_stats:
+        data:
+          kube_config: "{{ lookup('file', inventory_dir + '/artifacts/admin.conf') }}"
  
 # Manage Kubernetes cluster access config file
 - hosts: 127.0.0.1
@@ -97,6 +110,8 @@
         dest: "{{ lookup('env','HOME') + '/.kube/config' }}"
         backup: yes
       when: kubeconf.stat.exists
+  tags:
+    - local
 
 # Install driver and container runtime on GPU servers
 - hosts: all
@@ -167,3 +182,5 @@
       debug:
         msg: "Unable to move kubectl, run: sudo cp ./k8s-config/artifacts/kubectl /usr/local/bin"
       when: kubectl_copied is failed
+  tags:
+    - local
