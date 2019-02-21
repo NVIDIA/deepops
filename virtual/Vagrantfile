@@ -37,11 +37,4 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     dgx.vm.hostname = "dgx01"
     dgx.vm.network :private_network, ip: "10.0.0.11"
   end
-
-  config.vm.provision "ansible" do |ansible|
-    ansible.inventory_path = "../config/inventory"
-    ansible.config_file = "../ansible.cfg"
-    ansible.playbook = "../ansible/playbooks/bootstrap.yml"
-    ansible.skip_tags = ["skip-for-virtual"]
-  end
 end
