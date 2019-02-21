@@ -1,21 +1,20 @@
 #!/bin/bash
 set -xe
 
-# install dependencies
+# update apt
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
 sudo apt update
+
+# install ansible
 sudo apt install -y ansible
 
-if [ "$(lsb_release -cs)" = "bionic" ]; then
-    # dotless-de/vagrant-vbguest#292
-    pushd "$(mktemp -d)"
-    wget https://releases.hashicorp.com/vagrant/2.0.3/vagrant_2.0.3_x86_64.deb -O vagrant.deb
-    sudo dpkg -i vagrant.deb
-    popd
-else
-    sudo apt install -y vagrant
-fi
+# install vagrant (frozen at 2.2.3 to avoid various issues)
+pushd "$(mktemp -d)"
+wget https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_x86_64.deb -O vagrant.deb
+sudo dpkg -i vagrant.deb
+popd
 
+# install other dependencies
 sudo apt install -y python-netaddr
 sudo apt install -y sshpass
 
