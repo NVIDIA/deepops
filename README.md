@@ -23,8 +23,15 @@ See the [Slurm Guide](docs/slurm-cluster.md) for information on building a GPU-e
 
 ### DGX POD Hybrid Clusters
 
+Hybrid Kubernetes and Slurm DGX clusters based on the DGX POD reference architecture
+
 See the [Deployment Guide](docs/dgx-pod.md) for step-by-step instructions and setup information
 
 For more information on deploying DGX in the datacenter, consult the
 [DGX Data Center Reference Design Whitepaper](https://nvidia-gpugenius.highspot.com/viewer/5b33fecf1279587c07d8ac86)
 
+### Virtual
+
+Single-node virtual clusters for testing and customization
+
+See the [Virtual Guide](virtual/README.md) for more information
