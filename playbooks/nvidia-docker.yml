@@ -5,6 +5,7 @@
       shell: lspci | grep -i nvidia
       register: has_gpu
       ignore_errors: true
+      changed_when: false
 
     - include_role:
         name: nvidia-docker
