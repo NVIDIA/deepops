@@ -1,34 +1,19 @@
-#
-# Checks
-#
-
 - name: check distro
   fail:
     msg: "distro {{ ansible_facts['distribution'] }} not supported"
   when: ansible_facts['distribution'] != 'Ubuntu'
 
 - name: check that docker is installed
-  shell: which docker
-
-#
-# Cleanup
-#
+  command: which docker
+  changed_when: false
 
 - name: remove packages
   apt:
     name:
-      - libnvidia-container-tools
-      - nvidia-container-runtime
-      - nvidia-container-runtime-hook
       - nvidia-docker
-      - nvidia-docker2
     state: absent
     autoremove: yes
     purge: yes
-
-#
-# Install
-#
 
 - name: add key
   apt_key:
@@ -51,6 +36,7 @@
   with_items:
     - "nvidia-docker2{{ nvidia_docker2_package_version | ternary('='+nvidia_docker2_package_version, '') }}"
     - "nvidia-container-runtime{{ nvidia_container_runtime_package_version | ternary('='+nvidia_container_runtime_package_version, '') }}"
+  register: install_packages
 
 - name: set docker daemon configuration
   copy:
@@ -59,8 +45,10 @@
     owner: root
     group: root
     mode: 0644
+  register: daemon_json
 
 - name: reload docker service
   service:
     name: docker
     state: reloaded
+  when: install_packages.changed or daemon_json.changed
