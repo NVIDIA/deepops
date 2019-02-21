@@ -19,7 +19,6 @@ roles/*
 !roles/nvidia-docker/
 !roles/nvidia-driver/
 !roles/users/
-!roles/reboot/
 !roles/slurm/
 !roles/old/
 
