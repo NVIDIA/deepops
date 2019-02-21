@@ -10,14 +10,9 @@ slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 is_controller: no
 is_compute: no
 
-# The configuration parameter ReturnToService in slurm.conf controls how DOWN
-# nodes are handled. Set its value to one in order for DOWN nodes to
-# automatically be returned to service once the slurmd daemon registers with
-# a valid node configuration. A value of zero is the default and results in
-# a node staying DOWN until an administrator explicitly returns it to service
-# using the command "scontrol update NodeName=whatever State=RESUME".
-# See "man slurm.conf" and "man scontrol" for more details.
-# slurm_return_to_service: 0
+# Controls when a DOWN node will be returned to service.
+# See "man slurm.conf" for more details.
+slurm_return_to_service: 1
 
 # Sets: GresTypes=gpu
 # Sets: Gres=gpu:{{ gpu_topology|count }}

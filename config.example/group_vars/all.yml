@@ -42,7 +42,6 @@ enable_sudo_without_password: true
 #slurm_password: ReplaceWithASecurePasswordInTheVault
 #slurm_db_username: slurm
 #slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
-#slurm_return_to_service: 0
 #slurm_exclusive: "NO"
 #slurm_max_job_timelimit: INFINITE
 #slurm_default_job_timelimit:
