@@ -83,6 +83,10 @@
     docker_version: 18.06
     docker_dns_servers_strict: no
     docker_storage_options: -s overlay2
+
+# Create artifact of kube config
+- hosts: kube-master
+  become: true
   tasks:
     - name: set kube config artifact
       set_stats:

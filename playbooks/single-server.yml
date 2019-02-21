@@ -9,6 +9,7 @@
 - include: nvidia-docker.yml
   vars:
     docker_daemon_json:
+      bip: 192.168.99.1/24
       default-runtime: nvidia
       runtimes:
         nvidia:
