@@ -65,13 +65,7 @@ _Test GPU job_
 kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
 ```
 
-### Monitoring
-
-_Deploy monitoring_
-
-```sh
-./scripts/k8s_deploy_monitoring.sh
-```
+## Step 4: Optional Kubernetes Components
 
 ### Kubernetes Dashboard
 
@@ -81,10 +75,21 @@ Run the script to create an administrative user and print out the dashboard URL 
 ./scripts/k8s_deploy_dashboard_user.sh
 ```
 
-For more information, see:
+### Storage
 
-  * [Kubespray Getting Started Guide](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md#accessing-kubernetes-dashboard)
-  * [Kubernetes Dashboard Documentation](https://github.com/kubernetes/dashboard)
+Ceph cluster running on Kubernetes to provide persistent storage
+
+```sh
+./scripts/k8s_deploy_rook.sh
+```
+
+### Monitoring
+
+Prometheus and Grafana to monitor Kubernetes and cluster nodes
+
+```sh
+./scripts/k8s_deploy_monitoring.sh
+```
 
 ## Additional Documentation
 
