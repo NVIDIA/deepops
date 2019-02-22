@@ -92,6 +92,7 @@
       set_stats:
         data:
           kube_config: "{{ lookup('file', inventory_dir + '/artifacts/admin.conf') }}"
+      run_once: true
  
 # Manage Kubernetes cluster access config file
 - hosts: 127.0.0.1
