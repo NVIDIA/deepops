@@ -57,17 +57,6 @@
   tags:
     - local
 
-# Disable swap (required for k8s), kubespray method doesn't quite cut it
-- hosts: all
-  become: true
-  tasks:
-    - name: remove swap from fstab
-      lineinfile: path=/etc/fstab regexp='swap' state=absent
-    - name: disable swap
-      command: swapoff -a
-  tags:
-    - swap
-
 # Install Kubernetes
 - include: ../kubespray/cluster.yml
   vars:
@@ -78,6 +67,17 @@
     docker_version: 18.06
     docker_dns_servers_strict: no
     docker_storage_options: -s overlay2
+
+# Disable swap (required for k8s), kubespray method doesn't quite cut it
+- hosts: all
+  become: true
+  tasks:
+    - name: remove swap from fstab
+      lineinfile: path=/etc/fstab regexp='swap' state=absent
+    - name: disable swap
+      command: swapoff -a
+  tags:
+    - swap
 
 # Create artifact of kube config
 - hosts: kube-master
