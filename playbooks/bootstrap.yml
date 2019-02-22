@@ -21,12 +21,12 @@
 - hosts: all
   become: true
   tasks:
-    - name: Allow password-less sudo to "{{ ansible_user }}"
+    - name: Allow password-less sudo to "{{ ansible_user_id }}"
       copy:
-        content: "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL"
-        dest: "/etc/sudoers.d/{{ ansible_user }}"
-    - name: Add SSH public key to "{{ ansible_user }}" user authorized keys
+        content: "{{ ansible_user_id }} ALL=(ALL) NOPASSWD:ALL"
+        dest: "/etc/sudoers.d/{{ ansible_user_id }}"
+    - name: Add SSH public key to "{{ ansible_user_id }}" user authorized keys
       authorized_key:
-        user: "{{ ansible_user }}"
+        user: "{{ ansible_user_id }}"
         state: present
         key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
