@@ -20,8 +20,6 @@
 
 # Set up passwordless sudo and SSH keys if needed
 - include: bootstrap.yml
-  vars:
-    ansible_user: "{{ lookup('env','USER') }}"
   tags:
     - bootstrap
 
@@ -62,8 +60,6 @@
 # Disable swap (required for k8s), kubespray method doesn't quite cut it
 - hosts: all
   become: true
-  vars:
-    ansible_user: "{{ lookup('env','USER') }}"
   tasks:
     - name: remove swap from fstab
       lineinfile: path=/etc/fstab regexp='swap' state=absent
@@ -75,7 +71,6 @@
 # Install Kubernetes
 - include: ../kubespray/cluster.yml
   vars:
-    ansible_user: "{{ lookup('env','USER') }}"
     kubectl_localhost: true
     kubeconfig_localhost: true
     helm_enabled: true
@@ -122,7 +117,6 @@
 - hosts: all
   become: true
   vars:
-    ansible_user: "{{ lookup('env','USER') }}"
     docker_daemon_json:
       default-runtime: nvidia
       runtimes:
@@ -145,8 +139,6 @@
 
 # Install k8s GPU device plugin
 - include: k8s-gpu-plugin.yml
-  vars:
-    ansible_user: "{{ lookup('env','USER') }}"
 
 # Manage kubectl binary
 - hosts: 127.0.0.1
