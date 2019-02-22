@@ -49,7 +49,7 @@ _Install Kubernetes_
 # NOTE: If SSH requires a password, add: `-k`
 # NOTE: If sudo on remote machine requires a password, add: `-K`
 # NOTE: If SSH user is different than current user, add: `-e ansible_user=ubuntu`
-ansible-playbook -l kube-node playbooks/k8s-cluster.yml
+ansible-playbook -i k8s-config/hosts.ini playbooks/k8s-cluster.yml
 ```
 
 _Test access to Kubernetes cluster is working_
