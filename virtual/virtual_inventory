@@ -38,11 +38,11 @@ dgx01
 [kube-node:children]
 management
 #gpu-servers
-#dgx-servers
+dgx-servers
 
 [k8s-gpu:children]
 #gpu-servers
-#dgx-servers
+dgx-servers
 
 ###############################################################################
 ## You shouldn't need to make changes below here
