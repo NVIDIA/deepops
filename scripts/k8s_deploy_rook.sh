@@ -17,6 +17,7 @@ fi
 
 kubectl -n rook-ceph get pod -l app=rook-ceph-tools 2>&1 | grep "No resources found." >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
+    sleep 5
     kubectl create -f services/rook-cluster.yml
 fi
 
