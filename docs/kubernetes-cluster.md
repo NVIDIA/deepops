@@ -75,9 +75,11 @@ _Deploy monitoring_
 
 ### Kubernetes Dashboard
 
-You can access the Kubernetes Dashboard at the URL:
+Run the script to create an administrative user and print out the dashboard URL and access token:
 
-https://first_master:6443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login
+```sh
+./scripts/k8s_deploy_dashboard_user.sh
+```
 
 For more information, see:
 
