@@ -58,11 +58,39 @@ helm install --values config/registry.yml stable/docker-registry --version 1.4.3
 # Install nvidia drivers on dgx-servers
 ansible-playbook -l dgx-servers -e "ansible_user=vagrant" playbooks/nvidia-driver.yml
 
-# Set up software
-#ansible-playbook -e "ansible_user=vagrant" -l login,dgx-servers --skip-tags skip-for-virtual ansible/playbooks/software.yml
+# Downgrade docker-ce on dgx-servers
+ansible dgx-servers -e "ansible_user=vagrant" -b -a "apt remove -y docker-ce"
+# Install docker-ce compatible with nvidia-docker2
+ansible dgx-servers -e "ansible_user=vagrant" -b -a "apt install docker-ce=5:18.09.2~3-0~ubuntu-bionic"
 
-# Install slurm
-#ansible-playbook -e "ansible_user=vagrant" -l slurm-cluster playbooks/slurm.yml
+# Install nvidia-docker2 on dgx-servers
+ansible-playbook -l dgx-servers -e "ansible_user=vagrant" playbooks/nvidia-docker.yml
 
+# Set up the NVIDIA GPU device plugin for K8s
+ansible-playbook -e "ansible_user=vagrant" playbooks/k8s-gpu-plugin.yml
 
+# Rerun kubespray to set up the dgx-servers and join them to the cluster
+ansible-playbook -l k8s-cluster -e "ansible_user=vagrant" -v -b --flush-cache --extra-vars "@config/kube.yml" kubespray/cluster.yml
 
+# Show the nodes
+./virtual/kubectl get nodes
+
+# Install the nvidia container runtime
+ansible-playbook -l k8s-gpu -e "ansible_user=vagrant" -v -b --flush-cache --extra-vars "@config/kube.yml" playbooks/k8s-gpu.yml
+
+# Show that dgx01 has GPU resources
+./virtual/kubectl describe node dgx01
+
+# Deploy monitoring (prometheus + grafana stack)
+helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/prometheus-operator.yml
+./virtual/kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dashboard.json -n monitoring
+helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/kube-prometheus.yml
+# Label the gpu nodes (dgx-servers)
+./virtual/kubectl label nodes dgx01 hardware-type=NVIDIAGPU
+./virtual/kubectl create -f services/dcgm-exporter.yml
+
+# Deploy slurm
+ansible-playbook -e "ansible_user=vagrant" -l slurm-cluster playbooks/slurm.yml
+
+echo "DeepOps Virtual Complete!"
