@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -ex
+
+if commmand -v docker >/dev/null 2>&1 ; then
+    exit 0  # docker not installed
+fi
+
+for id in $(docker ps -aq)
+do
+    if ! docker inspect "$id" --format '{{.HostConfig.CgroupParent}} {{.Name}}' | grep kube
+    then
+        continue  # skip kube containers
+    fi
+
+    logger -s -t slurm-epilog "Removing docker container $id ..."
+
+    docker stop "$id" || true
+    docker rm "$id"
+done

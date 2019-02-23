@@ -1,33 +1,30 @@
 ---
-# ansible-playbook -i inventory slurm.yml
-
-# note: newly added slurm nodes do not always show up as idle immediately
-# you may have to run `sudo scontrol update node=volta[01-02] state=idle`
-# on the nodes you just updated; in this example volta[01-02].
 
 - hosts: all
   become: yes
-  roles:
-    - facts
-
-- hosts: compute-nodes
-  pre_tasks:
-    - setup:
-
-- hosts: slurm-masters
-  pre_tasks:
-    - setup:
+  tasks:
+    - name: install custom facts module
+      include_role:
+        name: facts
+    - name: gather facts
+      setup:
 
 - hosts: slurm-masters
   become: yes
-  roles:
-    - role: slurm
-      user: "{{ ansible_user }}"
-      is_controller: yes
+  tasks:
+    - name: install slurm (mgmt node)
+      include_role:
+        name: slurm
+      vars:
+        user: "{{ ansible_user }}"
+        is_controller: yes
 
 - hosts: compute-nodes
   become: yes
-  roles:
-    - role: slurm
-      user: "{{ ansible_user }}"
-      is_compute: yes
+  tasks:
+    - name: install slurm (compute node)
+      include_role:
+        name: slurm
+      vars:
+        user: "{{ ansible_user }}"
+        is_compute: yes
