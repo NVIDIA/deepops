@@ -1,0 +1,12 @@
+# ignore everything
+/*
+/*/
+
+# except this
+!/.gitignore
+!/facts/
+!/nvidia-docker/
+!/nvidia-driver/
+!/old/
+!/slurm/
+!/users/
