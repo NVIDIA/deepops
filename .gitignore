@@ -1,28 +1,8 @@
-admin.conf
-.Dockerfile
-.idea
-inventory.cfg
-kubectl
-*.retry
-roles/community
-ansible/galaxy
-.terraform
-*.tf*
-config
-get_helm.sh
-virtual/.vagrant
-virtual/*.log
-@eaDir
-
-roles/*
-!roles/facts/
-!roles/nvidia-docker/
-!roles/nvidia-driver/
-!roles/users/
-!roles/slurm/
-!roles/old/
-
+# ansible
 *.retry
 
-configuration.yml
-k8s-config
+# project-specific
+/admin.conf
+/config/
+/k8s-config/
+/kubectl
