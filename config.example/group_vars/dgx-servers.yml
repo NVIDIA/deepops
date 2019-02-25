@@ -3,11 +3,6 @@
 
 ansible_user: dgxuser
 
-# Collectd
-collectd_python_modules:
-  - dcgm_collectd
-with_dcgm_collectd: true
-
 # Docker Configuration
 docker_daemon_json:
   default-runtime: nvidia

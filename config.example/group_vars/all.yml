@@ -3,13 +3,6 @@
 
 # Account to use for SSH connections
 ansible_user: ubuntu
- 
-# SSH Configuration
-ssh_password_authentication: 'yes'
-
-# Configure SUDO to not require a password for users in the `sudo` group
-# If this is `false`, pass the `-K` flag to all Ansible commands to prompt for the SUDO password
-enable_sudo_without_password: true
 
 # Configure Ansible to use a proxy if remote machines are unroutable
 #ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
@@ -19,20 +12,6 @@ enable_sudo_without_password: true
 #  bip: 192.168.99.1/24
 #  insecure-registries:
 #    - "registry.local"
-
-# NIS configuration
-#nisdomain: example.com
-#nisserver: 10.0.0.1
-
-# Kerberos configuration
-#kerberos_client_realm_name: "example.com"
-#kerberos_client_kdc_hostname: "kerberos"
-#kerberos_client_admin_hostname: "kerberos"
-#nfs_idmapd_domain: example.com
-
-# AutoFS configuration
-#autofs_mount: "/home"
-#autofs_map: "auto.home_linux"
 
 # Slurm job scheduler configuration
 #slurm_user_home: /local/slurm
@@ -45,26 +24,3 @@ enable_sudo_without_password: true
 #slurm_exclusive: "NO"
 #slurm_max_job_timelimit: INFINITE
 #slurm_default_job_timelimit:
-
-# NFS server
-nfs_exports: []
-#- path: /export/shared
-#  options: "*(rw,sync,no_root_squash)"
-
-# NFS clients
-nfs_mounts: []
-#- mountpoint: /shared
-#  server: 10.0.0.1
-#  path: /export/shared
-#  options: async,vers=3
-
-# Collectd
-#collectd_network_server: "deepops-mgmt.example.com"
-#collectd_network_port: "30300"
-#collectd_python_module_path: "/usr/lib/collectd/dcgm"
-#collectd_python_modules: []
-#collectd_config_dir: "/etc/collectd/collectd.conf.d"
-#with_dcgm_collectd: false
-
-# Lmod modules
-#lmod_modulepath: /shared/modules/all
