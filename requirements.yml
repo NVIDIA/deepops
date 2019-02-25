@@ -1,35 +1,10 @@
-# ansible roles
+---
 
-# SSH config
 - src: weareinteractive.ssh
-  name: ssh
   version: "1.3.0"
 
-# Docker
-- src: https://github.com/geerlingguy/ansible-role-docker.git
-  name: docker
+- src: geerlingguy.docker
   version: "2.5.2"
 
 - src: bertvv.hosts
-  name: hosts
   version: "v1.2.0"
-
-## NVIDIA GPU Driver - RHEL/CentOS
-#- src: https://github.com/gabethecabbage/ansible-role-nvidia-elrepo.git
-#  name: nvgpu-rhel
-#  version: "0.1.0"
-
-## NVIDIA GPU Driver - Ubuntu
-#- src: https://github.com/uchida/ansible-role-nvidia-driver.git
-#  name: nvgpu-deb
-#  version: "0.2.4"
-
-## Netplan
-#- src: https://github.com/mrlesmithjr/ansible-netplan.git
-#  name: netplan
-#  version: 371fc43d98f7f92f4aaf2b7a50f21ff5cb2d229c
-
-## Osquery
-#- src: https://github.com/apolloclark/ansible-role-osquery.git
-#  name: osquery
-#  version: 7fb6547b8813a3d51d0f327eb2fdb54c1031177d

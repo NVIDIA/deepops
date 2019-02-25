@@ -17,4 +17,4 @@
         group: root
         mode: 0644
   roles:
-    - docker
+    - geerlingguy.docker
