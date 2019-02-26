@@ -20,6 +20,7 @@ login01
 # GPU Servers - All GPU servers, including DGX if desired
 # See group_vars/gpu-servers.yml for configuration
 [gpu-servers]
+gpu01
 #gpu01      ansible_host=10.0.2.1
 #gpu02      ansible_host=10.0.2.2
 #gpu03      ansible_host=10.0.2.3
@@ -27,7 +28,6 @@ login01
 # DGX Servers - DGX specific
 # See group_vars/dgx-servers.yml for configuration
 [dgx-servers]
-dgx01
 #dgx01      ansible_host=10.0.3.1
 #dgx02      ansible_host=10.0.3.2
 #dgx03      ansible_host=10.0.3.3
@@ -37,12 +37,12 @@ dgx01
 # Kubespray may fail otherwise
 [kube-node:children]
 management
-#gpu-servers
-dgx-servers
+gpu-servers
+#dgx-servers
 
 [k8s-gpu:children]
-#gpu-servers
-dgx-servers
+gpu-servers
+#dgx-servers
 
 ###############################################################################
 ## You shouldn't need to make changes below here
