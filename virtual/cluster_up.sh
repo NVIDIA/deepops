@@ -21,7 +21,7 @@ ansible-playbook -T 30 -e "ansible_user=vagrant ansible_password=vagrant" --skip
 ansible-playbook -T 30 -e "ansible_user=vagrant ansible_password=vagrant" --skip-tags skip-for-virtual playbooks/bootstrap.yml
 
 # Deploy Kubernetes on mgmt
-ansible-playbook -l management -v -b --flush-cache -e "@config/kube.yml" kubespray/cluster.yml
+ansible-playbook -e "ansible_user=vagrant" -l management -v -b --flush-cache -e "@config/kube.yml" kubespray/cluster.yml
 
 # Set up Kubernetes for remote administration
 KUBECONFIG='./virtual/admin.conf'
@@ -41,9 +41,11 @@ sleep 15
 helm repo add rook-master https://charts.rook.io/master
 helm install --namespace rook-ceph-system --name rook-ceph rook-master/rook-ceph --version v0.9.0-79.g1a1ffdd
 ./virtual/kubectl create -f services/rook-cluster.yml
+sleep 15
 
 # Install the ingress controller
 helm install --values config/ingress.yml stable/nginx-ingress
+sleep 15
 
 # NOTE: at this point, on a real cluster, it would be time to set up DGXie
 # for DHCP, DNS, and PXE
@@ -57,11 +59,6 @@ helm install --values config/registry.yml stable/docker-registry --version 1.4.3
 
 # Install nvidia drivers on dgx-servers
 ansible-playbook -l dgx-servers -e "ansible_user=vagrant" playbooks/nvidia-driver.yml
-
-# Downgrade docker-ce on dgx-servers
-ansible dgx-servers -e "ansible_user=vagrant" -b -a "apt remove -y docker-ce"
-# Install docker-ce compatible with nvidia-docker2
-ansible dgx-servers -e "ansible_user=vagrant" -b -a "apt install docker-ce=5:18.09.2~3-0~ubuntu-bionic"
 
 # Install nvidia-docker2 on dgx-servers
 ansible-playbook -l dgx-servers -e "ansible_user=vagrant" playbooks/nvidia-docker.yml
@@ -93,4 +90,3 @@ helm install coreos/kube-prometheus --name kube-prometheus --namespace monitorin
 # Deploy slurm
 ansible-playbook -e "ansible_user=vagrant" -l slurm-cluster playbooks/slurm.yml
 
-echo "DeepOps Virtual Complete!"
