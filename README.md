@@ -15,7 +15,7 @@ optionally air-gapped datacenter or in the cloud.
 
 [Kubernetes (k8s)](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/) is an open-source system for automating deployment, scaling, and management of containerized applications.
 
-See the [Kubernetes Guide](docs/kubernetes-cluster.md) for information on installing and using Kubernetes
+See the [Kubernetes Guide](docs/kubernetes-cluster.md) for information on building a GPU-enabled Kubernetes cluster
 
 ### Slurm
 
@@ -23,9 +23,9 @@ See the [Kubernetes Guide](docs/kubernetes-cluster.md) for information on instal
 
 See the [Slurm Guide](docs/slurm-cluster.md) for information on building a GPU-enabled Slurm cluster
 
-### DGX POD Hybrid Clusters
+### DGX POD Hybrid Cluster
 
-Hybrid Kubernetes and Slurm DGX clusters based on the DGX POD reference architecture
+Hybrid Kubernetes and Slurm DGX cluster based on the DGX POD reference architecture
 
 See the [Deployment Guide](docs/dgx-pod.md) for step-by-step instructions and setup information
 
