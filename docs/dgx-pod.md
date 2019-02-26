@@ -1109,29 +1109,3 @@ kubectl delete -f services/rook-cluster.yml
 helm del --purge rook-ceph
 ansible management -b -m file -a "path=/var/lib/rook state=absent"
 ```
-
-
-## Open Source Software
-
-Software used in this project:
-
-* Ansible roles:
-  * Cachefilesd: https://github.com/Ilyes512/ansible-role-cachefilesd
-  * Docker: https://github.com/angstwad/docker.ubuntu
-  * Kerberos: https://github.com/bennojoy/kerberos_client
-  * SSH: https://github.com/weareinteractive/ansible-ssh
-  * Osquery: https://github.com/apolloclark/ansible-role-osquery
-* Kubespray: https://github.com/kubernetes-incubator/kubespray
-* Ceph: https://github.com/ceph/ceph-ansible
-* Pixiecore: https://github.com/google/netboot/tree/master/pixiecore
-
-## Copyright and License
-
-This project is released under the [BSD 3-clause license](https://github.com/NVIDIA/deepops/blob/master/LICENSE).
-
-## Issues and Contributing
-
-A signed copy of the [Contributor License Agreement](https://raw.githubusercontent.com/NVIDIA/deepops/master/CLA) needs to be provided to <a href="mailto:deepops@nvidia.com">deepops@nvidia.com</a> before any change can be accepted.
-
-* Please let us know by [filing a new issue](https://github.com/NVIDIA/deepops/issues/new)
-* You can contribute by opening a [pull request](https://help.github.com/articles/using-pull-requests/)

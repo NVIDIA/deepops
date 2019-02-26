@@ -37,3 +37,14 @@ For more information on deploying DGX in the datacenter, consult the
 Single-node virtual clusters for testing and customization
 
 See the [Virtual Guide](virtual/README.md) for more information
+
+## Copyright and License
+
+This project is released under the [BSD 3-clause license](https://github.com/NVIDIA/deepops/blob/master/LICENSE).
+
+## Issues and Contributing
+
+A signed copy of the [Contributor License Agreement](https://raw.githubusercontent.com/NVIDIA/deepops/master/CLA) needs to be provided to <a href="mailto:deepops@nvidia.com">deepops@nvidia.com</a> before any change can be accepted.
+
+* Please let us know by [filing a new issue](https://github.com/NVIDIA/deepops/issues/new)
+* You can contribute by opening a [pull request](https://help.github.com/articles/using-pull-requests/)
