@@ -9,8 +9,8 @@ singleuser:
     gpu: "true"
 hub:
   cookieSecret: "<secret token>"
-    prePuller:
-      enabled: false
+  prePuller:
+    enabled: false
   extraConfig:
     10-gpu: |
       c.KubeSpawner.extra_resource_limits = { 'nvidia.com/gpu': 1 }
