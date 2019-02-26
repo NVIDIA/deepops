@@ -27,7 +27,6 @@
   apt:
     name: "{{ item }}"
     install_recommends: no
-    dpkg_options: "force-overwrite"
   with_items:
     - "{{ nvidia_driver_package_version | ternary('cuda-drivers='+nvidia_driver_package_version, 'cuda-drivers') }}"
   register: apt_install_driver
