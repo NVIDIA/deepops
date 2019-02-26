@@ -26,8 +26,6 @@ vi config/inventory
 # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
 ```
 
-## Step 3: Server Set Up
-
 _Install_
 
 ```sh
