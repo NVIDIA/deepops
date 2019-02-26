@@ -6,3 +6,5 @@
 /config/
 /k8s-config/
 /kubectl
+/virtual/admin.conf
+/virtual/kubectl
