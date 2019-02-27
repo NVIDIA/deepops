@@ -7,6 +7,3 @@
 /galaxy-roles/
 /k8s-config/
 /kubectl
-/virtual/admin.conf
-/virtual/config
-/virtual/k8s-config
