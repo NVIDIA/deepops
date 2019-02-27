@@ -1,9 +1,6 @@
 # Configuration common to all hosts
 # Define per-group or per-host values in the other configuration files
 
-# Account to use for SSH connections
-ansible_user: ubuntu
- 
 # SSH Configuration
 ssh_password_authentication: 'yes'
 

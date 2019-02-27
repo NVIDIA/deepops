@@ -4,13 +4,13 @@
 # Uncomment and change the IP addresses in this file to match your environment
 # Define per-group or per-host configuration in group_vars/*.yml
 
-# Management Servers
+# Kubernetes Management Servers
 # See group_vars/management.yml for configuration
 [management]
 #mgmt       ansible_host=10.0.0.1
 
 
-# Login Servers
+# Slurm Controller/Login Servers
 # See group_vars/login.yml for configuration
 [login]
 #login01    ansible_host=10.0.0.2

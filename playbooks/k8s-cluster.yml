@@ -23,40 +23,6 @@
   tags:
     - bootstrap
 
-# Work around issues when sudo needs a password on local machine
-- hosts: 127.0.0.1
-  connection: local
-  gather_facts: false
-  vars:
-    ansible_become: no
-  tasks:
-    - name: check for kube inventory
-      stat:
-        path: "../k8s-config"
-      register: kube_inventory
-    - name: add become to group_vars config for all
-      lineinfile:
-        path: "../k8s-config/group_vars/all/all.yml"
-        line: "ansible_become: yes"
-        create: yes
-    - name: create host_vars directory for localhost
-      file:
-        path: "../k8s-config/host_vars"
-        state: directory
-      when: kube_inventory.stat.exists
-    - name: create host_vars config for localhost
-      lineinfile:
-        path: "../k8s-config/host_vars/localhost"
-        line: "ansible_become: no"
-        create: yes
-    - name: create host_vars config for localhost
-      lineinfile:
-        path: "../k8s-config/host_vars/127.0.0.1"
-        line: "ansible_become: no"
-        create: yes
-  tags:
-    - local
-
 # Install Kubernetes
 - include: ../kubespray/cluster.yml
   vars:
@@ -114,10 +80,11 @@
     - local
 
 # Install driver and container runtime on GPU servers
-- hosts: all
-  become: true
+- include: nvidia-driver.yml
+- include: nvidia-docker.yml
   vars:
     docker_daemon_json:
+      bip: 192.168.99.1/24
       default-runtime: nvidia
       runtimes:
         nvidia:
@@ -125,17 +92,6 @@
           runtimeArgs: []
     nvidia_docker2_package_version: "2.0.3+docker18.06.1-1"
     nvidia_container_runtime_package_version: "2.0.0+docker18.06.1-1"
-  tasks:
-    - name: Check for GPUs
-      shell: lspci | grep -i nvidia
-      register: has_gpu
-      ignore_errors: true
-    - include_role:
-        name: nvidia-driver
-      when: has_gpu.rc == 0
-    - include_role:
-        name: nvidia-docker
-      when: has_gpu.rc == 0
 
 # Install k8s GPU device plugin
 - include: k8s-gpu-plugin.yml
