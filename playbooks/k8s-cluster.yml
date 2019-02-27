@@ -81,6 +81,8 @@
 
 # Install driver and container runtime on GPU servers
 - include: nvidia-driver.yml
+  tags:
+    - nvidia
 - include: nvidia-docker.yml
   vars:
     docker_daemon_json:
@@ -92,6 +94,8 @@
           runtimeArgs: []
     nvidia_docker2_package_version: "2.0.3+docker18.06.1-1"
     nvidia_container_runtime_package_version: "2.0.0+docker18.06.1-1"
+  tags:
+    - nvidia
 
 # Install k8s GPU device plugin
 - include: k8s-gpu-plugin.yml
