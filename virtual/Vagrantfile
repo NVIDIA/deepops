@@ -1,5 +1,5 @@
 VAGRANTFILE_API_VERSION = "2"
-BOX_IMAGE = "generic/ubuntu1604"
+BOX_IMAGE = "generic/ubuntu1804"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.hostmanager.enabled = true
@@ -23,7 +23,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     login.vm.network :private_network, ip: "10.0.0.4"
   end
 
-  config.vm.define "dgx01" do |dgx|
+  config.vm.define "gpu01" do |gpu|
     config.vm.provider "libvirt" do |v|
       v.memory = 16384
       v.cpus = 2
@@ -31,10 +31,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       v.cpu_mode = "host-passthrough"
       # comment in for pci passthrough (and change bus according
       # to local hw setup - `lspci -nnk | grep NVIDIA`)
-      #v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
+      v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
     end
-    dgx.vm.box = BOX_IMAGE
-    dgx.vm.hostname = "dgx01"
-    dgx.vm.network :private_network, ip: "10.0.0.11"
+    gpu.vm.box = BOX_IMAGE
+    gpu.vm.hostname = "gpu01"
+    gpu.vm.network :private_network, ip: "10.0.0.11"
   end
 end

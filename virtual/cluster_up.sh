@@ -1,37 +1,48 @@
 #!/bin/bash
-set -x
+set -ex
 
 # Start vagrant via libvirt - set up the VMs
 vagrant up --no-parallel --provider=libvirt
 
+# Show the running VMs
+virsh list
+
 cd ..
 
-# Bootstrap the VMs so that they can be accessible with the rest of the ansible playbooks without
-# needing a password
-ansible-playbook -T 30 -e "ansible_user=vagrant ansible_password=vagrant" --skip-tags skip-for-virtual playbooks/bootstrap-ansible.yml
-ansible-playbook -T 30 -e "ansible_user=vagrant ansible_password=vagrant" --skip-tags skip-for-virtual playbooks/bootstrap.yml
+# Create the K8s config (for mgmt=10.0.0.2, gpu01=10.0.0.11 nodes)
+K8S_CONFIG_DIR=./virtual/k8s-config ./scripts/k8s_inventory.sh 10.0.0.2 10.0.0.11
+cp ./virtual/k8s_hosts.ini ./virtual/k8s-config/hosts.ini
+# Create the config for deepops servers (and use the virtual inventory)
+cp -r config.example/ virtual/config/
+cp virtual/virtual_inventory virtual/config/inventory
+# Make sure to use the `vagrant` user instead of `ubuntu`
+sed -i 's/ansible_user: ubuntu/ansible_user: vagrant/g' config/group_vars/all.yml 
 
-# Disable swap on mgmt servers (for Kubernetes)
-ansible management -e "ansible_user=vagrant" -b -a "swapoff -a"
+#####################################
+# K8s
+#####################################
 
-# Deploy Kubernetes on mgmt
-ansible-playbook -l management -v -b --flush-cache -e "@config/kube.yml" -e "ansible_user=vagrant" kubespray/cluster.yml
+# Deploy the K8s cluster
+ansible-playbook -i virtual/k8s-config/hosts.ini -b playbooks/k8s-cluster.yml -e "ansible_user=vagrant ansible_password=vagrant"
 
-# Set up Kubernetes for remote administration
-KUBECONFIG='./virtual/admin.conf'
-ansible management -e "ansible_user=vagrant" -b -m fetch -a "src=/etc/kubernetes/admin.conf flat=yes dest=./virtual/"
-sed -i '/6443/c\    server: https:\/\/mgmt:6443' ${KUBECONFIG}
-curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-chmod +x ./kubectl && mv ./kubectl ./virtual/kubectl
+# Export k8s config so we can use it throughout the rest of the script
+export KUBECONFIG=virtual/k8s-config/artifacts/admin.conf
 
-# Launch the apt repo service on k8s
-KUBECONFIG=$KUBECONFIG ./virtual/kubectl apply -f services/apt.yml
+# Verify that the cluster is up
+kubectl get nodes
+#kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
 
-# Set up software
-#ansible-playbook -e "ansible_user=vagrant" -l login,dgx-servers --skip-tags skip-for-virtual ansible/playbooks/software.yml
+# Deploy dashboard (optional)
+./scripts/k8s_deploy_dashboard_user.sh
 
-# Install slurm
-#ansible-playbook -e "ansible_user=vagrant" -l slurm-cluster playbooks/slurm.yml
+# Deploy rook (optional, but highly recommended)
+./scripts/k8s_deploy_rook.sh
 
+# Deploy monitoring (optional)
+./scripts/k8s_deploy_monitoring.sh
 
+#####################################
+# Slurm
+#####################################
 
+ansible-playbook -i virtual/config/inventory -e "ansible_user=vagrant ansible_password=vagrant" -l slurm-cluster playbooks/slurm-cluster.yml
