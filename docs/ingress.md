@@ -7,10 +7,10 @@ Ingress
 
 ```sh
 # Modify IP range
-vi config/metallb.yml
+vi config/helm/metallb.yml
 
 # Deploy
-helm install --name metallb --values config/metallb.yml stable/metallb
+helm install --name metallb --values config/helm/metallb.yml stable/metallb
 ```
 
 > For more configuration options, see: https://metallb.universe.tf/configuration/

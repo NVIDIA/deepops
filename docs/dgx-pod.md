@@ -293,10 +293,10 @@ Poll the Ceph status by running:
 
 An ingress controller routes external traffic to services.
 
-Modify `config/ingress.yml` if needed and install the ingress controller:
+Modify `config/helm/ingress.yml` if needed and install the ingress controller:
 
 ```sh
-helm install --values config/ingress.yml stable/nginx-ingress
+helm install --values config/helm/ingress.yml stable/nginx-ingress
 ```
 
 You can check the ingress controller logs with:
@@ -329,7 +329,7 @@ kubectl cp /local/DGXServer-4.0.2.180925_6acd9c.iso $(kubectl get pod -l app=iso
 
 __Configure__
 
-Modify the DGXie configuration in `config/dgxie.yml` to set values for the DHCP server
+Modify the DGXie configuration in `config/helm/dgxie.yml` to set values for the DHCP server
 and DGX install process.
 
 Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node and DGX
@@ -368,7 +368,7 @@ __Deploy DGXie service__
 Launch the DGXie service:
 
 ```sh
-helm install --values config/dgxie.yml services/dgxie
+helm install --values config/helm/dgxie.yml services/dgxie
 ```
 
 Check the DGXie logs to make sure the services were started without errors:
@@ -396,11 +396,11 @@ kubectl apply -f services/apt.yml
 
 #### __Container Registry:__
 
-Modify `config/registry.yml` if needed and launch the container registry:
+Modify `config/helm/registry.yml` if needed and launch the container registry:
 
 ```sh
 helm repo add stable https://kubernetes-charts.storage.googleapis.com
-helm install --values config/registry.yml stable/docker-registry --version 1.4.3
+helm install --values config/helm/registry.yml stable/docker-registry --version 1.4.3
 ```
 
 You can check the container registry logs with:
@@ -603,15 +603,15 @@ kubectl delete deployments iso-loader
 
 Cluster monitoring is provided by Prometheus and Grafana.
 
-__Optionally__, Modify `config/prometheus-operator.yml` and `config/kube-prometheus.yml`.
+__Optionally__, Modify `config/helm/prometheus-operator.yml` and `config/helm/kube-prometheus.yml`.
 
 Deploy the monitoring and alerting stack:
 
 ```sh
 helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
-helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/prometheus-operator.yml
+helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config/helm/prometheus-operator.yml
 kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dashboard.json -n monitoring
-helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/kube-prometheus.yml
+helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/helm/kube-prometheus.yml
 ```
 
 To collect GPU metrics, label each GPU node and deploy the DCGM Prometheus exporter:
@@ -666,7 +666,7 @@ Deploy Elasticsearch and Kibana:
 
 ```sh
 helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
-helm install --name elk --namespace logging --values config/elk.yml incubator/elastic-stack
+helm install --name elk --namespace logging --values config/helm/elk.yml incubator/elastic-stack
 ```
 
 > Important: The ELK stack will take several minutes to install,
@@ -681,7 +681,7 @@ kubectl get pods -n logging
 Launch Filebeat, which will create an Elasticsearch index automatically:
 
 ```sh
-helm install --name log --namespace logging --values config/filebeat.yml stable/filebeat
+helm install --name log --namespace logging --values config/helm/filebeat.yml stable/filebeat
 ```
 
 Service addresses:
@@ -954,10 +954,10 @@ Show currently installed releases:
 helm list
 ```
 
-To upgrade the ingress controller with new values from `config/ingress.yml` for example, you would run:
+To upgrade the ingress controller with new values from `config/helm/ingress.yml` for example, you would run:
 
 ```sh
-helm upgrade --values config/ingress.yml <release_name> stable/nginx-ingress
+helm upgrade --values config/helm/ingress.yml <release_name> stable/nginx-ingress
 ```
 
 Where `<release_name>` is the name of the deployed ingress controller chart obtained from
@@ -1064,7 +1064,7 @@ All nodes which will use persistent storage need the `rbd` binary (mgmt nodes in
 
 Label nodes where you want the notebook pods to run: `kubectl label nodes prm-dgx-05 gpu=true`
 
-Modify `config/jupyterhub-config.yml` if needed
+Modify `config/helm/jupyterhub-config.yml` if needed
 
 ```sh
 kubectl create ns jh
@@ -1072,7 +1072,7 @@ kubectl create ns jh
 kubectl create secret generic ceph-client --type="kubernetes.io/rbd" --from-literal=key="$(sudo ceph auth get-key client.kube)" --namespace=jh
 helm repo add jupyterhub https://jupyterhub.github.io/helm-chart/
 helm repo update
-helm install jupyterhub/jupyterhub --name=jupyterhub --namespace=jh -f config/jupyterhub-config.yaml --set prePuller.enabled=false
+helm install jupyterhub/jupyterhub --name=jupyterhub --namespace=jh -f config/helm/jupyterhub-config.yaml --set prePuller.enabled=false
 ```
 
 Remove:
@@ -1086,7 +1086,7 @@ You may have to install/delete/re-install if there are RBAC errors. You can also
 If you make changes to the config file:
 
 ```sh
-helm upgrade jupyterhub jupyterhub/jupyterhub --version=v0.6 -f config/jupyterhub-config.yaml
+helm upgrade jupyterhub jupyterhub/jupyterhub --version=v0.6 -f config/helm/jupyterhub-config.yaml
 ```
 -->
 
