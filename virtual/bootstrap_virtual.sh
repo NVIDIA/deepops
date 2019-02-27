@@ -10,6 +10,9 @@ sudo apt update
 # install ansible
 sudo apt install -y ansible
 
+# install galaxy roles for ansible
+ansible-galaxy install -r requirements.yml
+
 # install vagrant (frozen at 2.2.3 to avoid various issues)
 pushd "$(mktemp -d)"
 wget https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_x86_64.deb -O vagrant.deb
