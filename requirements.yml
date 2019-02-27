@@ -6,5 +6,6 @@
 - src: geerlingguy.docker
   version: "2.5.2"
 
-- src: bertvv.hosts
-  version: "v1.2.0"
+- src: https://github.com/lukeyeager/ansible-role-hosts.git
+  version: '711ba98571f068a8bc6739fa1055ac38fc931010'
+  name: lukeyeager.hosts
