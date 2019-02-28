@@ -15,5 +15,3 @@
         nvidia:
           path: /usr/bin/nvidia-container-runtime
           runtimeArgs: []
-
-- include: manage-users.yml
