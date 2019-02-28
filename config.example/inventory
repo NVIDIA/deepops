@@ -64,6 +64,15 @@ dgx-servers
 gpu-servers
 
 ######
+# NFS
+######
+[nfs-server:children]
+login
+
+[nfs-clients:children]
+compute-nodes
+
+######
 # KUBERNETES
 ######
 [kube-master:children]
