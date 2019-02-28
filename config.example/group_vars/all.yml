@@ -8,6 +8,9 @@ ssh_password_authentication: 'yes'
 # If this is `false`, pass the `-K` flag to all Ansible commands to prompt for the SUDO password
 enable_sudo_without_password: true
 
+# Configure the default ansible user
+#ansible_user: ubuntu
+
 # Configure Ansible to use a proxy if remote machines are unroutable
 #ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
 

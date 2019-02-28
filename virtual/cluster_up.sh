@@ -16,7 +16,7 @@ cp ./virtual/k8s_hosts.ini ./virtual/k8s-config/hosts.ini
 cp -r config.example/ virtual/config/
 cp virtual/virtual_inventory virtual/config/inventory
 # Make sure to use the `vagrant` user instead of `ubuntu`
-sed -i 's/ansible_user: ubuntu/ansible_user: vagrant/g' config/group_vars/all.yml 
+sed -i 's/#ansible_user: ubuntu/ansible_user: vagrant/g' virtual/config/group_vars/all.yml
 
 #####################################
 # K8s
