@@ -204,7 +204,7 @@ options vfio-pci ids=10de:1db1,10de:1ac1
 
 NOTE: First entry is for Volta and the latter for NVSwitch
 
-3. Rebuild the initramfs by running sudo update-initramfs -u and reboot the system.
+3. Rebuild the initramfs by running `sudo update-initramfs -u` and reboot the system.
 
 4. After the system reboots, verify GPU devices and NVSwitches are claimed by vfio_pci driver by
 running `dmesg | grep vfio_pci`...
