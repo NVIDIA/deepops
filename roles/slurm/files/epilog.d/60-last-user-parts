@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -ex
+
+num_jobs=$(squeue -h -u "$SLURM_JOB_USER" -w "$HOSTNAME" | wc -l)
+if [ "$num_jobs" -eq 0 ]; then
+    logger -s -t slurm-epilog 'this is the last job on this node for this user'
+    run-parts -v --reverse /etc/slurm/epilog-last-user.d
+else
+    logger -s -t slurm-epilog 'this is not the last job on this node for this user'
+fi

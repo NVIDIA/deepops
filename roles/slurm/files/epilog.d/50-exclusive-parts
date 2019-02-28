@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -ex
+
+numcpus_sys=$(grep -c ^processor /proc/cpuinfo)
+numcpus_job=$(scontrol show job "$SLURM_JOBID" | grep -Eio "TRES=cpu=[0-9]+" | cut -d= -f3)
+if [ "$numcpus_sys" == "$numcpus_job" ] ; then
+    run-parts -v --reverse /etc/slurm/epilog-exclusive.d
+fi
