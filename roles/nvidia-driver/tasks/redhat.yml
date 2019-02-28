@@ -1,0 +1,56 @@
+---
+- name: add epel repo
+  yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: https://download.fedoraproject.org/pub/epel/$releasever/$basearch/
+    gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+
+- name: install dependencies
+  yum:
+    name: dkms
+    state: latest
+
+- name: add repo
+  yum_repository:
+    name: cuda
+    description: NVIDIA CUDA YUM Repo
+    gpgkey: "https://developer.download.nvidia.com/compute/cuda/repos/{{ rhel_repo_dir }}/7fa2af80.pub"
+    baseurl: "https://developer.download.nvidia.com/compute/cuda/repos/{{ rhel_repo_dir }}/"
+
+- name: check kernel versions
+  yum:
+    list: kernel
+  register: yum_list
+
+- name: register installed kernel version
+  debug:
+    msg: "{{ yum_list.results | selectattr('yumstate', 'equalto', 'installed') | list }}"
+  register: kernel_version
+
+- name: check kernel-headers versions
+  yum:
+    list: kernel-headers
+  register: yum_list
+
+- name: register installed kernel-headers version
+  debug:
+    msg: "{{ yum_list.results | selectattr('yumstate', 'equalto', 'installed') | list }}"
+  register: kernel_headers_version
+
+- name: update kernel if headers don't match
+  yum:
+    name:
+      - kernel
+      - kernel-tools
+      - kernel-tools-libs
+      - kernel-devel
+      - kernel-debug-devel
+      - kernel-headers
+    state: latest
+  register: kernel_update
+  when: kernel_version.msg[0].release != kernel_headers_version.msg[0].release
+
+- name: reboot after kernel upgrade
+  reboot:
+  when: kernel_update.changed
