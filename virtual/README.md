@@ -26,6 +26,9 @@ included `bootstrap_virtual.sh` on the host machine...
 $ ./bootstrap_virtual.sh
 ```
 
+After you've run this, it's a good idea to start a fresh login shell to ensure your environment is up to date.
+For example, you will need to be in the "libvirt" group to mangage VMs, but your current session won't include this group if libvirt was just installed.
+
 ## Start the cluster
 
 To start the cluster, run the `cluster_up.sh` script...
