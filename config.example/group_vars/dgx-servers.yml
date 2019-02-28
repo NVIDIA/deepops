@@ -1,8 +1,6 @@
 ---
 # DGX Server Configuration
 
-ansible_user: dgxuser
-
 # Collectd
 collectd_python_modules:
   - dcgm_collectd
