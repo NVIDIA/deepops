@@ -17,18 +17,7 @@
     state: latest
   with_items:
     - dkms
-    - kernel
-    - kernel-tools
-    - kernel-tools-libs
-    - kernel-devel
-    - kernel-debug-devel
-    - kernel-headers
-  register: update_kernel
   when: ansible_os_family == "RedHat"
-
-- name: reboot after kernel update
-  reboot:
-  when: update_kernel.changed
 
 - name: remove ppa
   apt_repository:
@@ -100,8 +89,45 @@
   systemd:
     name: nvidia-persistenced
     enabled: yes
-    state: started
+
+- name: check kernel versions
+  yum:
+    list: kernel
+  register: yum_list
+  when: ansible_os_family == "RedHat"
+
+- name: register installed kernel version
+  debug:
+    msg: "{{ yum_list.results | selectattr('yumstate', 'equalto', 'installed') | list }}"
+  register: kernel_version
+  when: ansible_os_family == "RedHat"
+
+- name: check kernel-headers versions
+  yum:
+    list: kernel-headers
+  register: yum_list
+  when: ansible_os_family == "RedHat"
+
+- name: register installed kernel-headers version
+  debug:
+    msg: "{{ yum_list.results | selectattr('yumstate', 'equalto', 'installed') | list }}"
+  register: kernel_headers_version
+  when: ansible_os_family == "RedHat"
+
+- name: update kernel if headers don't match
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - kernel
+    - kernel-tools
+    - kernel-tools-libs
+    - kernel-devel
+    - kernel-debug-devel
+    - kernel-headers
+  register: kernel_update
+  when: ansible_os_family == "RedHat" and (kernel_version.msg[0].release != kernel_headers_version.msg[0].release)
 
 - name: reboot
   reboot:
-  when: install_driver.changed and not nvidia_driver_skip_reboot
+  when: (install_driver.changed and not nvidia_driver_skip_reboot) or kernel_update.changed
