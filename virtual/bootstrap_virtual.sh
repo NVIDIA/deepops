@@ -11,7 +11,7 @@ sudo apt update
 sudo apt install -y ansible
 
 # install galaxy roles for ansible
-ansible-galaxy install -r requirements.yml
+ansible-galaxy install -r ../requirements.yml
 
 # install vagrant (frozen at 2.2.3 to avoid various issues)
 pushd "$(mktemp -d)"
