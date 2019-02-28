@@ -45,4 +45,5 @@ kubectl get nodes
 # Slurm
 #####################################
 
-ansible-playbook -i virtual/config/inventory -e "ansible_user=vagrant ansible_password=vagrant" -l slurm-cluster playbooks/slurm-cluster.yml
+# Deploy the Slurm cluster
+#ansible-playbook -i virtual/config/inventory -e "ansible_user=vagrant ansible_password=vagrant" -l slurm-cluster playbooks/slurm-cluster.yml
