@@ -1,6 +1,24 @@
 - hosts: all
   become: true
   tasks:
+    - name: install dependencies - RedHat
+      yum:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "RedHat"
+      with_items:
+        - pciutils
+    - name: install dependencies - Debian
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+      with_items:
+        - pciutils
+
     - name: Check for GPUs
       shell: lspci | grep -i nvidia
       register: has_gpu
