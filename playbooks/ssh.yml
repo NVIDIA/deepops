@@ -3,4 +3,4 @@
   become: true
   become_method: sudo
   roles:
-    - ssh
+    - dev-sec.ssh-hardening
