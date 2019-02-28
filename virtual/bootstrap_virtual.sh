@@ -1,17 +1,19 @@
 #!/bin/bash
 set -xe
 
-#TODO: update this to leverage `scripts/bootstrap-mgmt.sh`
-
 # update apt
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
 sudo apt update
 
-# install ansible
-sudo apt install -y ansible
+cd ..
 
-# install galaxy roles for ansible
-ansible-galaxy install -r ../requirements.yml
+# Installation script for Ubuntu/RHEL
+./scripts/install_ansible.sh
+
+# Install required Ansible roles
+ansible-galaxy install -r requirements.yml
+
+cd virtual
 
 # install vagrant (frozen at 2.2.3 to avoid various issues)
 pushd "$(mktemp -d)"
@@ -20,7 +22,6 @@ sudo dpkg -i vagrant.deb
 popd
 
 # install other dependencies
-sudo apt install -y python-netaddr
 sudo apt install -y sshpass
 
 # install kvm packages
