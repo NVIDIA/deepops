@@ -14,7 +14,7 @@ fi
 # Install Prometheus Operator
 helm status prometheus-operator >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
-    helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config.example/prometheus-operator.yml
+    helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config.example/helm/prometheus-operator.yml
 fi
 
 # Create GPU Dashboard config map
@@ -26,7 +26,7 @@ fi
 # Deploy Monitoring stack
 helm status kube-prometheus >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
-    helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config.example/kube-prometheus.yml
+    helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config.example/helm/kube-prometheus.yml
 fi
 
 # Label GPU nodes
