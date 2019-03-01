@@ -8,7 +8,6 @@ ssh_password_authentication: 'yes'
 # If this is `false`, pass the `-K` flag to all Ansible commands to prompt for the SUDO password
 enable_sudo_without_password: true
 
-
 # Docker Configuration
 #docker_daemon_json:
 #  bip: 192.168.99.1/24
