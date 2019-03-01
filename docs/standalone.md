@@ -6,20 +6,16 @@ Instructions for deploying standalone GPU servers.
 The install process should be run from a separate control system since
 GPU driver installation may trigger a reboot.
 
-_Install Ansible_
+_Set up control machine_
 
 ```sh
-# Installation script for Ubuntu/RHEL
-# Install Ansible and required roles from Ansible Galaxy
-./scripts/install_ansible.sh
+# Install software prerequisites and copy default configuration
+./scripts/setup.sh
 ```
 
-_Create server inventory and configure_
+_Edit server inventory and configuration_
 
 ```sh
-# Copy default inventory and configuration
-cp -r config.example config
-
 # Edit inventory
 # Add GPU servers to `gpu-servers` group
 vi config/inventory

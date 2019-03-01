@@ -9,8 +9,8 @@ sudo apt install build-essential
 
 cd ..
 
-# install ansible and ansible-galaxy roles
-./scripts/install_ansible.sh
+# Install ansible and ansible-galaxy roles
+./scripts/setup.sh
 
 cd virtual
 

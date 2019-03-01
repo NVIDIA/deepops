@@ -25,19 +25,16 @@ or utilize the provided [OS install container](PXE.md).
 
 ## Step 2: System Configuration
 
-_Install Ansible_
+_Set up control machine_
 
 ```sh
-# Install Ansible and required roles from Ansible Galaxy
-./scripts/install_ansible.sh
+# Install software prerequisites and copy default configuration
+./scripts/setup.sh
 ```
 
-_Create server inventory and configure_
+_Edit server inventory and configuration_
 
 ```sh
-# Copy default inventory and configuration
-cp -r config.example config
-
 # Edit inventory
 # Add Slurm controller/login host to `login` group
 # Add Slurm worker/compute hosts to `gpu-servers` or `dgx-servers` groups
