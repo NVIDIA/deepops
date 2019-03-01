@@ -3,6 +3,9 @@
 - src: dev-sec.ssh-hardening
   version: "6.0.0"
 
+- src: unxnn.ansible_users
+  version: 'fca2c5a6962db7696329c32a919d3d88cc8623c4'
+
 - src: geerlingguy.docker
   version: "2.5.2"
 
