@@ -8,7 +8,7 @@ sudo apt update
 cd ..
 
 # Install ansible and ansible-galaxy roles
-./scripts/install_ansible.sh
+./scripts/setup.sh
 
 cd virtual
 
