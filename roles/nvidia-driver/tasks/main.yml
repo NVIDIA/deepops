@@ -4,18 +4,22 @@
     name: nouveau
     state: absent
 
-- name: ubuntu tasks
-  include_tasks: ubuntu.yml
+- name: ubuntu pre-install tasks
+  include_tasks: ubuntu-pre-install.yml
   when: ansible_distribution == 'Ubuntu'
 
-- name: redhat family tasks
-  include_tasks: redhat.yml
+- name: redhat family pre-install tasks
+  include_tasks: redhat-pre-install.yml
   when: ansible_os_family == 'RedHat'
 
 - name: install driver packages
   package:
     name: "{{ nvidia_driver_package_version | ternary('cuda-drivers='+nvidia_driver_package_version, 'cuda-drivers') }}"
   register: install_driver
+
+- name: redhat family post-install tasks
+  include_tasks: redhat-post-install.yml
+  when: ansible_os_family == 'RedHat'
 
 - name: create persistenced override dir
   file:
