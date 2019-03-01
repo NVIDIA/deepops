@@ -17,8 +17,9 @@ case "$ID_LIKE" in
         # Install python-netaddr
         python -c 'import netaddr' >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
-            echo "Installing python-netaddr..."
-            sudo yum -y install ansible python-netaddr >/dev/null
+            echo "Installing Python dependencies..."
+            sudo yum -y install python36 python-netaddr >/dev/null
+	    sudo ln -s /usr/bin/python36 /usr/bin/python3
         fi
 
         # Install git
@@ -53,7 +54,7 @@ case "$ID_LIKE" in
         # Install python-netaddr
         python -c 'import netaddr' >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
-            echo "Installing python-netaddr..."
+            echo "Installing Python dependencies..."
             sudo apt-get -y install python-netaddr >/dev/null
         fi
 
