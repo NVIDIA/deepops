@@ -13,6 +13,8 @@
   tasks:
     - name: make sure kubespray is at the correct version
       command: git submodule update --init
+      args:
+        chdir: "{{ playbook_dir | dirname }}"
   vars:
     ansible_become: no
   tags:
