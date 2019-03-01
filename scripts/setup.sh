@@ -67,17 +67,24 @@ case "$ID_LIKE" in
         ;;
     *)
         echo "Unsupported Operating System $ID_LIKE"
-        exit 1
+        echo "Please install Ansible, Git, and python-netaddr manually"
         ;;
 esac
 
 # Install Ansible Galaxy roles
-ansible-galaxy install -r requirements.yml
+ansible-galaxy --version >/dev/null 2>&1
+if [ $? -eq 0 ] ; then
+    ansible-galaxy install -r requirements.yml
+else
+    echo "ERROR: Unable to install Ansible Galaxy roles"
+fi
 
 # Update submodules
 git status >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
     git submodule update --init
+else
+    echo "ERROR: Unable to update Git submodules"
 fi
 
 # Copy default configuration
