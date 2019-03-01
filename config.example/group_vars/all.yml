@@ -43,16 +43,15 @@ enable_sudo_without_password: true
 #slurm_max_job_timelimit: INFINITE
 #slurm_default_job_timelimit:
 
-nfs_exports:
-  - path: /export/shared
-    options: "*(rw,sync,no_root_squash)"
+#nfs_exports:
+#  - path: /export/shared
+#    options: "*(rw,sync,no_root_squash)"
 
-# NFS clients
-nfs_mounts:
-  - mountpoint: /mnt/shared
-    server: '{{ groups["nfs-server"][0] }}'
-    path: /export/shared
-    options: async,vers=3
+#nfs_mounts:
+#  - mountpoint: /mnt/shared
+#    server: '{{ groups["nfs-server"][0] }}'
+#    path: /export/shared
+#    options: async,vers=3
 
 # Collectd
 #collectd_network_server: "deepops-mgmt.example.com"
