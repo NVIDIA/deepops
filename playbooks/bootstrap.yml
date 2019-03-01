@@ -21,7 +21,7 @@
 - hosts: all
   become: true
   tasks:
-    - name: Allow password-less sudo to ansible user"
+    - name: Allow password-less sudo to ansible user
       copy:
         content: "{{ ansible_user | default(ansible_env.SUDO_USER) }} ALL=(ALL) NOPASSWD:ALL"
         dest: "/etc/sudoers.d/{{ ansible_user | default(ansible_env.SUDO_USER) }}"
