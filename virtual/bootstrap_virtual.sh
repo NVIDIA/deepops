@@ -2,12 +2,14 @@
 set -xe
 
 # update apt
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
 sudo apt update
+
+# install build-essential tools
+sudo apt install build-essential
 
 cd ..
 
-# Install ansible and ansible-galaxy roles
+# install ansible and ansible-galaxy roles
 ./scripts/setup.sh
 
 cd virtual
