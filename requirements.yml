@@ -1,5 +1,8 @@
 ---
 
+- src: unxnn.ansible_users
+  version: 'fca2c5a6962db7696329c32a919d3d88cc8623c4'
+
 - src: weareinteractive.ssh
   version: "1.3.0"
 
