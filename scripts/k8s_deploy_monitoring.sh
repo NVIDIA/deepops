@@ -11,22 +11,28 @@ if [ $? -ne 0 ] ; then
     helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
 fi
 
+# Determine DeepOps config dir
+config_dir="$(pwd)/config.example"
+if [ "${DEEPOPS_CONFIG_DIR}" ]; then
+    config_dir="${DEEPOPS_CONFIG_DIR}"
+fi
+
 # Install Prometheus Operator
 helm status prometheus-operator >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
-    helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values config.example/prometheus-operator.yml
+    helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values ${config_dir}/helm/prometheus-operator.yml
 fi
 
 # Create GPU Dashboard config map
 kubectl -n monitoring get configmap kube-prometheus-grafana-gpu >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
-    kubectl create configmap kube-prometheus-grafana-gpu --from-file=config.example/gpu-dashboard.json -n monitoring
+    kubectl create configmap kube-prometheus-grafana-gpu --from-file=${config_dir}/gpu-dashboard.json -n monitoring
 fi
 
 # Deploy Monitoring stack
 helm status kube-prometheus >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
-    helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config.example/kube-prometheus.yml
+    helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values ${config_dir}/helm/kube-prometheus.yml
 fi
 
 # Label GPU nodes
