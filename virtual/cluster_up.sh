@@ -12,11 +12,11 @@ cd ..
 # Create the K8s config (for mgmt=10.0.0.2, gpu01=10.0.0.11 nodes)
 K8S_CONFIG_DIR=./virtual/k8s-config ./scripts/k8s_inventory.sh 10.0.0.2 10.0.0.11
 cp ./virtual/k8s_hosts.ini ./virtual/k8s-config/hosts.ini
+
 # Create the config for deepops servers (and use the virtual inventory)
-cp -r config.example/ virtual/config/
-cp virtual/virtual_inventory virtual/config/inventory
-# Make sure to use the `vagrant` user instead of `ubuntu`
-sed -i 's/#ansible_user: ubuntu/ansible_user: vagrant/g' virtual/config/group_vars/all.yml
+export DEEPOPS_CONFIG_DIR="$(pwd)/virtual/config"
+cp -r config.example/ ${DEEPOPS_CONFIG_DIR}/
+cp virtual/virtual_inventory ${DEEPOPS_CONFIG_DIR}/inventory
 
 #####################################
 # K8s
@@ -28,7 +28,7 @@ ansible-playbook -i virtual/k8s-config/hosts.ini -b playbooks/k8s-cluster.yml -e
 # Export k8s config so we can use it throughout the rest of the script
 export KUBECONFIG=virtual/k8s-config/artifacts/admin.conf
 
-# Put local kubectl in the PATH for following commants and scripts
+# Put local kubectl in the PATH for following commands and scripts
 export PATH="$(pwd)/virtual/k8s-config/artifacts:${PATH}"
 
 # Verify that the cluster is up
