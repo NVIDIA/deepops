@@ -34,7 +34,3 @@
     state: latest
   register: kernel_update
   when: kernel_version.msg[0].release != kernel_headers_version.msg[0].release
-
-- name: reboot after kernel upgrade
-  reboot:
-  when: kernel_update.changed
