@@ -27,7 +27,7 @@ or utilize the provided [OS install container](PXE.md).
 _Install Ansible_
 
 ```sh
-# Installation script for Ubuntu/RHEL
+# Install Ansible and required roles from Ansible Galaxy
 ./scripts/install_ansible.sh
 ```
 

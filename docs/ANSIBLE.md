@@ -17,11 +17,8 @@ A script is provided to install Ansible on Ubuntu and RHEL/CentOS machines. Ansi
 also be installed on Mac OS and Windows (WSL).
 
 ```sh
-# Installation script for Ubuntu/RHEL
+# Install Ansible and required roles from Ansible Galaxy
 ./scripts/install_ansible.sh
-
-# Install required Ansible roles
-ansible-galaxy install -r requirements.yml
 ```
 
 See the [Ansible documentation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)

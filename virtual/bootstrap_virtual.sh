@@ -7,11 +7,8 @@ sudo apt update
 
 cd ..
 
-# Installation script for Ubuntu/RHEL
+# Install ansible and ansible-galaxy roles
 ./scripts/install_ansible.sh
-
-# Install required Ansible roles
-ansible-galaxy install -r requirements.yml
 
 cd virtual
 
