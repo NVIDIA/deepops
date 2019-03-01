@@ -18,7 +18,7 @@ also be installed on Mac OS and Windows (WSL).
 
 ```sh
 # Install Ansible and required roles from Ansible Galaxy
-./scripts/install_ansible.sh
+./scripts/setup.sh
 ```
 
 See the [Ansible documentation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
