@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -ex
+
+if findmnt /tmp && grep "/tmp " /etc/fstab; then
+    umount /tmp
+    mount /tmp
+else
+    rm -rf /tmp/*
+fi

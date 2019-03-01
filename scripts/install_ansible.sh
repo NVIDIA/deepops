@@ -40,3 +40,6 @@ case "$ID_LIKE" in
         exit 1
         ;;
 esac
+
+# install ansible-galaxy roles
+ansible-galaxy install -r requirements.yml

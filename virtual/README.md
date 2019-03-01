@@ -26,6 +26,9 @@ included `bootstrap_virtual.sh` on the host machine...
 $ ./bootstrap_virtual.sh
 ```
 
+After you've run this, it's a good idea to start a fresh login shell to ensure your environment is up to date.
+For example, you will need to be in the "libvirt" group to mangage VMs, but your current session won't include this group if libvirt was just installed.
+
 ## Start the cluster
 
 To start the cluster, run the `cluster_up.sh` script...
@@ -201,7 +204,7 @@ options vfio-pci ids=10de:1db1,10de:1ac1
 
 NOTE: First entry is for Volta and the latter for NVSwitch
 
-3. Rebuild the initramfs by running sudo update-initramfs -u and reboot the system.
+3. Rebuild the initramfs by running `sudo update-initramfs -u` and reboot the system.
 
 4. After the system reboots, verify GPU devices and NVSwitches are claimed by vfio_pci driver by
 running `dmesg | grep vfio_pci`...

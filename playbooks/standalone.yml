@@ -2,7 +2,6 @@
 
 - include: bootstrap-ansible.yml
 - include: bootstrap.yml
-- include: ssh.yml
 
 - include: docker.yml
 - include: nvidia-driver.yml
@@ -15,5 +14,3 @@
         nvidia:
           path: /usr/bin/nvidia-container-runtime
           runtimeArgs: []
-
-- include: manage-users.yml
