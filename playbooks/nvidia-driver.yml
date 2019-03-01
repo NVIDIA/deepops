@@ -1,6 +1,25 @@
+---
 - hosts: all
   become: true
   tasks:
+    - name: run setup to detect OS
+      setup:
+
+    - name: update apt cache
+      apt:
+        update_cache: yes
+      when: ansible_os_family == 'Debian'
+
+    - name: update yum cache
+      yum:
+        update_cache: yes
+      when: ansible_os_family == 'RedHat'
+
+    - name: install lspci
+      package:
+        name: pciutils
+        state: present
+
     - name: Check for GPUs
       shell: lspci | grep -i nvidia
       register: has_gpu

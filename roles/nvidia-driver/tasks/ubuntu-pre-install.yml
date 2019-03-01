@@ -1,0 +1,15 @@
+---
+- name: remove ppa
+  apt_repository:
+    repo: ppa:graphics-drivers/ppa
+    state: absent
+
+- name: add key
+  apt_key:
+    url: "https://developer.download.nvidia.com/compute/cuda/repos/{{ ubuntu_repo_dir }}/7fa2af80.pub"
+    id: 7fa2af80
+
+- name: add repo
+  apt_repository:
+    repo: "deb http://developer.download.nvidia.com/compute/cuda/repos/{{ ubuntu_repo_dir }} /"
+    update_cache: yes

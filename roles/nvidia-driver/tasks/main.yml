@@ -1,35 +1,25 @@
-- name: check distro
-  fail:
-    msg: "distro {{ ansible_facts['distribution'] }} not supported"
-  when: ansible_facts['distribution'] != 'Ubuntu'
-
-- name: remove ppa
-  apt_repository:
-    repo: ppa:graphics-drivers/ppa
-    state: absent
-
+---
 - name: unload nouveau
   modprobe:
     name: nouveau
     state: absent
 
-- name: add key
-  apt_key:
-    url: "https://developer.download.nvidia.com/compute/cuda/repos/{{ repo_dir }}/7fa2af80.pub"
-    id: 7fa2af80
+- name: ubuntu pre-install tasks
+  include_tasks: ubuntu-pre-install.yml
+  when: ansible_distribution == 'Ubuntu'
 
-- name: add repo
-  apt_repository:
-    repo: "deb http://developer.download.nvidia.com/compute/cuda/repos/{{ repo_dir }} /"
-    update_cache: yes
+- name: redhat family pre-install tasks
+  include_tasks: redhat-pre-install.yml
+  when: ansible_os_family == 'RedHat'
 
 - name: install driver packages
-  apt:
-    name: "{{ item }}"
-    install_recommends: no
-  with_items:
-    - "{{ nvidia_driver_package_version | ternary('cuda-drivers='+nvidia_driver_package_version, 'cuda-drivers') }}"
-  register: apt_install_driver
+  package:
+    name: "{{ nvidia_driver_package_version | ternary('cuda-drivers='+nvidia_driver_package_version, 'cuda-drivers') }}"
+  register: install_driver
+
+- name: redhat family post-install tasks
+  include_tasks: redhat-post-install.yml
+  when: ansible_os_family == 'RedHat'
 
 - name: create persistenced override dir
   file:
@@ -54,6 +44,6 @@
     name: nvidia-persistenced
     enabled: yes
 
-- name: reboot
+- name: reboot after driver install
   reboot:
-  when: apt_install_driver.changed and not nvidia_driver_skip_reboot
+  when: install_driver.changed and not nvidia_driver_skip_reboot
