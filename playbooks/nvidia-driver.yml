@@ -2,35 +2,16 @@
 - hosts: all
   become: true
   tasks:
-    - name: run setup to detect OS
-      setup:
+    - name: install custom facts
+      include_role:
+        name: facts
 
-    - name: update apt cache
-      apt:
-        update_cache: yes
-      when: ansible_os_family == 'Debian'
-
-    - name: update yum cache
-      yum:
-        update_cache: yes
-      when: ansible_os_family == 'RedHat'
-
-    - name: install lspci
-      package:
-        name: pciutils
-        state: present
-
-    - name: Check for GPUs
-      shell: lspci | grep -i nvidia
-      register: has_gpu
-      ignore_errors: true
-      changed_when: false
-
-    - include_role:
+    - name: install nvidia driver
+      include_role:
         name: nvidia-driver
-      when: has_gpu.rc == 0
+      when: ansible_local['gpus']['count']
 
     - name: test nvidia-smi
       command: nvidia-smi
-      when: has_gpu.rc == 0
       changed_when: false
+      when: ansible_local['gpus']['count']

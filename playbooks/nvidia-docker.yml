@@ -1,12 +1,12 @@
+---
 - hosts: all
   become: true
   tasks:
-    - name: Check for GPUs
-      shell: lspci | grep -i nvidia
-      register: has_gpu
-      ignore_errors: true
-      changed_when: false
+    - name: install custom facts module
+      include_role:
+        name: facts
 
-    - include_role:
+    - name: install nvidia-docker
+      include_role:
         name: nvidia-docker
-      when: has_gpu.rc == 0
+      when: ansible_local['gpus']['count']
