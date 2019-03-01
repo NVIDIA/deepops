@@ -1,0 +1,46 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: remove old/undesirable packages
+      apt:
+        name:
+          - nvidia-sysinfo-dgx
+          - popularity-contest
+        state: absent
+        autoremove: yes
+        purge: yes
+
+    - name: install common packages
+      apt:
+        name:
+          - curl
+          - git
+          - rsync
+          - screen
+          - tmux
+          - vim
+          - wget
+        state: present
+        update_cache: yes
+
+- hosts: compute-nodes
+  become: true
+  tasks:
+    - name: install packages for compute nodes
+      apt:
+        name:
+          - linux-tools-generic
+        state: present
+
+# DGX servers should come pre-configured with the DGX repo
+- hosts: dgx-servers
+  become: true
+  tasks:
+    - name: install packages for DGX nodes
+      apt:
+        name:
+          - dgx-oem-config-bmc
+          - dgx-oem-config-eula
+          - dgx-raid-config
+        state: present

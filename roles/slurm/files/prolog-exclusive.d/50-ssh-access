@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -ex
+
+cp /etc/slurm/localusers.backup /etc/localusers
+
+if ! grep -q -w "$SLURM_JOB_USER" /etc/slurm/localusers.backup ; then
+    echo "$SLURM_JOB_USER" >>/etc/localusers
+fi

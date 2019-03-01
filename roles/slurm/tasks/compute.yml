@@ -7,10 +7,8 @@
     - linux-tools-generic  # for cpupower, used in prolog+epilog
 
 - name: fail if NVIDIA driver not installed
-  shell: which nvidia-smi
-
-- name: fail if docker not installed
-  shell: which docker
+  command: which nvidia-smi
+  changed_when: false
 
 - name: add cgroups to grub options
   lineinfile:
@@ -54,23 +52,30 @@
   with_fileglob:
     - shared/bin/*
 
-- name: create prolog.d directory
+- name: create prolog directories
   file:
-    path: /etc/slurm/prolog.d/
+    path: "{{ item }}"
     state: directory
     owner: slurm
     group: slurm
     mode: 0755
+  with_items:
+    - /etc/slurm/prolog.d/
+    - /etc/slurm/prolog-exclusive.d/
   tags:
     - prolog
 
-- name: create epilog.d directory
+- name: create epilog directories
   file:
-    path: /etc/slurm/epilog.d/
+    path: "{{ item }}"
     state: directory
     owner: slurm
     group: slurm
     mode: 0755
+  with_items:
+    - /etc/slurm/epilog.d/
+    - /etc/slurm/epilog-exclusive.d/
+    - /etc/slurm/epilog-last-user.d/
   tags:
     - epilog
 
@@ -86,6 +91,18 @@
   tags:
     - prolog
 
+- name: copy prologs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/prolog-exclusive.d/
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_fileglob:
+    - prolog-exclusive.d/*
+  tags:
+    - prolog
+
 - name: copy epilogs
   copy:
     src: "{{ item }}"
@@ -95,6 +112,30 @@
     mode: 0755
   with_fileglob:
     - epilog.d/*
+  tags:
+    - epilog
+
+- name: copy epilogs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/epilog-exclusive.d/
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_fileglob:
+    - epilog-exclusive.d/*
+  tags:
+    - epilog
+
+- name: copy epilogs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/epilog-last-user.d/
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_fileglob:
+    - epilog-last-user.d/*
   tags:
     - epilog
 
@@ -121,8 +162,11 @@
 - name: install /etc/localusers
   template:
     src: etc-localusers
-    dest: /etc/localusers
+    dest: "{{ item }}"
     mode: 0600
+  with_items:
+    - /etc/slurm/localusers.backup
+    - /etc/localusers
   tags:
     - test
 
