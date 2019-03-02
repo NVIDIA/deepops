@@ -2,3 +2,6 @@ nfs_idmapd_domain: localdomain
 
 nfs_is_server: no
 nfs_is_client: no
+
+nfs_exports: []
+nfs_mounts: []
