@@ -1,9 +1,6 @@
 # Configuration common to all hosts
 # Define per-group or per-host values in the other configuration files
 
-# SSH Configuration
-ssh_password_authentication: 'yes'
-
 # Configure SUDO to not require a password for users in the `sudo` group
 # If this is `false`, pass the `-K` flag to all Ansible commands to prompt for the SUDO password
 enable_sudo_without_password: true
