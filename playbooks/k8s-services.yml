@@ -3,22 +3,19 @@
 - hosts: kube-master
   become: true
   tasks:
-    - name: install package dependencies
+    - name: Enable EPEL repo
+      package:
+        name:
+          - epel-release
+        state: present
+      when: ansible_os_family == 'RedHat'
+    - name: Install package dependencies
       package:
         name:
           - python-pip
           - git
         state: present
-      when: ansible_distribution == 'Ubuntu'
-    - name: install package dependencies
-      package:
-        name:
-          - python2-pip
-          - python36-pip
-          - git
-        state: present
-      when: ansible_os_family == 'RedHat'
-    - name: install python dependencies
+    - name: Install python dependencies
       pip:
         name:
           - pyhelm
