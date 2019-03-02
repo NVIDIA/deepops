@@ -7,9 +7,6 @@
       package:
         name:
           - python-pip
-          - python-dev
-          - libgit2-dev
-          - gcc
           - git
         state: present
       when: ansible_distribution == 'Ubuntu'
@@ -18,28 +15,32 @@
         name:
           - python2-pip
           - python36-pip
-          - python-devel
-          - libgit2-devel
-          - gcc
           - git
         state: present
       when: ansible_os_family == 'RedHat'
     - name: install python dependencies
       pip:
         name:
-          - pygit2==0.26
           - pyhelm
           - grpcio
-          - requests==2.14.2
         state: present
 
 # Docker container registry
 - hosts: kube-master
   become: true
   tasks:
+    - name: get tiller service info
+      k8s_facts:
+        api_version: v1
+        kind: Service
+        name: tiller-deploy
+        namespace: kube-system
+      register: tiller_service
     - name: Install helm chart for container registry
       include_role:
         name: container-registry
+      vars:
+        tiller_host: "{{ tiller_service.resources[0].spec.clusterIP }}"
       run_once: true
   tags:
     - container-registry

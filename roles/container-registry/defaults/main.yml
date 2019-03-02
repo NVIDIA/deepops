@@ -1,3 +1,4 @@
+tiller_host: localhost
 container_registry_version: 1.7.0
 container_registry_hostname: registry.local
 container_registry_ingress_enabled: true

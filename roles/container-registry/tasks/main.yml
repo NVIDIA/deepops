@@ -1,6 +1,6 @@
 - name: Install Helm chart for Docker container registry
   helm:
-    host: localhost
+    host: "{{ tiller_host }}"
     chart:
       name: docker-registry
       version: "{{ container_registry_version }}"
