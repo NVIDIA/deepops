@@ -102,7 +102,7 @@ segment and subnet which can be controlled by the DHCP server.
 
 ### 1. Download and configure
 
-To use DeepOps this repository will need to be downloaded onto the administrator's provisioning system. The `bootstrap-mgmt.sh` script will then install the following software packages:
+To use DeepOps this repository will need to be downloaded onto the administrator's provisioning system. The `setup.sh` script will then install the following software packages:
 
 * Ansible
 * Docker
@@ -125,7 +125,7 @@ git submodule update
 Install Ansible and other dependencies (if the below script fails follow the official [Ansible installation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) steps to install version 2.5 or later):
 
 ```sh
-./scripts/bootstrap-mgmt.sh
+./scripts/setup.sh
 ```
 
 Copy and version control the configuration files. The `config/` directory is ignored by the deepops git repo. Create a seperate git repo to track local configuration changes.
@@ -540,7 +540,7 @@ Create the NVIDIA GPU k8s device plugin daemon set (just need to do this once):
 kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
 ```
 
-Modify the `config/inventory` file to add the DGX to the `kube-node` and `k8s-gpu` categories by uncommenting
+Modify the `config/inventory` file to add the DGX to the `kube-node` and category by uncommenting
 the `dgx-servers` entry in these sections
 
 ```sh
@@ -568,14 +568,6 @@ Place a hold on the `docker-ce` package so it doesn't get upgraded:
 
 ```sh
 ansible dgx-servers -k -b -a "apt-mark hold docker-ce"
-```
-
-Install the nvidia-container-runtime on the DGX:
-
-> Note the the nvidia-container-runtime is already installed on DGX with OS version 4.04 or later and this step can be ignored.
-
-```sh
-ansible-playbook -l k8s-gpu -k -v -b --flush-cache --extra-vars "@config/kube.yml" playbooks/k8s-gpu.yml
 ```
 
 Test that GPU support is working:
@@ -898,7 +890,7 @@ __Slurm updates:__
 # whole shebang:
 ansible-playbook -k -l slurm-cluster ansible/playbooks/slurm.yml
 # just prolog and/or epilog:
-ansible-playbook -k -l compute-nodes --tags prolog,epilog -e 'gather_facts=no' ansible/playbooks/slurm.yml
+ansible-playbook -k -l slurm-workers --tags prolog,epilog -e 'gather_facts=no' ansible/playbooks/slurm.yml
 ```
 
 __Modify GPU drivers:__

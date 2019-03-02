@@ -44,6 +44,18 @@ gpu-servers
 gpu-servers
 #dgx-servers
 
+######
+# SSH connection configuration
+######
+
+[all:vars]
+#ansible_user=ubuntu
+# Configure SSH bastion/jumpbox for the cluster
+#ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
+
+[dgx-servers:vars]
+#ansible_user=dgxuser
+
 ###############################################################################
 ## You shouldn't need to make changes below here
 ################################################################################
@@ -61,10 +73,22 @@ gpu-servers
 [slurm-masters:children]
 login
 
-[slurm-cluster:children]
-slurm-masters
+[slurm-workers:children]
 dgx-servers
 gpu-servers
+
+[slurm-cluster:children]
+slurm-masters
+slurm-workers
+
+######
+# NFS
+######
+[nfs-server:children]
+login
+
+[nfs-clients:children]
+compute-nodes
 
 ######
 # KUBERNETES
