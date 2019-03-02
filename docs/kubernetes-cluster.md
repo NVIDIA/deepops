@@ -91,6 +91,12 @@ Prometheus and Grafana to monitor Kubernetes and cluster nodes
 ./scripts/k8s_deploy_monitoring.sh
 ```
 
+### Container Registry
+
+```sh
+ansible-playbook -i k8s-config/hosts.ini -b --tags container-registry playbooks/k8s-services.yml
+```
+
 ## Additional Documentation
 
 [Ansible](ANSIBLE.md)
