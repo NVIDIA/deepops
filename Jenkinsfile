@@ -3,7 +3,8 @@ pipeline {
   stages {
     stage('Cluster Up') {
       steps {
-        sh '''cd virtual
+        sh '''pwd
+cd virtual
 cp /opt/deepops_test/Vagrantfile .
 ./setup.sh
 ./cluster_up.sh'''
