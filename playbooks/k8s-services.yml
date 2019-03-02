@@ -22,7 +22,7 @@
           - grpcio
         state: present
 
-# Docker container registry
+# Register Tiller service info
 - hosts: kube-master
   become: true
   tasks:
@@ -33,6 +33,11 @@
         name: tiller-deploy
         namespace: kube-system
       register: tiller_service
+
+# Docker container registry
+- hosts: kube-master
+  become: true
+  tasks:
     - name: Install helm chart for container registry
       include_role:
         name: container-registry
