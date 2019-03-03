@@ -21,18 +21,22 @@
           - pyhelm
           - grpcio
         state: present
+  tags:
+    - always
 
 # Register Tiller service info
 - hosts: kube-master
   become: true
   tasks:
-    - name: get tiller service info
+    - name: Get tiller service info
       k8s_facts:
         api_version: v1
         kind: Service
         name: tiller-deploy
         namespace: kube-system
       register: tiller_service
+  tags:
+    - always
 
 # Docker container registry
 - hosts: kube-master
@@ -46,4 +50,3 @@
       run_once: true
   tags:
     - container-registry
-

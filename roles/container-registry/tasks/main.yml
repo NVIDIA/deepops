@@ -2,14 +2,14 @@
   helm:
     host: "{{ tiller_host }}"
     chart:
-      name: docker-registry
+      name: "{{ container_registry_name }}"
       version: "{{ container_registry_version }}"
       source:
         type: repo
         location: https://kubernetes-charts.storage.googleapis.com
     state: present
-    name: docker-registry
-    namespace: default
+    name: "{{ container_registry_name }}"
+    namespace: "{{ container_registry_namespace }}"
     values:
       persistence:
         enabled: true
@@ -26,7 +26,7 @@
           kubernetes.io/ingress.class: "nginx"
           nginx.ingress.kubernetes.io/ssl-redirect: "false"
           nginx.ingress.kubernetes.io/rewrite-target: /
-          nginx.ingress.kubernetes.io/proxy-body-size: {{ container_registry_ingress_size }}
+          nginx.ingress.kubernetes.io/proxy-body-size: "{{ container_registry_ingress_size }}"
         tls:
         - hosts:
           - "{{ container_registry_hostname }}"
