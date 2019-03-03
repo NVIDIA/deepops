@@ -50,3 +50,16 @@
       run_once: true
   tags:
     - container-registry
+
+# Docker container registry
+- hosts: kube-node
+  become: true
+  vars:
+    container_registry_hostname: registry.local
+  tasks:
+    - name: Set registry hostname in /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ hostvars[groups['kube-master'][0]]['ansible_host'] }} {{ container_registry_hostname }}"
+  tags:
+    - container-registry
