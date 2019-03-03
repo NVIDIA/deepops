@@ -93,6 +93,9 @@ Prometheus and Grafana to monitor Kubernetes and cluster nodes
 
 ### Container Registry
 
+The default container registry hostname is `node1.cluster.local`. To set another hostname (for example,
+one that is resolvable outside the cluster), add `-e container_registry_hostname=registry.example.com`.
+
 ```sh
 ansible-playbook -i k8s-config/hosts.ini -b --tags container-registry playbooks/k8s-services.yml
 ```
