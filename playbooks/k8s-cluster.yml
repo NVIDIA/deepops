@@ -35,6 +35,8 @@
     docker_version: 18.06
     docker_dns_servers_strict: no
     docker_storage_options: -s overlay2
+    docker_insecure_registries:
+      - node1.cluster.local
 
 # Disable swap (required for k8s), kubespray method doesn't quite cut it
 - hosts: all
