@@ -37,7 +37,7 @@ To start the cluster, run the `cluster_up.sh` script...
 $ ./cluster_up.sh
 ```
 
-Vagrant will spin up three VMs - login01, mgmt, and dgx01. Afterwards, the script will use ansible
+Vagrant will spin up three VMs - login, mgmt, and gpu01. Afterwards, the script will use ansible
 to configure the nodes and set up DeepOps.
 
 The script should complete without errors and three nodes should show up when running `virsh
@@ -48,14 +48,14 @@ $ virsh list
  Id    Name                           State
 ----------------------------------------------------
  7     vagrant_mgmt                   running
- 8     vagrant_login01                running
- 9     vagrant_dgx01                  running
+ 8     vagrant_login                  running
+ 9     vagrant_gpu01                  running
 ```
 
 Connect to any of the nodes via vagrant ssh...
 
 ```
-$ vagrant ssh dgx01
+$ vagrant ssh gpu01
 ```
 
 ## Destroy the cluster
@@ -70,7 +70,7 @@ Check that there are no running VMs using `virsh list`.
 
 ## Configure GPU passthrough
 
-If your host machine has a GPU, it is possible to enable GPU passthrough to the dgx01 VM.
+If your host machine has a GPU, it is possible to enable GPU passthrough to the gpu01 VM.
 
 Run `lspci` to discover the appropriate bus...
 
