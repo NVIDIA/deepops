@@ -1,29 +1,52 @@
 #!/bin/bash
-set -x
+set -ex
 
-# start vagrant
+# Start vagrant via libvirt - set up the VMs
 vagrant up --no-parallel --provider=libvirt
+
+# Show the running VMs
+virsh list
 
 cd ..
 
-# Disable swap on mgmt servers (for Kubernetes)
-ansible mgmt -u root -e "ansible_user=root ansible_password=deepops" -b -a "swapoff -a"
+# Create the K8s config (for mgmt=10.0.0.2, gpu01=10.0.0.11 nodes)
+K8S_CONFIG_DIR=./virtual/k8s-config ./scripts/k8s_inventory.sh 10.0.0.2 10.0.0.11
+cp ./virtual/k8s_hosts.ini ./virtual/k8s-config/hosts.ini
 
-# Deploy Kubernetes on mgmt
-ansible-playbook -l mgmt -v -b --flush-cache -e "@config/kube.yml" -e "ansible_user=root ansible_password=deepops" kubespray/cluster.yml
+# Create the config for deepops servers (and use the virtual inventory)
+export DEEPOPS_CONFIG_DIR="$(pwd)/virtual/config"
+cp -r config.example/ ${DEEPOPS_CONFIG_DIR}/
+cp virtual/virtual_inventory ${DEEPOPS_CONFIG_DIR}/inventory
 
-# Set up Kubernetes for remote administration
-KUBECONFIG='./vagrant/admin.conf'
-ansible mgmt -u root -e "ansible_user=root ansible_password=deepops" -b -m fetch -a "src=/etc/kubernetes/admin.conf flat=yes dest=./vagrant/"
-sed -i '/6443/c\    server: https:\/\/mgmt01:6443' ${KUBECONFIG}
-curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-chmod +x ./kubectl && mv ./kubectl ./vagrant/kubectl
+#####################################
+# K8s
+#####################################
 
-# Launch the apt repo service on k8s
-KUBECONFIG=$KUBECONFIG ./vagrant/kubectl apply -f services/apt.yml
+# Deploy the K8s cluster
+ansible-playbook -i virtual/k8s-config/hosts.ini -b playbooks/k8s-cluster.yml -e "ansible_user=vagrant ansible_password=vagrant"
 
-# Set up software
-ansible-playbook -e "ansible_user=root ansible_password=deepops" -l login,dgx-servers --skip-tags skip-for-virtual ansible/playbooks/software.yml
+# Export k8s config so we can use it throughout the rest of the script
+export KUBECONFIG=virtual/k8s-config/artifacts/admin.conf
 
-# Install slurm
-ansible-playbook -e "ansible_user=root ansible_password=deepops" -l slurm-cluster ansible/playbooks/slurm.yml
+# Put local kubectl in the PATH for following commands and scripts
+export PATH="$(pwd)/virtual/k8s-config/artifacts:${PATH}"
+
+# Verify that the cluster is up
+kubectl get nodes
+#kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
+
+# Deploy dashboard (optional)
+./scripts/k8s_deploy_dashboard_user.sh
+
+# Deploy rook (optional, but highly recommended)
+./scripts/k8s_deploy_rook.sh
+
+# Deploy monitoring (optional)
+./scripts/k8s_deploy_monitoring.sh
+
+#####################################
+# Slurm
+#####################################
+
+# Deploy the Slurm cluster
+#ansible-playbook -i virtual/config/inventory -e "ansible_user=vagrant ansible_password=vagrant" -l slurm-cluster playbooks/slurm-cluster.yml

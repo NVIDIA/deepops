@@ -1,19 +1,14 @@
 ---
-user: dgxuser
-ansible_user: dgxuser
-
-#ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
+# DGX Server Configuration
 
 # Collectd
 collectd_python_modules:
   - dcgm_collectd
 with_dcgm_collectd: true
 
-daemon_json:
-  bip: 192.168.99.1/24
+# Docker Configuration
+docker_daemon_json:
   default-runtime: nvidia
-  insecure-registries:
-    - "registry.local"
   runtimes:
     nvidia:
       path: /usr/bin/nvidia-container-runtime

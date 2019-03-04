@@ -1,0 +1,1 @@
+repo_dist_name: "{{ ansible_distribution | lower }}{{ ansible_distribution_version }}"

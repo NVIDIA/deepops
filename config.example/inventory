@@ -1,107 +1,63 @@
 #
-# Cluster Inventory File
+# Server Inventory File
 #
-# Configure cluster nodes and optional node-specific variables
-#
+# Uncomment and change the IP addresses in this file to match your environment
+# Define per-group or per-host configuration in group_vars/*.yml
 
-# optional variables:
+# Kubernetes Management Servers
+# See group_vars/management.yml for configuration
+[management]
+#mgmt       ansible_host=10.0.0.1
 
-# Set an alternate IP address for servers or for servers which do not have resolvable hostnames
-# ansible_host=10.0.0.1
-
-# Set an explicit/alternate network interface for Ceph
-# monitor_interface=enp129s0f0
-
-# Set an IP address for IPoIB
-# ib_bond_addr=192.168.1.1/24
-
-# Examples:
-# mgmt01 ansible_host=10.0.0.1 monitor_interface=enp129s0f0
-# login01 ansible_host=10.0.0.2 ib_bond_addr=192.168.40.10/24
-# dgx01 ib_bond_addr=192.168.40.11/24
-
-###############################################################################
-# Update these sections with hostnames
-###############################################################################
-
-######
-# All Nodes
-# Define variables here
-######
-[all]
-mgmt01
-#mgmt02     ansible_host=10.0.0.2
-#mgmt03     ansible_host=10.0.0.3
-login01
-dgx01
-#dgx02
-#dgx03
-#dgx04
-#dgx05
-#dgx06
-#dgx07
-#dgx08
-#dgx09
-
-######
-# Management Nodes
-######
-[mgmt]
-mgmt01
-#mgmt02
-#mgmt03
-
-######
-# Login Nodes
-######
+# Slurm Controller/Login Servers
+# See group_vars/login.yml for configuration
 [login]
-login01
+#login01    ansible_host=10.0.0.2
 
-######
-# DGX Nodes
-######
+# GPU Servers - All GPU servers, including DGX if desired
+# See group_vars/gpu-servers.yml for configuration
+[gpu-servers]
+#gpu01      ansible_host=10.0.2.1
+#gpu02      ansible_host=10.0.2.2
+#gpu03      ansible_host=10.0.2.3
+
+# DGX Servers - DGX specific
+# See group_vars/dgx-servers.yml for configuration
 [dgx-servers]
-dgx01
-#dgx02
-#dgx03
-#dgx04
-#dgx05
-#dgx06
-#dgx07
-#dgx08
-#dgx09
-
-######
-# non-DGX GPU Nodes
-######
-[tesla-servers]
-
-######
-# Ceph
-######
-[ceph-mgrs]
-mgmt01
+#dgx01      ansible_host=10.0.3.1
+#dgx02      ansible_host=10.0.3.2
+#dgx03      ansible_host=10.0.3.3
 
 # Configure nodes for Kubernetes
-# Only add 'dgx-servers' once the DGX nodes are up and available
+# Only add the 'gpu-servers' and 'dgx-servers' group once the GPU/DGX nodes are up and available
 # Kubespray may fail otherwise
 [kube-node:children]
-mgmt
+management
+#gpu-servers
 #dgx-servers
-
-[k8s-gpu:children]
-#dgx-servers
-
-###############################################################################
-## You shouldn't need to make changes below here
-################################################################################
 
 ######
-# all cluster nodes
+# SSH connection configuration
+######
+
+[all:vars]
+#ansible_user=ubuntu
+# Configure SSH bastion/jumpbox for the cluster
+#ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
+
+[dgx-servers:vars]
+#ansible_user=dgxuser
+
+###############################################################################
+# You shouldn't need to make changes below here
+###############################################################################
+
+######
+# Cluster compute (non-management/login) nodes
 ######
 [compute-nodes:children]
 dgx-servers
-tesla-servers
+gpu-servers
 
 ######
 # SLURM
@@ -109,41 +65,36 @@ tesla-servers
 [slurm-masters:children]
 login
 
+[slurm-workers:children]
+dgx-servers
+gpu-servers
+
 [slurm-cluster:children]
 slurm-masters
-dgx-servers
-tesla-servers
+slurm-workers
+
+######
+# NFS
+######
+[nfs-server:children]
+login
+
+[nfs-clients:children]
+compute-nodes
 
 ######
 # KUBERNETES
 ######
 [kube-master:children]
-mgmt
+management
 
 [etcd:children]
-mgmt
+management
 
 [k8s-cluster:children]
-kube-node 	 
+kube-node
 
 [calico-rr]
 
 [vault:children]
-mgmt
-
-######
-# CEPH
-######
-[mgrs:children]
-ceph-mgrs
-
-[mons:children]
-mgmt
-
-[osds:children]
-mgmt
-
-[ceph-cluster:children]
-mgrs
-mons
-osds
+management

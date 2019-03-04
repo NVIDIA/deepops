@@ -1,0 +1,146 @@
+---
+# Kubernetes Cluster Playbook
+
+# Install python required for Ansible
+- include: bootstrap-ansible.yml
+  tags:
+    - bootstrap
+
+# Make sure Kubespray submodule is correct
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: make sure kubespray is at the correct version
+      command: git submodule update --init
+      args:
+        chdir: "{{ playbook_dir | dirname }}"
+  vars:
+    ansible_become: no
+  tags:
+    - local
+
+# Set up passwordless sudo and SSH keys if needed
+- include: bootstrap.yml
+  tags:
+    - bootstrap
+
+# Install Kubernetes
+- include: ../kubespray/cluster.yml
+  vars:
+    kubectl_localhost: true
+    kubeconfig_localhost: true
+    helm_enabled: true
+    tiller_node_selectors: "node-role.kubernetes.io/master=''"
+    docker_version: 18.06
+    docker_dns_servers_strict: no
+    docker_storage_options: -s overlay2
+
+# Disable swap (required for k8s), kubespray method doesn't quite cut it
+- hosts: all
+  become: true
+  tasks:
+    - name: remove swap from fstab
+      lineinfile: path=/etc/fstab regexp='swap' state=absent
+    - name: disable swap
+      command: swapoff -a
+  tags:
+    - swap
+
+# Create artifact of kube config
+- hosts: kube-master
+  become: true
+  tasks:
+    - name: set kube config artifact
+      set_stats:
+        data:
+          kube_config: "{{ lookup('file', inventory_dir + '/artifacts/admin.conf') }}"
+      run_once: true
+ 
+# Manage Kubernetes cluster access config file
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: false
+  vars:
+    ansible_become: no
+  tasks:
+    - name: create kube config directory for current user
+      file:
+        path: "{{ lookup('env','HOME') + '/.kube/' }}"
+        state: directory
+    - name: check for kube config file
+      stat:
+        path: "../k8s-config/artifacts/admin.conf"
+      register: kubeconf
+    - name: copy kube config file for current user
+      copy:
+        src: "../k8s-config/artifacts/admin.conf"
+        dest: "{{ lookup('env','HOME') + '/.kube/config' }}"
+        backup: yes
+      when: kubeconf.stat.exists
+  tags:
+    - local
+
+# Install driver and container runtime on GPU servers
+- include: nvidia-driver.yml
+  tags:
+    - nvidia
+- include: nvidia-docker.yml
+  vars:
+    docker_daemon_json:
+      bip: 192.168.99.1/24
+      default-runtime: nvidia
+      runtimes:
+        nvidia:
+          path: /usr/bin/nvidia-container-runtime
+          runtimeArgs: []
+    nvidia_docker2_package_version: "2.0.3+docker18.06.1-1"
+    nvidia_container_runtime_package_version: "2.0.0+docker18.06.1-1"
+  tags:
+    - nvidia
+
+# Install k8s GPU device plugin
+- include: k8s-gpu-plugin.yml
+
+# Manage kubectl binary
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: false
+  vars:
+    ansible_become: no
+  tasks:
+    - name: check for kubectl
+      stat:
+        path: "../k8s-config/artifacts/kubectl"
+      register: kubectl_local
+    - name: modify kubectl permissions
+      file:
+        path: "../k8s-config/artifacts/kubectl"
+        mode: '0755'
+      when: kubectl_local.stat.exists
+    - name: copy kubectl 
+      copy:
+        src: "../k8s-config/artifacts/kubectl"
+        dest: "/usr/local/bin/kubectl"
+      when: kubectl_local.stat.exists
+      become: true
+      ignore_errors: yes
+      register: kubectl_copied
+    - name: check for copied kubectl
+      stat:
+        path: "/usr/local/bin/kubectl"
+      register: kubectl_system
+    - name: modify kubectl permissions
+      file:
+        path: "/usr/local/bin/kubectl"
+        owner: root
+        group: root
+        mode: '0755'
+      ignore_errors: yes
+      when: kubectl_system.stat.exists
+    - name: manually move kubectl binary
+      debug:
+        msg: "Unable to move kubectl, run: sudo cp ./k8s-config/artifacts/kubectl /usr/local/bin"
+      when: kubectl_copied is failed
+  tags:
+    - local

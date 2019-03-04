@@ -1,10 +1,14 @@
+---
 
-# Osquery
-- src: https://github.com/apolloclark/ansible-role-osquery.git
-  name: osquery
-  version: 7fb6547b8813a3d51d0f327eb2fdb54c1031177d
+- src: dev-sec.ssh-hardening
+  version: "6.0.0"
 
-# Docker
-- src: https://github.com/angstwad/docker.ubuntu.git
-  name: docker
-  version: v3.5.2
+- src: unxnn.ansible_users
+  version: 'fca2c5a6962db7696329c32a919d3d88cc8623c4'
+
+- src: geerlingguy.docker
+  version: "2.5.2"
+
+- src: https://github.com/lukeyeager/ansible-role-hosts.git
+  version: '711ba98571f068a8bc6739fa1055ac38fc931010'
+  name: lukeyeager.hosts

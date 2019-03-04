@@ -1,0 +1,35 @@
+slurm_cluster_name: deepops
+slurm_username: slurm
+slurm_password: ReplaceWithASecurePasswordInTheVault
+slurm_user_uid: 22078
+slurm_user_home: /local/slurm
+
+slurm_db_username: slurm
+slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
+
+is_controller: no
+is_compute: no
+
+# Controls when a DOWN node will be returned to service.
+# See "man slurm.conf" for more details.
+slurm_return_to_service: 1
+
+# Sets: GresTypes=gpu
+# Sets: Gres=gpu:{{ gpu_topology|count }}
+# Default: no
+slurm_manage_gpus: no
+
+# Controls the ability of the partition to execute more than one job at a time on each resource (node, socket or core depending upon the value of SelectTypeParameters). If resources are to be over-subscribed, avoiding memory over-subscription is very important. SelectTypeParameters should be configured to treat memory as a consumable resource and the --mem option should be used for job allocations. Sharing of resources is typically useful only when using gang scheduling (PreemptMode=suspend,gang). Possible values for OverSubscribe are "EXCLUSIVE", "FORCE", "YES", and "NO". Note that a value of "YES" or "FORCE" can negatively impact performance for systems with many thousands of running jobs. The default value is "NO". For more information see the following web pages: 
+# Sets: OverSubscribe=EXCLUSIVE
+# Default: NO
+slurm_exclusive: "EXCLUSIVE"
+
+# Maximum run time limit for jobs. Format is minutes, minutes:seconds, hours:minutes:seconds, days-hours, days-hours:minutes, days-hours:minutes:seconds or "UNLIMITED". Time resolution is one minute and second values are rounded up to the next minute. This limit does not apply to jobs executed by SlurmUser or user root.
+# Sets: MaxTime={{ slurm_max_job_timelimit }}
+# Default: INFINITE
+# slurm_max_job_timelimit: INFINITE
+
+# Run time limit used for jobs that don't specify a value. If not set then MaxTime will be used. Format is the same as for MaxTime.
+# Sets: DefaultTime={{ slurm_default_job_timelimit }}
+# Default: <not included>
+# slurm_default_job_timelimit: 

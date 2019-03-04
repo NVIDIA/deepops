@@ -1,0 +1,97 @@
+---
+
+- name: install mariadb
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - mariadb-server
+    - python-mysqldb
+
+- name: install s-nail and ssmtp
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - s-nail
+    - ssmtp
+
+- name: setup slurm db user
+  mysql_user:
+    name: "{{ slurm_db_username }}"
+    password: "{{ slurm_db_password }}"
+    host: localhost
+    priv: "*.*:USAGE/slurm_acct_db.*:ALL"
+    state: present
+
+- name: create slurm directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: slurm
+    mode: 0755
+  with_items:
+    - /etc/slurm
+    - /var/spool/slurm/ctld
+    - /var/log/slurm
+
+- name: copy slurmdbd service file
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+  with_items:
+    - slurmdbd.service
+    - slurmctld.service
+
+- name: copy configuration files
+  template:
+    src: "{{ item }}"
+    dest: "/etc/slurm/{{ item }}"
+  with_items:
+    - slurm.conf
+    - slurmdbd.conf
+  notify:
+    - restart slurmdbd
+    - restart slurmctld
+  tags:
+    - config
+
+- name: start slurmdbd
+  systemd:
+    name: slurmdbd
+    state: started
+    enabled: yes
+    daemon-reload: yes
+
+- name: wait for slurmdbd to be available
+  wait_for:
+    port: 6819
+    delay: 5
+
+- name: create cluster
+  command: sacctmgr -i add cluster {{ slurm_cluster_name }}
+  register: create_cluster_result
+  failed_when: "create_cluster_result.rc != 0 and 'already exists' not in create_cluster_result.stdout"
+  changed_when: "'already exists' not in create_cluster_result.stdout"
+
+
+- name: create account
+  command: sacctmgr -i add account compute-account Description="Compute Accounts" Organization="Prestige"
+  register: create_account_result
+  failed_when: "create_account_result.rc != 0 and 'Nothing new added' not in create_account_result.stdout"
+  changed_when: "'Nothing new added' not in create_account_result.stdout"
+
+- name: create users
+  command: sacctmgr -i create user {{ item }} account=compute-account adminlevel=None
+  register: create_user_result
+  failed_when: "create_user_result.rc != 0 and 'Nothing new added' not in create_user_result.stdout"
+  changed_when: "'Nothing new added' not in create_user_result.stdout"
+  with_items:
+    - "{{ user }}"
+
+- name: start slurmctld
+  systemd:
+    name: slurmctld
+    state: started
+    enabled: yes
+    daemon-reload: yes

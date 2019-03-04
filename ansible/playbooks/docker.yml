@@ -1,6 +1,0 @@
----
-- hosts: dgx-servers
-  become: true
-  roles:
-    - { role: docker, tags: docker }
-

@@ -1,0 +1,108 @@
+#
+# Server Inventory File
+#
+# Uncomment and change the IP addresses in this file to match your environment
+# Define per-group or per-host configuration in group_vars/*.yml
+
+# Management Servers
+# See group_vars/management.yml for configuration
+[management]
+mgmt
+#mgmt       ansible_host=10.0.0.1
+
+
+# Login Servers
+# See group_vars/login.yml for configuration
+[login]
+login01
+#login01    ansible_host=10.0.0.2
+
+# GPU Servers - All GPU servers, including DGX if desired
+# See group_vars/gpu-servers.yml for configuration
+[gpu-servers]
+gpu01
+#gpu01      ansible_host=10.0.2.1
+#gpu02      ansible_host=10.0.2.2
+#gpu03      ansible_host=10.0.2.3
+
+# DGX Servers - DGX specific
+# See group_vars/dgx-servers.yml for configuration
+[dgx-servers]
+#dgx01      ansible_host=10.0.3.1
+#dgx02      ansible_host=10.0.3.2
+#dgx03      ansible_host=10.0.3.3
+
+# Configure nodes for Kubernetes
+# Only add the 'gpu-servers' and 'dgx-servers' group once the GPU/DGX nodes are up and available
+# Kubespray may fail otherwise
+[kube-node:children]
+management
+gpu-servers
+#dgx-servers
+
+[k8s-gpu:children]
+gpu-servers
+#dgx-servers
+
+######
+# SSH connection configuration
+######
+
+[all:vars]
+#ansible_user=ubuntu
+# Configure SSH bastion/jumpbox for the cluster
+#ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
+
+[dgx-servers:vars]
+#ansible_user=dgxuser
+
+###############################################################################
+## You shouldn't need to make changes below here
+################################################################################
+
+######
+# Cluster compute (non-management/login) nodes
+######
+[compute-nodes:children]
+dgx-servers
+gpu-servers
+
+######
+# SLURM
+######
+[slurm-masters:children]
+login
+
+[slurm-workers:children]
+dgx-servers
+gpu-servers
+
+[slurm-cluster:children]
+slurm-masters
+slurm-workers
+
+######
+# NFS
+######
+[nfs-server:children]
+login
+
+[nfs-clients:children]
+compute-nodes
+
+######
+# KUBERNETES
+######
+[kube-master:children]
+management
+
+[etcd:children]
+management
+
+[k8s-cluster:children]
+kube-node
+
+[calico-rr]
+
+[vault:children]
+management

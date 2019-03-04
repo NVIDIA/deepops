@@ -1,0 +1,54 @@
+- name: check distro
+  fail:
+    msg: "distro {{ ansible_facts['distribution'] }} not supported"
+  when: ansible_facts['distribution'] != 'Ubuntu'
+
+- name: check that docker is installed
+  command: which docker
+  changed_when: false
+
+- name: remove packages
+  apt:
+    name:
+      - nvidia-docker
+    state: absent
+    autoremove: yes
+    purge: yes
+
+- name: add key
+  apt_key:
+    url: https://nvidia.github.io/nvidia-docker/gpgkey
+    state: present
+
+- name: add repo
+  get_url:
+    url: "https://nvidia.github.io/nvidia-docker/{{ repo_dist_name }}/nvidia-docker.list"
+    dest: /etc/apt/sources.list.d/nvidia-docker.list
+    mode: 0644
+    owner: root
+    group: root
+
+- name: install packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - "nvidia-docker2{{ nvidia_docker2_package_version | ternary('='+nvidia_docker2_package_version, '') }}"
+    - "nvidia-container-runtime{{ nvidia_container_runtime_package_version | ternary('='+nvidia_container_runtime_package_version, '') }}"
+  register: install_packages
+
+- name: set docker daemon configuration
+  copy:
+    content: "{{ docker_daemon_json | to_nice_json }}"
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 0644
+  register: daemon_json
+
+- name: reload docker service
+  service:
+    name: docker
+    state: reloaded
+  when: install_packages.changed or daemon_json.changed

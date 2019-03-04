@@ -1,0 +1,28 @@
+version: '3.2'
+services:
+  dhcp:
+    build: dhcp
+    network_mode: "host"
+    privileged: true
+    volumes:
+      - type: bind
+        source: ./dhcp/dnsmasq.conf
+        target: /etc/dnsmasq.conf
+  pxe-coreos:
+    network_mode: "host"
+    image: danderson/pixiecore
+    command: ["boot",
+              "https://alpha.release.core-os.net/amd64-usr/current/coreos_production_pxe.vmlinuz",
+              "https://alpha.release.core-os.net/amd64-usr/current/coreos_production_pxe_image.cpio.gz",
+              "--cmdline",
+              "coreos.autologin",
+              "--dhcp-no-bind"]
+  pxe:
+    network_mode: "host"
+    image: deepops/pixiecore
+    command: ["boot",
+    "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/ubuntu-installer/amd64/linux",
+  "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/ubuntu-installer/amd64/initrd.gz",
+              "--cmdline",
+"auto=true priority=critical preseed/url=https://raw.githubusercontent.com/NVIDIA/deepops/refactor/containers/pxe/preseed",
+              "--dhcp-no-bind"]

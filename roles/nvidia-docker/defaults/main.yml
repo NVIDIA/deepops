@@ -1,0 +1,9 @@
+# Package version pinning
+nvidia_docker2_package_version: ''
+nvidia_container_runtime_package_version: ''
+
+docker_daemon_json:
+  runtimes:
+    nvidia:
+      path: /usr/bin/nvidia-container-runtime
+      runtimeArgs: []

@@ -1,0 +1,189 @@
+---
+
+- name: install apt requirements
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - linux-tools-generic  # for cpupower, used in prolog+epilog
+
+- name: fail if NVIDIA driver not installed
+  command: which nvidia-smi
+  changed_when: false
+
+- name: add cgroups to grub options
+  lineinfile:
+    dest: /etc/default/grub
+    insertafter: '^GRUB_CMDLINE_LINUX=[^\\$]'
+    line: 'GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX} cgroup_enable=memory swapaccount=1"'
+  register: update_grub
+
+- name: update grub
+  block:
+    - command: update-grub
+    - name: reboot after updating grub config
+      reboot:
+  when: update_grub.changed
+
+- name: create slurm directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: slurm
+    mode: 0755
+  with_items:
+    - /etc/slurm
+    - /etc/slurm/shared
+    - /etc/slurm/shared/bin
+    - /var/log/slurm
+    - /var/spool/slurm/d
+
+- name: copy slurmdbd service file
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+  with_items:
+    - slurmd.service
+
+- name: copy shared scripts
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/shared/bin/
+    mode: 0755
+  with_fileglob:
+    - shared/bin/*
+
+- name: create prolog directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_items:
+    - /etc/slurm/prolog.d/
+    - /etc/slurm/prolog-exclusive.d/
+  tags:
+    - prolog
+
+- name: create epilog directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_items:
+    - /etc/slurm/epilog.d/
+    - /etc/slurm/epilog-exclusive.d/
+    - /etc/slurm/epilog-last-user.d/
+  tags:
+    - epilog
+
+- name: copy prologs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/prolog.d/
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_fileglob:
+    - prolog.d/*
+  tags:
+    - prolog
+
+- name: copy prologs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/prolog-exclusive.d/
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_fileglob:
+    - prolog-exclusive.d/*
+  tags:
+    - prolog
+
+- name: copy epilogs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/epilog.d/
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_fileglob:
+    - epilog.d/*
+  tags:
+    - epilog
+
+- name: copy epilogs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/epilog-exclusive.d/
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_fileglob:
+    - epilog-exclusive.d/*
+  tags:
+    - epilog
+
+- name: copy epilogs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/epilog-last-user.d/
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_fileglob:
+    - epilog-last-user.d/*
+  tags:
+    - epilog
+
+- name: copy configuration files
+  template:
+    src: "{{ item }}"
+    dest: "/etc/slurm/{{ item }}"
+  with_items:
+    - slurm.conf
+    - cgroup.conf
+    - gres.conf
+  notify:
+    - restart slurmd
+  tags:
+    - config
+
+- name: start slurmd
+  systemd:
+    name: slurmd
+    state: started
+    enabled: yes
+    daemon-reload: yes
+
+- name: install /etc/localusers
+  template:
+    src: etc-localusers
+    dest: "{{ item }}"
+    mode: 0600
+  with_items:
+    - /etc/slurm/localusers.backup
+    - /etc/localusers
+  tags:
+    - test
+
+- name: update /etc/pam.d/sshd
+  lineinfile:
+    path: /etc/pam.d/sshd
+    line: "account required pam_listfile.so item=user sense=allow file=/etc/localusers"
+    insertafter: "PAM configuration for the Secure Shell service"
+    state: present
+  tags:
+    - test
+
+- name: update /etc/pam.d/sshd
+  lineinfile:
+    path: /etc/pam.d/sshd
+    line: "account sufficient /usr/lib/pam_slurm.so"
+    insertafter: "PAM configuration for the Secure Shell service"
+    state: present
+  tags:
+    - test

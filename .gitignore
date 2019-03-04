@@ -1,14 +1,9 @@
-admin.conf
-.Dockerfile
-.idea
-inventory.cfg
-kubectl
+# ansible
 *.retry
-roles/community
-ansible/galaxy
-.terraform
-*.tf*
-config
-get_helm.sh
-virtual/.vagrant
-virtual/*.log
+
+# project-specific
+/admin.conf
+/config/
+/galaxy-roles/
+/k8s-config/
+/kubectl

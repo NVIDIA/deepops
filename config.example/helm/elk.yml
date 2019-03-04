@@ -1,0 +1,43 @@
+logstash:
+  enabled: false
+#  ingress:
+#    enabled: true
+#    hosts:
+#    - logstash.local
+#    annotations:
+#      kubernetes.io/ingress.class: "nginx"
+#      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+#      nginx.ingress.kubernetes.io/rewrite-target: /
+#    # Support HTTPS (required)
+#    tls:
+#    - hosts:
+#      -  logstash.local
+#  nodeSelector:
+#    node-role.kubernetes.io/master: "true"
+#  service:
+#    type: NodePort
+#    nodePort: 30600
+
+kibana:
+  env:
+    ELASTICSEARCH_URL: http://elk-elasticsearch-client:9200
+  ingress:
+    enabled: true
+    hosts:
+    - kibana.local
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/rewrite-target: /
+    # Support HTTPS (required)
+    tls:
+    - hosts:
+      -  kibana.local
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
+  service:
+    type: NodePort
+    nodePort: 30700
+    #internalPort: 443
+    #internalPort: 5601
+    externalPort: 5601

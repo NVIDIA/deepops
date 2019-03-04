@@ -1,0 +1,20 @@
+---
+- hosts: all
+  become: true
+  become_method: sudo
+  vars:
+    docker_daemon_json: {}
+  tasks:
+    - name: create docker config directory
+      file:
+        path: /etc/docker
+        state: directory
+    - name: write new docker config
+      copy:
+        content: "{{ docker_daemon_json | to_nice_json }}"
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: 0644
+  roles:
+    - geerlingguy.docker

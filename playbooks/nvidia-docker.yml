@@ -1,0 +1,12 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: install custom facts module
+      include_role:
+        name: facts
+
+    - name: install nvidia-docker
+      include_role:
+        name: nvidia-docker
+      when: ansible_local['gpus']['count']

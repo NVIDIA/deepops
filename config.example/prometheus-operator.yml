@@ -1,2 +1,0 @@
-nodeSelector:
-  node-role.kubernetes.io/master: "true"

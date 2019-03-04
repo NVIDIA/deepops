@@ -9,22 +9,25 @@ Set up a virtual cluster with DeepOps. Useful for...
 ## Prerequisites
 
 Running DeepOps virtually assumes that the host machine's OS is Ubuntu 16.04 or greater. If this is
-not the case, the `install_dependecies.sh` and `cluster_up.sh` scripts may be modified to work with
+not the case, the `bootstrap_virtual.sh` and `cluster_up.sh` scripts may be modified to work with
 a different OS.
 
 Also, using VMs and optionally GPU passthrough assumes that the host machine has been configured to
 enable virtualization in the BIOS. For instructions on how to accomplish this, refer to the sections
 at the bottom of this README: `Enabling virtualization and GPU passthrough`.
 
-## Install dependencies
+## Bootstrap virtual
 
 This project leverages vagrant and libvirt to spin up the appropriate VMs to model a DeepOps
 cluster. To install the necessary dependencies, such as ansible, vagrant, libvirt, etc, run the
-included `install_dependencies.sh` on the host machine...
+included `setup.sh` on the host machine...
 
 ```
-$ ./install_dependencies.sh
+$ ./setup.sh
 ```
+
+After you've run this, it's a good idea to start a fresh login shell to ensure your environment is up to date.
+For example, you will need to be in the "libvirt" group to mangage VMs, but your current session won't include this group if libvirt was just installed.
 
 ## Start the cluster
 
@@ -34,7 +37,7 @@ To start the cluster, run the `cluster_up.sh` script...
 $ ./cluster_up.sh
 ```
 
-Vagrant will spin up three VMs - login01, mgmt01, and dgx01. Afterwards, the script will use ansible
+Vagrant will spin up three VMs - login01, mgmt, and dgx01. Afterwards, the script will use ansible
 to configure the nodes and set up DeepOps.
 
 The script should complete without errors and three nodes should show up when running `virsh
@@ -44,7 +47,7 @@ list`...
 $ virsh list
  Id    Name                           State
 ----------------------------------------------------
- 7     vagrant_mgmt01                 running
+ 7     vagrant_mgmt                   running
  8     vagrant_login01                running
  9     vagrant_dgx01                  running
 ```
@@ -54,8 +57,6 @@ Connect to any of the nodes via vagrant ssh...
 ```
 $ vagrant ssh dgx01
 ```
-
-NOTE: not all playbooks and portions of DeepOps are currently deployed, this is a WIP
 
 ## Destroy the cluster
 
@@ -201,7 +202,7 @@ options vfio-pci ids=10de:1db1,10de:1ac1
 
 NOTE: First entry is for Volta and the latter for NVSwitch
 
-3. Rebuild the initramfs by running sudo update-initramfs -u and reboot the system.
+3. Rebuild the initramfs by running `sudo update-initramfs -u` and reboot the system.
 
 4. After the system reboots, verify GPU devices and NVSwitches are claimed by vfio_pci driver by
 running `dmesg | grep vfio_pci`...

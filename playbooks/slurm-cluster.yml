@@ -1,0 +1,38 @@
+---
+# Slurm Cluster Playbook
+
+# Install python required for Ansible
+- include: bootstrap-ansible.yml
+
+# Set up passwordless sudo and SSH keys if needed
+- include: bootstrap.yml
+
+# Set root SSH key to allow SSH/ansible when no slurm job running for ansible user
+- hosts: all
+  become: true
+  tasks:
+    - name: Add SSH public key to root user authorized keys
+      authorized_key:
+        user: root
+        state: present
+        key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+
+# Configure hostnames, /etc/hosts
+- include: hosts.yml
+
+- include: docker.yml
+  vars:
+    docker_daemon_json:
+      bip: 192.168.99.1/24
+
+- include: nvidia-driver.yml
+- include: nvidia-docker.yml
+  vars:
+    docker_daemon_json:
+      bip: 192.168.99.1/24
+      default-runtime: nvidia
+      runtimes:
+        nvidia:
+          path: /usr/bin/nvidia-container-runtime
+          runtimeArgs: []
+- include: slurm.yml

@@ -1,6 +1,3 @@
 [submodule "kubespray"]
 	path = kubespray
 	url = https://github.com/kubernetes-incubator/kubespray.git
-[submodule "ceph-ansible"]
-	path = ceph-ansible
-	url = https://github.com/ceph/ceph-ansible.git

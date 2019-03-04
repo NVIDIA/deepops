@@ -1,0 +1,10 @@
+---
+# GPU Server Configuration
+
+# Docker Configuration
+docker_daemon_json:
+  default-runtime: nvidia
+  runtimes:
+    nvidia:
+      path: /usr/bin/nvidia-container-runtime
+      runtimeArgs: []
