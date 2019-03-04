@@ -44,6 +44,9 @@ kubectl get nodes
 # Deploy monitoring (optional)
 ./scripts/k8s_deploy_monitoring.sh
 
+# Deploy container registry (optional)
+ansible-playbook -i virtual/k8s-config/hosts.ini -b --tags container-registry playbooks/k8s-services.yml -e "ansible_user=vagrant ansible_password=vagrant"
+
 #####################################
 # Slurm
 #####################################
