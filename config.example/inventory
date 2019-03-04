@@ -36,10 +36,6 @@ management
 #gpu-servers
 #dgx-servers
 
-[k8s-gpu:children]
-#gpu-servers
-#dgx-servers
-
 ######
 # SSH connection configuration
 ######
@@ -51,7 +47,6 @@ management
 
 [dgx-servers:vars]
 #ansible_user=dgxuser
-
 
 ###############################################################################
 # You shouldn't need to make changes below here
@@ -70,10 +65,13 @@ gpu-servers
 [slurm-masters:children]
 login
 
-[slurm-cluster:children]
-slurm-masters
+[slurm-workers:children]
 dgx-servers
 gpu-servers
+
+[slurm-cluster:children]
+slurm-masters
+slurm-workers
 
 ######
 # NFS

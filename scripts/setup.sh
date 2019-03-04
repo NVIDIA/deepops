@@ -29,6 +29,14 @@ case "$ID_LIKE" in
             sudo yum -y install git >/dev/null
         fi
         git --version
+
+        # Install IPMItool
+        type ipmitool >/dev/null 2>&1
+        if [ $? -ne 0 ] ; then
+            echo "Installing IPMITool..."
+            sudo yum -y install ipmitool >/dev/null
+        fi
+        ipmitool -V
         ;;
     debian*)
         # Update apt cache
@@ -55,7 +63,7 @@ case "$ID_LIKE" in
         python -c 'import netaddr' >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
             echo "Installing Python dependencies..."
-            sudo apt-get -y install python-netaddr >/dev/null
+            sudo apt-get -y install python-netaddr python3-netaddr >/dev/null
         fi
 
         # Install git
@@ -65,6 +73,14 @@ case "$ID_LIKE" in
             sudo apt -y install git >/dev/null
         fi
         git --version
+
+        # Install IPMItool
+        type ipmitool >/dev/null 2>&1
+        if [ $? -ne 0 ] ; then
+            echo "Installing IPMITool..."
+            sudo apt -y install ipmitool >/dev/null
+        fi
+        ipmitool -V
         ;;
     *)
         echo "Unsupported Operating System $ID_LIKE"
