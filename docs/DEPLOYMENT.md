@@ -30,16 +30,15 @@ Deployment Guide
 
 ## Overview
 
-This document is written as a step-by-step guide which should allow for a person with
-minimal Linux system administration experience to install and configure an entire cluster
-from scratch. More experienced administrators should be able to pick and choose items that
-may be useful, it is not required to follow all steps in the guide if existing software or
-infrastructure is to be used.
+This document is a step-by-step guide which enables a user with minimal Linux system administration 
+experience to install and configure an entire cluster. More experienced administrators should pick and 
+choose items that may be useful. It is not required to follow all steps in the guide if existing 
+software or infrastructure is to be used.
 
 Installation involves first bootstraping management server(s) with a Kubernetes installation
 and persistent volume storage using Ceph. Cluster services for provisioning operating
 systems, monitoring, and mirroring container and package repos are then deployed
-on Kubernetes. From there, DGX servers are booted and installed with the DGX base OS,
+on Kubernetes. From there, DGX servers are booted and installed with the DGX OS,
 and Kubernetes is extended across the entire cluster to facilitate job management.
 An optional login server can be used to allow users a place to interact with data locally
 and launch jobs. The Slurm job scheduler can also be installed in parallel with Kubernetes
@@ -52,21 +51,21 @@ For more information on deploying DGX in the datacenter, consult the
 
 ### Hardware Requirements
 
-* 1 or more CPU-only servers for management
-  * 3 or more servers can be used for high-availability
-  * Minimum: 4 CPU cores, 16GB RAM, 100GB hard disk
+* One or more CPU-only servers for management
+  * Three or more servers can be used for high-availability
+  * Minimum: Four CPU cores, 16 GB RAM, 100 GB hard disk
     * More storage required if storing containers in registry, etc.
     * More RAM required if running more services on kubernetes or using one/few servers
   * Ubuntu 16.04 LTS installed
-* 1 or more DGX compute nodes
+* One or more DGX servers
 * Laptop or workstation for provisioning/deployment
-* (optional) 1 CPU-only server for user job launch, data management, etc.
+* (optional) one CPU-only server for user job launch, data management, etc.
 
 ### Software Requirements
 
 The management server(s) should be pre-installed with Ubuntu 16.04 LTS before
-starting the installation steps. If you already have a bare-metal provisioning system,
-it can be used to install Ubuntu on the management server(s). Integrating the DGX Base OS
+starting the installation steps. An existing bare-metal provisioning system can be 
+used to install Ubuntu on the management server(s). Integrating the DGX OS
 with other bare-metal provisioning systems is outside the scope of this project.
 
 A few software package will be installed on the administrator's provisioning system at the begining of the configuration step.
@@ -74,7 +73,7 @@ A few software package will be installed on the administrator's provisioning sys
 ### Network Requirements
 
 The DeepOps service container "DGXie" provides DHCP, DNS, and PXE services to the cluster,
-and will allow you to automatically install the official DGX base OS on DGX servers.
+and will allow you to automatically install the official DGX OS on DGX servers.
 If you elect to use this management service, you will need to have a dedicated network
 segment and subnet which can be controlled by the DHCP server.
 
@@ -89,10 +88,10 @@ segment and subnet which can be controlled by the DHCP server.
    * Deploy Ceph persistent storage on management nodes
 3. Deploy cluster service containers on Kubernetes
    * DHCP/DNS/PXE, container registry, Apt repo, monitoring, alerting
-4. Deploy DGX-1 compute nodes
+4. Deploy DGX-1 servers
    * Install DGX OS (via PXE), bootstrap (via Ansible)
    * Update firmware (via Ansible, if required)
-   * Join DGX-1 compute nodes to Kubernetes cluster and deploy GPU device plugin
+   * Join DGX-1 servers to Kubernetes cluster and deploy GPU device plugin
 5. Deploy login node
    * Install OS (via PXE), bootstrap (via Ansible)
    * Install/build HPC software and modules
@@ -102,7 +101,7 @@ segment and subnet which can be controlled by the DHCP server.
 
 ### 1. Download and configure
 
-To use DeepOps this repository will need to be downloaded onto the administrator's provisioning system. The `bootstrap-mgmt.sh` script will then install the following software packages:
+To use DeepOps, this repository will need to be downloaded onto the administrator's provisioning system. The `bootstrap-mgmt.sh` script will then install the following software packages:
 
 * Ansible
 * Docker
@@ -110,7 +109,7 @@ To use DeepOps this repository will need to be downloaded onto the administrator
 * ipmitool
 * python-netaddr (required by kubespray)
 
-Download the DeepOps repo onto the provisioning system:
+1. Download the DeepOps repo onto the provisioning system:
 
 ```sh
 git clone --recursive https://github.com/NVIDIA/deepops.git
@@ -122,13 +121,13 @@ git submodule update
 > If you did a non-recursive clone, you can later run `git submodule update --init --recursive`
 > to pull down submodules
 
-Install Ansible and other dependencies (if the below script fails follow the official [Ansible installation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) steps to install version 2.5 or later):
+2. Install Ansible and other dependencies (if the below script fails follow the official [Ansible installation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) steps to install version 2.5 or later):
 
 ```sh
 ./scripts/bootstrap-mgmt.sh
 ```
 
-Copy and version control the configuration files. The `config/` directory is ignored by the deepops git repo. Create a seperate git repo to track local configuration changes.
+3. Copy and version control the configuration files. The `config/` directory is ignored by the deepops git repo. Create a seperate git repo to track local configuration changes.
 
 ```sh
 cp -r config.example/ config/
@@ -138,19 +137,19 @@ git add .
 git commit -am 'initial commit' && cd ..
 ```
 
-Modify the `config/inventory` file to set the cluster server hostnames, and optional
+4. Modify the `config/inventory` file to set the cluster server hostnames, and optional
 per-host info like IP addresses and network interfaces. The cluster should
 ideally use DNS, but you can also explicitly set server IP addresses in the
 inventory file.
 
-Optional inventory settings:
+   Optional inventory settings:
 
-* Use the `ansible_host` variable to set alternate IP addresses for servers or for
-servers which do not have resolvable hostnames
-* Use the `ib_bond_addr` variable to configure the infiniband network adapters
-with IPoIB in a single bonded interface
+   * Use the `ansible_host` variable to set alternate IP addresses for servers or for
+     servers which do not have resolvable hostnames
+   * Use the `ib_bond_addr` variable to configure the infiniband network adapters
+     with IPoIB in a single bonded interface
 
-Configure cluster parameters by modifying the various yaml files in the `config/group_vars`
+5. Configure cluster parameters by modifying the various yaml files in the `config/group_vars`
 directory. The cluster-wide global config resides in the `all.yml` file, while
 group-specific options reside in the other files. File names correspond to groups
 in the inventory file, i.e. `[dgx-servers]` in the inventory file corresponds with
@@ -164,7 +163,7 @@ but multiple management servers can be used for high-availability.
 Install the latest version of Ubuntu Server 16.04 LTS on each management server.
 Be sure to enable SSH and record the user and password used during install.
 
-__Bootstrap:__
+#### Bootstrap
 
 The password and SSH keys added to the `ubuntu` user in the `config/group_vars/all.yml`
 file will be configured on the management node. You should add an SSH key to the configuration
@@ -207,9 +206,9 @@ auto ens192
     mtu 1500
 ```
 
-__Kubernetes:__
+#### Kubernetes
 
-Deploy Kubernetes on management servers:
+1. Deploy Kubernetes on management servers
 
 Modify the file `config/kube.yml` if needed and deploy Kubernetes:
 
@@ -224,7 +223,7 @@ ansible management -b -a "apt-mark hold docker-ce"
 ```
 -->
 
-Set up Kubernetes for remote administration:
+2. Set up Kubernetes for remote administration
 
 ```sh
 ansible management -b -m fetch -a "src=/etc/kubernetes/admin.conf flat=yes dest=./"
@@ -256,7 +255,7 @@ NAME      STATUS    ROLES         AGE       VERSION
 mgmt01    Ready     master,node   7m        v1.12.4
 ```
 
-__Helm:__
+#### Helm
 
 Some services are installed using [Helm](https://helm.sh/), a package manager for Kubernetes.
 
@@ -268,7 +267,7 @@ helm init
 
 __Optionally__, If you disabled the `helm_enabled` field you can follow [these steps](helm.md) to manually install and configure helm.
 
-__Ceph:__
+#### Ceph
 
 Persistent storage for Kubernetes on the management nodes is supplied by Ceph. Ceph is provisioned using Rook to simplify deployment:
 <!-- find latest rook version with: helm search rook-ceph -->
@@ -289,7 +288,7 @@ Poll the Ceph status by running:
 
 ### 3. Services
 
-#### __Ingress controller:__
+#### Ingress controller
 
 An ingress controller routes external traffic to services.
 
@@ -305,17 +304,17 @@ You can check the ingress controller logs with:
 kubectl logs -l app=nginx-ingress
 ```
 
-#### __DHCP/DNS/PXE server (DGXie):__
+#### DHCP/DNS/PXE server (DGXie)
 
-DGXie is an all-in-one container for DHCP, DNS, and PXE, specifically tailored to the DGX Base OS.
+DGXie is an all-in-one container for DHCP, DNS, and PXE, specifically tailored to the DGX OS.
 If you already have DHCP, DNS, or PXE servers you can skip this step.
 
 __Setup__
 
 You will need to download the official DGX Base OS ISO image to your provisioning machine.
-The latest DGX Base OS is available via the NVIDIA Entperprise Support Portal (ESP).
+The latest DGX OS is available via the NVIDIA Entperprise Support Portal (ESP).
 
-Copy the DGX Base OS ISO to shared storage via a container running in Kubernetes,
+Copy the DGX OS ISO to shared storage via a container running in Kubernetes,
 substituting the path to the DGX ISO you downloaded (be sure to wait for the `iso-loader` POD
 to be in the *Running* state before attempting to copy the ISO):
 
@@ -386,7 +385,7 @@ ansible-playbook -l management ansible/playbooks/resolv.yml
 
 If you later make changes to `config/dhcpd.hosts.conf` or `machines.json` you can follow the [steps](dgxie.md) to update the dgxie service.
 
-#### __APT Repo:__
+#### APT Repo
 
 Launch service. Runs on port `30000`: http://mgmt:30000
 
@@ -394,7 +393,7 @@ Launch service. Runs on port `30000`: http://mgmt:30000
 kubectl apply -f services/apt.yml
 ```
 
-#### __Container Registry:__
+#### Container Registry
 
 Modify `config/registry.yml` if needed and launch the container registry:
 
@@ -431,16 +430,16 @@ For instructions, see:
 
 https://github.com/NVIDIA/ngc-container-replicator#kubernetes-deployment
 
-### 4. DGX compute nodes:
+### 4. DGX servers
 
-__Provisioning:__
+#### Provisioning
 
-Provision DGX nodes with the official DGX ISO over PXE boot using DGXie.
+Provision DGX servers with the official DGX ISO over PXE boot using DGXie.
 
 > Note: The `scripts/do_ipmi.sh` script has these commands and can be looped over multiple hosts
 
-Disable the DGX IPMI boot device selection 60s timeout, you only need to do this once for
-each DGX, but it is required:
+1. Disable the DGX IPMI boot device selection 60s timeout, you only need to do this once for
+each DGX server, but it is required:
 
 ```sh
 ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> raw 0x00 0x08 0x03 0x08
@@ -448,13 +447,13 @@ ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> raw 0x00 0x08 0x
 
 > Note: The default IPMI username and password is `qct.admin`
 
-Set the DGX to boot from the first disk, using EFI, and to persist the setting:
+2. Set the DGX server to boot from the first disk, using EFI, and to persist the setting:
 
 ```sh
 ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> raw 0x00 0x08 0x05 0xe0 0x08 0x00 0x00 0x00
 ```
 
-Set the DGX to boot from the network in EFI mode, for the next boot only. If you set the DGX
+3. Set the DGX server to boot from the network in EFI mode, for the next boot only. If you set the DGX server
 to always boot from the network, they will get stuck in an install loop.
 The installer should set the system to boot to the first disk via EFI after the install is finished
 
@@ -465,13 +464,13 @@ ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> chassis bootdev 
 > Note: If you have manually modified the boot order in the DGX SBIOS, you may need to manually return
 > it to boot from disk by default before running the IPMI commands above to alter the boot order
 
-Power cycle/on the DGX to begin the install process
+4. Power cycle/on the DGX to begin the install process
 
 ```sh
 ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> power cycle
 ```
 
-You can monitor install progress via the Java web console on the BMC or the Serial-over-LAN interface:
+5. Monitor install progress via the Java web console on the BMC or the Serial-over-LAN interface:
 
 ```sh
 ipmitool -I lanplus -U <username> -P <password> -H <DGX BMC IP> sol activate
@@ -483,7 +482,7 @@ The DGX install process will take approximately 15 minutes. You can tail the DGX
 kubectl logs -f $(kubectl get pod -l app=dgxie -o custom-columns=:metadata.name --no-headers)
 ```
 
-If your DGX are on an un-routable subnet, uncomment the `ansible_ssh_common_args` variable in the
+If your DGX servers are on an un-routable subnet, uncomment the `ansible_ssh_common_args` variable in the
 `config/group_vars/dgx-servers.yml` file and __modify__ the IP address to the IP address of the management server
 with access to the private subnet, i.e.
 
@@ -498,21 +497,23 @@ for `dgxuser` on the DGX when prompted. The default password for `dgxuser` is `D
 ansible dgx-servers -k -a 'hostname'
 ```
 
-__Configuration:__
+#### Configuration
 
-Configuration of the DGX is accomplished via Ansible roles.
+Configuration of the DGX server is accomplished via Ansible roles.
 Various playbooks to install components are available in `ansible/playbooks`.
-Modify the file `ansible/site.yml` to enable or disable various playbooks, or run playbooks
+
+1. Modify the file `ansible/site.yml` to enable or disable various playbooks, or run playbooks
 directly.
 
-Type the default password for `dgxuser` on the DGX when prompted while running the bootstrap playbook.
-The default password for `dgxuser` is `DgxUser123`:
+2. Type the default password for `dgxuser` on the DGX server when prompted while running the bootstrap playbook.
+
+   The default password for `dgxuser` is `DgxUser123`:
 
 ```sh
 ansible-playbook -k -K -l dgx-servers ansible/playbooks/bootstrap.yml
 ```
 
-After running the first command, you may omit the `-K` flag on subsequent runs. The password
+3. After running the first command, the `-K` flag can be omitted on subsequent runs. The password
 for the `deepops` user will also change to the one set in the `groups_vars/all.yml` file
 (by default, this password is `deepops`). Run the site playbook to finish configuring the DGX:
 
@@ -524,7 +525,7 @@ ansible-playbook -k -l dgx-servers ansible/site.yml
 Once the DGX has been configured, re-run the Ansible playbook to generate an `/etc/hosts`
 file.
 
-> You may need to comment out any nodes in the inventory file that are not reachable
+4. If needed, comment out any nodes in the inventory file that are not reachable
 by Ansible if you receive an error like: "'dict object' has no attribute 'ansible_default_ipv4'"
 
 ```sh
@@ -532,22 +533,22 @@ ansible-playbook -k -l all ansible/playbooks/hosts.yml
 ```
 -->
 
-__Adding DGX to Kubernetes:__
+#### Adding DGX Servers to Kubernetes
 
-Create the NVIDIA GPU k8s device plugin daemon set (just need to do this once):
+1. Create the NVIDIA GPU k8s device plugin daemon set (just need to do this once):
 
 ```sh
 kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.11/nvidia-device-plugin.yml
 ```
 
-Modify the `config/inventory` file to add the DGX to the `kube-node` and `k8s-gpu` categories by uncommenting
+2. Modify the `config/inventory` file to add the DGX to the `kube-node` and `k8s-gpu` categories by uncommenting
 the `dgx-servers` entry in these sections
 
 ```sh
 grep TODO:2 config/inventory
 ```
 
-Re-run Kubespray to install Kubernetes on the DGX:
+3. Re-run Kubespray to install Kubernetes on the DGX server:
 
 ```sh
 ansible-playbook -l k8s-cluster -k -v -b --flush-cache --extra-vars "@config/kube.yml" kubespray/cluster.yml
@@ -555,7 +556,7 @@ ansible-playbook -l k8s-cluster -k -v -b --flush-cache --extra-vars "@config/kub
 
 > Note: If the kubesray run fails for any reason, try running again
 
-Check that the installation was successful:
+4. Check that the installation was successful:
 
 ```sh
 $ kubectl get nodes
@@ -564,13 +565,13 @@ dgx01     Ready     node          3m        v1.11.0
 mgmt01    Ready     master,node   2d        v1.11.0
 ```
 
-Place a hold on the `docker-ce` package so it doesn't get upgraded:
+5. Place a hold on the `docker-ce` package so it doesn't get upgraded:
 
 ```sh
 ansible dgx-servers -k -b -a "apt-mark hold docker-ce"
 ```
 
-Install the nvidia-container-runtime on the DGX:
+6. Install the nvidia-container-runtime on the DGX server:
 
 > Note the the nvidia-container-runtime is already installed on DGX with OS version 4.04 or later and this step can be ignored.
 
@@ -578,7 +579,7 @@ Install the nvidia-container-runtime on the DGX:
 ansible-playbook -l k8s-gpu -k -v -b --flush-cache --extra-vars "@config/kube.yml" playbooks/k8s-gpu.yml
 ```
 
-Test that GPU support is working:
+7. Test that GPU support is working:
 
 ```sh
 kubectl apply -f tests/gpu-test-job.yml # Note: this will take several minutes to pull down the docker image
@@ -586,7 +587,7 @@ kubectl exec -ti gpu-pod -- nvidia-smi -L # Note: this may fail if the docker im
 kubectl delete pod gpu-pod
 ```
 
-Configure the DGX servers to allow access to the local (insecure) container registry:
+8. Configure the DGX servers to allow access to the local (insecure) container registry:
 
 ```sh
 ansible-playbook -k ansible/playbooks/docker.yml
@@ -599,13 +600,13 @@ kubectl delete deployments iso-loader
 
 ### 5. Monitoring and Logging
 
-#### __Monitoring:__
+#### Monitoring
 
 Cluster monitoring is provided by Prometheus and Grafana.
 
 __Optionally__, Modify `config/prometheus-operator.yml` and `config/kube-prometheus.yml`.
 
-Deploy the monitoring and alerting stack:
+1. Deploy the monitoring and alerting stack:
 
 ```sh
 helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
@@ -614,7 +615,7 @@ kubectl create configmap kube-prometheus-grafana-gpu --from-file=config/gpu-dash
 helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values config/kube-prometheus.yml
 ```
 
-To collect GPU metrics, label each GPU node and deploy the DCGM Prometheus exporter:
+2. To collect GPU metrics, label each GPU node and deploy the DCGM Prometheus exporter:
 
 ```sh
 kubectl label nodes <gpu-node-name> hardware-type=NVIDIAGPU
@@ -637,7 +638,7 @@ Service addresses:
 > Where `mgmt` represents a DNS name or IP address of one of the management hosts in the kubernetes cluster.
 The default login for Grafana is `admin` for the username and password.
 
-#### __Logging:__
+#### Logging
 
 Centralized logging is provided by Filebeat, Elasticsearch and Kibana
 
@@ -690,7 +691,7 @@ Service addresses:
 
 If there is an issue, follow these [docs](elk.md) to delete the logging stack.
 
-### 6. Login server:
+### 6. Login server
 
 > Note: If you do not require a login node, you may skip this section
 
@@ -699,7 +700,7 @@ add login node(s) to the kubernetes cluster, add login servers to the kubernetes
 in the `config/inventory` file and re-run the ansible playbooks as above for management and
 DGX servers.
 
-__Provisioning:__
+#### Provisioning
 
 Modify `config/dhcpd.hosts.conf` to add a static IP lease for each login node
 if required. IP addresses should match those used in the `config/inventory` file.
@@ -727,7 +728,7 @@ on the next boot only to avoid a re-install loop
 
 If manually configuring the install, be sure the initial user matches the user in `config/group_vars/login.yml`.
 
-__Configuration:__
+#### Configuration
 
 Once OS installation is complete, bootstrap and configure the login node(s) via Ansible.
 
@@ -750,7 +751,7 @@ ansible-playbook -k -l login ansible/site.yml
 
 ### 7. Additional Components
 
-#### __Slurm:__
+#### Slurm
 
 Slurm overview: https://slurm.schedmd.com/overview.html
 
@@ -892,7 +893,7 @@ module load HPL
 
 #### Cluster-wide
 
-__Slurm updates:__
+##### Slurm updates
 
 ```sh
 # whole shebang:
@@ -901,13 +902,13 @@ ansible-playbook -k -l slurm-cluster ansible/playbooks/slurm.yml
 ansible-playbook -k -l compute-nodes --tags prolog,epilog -e 'gather_facts=no' ansible/playbooks/slurm.yml
 ```
 
-__Modify GPU drivers:__
+##### Modify GPU drivers
 
 ```sh
 ansible-playbook -k -l <dgx-hostname> playbooks/gpu-driver.yml
 ```
 
-__Extra:__
+#### Extra
 
 Set up `/raid` RAID-0 array cache (can also add `rebuild-raid` to PXE boot cmdline when installing):
 
@@ -923,12 +924,12 @@ ansible dgx-servers -k -b -a "nvidia-smi nvlink -sc 0bz"
 
 ### Kubernetes
 
-__Managing DGX scheduler allocation:__
+#### Managing DGX scheduler allocation
 
 Once the DGX compute nodes have been added to Kubernetes and Slurm, you can use the `scripts/doctl.sh`
 script to manage which scheduler each DGX is allowed to run jobs from.
 
-__NVIDIA GPU Cloud Container Registry (NGC):__
+#### NVIDIA GPU Cloud Container Registry (NGC)
 
 Create secret for registry login:
 
@@ -943,10 +944,9 @@ Add to Kubernetes pod spec:
     - name: ngc
 ```
 
-__Upgrading Helm Charts:__
+#### Upgrading Helm Charts
 
-If you make changes to configuration or want to update Helm charts, you can use the `helm upgrade`
-command to apply changes
+Use the `helm upgrade` command to make changes to the Helm configuration or to update Helm charts.
 
 Show currently installed releases:
 
@@ -963,7 +963,7 @@ helm upgrade --values config/ingress.yml <release_name> stable/nginx-ingress
 Where `<release_name>` is the name of the deployed ingress controller chart obtained from
 `helm list`.
 
-#### __Kubernetes user access:__
+#### Kubernetes user access
 
 __TODO__:
 
@@ -1031,7 +1031,7 @@ scp mgmt01:~/<username>.kubeconfig ~/.kube/config
 
 Where `<username>` is the name of the new user account being created
 
-#### __Kubernetes add-ons:__
+#### Kubernetes add-ons
 
 __Service Mesh:__
 
@@ -1100,16 +1100,15 @@ ansible all -m debug -a "var=ansible_default_ipv4"
 
 Where `ansible_default_ipv4` is the variable in question
 
-__Rook:__
+### Rook
 
-If you need to remove Rook for any reason, here are the steps:
+If needed, here are the steps to remove Rook:
 
 ```sh
 kubectl delete -f services/rook-cluster.yml
 helm del --purge rook-ceph
 ansible management -b -m file -a "path=/var/lib/rook state=absent"
 ```
-
 
 ## Open Source Software
 
