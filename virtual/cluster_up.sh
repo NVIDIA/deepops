@@ -52,4 +52,4 @@ ansible-playbook -i virtual/k8s-config/hosts.ini -b --tags container-registry pl
 #####################################
 
 # Deploy the Slurm cluster
-ansible-playbook -i virtual/config/inventory -e "ansible_user=vagrant ansible_password=vagrant" -l slurm-cluster playbooks/slurm-cluster.yml
+#ansible-playbook -i virtual/config/inventory -e "ansible_user=vagrant ansible_password=vagrant" -l slurm-cluster playbooks/slurm-cluster.yml
