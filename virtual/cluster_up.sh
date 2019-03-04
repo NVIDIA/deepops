@@ -23,7 +23,7 @@ cp virtual/virtual_inventory ${DEEPOPS_CONFIG_DIR}/inventory
 #####################################
 
 # Deploy the K8s cluster
-ansible-playbook -i virtual/k8s-config/hosts.ini -b playbooks/k8s-cluster.yml -e "ansible_user=vagrant ansible_password=vagrant"
+ansible-playbook -i virtual/k8s-config/hosts.ini -b playbooks/k8s-cluster.yml
 
 # Export k8s config so we can use it throughout the rest of the script
 export KUBECONFIG=virtual/k8s-config/artifacts/admin.conf
@@ -49,4 +49,4 @@ kubectl get nodes
 #####################################
 
 # Deploy the Slurm cluster
-#ansible-playbook -i virtual/config/inventory -e "ansible_user=vagrant ansible_password=vagrant" -l slurm-cluster playbooks/slurm-cluster.yml
+#ansible-playbook -i virtual/config/inventory -l slurm-cluster playbooks/slurm-cluster.yml
