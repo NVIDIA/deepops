@@ -9,6 +9,9 @@ The DeepOps project facilitates deployment of GPU servers and multi-node
 GPU clusters for Deep Learning and HPC environments, in an on-prem,
 optionally air-gapped datacenter or in the cloud.
 
+> NOTE: we recommend using the most recent release branch for stable code.
+> The `master` branch is used for development and as such may be unstable or even broken at any point in time.
+
 ## Deployment Options
 
 ### Kubernetes
