@@ -36,20 +36,20 @@ kubectl get nodes
 #kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
 
 # Deploy dashboard (optional)
-#./scripts/k8s_deploy_dashboard_user.sh
+./scripts/k8s_deploy_dashboard_user.sh
 
 # Deploy rook (optional, but highly recommended)
-#./scripts/k8s_deploy_rook.sh
+./scripts/k8s_deploy_rook.sh
 
 # Deploy monitoring (optional)
-#./scripts/k8s_deploy_monitoring.sh
+./scripts/k8s_deploy_monitoring.sh
 
 # Deploy container registry (optional)
-#ansible-playbook -i virtual/k8s-config/hosts.ini -b --tags container-registry playbooks/k8s-services.yml -e "ansible_user=vagrant ansible_password=vagrant"
+ansible-playbook -i virtual/k8s-config/hosts.ini -b --tags container-registry playbooks/k8s-services.yml -e "ansible_user=vagrant ansible_password=vagrant"
 
 #####################################
 # Slurm
 #####################################
 
 # Deploy the Slurm cluster
-#ansible-playbook -i virtual/config/inventory -e "ansible_user=vagrant ansible_password=vagrant" -l slurm-cluster playbooks/slurm-cluster.yml
+ansible-playbook -i virtual/config/inventory -e "ansible_user=vagrant ansible_password=vagrant" -l slurm-cluster playbooks/slurm-cluster.yml
