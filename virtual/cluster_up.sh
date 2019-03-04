@@ -23,16 +23,16 @@ cp virtual/virtual_inventory ${DEEPOPS_CONFIG_DIR}/inventory
 #####################################
 
 # Deploy the K8s cluster
-#ansible-playbook -i virtual/k8s-config/hosts.ini -b playbooks/k8s-cluster.yml -e "ansible_user=vagrant ansible_password=vagrant"
+ansible-playbook -i virtual/k8s-config/hosts.ini -b playbooks/k8s-cluster.yml -e "ansible_user=vagrant ansible_password=vagrant"
 
 # Export k8s config so we can use it throughout the rest of the script
-#export KUBECONFIG=virtual/k8s-config/artifacts/admin.conf
+export KUBECONFIG=virtual/k8s-config/artifacts/admin.conf
 
 # Put local kubectl in the PATH for following commands and scripts
-#export PATH="$(pwd)/virtual/k8s-config/artifacts:${PATH}"
+export PATH="$(pwd)/virtual/k8s-config/artifacts:${PATH}"
 
 # Verify that the cluster is up
-#kubectl get nodes
+kubectl get nodes
 #kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
 
 # Deploy dashboard (optional)
