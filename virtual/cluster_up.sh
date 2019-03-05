@@ -25,11 +25,8 @@ cp virtual/virtual_inventory ${DEEPOPS_CONFIG_DIR}/inventory
 # Deploy the K8s cluster
 ansible-playbook -i virtual/k8s-config/hosts.ini -b playbooks/k8s-cluster.yml -e "ansible_user=vagrant ansible_password=vagrant"
 
-# Export k8s config so we can use it throughout the rest of the script
-export KUBECONFIG=virtual/k8s-config/artifacts/admin.conf
-
-# Put local kubectl in the PATH for following commands and scripts
-export PATH="$(pwd)/virtual/k8s-config/artifacts:${PATH}"
+# Source K8s environment for interacting with the cluster
+source ./virtual/k8s_environment.sh
 
 # Verify that the cluster is up
 kubectl get nodes
