@@ -67,7 +67,7 @@ popd
 ${KUBEFLOW_SRC}/scripts/kfctl.sh apply k8s
 popd
 
-jhip=$(kubectl get nodes --no-headers -o custom-columns=:.status.addresses.*.address | cut -f1 -d, | head -1)
+jhip=$(kubectl get nodes --no-headers -o custom-columns=:.status.addresses.*.address -l node-role.kubernetes.io/master= | cut -f1 -d, | head -1)
 jhnp=$(kubectl -n kubeflow get svc jupyter-lb --no-headers -o custom-columns=:.spec.ports.*.nodePort)
 
 echo
