@@ -7,30 +7,21 @@
 # Management Servers
 # See group_vars/management.yml for configuration
 [management]
-mgmt
-#mgmt       ansible_host=10.0.0.1
-
+virtual-mgmt
 
 # Login Servers
 # See group_vars/login.yml for configuration
 [login]
-login01
-#login01    ansible_host=10.0.0.2
+virtual-login
 
 # GPU Servers - All GPU servers, including DGX if desired
 # See group_vars/gpu-servers.yml for configuration
 [gpu-servers]
-gpu01
-#gpu01      ansible_host=10.0.2.1
-#gpu02      ansible_host=10.0.2.2
-#gpu03      ansible_host=10.0.2.3
+virtual-gpu01
 
 # DGX Servers - DGX specific
 # See group_vars/dgx-servers.yml for configuration
 [dgx-servers]
-#dgx01      ansible_host=10.0.3.1
-#dgx02      ansible_host=10.0.3.2
-#dgx03      ansible_host=10.0.3.3
 
 # Configure nodes for Kubernetes
 # Only add the 'gpu-servers' and 'dgx-servers' group once the GPU/DGX nodes are up and available
