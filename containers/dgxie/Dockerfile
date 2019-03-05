@@ -18,6 +18,8 @@ RUN mkdir -p /www /var/run/vsftpd/empty
     #echo 'pasv_max_port=10100' >> /etc/vsftpd.conf && \
     #echo 'pasv_min_port=10090' >> /etc/vsftpd.conf
 
+RUN apt-get -y install nfs-common
+
 COPY get_hosts.py /usr/local/bin
 COPY rest_api.py /usr/local/bin
 COPY api.py /api.py

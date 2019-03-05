@@ -6,6 +6,8 @@
 bootMode: DGX
 mntPath: /data
 isoPath: /iso
+isoNfsWrapper: false
+nfsDir: '/data/iso'
 dgxNetInt: enp1s0f0
 dgxDisk: sda
 dgxKbd: us

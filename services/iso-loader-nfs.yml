@@ -1,0 +1,83 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: iso-loader-nfs
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: iso-loader-nfs
+    spec:
+      containers:
+      - name: iso-loader-nfs
+        image: djnos/docker-nfs-server:feat-qwant
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        env:
+        - name: NFS_EXPORT_0
+          value: '/data                  *(ro,no_subtree_check)'
+        resources:
+          limits:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: cephfs
+          mountPath: /data
+        - name: modules
+          mountPath: /lib/modules
+          readOnly: true
+      volumes:
+      - name: cephfs
+        flexVolume:
+          driver: ceph.rook.io/rook
+          fsType: ceph
+          options:
+            fsName: cephfs
+            clusterName: rook-ceph
+      - name: modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: nfs-service
+spec:
+  selector:
+    app: iso-loader-nfs
+  ports:
+    - name: tcp-2049
+      port: 2049
+      protocol: TCP
+      targetPort: 2049
+    - name: udp-2049
+      port: 2049
+      protocol: UDP
+      targetPort: 2049
+    - name: tcp-111
+      port: 111
+      protocol: TCP
+      targetPort: 111
+    - name: udp-111
+      port: 111
+      protocol: UDP
+      targetPort: 111
+    - name: tcp-32765
+      port: 32765
+      protocol: TCP
+      targetPort: 32765
+    - name: udp-32765
+      port: 32765
+      protocol: UDP
+      targetPort: 32765
+    - name: tcp-32767
+      port: 32767
+      protocol: TCP
+      targetPort: 32767
+    - name: udp-32767
+      port: 32767
+      protocol: UDP
+      targetPort: 32767

@@ -2,6 +2,7 @@
 
 ## CONFIG
 MNT=${MNT:-/data}
+NFS_DIR=${NFS_DIR:-}
 ISO=${ISO:-/iso}
 PRESEED=${ISO}/preseed/pxe.template.seed
 INT=${INT:-enp1s0f0}
@@ -28,6 +29,11 @@ NTP=${NTP:-}
 ###
 
 mkdir -p "${ISO}"
+
+if [ ! -z ${NFS_SERVICE_SERVICE_HOST} ]; then
+  mkdir -p ${MNT} || true
+  mount -o nolock -t nfs ${NFS_SERVICE_SERVICE_HOST}:${NFS_DIR} ${MNT}
+fi
 
 # Check for mounted DGX Server ISO
 find ${PRESEED} >/dev/null 2>&1

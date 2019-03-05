@@ -33,8 +33,10 @@ spec:
               mountPath: "/etc/machines/"
             - name: dhcp-leases
               mountPath: "/var/lib/misc/"
+{{- if not .Values.isoNfsWrapper }}
             - name: cephfs
               mountPath: "{{ .Values.mntPath }}"
+{{- end }}
           env:
             # Path in container to storage containing ISO image
             - name: MNT
@@ -104,6 +106,10 @@ spec:
               value: "{{ .Values.extraPackages }}"
             - name: NTP
               value: "{{ .Values.ntp }}"
+{{- if .Values.isoNfsWrapper }}
+            - name: NFS_DIR
+              value: "{{ .Values.nfsDir }}"
+{{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}
@@ -125,6 +131,7 @@ spec:
         - name: pxe-machines-vol
           configMap:
             name: pxe-machines
+{{- if not .Values.isoNfsWrapper }}
         - name: cephfs
           flexVolume:
             driver: ceph.rook.io/rook
@@ -133,6 +140,7 @@ spec:
               fsName: cephfs
               clusterNamespace: rook-ceph
               path: /iso
+{{- end }}
         - name: dhcp-leases
           hostPath:
             path: /var/lib/dhcp
