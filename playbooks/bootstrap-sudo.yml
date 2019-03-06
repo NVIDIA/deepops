@@ -1,0 +1,35 @@
+---
+- hosts: all
+  tasks:
+    - name: check for presence of sudo
+      command: which sudo
+      changed_when: false
+      failed_when: false
+      register: sudo
+
+    # If sudo is installed, try `become_method=sudo`
+    - name: use method "sudo" (requires password for "{{ ansible_user }}")
+      set_fact: method=sudo
+      when: sudo.rc == 0
+
+    # Otherwise, use `become_method=su`
+    - name: use method "su" (requires password for "root")
+      set_fact: method=su
+      when: sudo.rc != 0
+
+    - name: install sudo package
+      package: name=sudo
+      become: true
+      become_method: "{{ method }}"
+
+    - name: "grant password-less sudo to user \"{{ ansible_user }}\""
+      copy:
+        content: "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL"
+        dest: "/etc/sudoers.d/{{ ansible_user | default(ansible_env.SUDO_USER) }}"
+      become: true
+      become_method: "{{ method }}"
+
+    - debug:
+        msg: Now, you shouldn't need to use -K/--ask-become-pass for these hosts anymore.
+      run_once: true
+      delegate_to: localhost
