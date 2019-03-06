@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+{% for server in dns_config_servers %}
+nameserver {{ server }}
+{% endfor %}
+{% if dns_config_search %}
+search {{ dns_config_search | join(' ') }}
+{% endif %}

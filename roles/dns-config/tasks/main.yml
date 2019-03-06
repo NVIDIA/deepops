@@ -1,0 +1,20 @@
+---
+- name: disable systemd-resolved
+  service:
+    name: systemd-resolved
+    state: stopped
+    enabled: no
+
+- name: install /etc/resolv.conf
+  template:
+    src: resolv.conf.j2
+    dest: /etc/resolv.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: update /etc/nsswitch.conf
+  lineinfile:
+    path: /etc/nsswitch.conf
+    regexp: '^hosts:'
+    line: 'hosts: files dns'
