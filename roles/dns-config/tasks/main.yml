@@ -1,9 +1,23 @@
 ---
-- name: disable systemd-resolved
+- name: disable services (xenial)
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  loop:
+    - resolvconf
+    - systemd-resolved
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == '16'
+
+- name: disable services (bionic)
   service:
     name: systemd-resolved
     state: stopped
     enabled: no
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == '18'
+
+- debug:
+    msg: "{{ansible_distribution}} {{ansible_distribution_major_version}}"
 
 - name: install /etc/resolv.conf
   template:
