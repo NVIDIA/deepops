@@ -1,0 +1,53 @@
+# We cannot move the home directory of the currently logged in user
+# So, we create a temporary user and login with that
+
+---
+- name: create {{ move_home_dirs_new_root }}
+  file:
+    path: "{{ move_home_dirs_new_root }}"
+    state: directory
+
+- name: generate password for temporary user
+  set_fact:
+    tmp_user_password: "{{ pwgen }}"
+  vars:
+    pwgen: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+
+- name: delete temporary user
+  user:
+     name: "{{ tmp_user }}"
+     state: absent
+     remove: yes
+     force: yes
+
+- name: create temporary user
+  user:
+    name: "{{ tmp_user }}"
+    home: "{{ move_home_dirs_new_root }}/{{ tmp_user }}"
+    password: "{{ tmp_user_password | password_hash('sha512') }}"
+
+- name: grant sudo to temporary user
+  copy:
+    content: "{{ tmp_user }} ALL=(ALL) NOPASSWD:ALL"
+    dest: "/etc/sudoers.d/{{ tmp_user }}"
+
+- name: move each user
+  include_tasks: move_user.yml
+  vars:
+    ansible_user: "{{ tmp_user }}"
+    ansible_password: "{{ tmp_user_password }}"
+  loop: "{{user_list.stdout_lines}}"
+  loop_control:
+    loop_var: user
+
+- name: revoke sudo for temporary user
+  file:
+    path: "/etc/sudoers.d/{{ tmp_user }}"
+    state: absent
+
+- name: delete temporary user
+  user:
+     name: "{{ tmp_user }}"
+     state: absent
+     remove: yes
+     force: yes
