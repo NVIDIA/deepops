@@ -1,4 +1,11 @@
 ---
+- name: assert that variables are defined
+  fail:
+    msg: "Variable '{{ item }}' is not defined"
+  when: item not in vars
+  with_items:
+    - dns_config_servers
+
 - name: disable services (xenial)
   service:
     name: "{{ item }}"
