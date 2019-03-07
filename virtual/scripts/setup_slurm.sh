@@ -10,6 +10,9 @@ ROOT_DIR="${SCRIPT_DIR}/../.."
 # Configure slurm in virtual cluster 
 #####################################
 
+# Move working directory to root of DeepOps repo
+cd "${ROOT_DIR}" || exit 1
+
 ansible-playbook \
 	-i "${VIRT_DIR}/config/inventory" \
 	-l slurm-cluster \

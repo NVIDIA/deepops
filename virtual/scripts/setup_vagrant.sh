@@ -12,8 +12,12 @@ VIRT_DIR="${SCRIPT_DIR}/.."
 # Ensure we're in the right directory for Vagrant
 cd "${VIRT_DIR}" || exit 1
 
+# Make sure our environment is clean
+vagrant global-status --prune
+
 # Start vagrant via libvirt - set up the VMs
 vagrant up --no-parallel --provider=libvirt
+
 # Show the running VMs
 virsh list
 

@@ -10,12 +10,15 @@ ROOT_DIR="${SCRIPT_DIR}/../.."
 # Configure k8s in virtual cluster 
 #####################################
 
+# Move working directory to root of DeepOps repo
+cd "${ROOT_DIR}" || exit 1
+
 # Create the K8s config (for mgmt=10.0.0.2, gpu01=10.0.0.11 nodes)
 K8S_CONFIG_DIR="${VIRT_DIR}/k8s-config" "${ROOT_DIR}/scripts/k8s_inventory.sh" 10.0.0.2 10.0.0.11
 cp "${VIRT_DIR}/k8s_hosts.ini" "${VIRT_DIR}/k8s-config/hosts.ini"
 
 # Deploy the K8s cluster
-ansible-playbook -i "${VIRT_DIR}/k8s-config/hosts.ini" -b "${ROOT_DIR}playbooks/k8s-cluster.yml"
+ansible-playbook -i "${VIRT_DIR}/k8s-config/hosts.ini" -b "${ROOT_DIR}/playbooks/k8s-cluster.yml"
 
 # Source K8s environment for interacting with the cluster
 # shellcheck source=../k8s_environment.sh

@@ -9,6 +9,12 @@ set -ex
 VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${VIRT_DIR}/.."
 
+# Ensure working directory is root
+cd "${ROOT_DIR}"
+
+# Ensure Ansible Galaxy dependencies are present
+ansible-galaxy install -r "${ROOT_DIR}/requirements.yml"
+
 # Create the config for deepops servers (and use the virtual inventory)
 export DEEPOPS_CONFIG_DIR="${VIRT_DIR}/config"
 cp -r "${ROOT_DIR}/config.example/" "${DEEPOPS_CONFIG_DIR}/"
@@ -24,5 +30,5 @@ fi
 
 # Set up Slurm (disabled by default)
 if [ -n "${DEEPOPS_ENABLE_SLURM}" ]; then
-	"${VIRT_DIR}"/scripts/setup_slum.sh
+	"${VIRT_DIR}"/scripts/setup_slurm.sh
 fi
