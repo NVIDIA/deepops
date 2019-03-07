@@ -1,33 +1,39 @@
 ---
-# file roles/yp-client/tasks/main.yml
+- name: assert that variables are defined
+  fail:
+    msg: "Variable '{{ item }}' is not defined"
+  when: item not in vars
+  with_items:
+    - nis_domain
+    - nis_server
 
 - name: prevent daemons from starting when installing packages, particularly ypbind
-  template:
-    src: templates/policy-rc.d.j2
-    dest: "{{ policy_rc_d }}"
+  copy:
+    src: policy-rc.d
+    dest: /usr/sbin/policy-rc.d
     owner: root
     group: root
     mode: 0700
 
-- name: nis | ensure rpcbind is running
-  service: name=rpcbind state=started enabled=yes
-
-- name: nis | install Ubuntu packages
-  action: apt name=nis state=latest
+- name: install Ubuntu packages
+  apt: name=nis,rpcbind state=latest
   when: ansible_os_family == "Debian"
 
-- name: nis | install CentOS NIS packages
-  action: yum name=ypbind state=latest
+- name: install CentOS NIS packages
+  yum: name=ypbind state=latest
   when: ansible_os_family == "RedHat"
 
-- name: nis | set server
+- name: ensure rpcbind is running
+  service: name=rpcbind state=started enabled=yes
+
+- name: set server
   lineinfile:
     dest: /etc/yp.conf
     regexp: '^domain'
-    line: 'domain {{ nisdomain }} server {{ nisserver }}'
+    line: 'domain {{ nis_domain }} server {{ nis_server }}'
   notify: "restart nis"
 
-- name: nis | create default domain name file
+- name: create default domain name file
   file:
     path: /etc/defaultdomain
     owner: root
@@ -35,14 +41,14 @@
     mode: "0644"
     state: touch
 
-- name: nis | configure yp domainname
+- name: configure yp domainname
   lineinfile:
     dest: /etc/defaultdomain
     regexp: '^'
-    line: '{{ nisdomain }}'
+    line: '{{ nis_domain }}'
   notify: "restart nis"
 
-- name: nis | configure nsswitch.conf
+- name: configure nsswitch.conf
   lineinfile:
     dest: /etc/nsswitch.conf
     regexp: "{{ item.regexp }}"
@@ -54,13 +60,13 @@
     - { regexp: '^automount', line: 'automount: files nis' }
   notify: "restart nis"
 
-- name: nis | make sure rpcbind is running
+- name: make sure rpcbind is running
   service: name=rpcbind state=started enabled=yes
-  
-- name: nis | make sure ypbind is running
+
+- name: make sure ypbind is running
   service: name=nis state=started enabled=yes
 
 - name: remove file to prevent starting services at install time
   file:
-    path: "{{ policy_rc_d }}"
+    path: /usr/sbin/policy-rc.d
     state: absent
