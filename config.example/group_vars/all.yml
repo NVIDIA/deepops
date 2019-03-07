@@ -5,6 +5,10 @@
 #docker_daemon_json:
 #  bip: 192.168.99.1/24
 
+# dns-config
+#dns_config_servers: [8.8.8.8]
+#dns_config_search: [example.com]
+
 # NIS configuration
 #nisdomain: example.com
 #nisserver: 10.0.0.1

@@ -1,0 +1,31 @@
+---
+- name: disable services (xenial)
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  loop:
+    - resolvconf
+    - systemd-resolved
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == '16'
+
+- name: disable services (bionic)
+  service:
+    name: systemd-resolved
+    state: stopped
+    enabled: no
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == '18'
+
+- name: install /etc/resolv.conf
+  template:
+    src: resolv.conf.j2
+    dest: /etc/resolv.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: update /etc/nsswitch.conf
+  lineinfile:
+    path: /etc/nsswitch.conf
+    regexp: '^hosts:'
+    line: 'hosts: files dns'
