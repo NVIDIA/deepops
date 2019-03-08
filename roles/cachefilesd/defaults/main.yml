@@ -1,0 +1,5 @@
+---
+cachefilesd_package_state: present
+cachefilesd_enabled: present
+cachefilesd_cache_dir: /var/cache/fscache
+cachefilesd_cache_tag: null
