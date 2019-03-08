@@ -1,6 +1,10 @@
 ---
 # DGX Server Configuration
 
+# cachefilesd
+cachefilesd_cache_dir: /raid
+cachefilesd_cache_tag: dgx1cache
+
 # Collectd
 collectd_python_modules:
   - dcgm_collectd

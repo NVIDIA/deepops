@@ -11,7 +11,9 @@
 ###############################################################################
 
 dir {{ cachefilesd_cache_dir }}
+{% if cachefilesd_cache_tag %}
 tag {{ cachefilesd_cache_tag }}
+{% endif %}
 brun 25%
 bcull 10%
 bstop 3%
