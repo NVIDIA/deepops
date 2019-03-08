@@ -1,0 +1,7 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Install NVIDIA Machine Learning packages
+      include_role:
+        name: nvidia-ml
