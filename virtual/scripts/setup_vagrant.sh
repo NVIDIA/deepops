@@ -6,7 +6,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 VIRT_DIR="${SCRIPT_DIR}/.."
 
 #####################################
-# Set up VMs for virtual cluster 
+# Set up VMs for virtual cluster
 #####################################
 
 # Ensure we're in the right directory for Vagrant
@@ -16,7 +16,7 @@ cd "${VIRT_DIR}" || exit 1
 vagrant global-status --prune
 
 # Start vagrant via libvirt - set up the VMs
-vagrant up --no-parallel --provider=libvirt
+vagrant up --provider=libvirt
 
 # Show the running VMs
 virsh list

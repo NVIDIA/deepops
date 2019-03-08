@@ -2,11 +2,10 @@ VAGRANTFILE_API_VERSION = "2"
 BOX_IMAGE = "generic/ubuntu1804"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.hostmanager.enabled = true
   config.hostmanager.manage_host = true
   config.hostmanager.manage_guest = true
-  config.hostmanager.ignore_private_ip = false
   config.hostmanager.include_offline = true
+  config.vm.provision :hostmanager
 
   config.vm.define "virtual-mgmt" do |mgmt|
     mgmt.vm.provider "libvirt" do |v|
