@@ -8,4 +8,3 @@
   become: yes
   roles:
     - { role: nfs, nfs_is_client: yes }
-    - cachefilesd
