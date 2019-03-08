@@ -1,30 +1,25 @@
 ---
-- hosts: 127.0.0.1:all
-  gather_facts: false
+- hosts: all
   become: false
   tasks:
     - name: set SSH key location
       set_fact:
         private_key: "{{ ansible_ssh_private_key_file | default(lookup('env','HOME') + '/.ssh/id_rsa') }}"
 
-- hosts: 127.0.0.1
-  connection: local
-  gather_facts: false
-  become: false
-  tasks:
     - name: Create SSH directory if it doesn't exist
       file:
         path: "{{ lookup('env','HOME') + '/.ssh' }}"
         state: directory
+      delegate_to: 127.0.0.1
+      run_once: true
 
     - name: Generate default SSH keypair if it doesn't exist
       command: ssh-keygen -q -t rsa -f "{{ private_key }}" -C "" -N ""
       args:
         creates: "{{ private_key }}"
+      delegate_to: 127.0.0.1
+      run_once: true
 
-- hosts: all
-  become: true
-  tasks:
     - name: run setup to get ansible user
       setup: gather_subset=min
 
@@ -36,5 +31,5 @@
 
     - debug:
         msg: Now, you shouldn't need to use -k/--ask-pass for these hosts anymore.
+      delegate_to: 127.0.0.1
       run_once: true
-      delegate_to: localhost

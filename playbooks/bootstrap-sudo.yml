@@ -35,4 +35,4 @@
     - debug:
         msg: Now, you shouldn't need to use -K/--ask-become-pass for these hosts anymore.
       run_once: true
-      delegate_to: localhost
+      delegate_to: 127.0.0.1
