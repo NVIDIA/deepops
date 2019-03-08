@@ -1,6 +1,9 @@
 ---
 - hosts: all
   tasks:
+    - name: run setup to get ansible user
+      setup: gather_subset=min
+
     - name: check for presence of sudo
       command: which sudo
       changed_when: false
@@ -8,7 +11,7 @@
       register: sudo
 
     # If sudo is installed, try `become_method=sudo`
-    - name: use method "sudo" (requires password for "{{ ansible_user }}")
+    - name: use method "sudo" (requires password for "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}")
       set_fact: method=sudo
       when: sudo.rc == 0
 
@@ -22,10 +25,10 @@
       become: true
       become_method: "{{ method }}"
 
-    - name: "grant password-less sudo to user \"{{ ansible_user }}\""
+    - name: "grant password-less sudo to user \"{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}\""
       copy:
-        content: "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL"
-        dest: "/etc/sudoers.d/{{ ansible_user | default(ansible_env.SUDO_USER) }}"
+        content: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }} ALL=(ALL) NOPASSWD:ALL"
+        dest: "/etc/sudoers.d/{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
       become: true
       become_method: "{{ method }}"
 

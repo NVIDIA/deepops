@@ -23,9 +23,12 @@
 - hosts: all
   become: true
   tasks:
+    - name: run setup to get ansible user
+      setup: gather_subset=min
+
     - name: Add SSH public key to ansible user user authorized keys
       authorized_key:
-        user: "{{ ansible_user | default(ansible_env.SUDO_USER) }}"
+        user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
         state: present
         key: "{{ lookup('file', private_key + '.pub') }}"
 
