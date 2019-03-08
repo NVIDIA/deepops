@@ -180,7 +180,8 @@ SSH keys and sudo does not require a password, you may omit the `-k` and `-K`
 flags
 
 ```sh
-ansible-playbook -l management -k -K ansible/playbooks/bootstrap.yml
+ansible-playbook -l management -k -K ansible/playbooks/bootstrap-ssh.yml
+ansible-playbook -l management -k -K ansible/playbooks/bootstrap-sudo.yml
 ```
 
 Where `management` is the group of servers in your `config/inventory` file which will become
@@ -509,7 +510,8 @@ Type the default password for `dgxuser` on the DGX when prompted while running t
 The default password for `dgxuser` is `DgxUser123`:
 
 ```sh
-ansible-playbook -k -K -l dgx-servers ansible/playbooks/bootstrap.yml
+ansible-playbook -k -K -l dgx-servers ansible/playbooks/bootstrap-ssh.yml
+ansible-playbook -k -K -l dgx-servers ansible/playbooks/bootstrap-sudo.yml
 ```
 
 After running the first command, you may omit the `-K` flag on subsequent runs. The password
@@ -736,7 +738,8 @@ Modify the file `ansible/site.yml` to enable or disable various playbooks, or ru
 directly:
 
 ```sh
-ansible-playbook -k -K -l login ansible/playbooks/bootstrap.yml
+ansible-playbook -k -K -l login ansible/playbooks/bootstrap-ssh.yml
+ansible-playbook -k -K -l login ansible/playbooks/bootstrap-sudo.yml
 ansible-playbook -k -l login ansible/site.yml
 ```
 
