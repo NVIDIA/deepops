@@ -55,3 +55,8 @@
 
 # Lmod modules
 #lmod_modulepath: /shared/modules/all
+
+# Extra software to install via software.yml playbook
+#software_extra_packages:
+#  - build-essential
+#  - "{{ 'linux-headers-' + ansible_kernel }}"
