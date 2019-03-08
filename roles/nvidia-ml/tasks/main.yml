@@ -7,11 +7,12 @@
   include_tasks: redhat-pre-install.yml
   when: ansible_os_family == 'RedHat'
 
-- name: Install cuDNN and NCCL packages
+- name: Manage cuDNN and NCCL packages
   package:
     name: "{{ item }}"
+    state: "{{ nvidia_ml_package_state }}"
   with_items:
-    - "{{ nvidia_cudnn_package_version | ternary('libcudnn7-dev='+nvidia_cudnn_package_version, 'libcudnn7-dev') }}"
     - "{{ nvidia_cudnn_package_version | ternary('libcudnn7='+nvidia_cudnn_package_version, 'libcudnn7') }}"
+    - "{{ nvidia_cudnn_package_version | ternary('libcudnn7-dev='+nvidia_cudnn_package_version, 'libcudnn7-dev') }}"
     - "{{ nvidia_nccl_package_version | ternary('libnccl2='+nvidia_nccl_package_version, 'libnccl2') }}"
     - "{{ nvidia_nccl_package_version | ternary('libnccl-dev='+nvidia_nccl_package_version, 'libnccl-dev') }}"
