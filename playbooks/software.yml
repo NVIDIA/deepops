@@ -24,6 +24,13 @@
         state: present
         update_cache: yes
 
+    - name: install extra packages
+      apt:
+        name: "{{ software_extra_packages }}"
+        state: present
+        update_cache: yes
+      when: software_extra_packages is defined
+
 - hosts: compute-nodes
   become: true
   tasks:
