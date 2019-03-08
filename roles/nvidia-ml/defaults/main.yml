@@ -1,0 +1,3 @@
+nvidia_ml_package_state: present
+nvidia_cudnn_package_version: ''
+nvidia_nccl_package_version: ''
