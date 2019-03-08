@@ -2,10 +2,11 @@
 # Slurm Cluster Playbook
 
 # Install python required for Ansible
-- include: bootstrap-ansible.yml
+- include: bootstrap-python.yml
 
 # Set up passwordless sudo and SSH keys if needed
-- include: bootstrap.yml
+- include: bootstrap-ssh.yml
+- include: bootstrap-sudo.yml
 
 # Set root SSH key to allow SSH/ansible when no slurm job running for ansible user
 - hosts: all

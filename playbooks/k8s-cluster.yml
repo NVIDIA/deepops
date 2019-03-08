@@ -2,7 +2,7 @@
 # Kubernetes Cluster Playbook
 
 # Install python required for Ansible
-- include: bootstrap-ansible.yml
+- include: bootstrap-python.yml
   tags:
     - bootstrap
 
@@ -21,7 +21,10 @@
     - local
 
 # Set up passwordless sudo and SSH keys if needed
-- include: bootstrap.yml
+- include: bootstrap-ssh.yml
+  tags:
+    - bootstrap
+- include: bootstrap-sudo.yml
   tags:
     - bootstrap
 
