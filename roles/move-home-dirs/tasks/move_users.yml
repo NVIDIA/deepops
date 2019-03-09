@@ -31,6 +31,12 @@
     content: "{{ tmp_user }} ALL=(ALL) NOPASSWD:ALL"
     dest: "/etc/sudoers.d/{{ tmp_user }}"
 
+# Useful for slurm clusters
+- name: grant SSH access to temporary user
+  lineinfile:
+    path: /etc/localusers
+    line: "{{ tmp_user }}"
+
 - name: move each user
   include_tasks: move_user.yml
   vars:
@@ -39,6 +45,12 @@
   loop: "{{user_list.stdout_lines}}"
   loop_control:
     loop_var: user
+
+- name: revoke SSH access from temporary user
+  lineinfile:
+    path: /etc/localusers
+    line: "{{ tmp_user }}"
+    state: absent
 
 - name: revoke sudo for temporary user
   file:
