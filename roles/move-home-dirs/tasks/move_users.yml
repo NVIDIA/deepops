@@ -7,11 +7,17 @@
     path: "{{ move_home_dirs_new_root }}"
     state: directory
 
-- name: generate password for temporary user
+- name: set key path
   set_fact:
-    tmp_user_password: "{{ pwgen }}"
-  vars:
-    pwgen: "{{ lookup('password', '/dev/null length=8 chars=ascii_letters') }}"
+    tmp_user_key_path: /tmp/ssh-key-for-ansible-move-home-dirs
+
+- name: generate key for temporary user
+  command: ssh-keygen -q -t rsa -f "{{ tmp_user_key_path }}" -C "" -N ""
+  args:
+    creates: "{{ tmp_user_key_path }}"
+  delegate_to: 127.0.0.1
+  become: false
+  run_once: true
 
 - name: delete temporary user
   user:
@@ -24,7 +30,11 @@
   user:
     name: "{{ tmp_user }}"
     home: "{{ move_home_dirs_new_root }}/{{ tmp_user }}"
-    password: "{{ tmp_user_password | password_hash('sha512') }}"
+
+- name: add new key for temporary user
+  authorized_key:
+    user: "{{ tmp_user }}"
+    key: "{{ lookup('file', tmp_user_key_path + '.pub') }}"
 
 - name: grant sudo to temporary user
   copy:
@@ -42,7 +52,7 @@
   include_tasks: move_user.yml
   vars:
     ansible_user: "{{ tmp_user }}"
-    ansible_password: "{{ tmp_user_password }}"
+    ansible_ssh_private_key_file: "{{ tmp_user_key_path }}"
   loop: "{{user_list.stdout_lines}}"
   loop_control:
     loop_var: user
