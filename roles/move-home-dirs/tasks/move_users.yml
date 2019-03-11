@@ -36,6 +36,7 @@
   lineinfile:
     path: /etc/localusers
     line: "{{ tmp_user }}"
+    create: yes
 
 - name: move each user
   include_tasks: move_user.yml
