@@ -56,7 +56,7 @@ If you haven't configured a Slurm cluster yet, see the [Slurm guide](../../docs/
     as well as comments prefixed `#SBATCH` which tell Slurm about the job you're running.
     The output of your job is saved to a file.
     ```
-    vagrant@virtual-login:/shared$ cat hello-job.sh
+    $ cat hello-job.sh
     #!/bin/bash
     #SBATCH -J mpi-hello            # Job name
     #SBATCH -n 2                    # Number of processes
@@ -69,9 +69,9 @@ If you haven't configured a Slurm cluster yet, see the [Slurm guide](../../docs/
     # Run the job (assumes the batch script is submitted from the same directory)
     mpirun -np 2 ./mpi-hello
     
-    vagrant@virtual-login:/shared$ sbatch hello-job.sh
+    $ sbatch hello-job.sh
     Submitted batch job 9
-    vagrant@virtual-login:/shared$ cat hello-job.out
+    $ cat hello-job.out
     Hello from process 0 of 2 on host virtual-gpu01
     Hello from process 1 of 2 on host virtual-gpu01
     ```
