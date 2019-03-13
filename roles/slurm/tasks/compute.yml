@@ -30,6 +30,9 @@
     - /etc/slurm/shared/bin
     - /var/log/slurm
     - /var/spool/slurm/d
+  tags:
+    - prolog
+    - epilog
 
 - name: copy slurmdbd service file
   copy:
@@ -45,6 +48,9 @@
     mode: 0755
   with_fileglob:
     - shared/bin/*
+  tags:
+    - prolog
+    - epilog
 
 - name: include prolog/epilog
   include: prolog_epilog.yml

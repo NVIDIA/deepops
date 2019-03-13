@@ -11,9 +11,9 @@ case "$1" in
         ;;
     max)
         for i in $(seq 0 "$(( gpu_count - 1 ))" ) ; do
-            next.sm="$(nvidia-smi -i "$i" --query-gpu=clocks.max.sm --format=csv,noheader,nounits)"
-            next.mem="$(nvidia-smi -i "$i" --query-gpu=clocks.max.mem --format=csv,noheader,nounits)"
-            nvidia-smi -i "${i}" -ac "${next.mem}","${next.sm}"
+            nextSM="$(nvidia-smi -i "$i" --query-gpu=clocks.max.sm --format=csv,noheader,nounits)"
+            nextMEM="$(nvidia-smi -i "$i" --query-gpu=clocks.max.mem --format=csv,noheader,nounits)"
+            nvidia-smi -i "${i}" -ac "${nextMEM}","${nextSM}"
         done
         ;;
     *)
