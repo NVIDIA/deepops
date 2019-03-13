@@ -22,3 +22,9 @@
     state: restarted
   when: is_controller
 
+- name: restart logind
+  service:
+    name: systemd-logind.service
+    state: restarted
+    enabled: yes
+  when: is_compute

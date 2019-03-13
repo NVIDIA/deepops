@@ -79,7 +79,7 @@
     - /etc/slurm/localusers.backup
     - /etc/localusers
   tags:
-    - test
+    - localusers
 
 - name: update /etc/pam.d/sshd
   lineinfile:
