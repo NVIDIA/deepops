@@ -33,3 +33,6 @@ slurm_exclusive: "EXCLUSIVE"
 # Sets: DefaultTime={{ slurm_default_job_timelimit }}
 # Default: <not included>
 # slurm_default_job_timelimit: 
+
+# Use the provided prolog/epilog
+slurm_enable_prolog_epilog: true

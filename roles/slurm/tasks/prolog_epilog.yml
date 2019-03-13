@@ -1,0 +1,94 @@
+---
+- name: install apt requirements
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - linux-tools-generic  # for cpupower, used in prolog+epilog
+
+- name: create prolog directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_items:
+    - /etc/slurm/prolog.d/
+    - /etc/slurm/prolog-exclusive.d/
+  tags:
+    - prolog
+
+- name: create epilog directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_items:
+    - /etc/slurm/epilog.d/
+    - /etc/slurm/epilog-exclusive.d/
+    - /etc/slurm/epilog-last-user.d/
+  tags:
+    - epilog
+
+- name: copy prologs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/prolog.d/
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_fileglob:
+    - prolog.d/*
+  tags:
+    - prolog
+
+- name: copy prologs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/prolog-exclusive.d/
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_fileglob:
+    - prolog-exclusive.d/*
+  tags:
+    - prolog
+
+- name: copy epilogs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/epilog.d/
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_fileglob:
+    - epilog.d/*
+  tags:
+    - epilog
+
+- name: copy epilogs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/epilog-exclusive.d/
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_fileglob:
+    - epilog-exclusive.d/*
+  tags:
+    - epilog
+
+- name: copy epilogs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/slurm/epilog-last-user.d/
+    owner: slurm
+    group: slurm
+    mode: 0755
+  with_fileglob:
+    - epilog-last-user.d/*
+  tags:
+    - epilog
+

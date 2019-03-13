@@ -1,0 +1,17 @@
+---
+# Configure a global NFS share across the slurm cluster
+nfs_mounts:
+- mountpoint: "/shared"
+  path: "/shared"
+  options: "nfsvers=3,rw,sync"
+
+nfs_exports:
+- path: "/shared"
+  options: "*(rw,sync)"
+
+# For virtual cluster, ensure hosts file correctly uses private network
+hosts_add_default_ipv4: false
+hosts_network_interface: "eth1"
+
+# Hardware-specific prolog/epilog may not work in virtual
+slurm_enable_prolog_epilog: false
