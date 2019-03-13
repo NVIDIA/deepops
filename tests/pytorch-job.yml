@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pytorch-job
+spec:
+  backoffLimit: 5
+  template:
+    spec:
+      containers:
+        - name: pytorch-container
+          image: nvcr.io/nvidia/pytorch:19.02-py3
+          command: ["/bin/sh"]
+          args: ["-c", "python /workspace/examples/upstream/mnist/main.py"]
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+      restartPolicy: Never
