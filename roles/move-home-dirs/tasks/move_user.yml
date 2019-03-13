@@ -1,0 +1,10 @@
+---
+- name: kill user processes for {{ user }}
+  command: killall -u {{ user }}
+  ignore_errors: true
+
+- name: move home directory for {{ user }}
+  user:
+    name: "{{ user }}"
+    home: "{{ move_home_dirs_new_root }}/{{ user }}"
+    move_home: yes

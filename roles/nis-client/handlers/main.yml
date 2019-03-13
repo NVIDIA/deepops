@@ -1,6 +1,4 @@
 ---
-# file roles/yp-client/handlers/main.yml
-
 - name: restart nis
   service: name=ypbind state=restarted enabled=yes
   when: (ansible_os_family == "Debian" and ansible_distribution_version in [ "14.04" ])

@@ -1,8 +1,4 @@
 ---
-# define role defaults here.  Suggested variable names for the defaults file would be values like
-# kerberos_client_, etc
-
-kerberos_client_realm_name: EXAMPLE.COM
 kerberos_client_kdc_hostname: kerberos
 kerberos_client_admin_hostname: kerberos
 kerberos_client_dns_lookup_realm: false
@@ -10,4 +6,3 @@ kerberos_client_dns_lookup_kdc: false
 kerberos_client_ticket_lifetime: 24h
 kerberos_client_renew_lifetime: 7d
 kerberos_client_forwardable: true
-

@@ -10,8 +10,8 @@
 #dns_config_search: [example.com]
 
 # NIS configuration
-#nisdomain: example.com
-#nisserver: 10.0.0.1
+#nis_domain: example.com
+#nis_server: 10.0.0.1
 
 # Kerberos configuration
 #kerberos_client_realm_name: "example.com"

@@ -2,7 +2,7 @@
 - hosts: all
   become: yes
   roles:
-    - { role: user_mod, ansible_ssh_user: root}
+    - move-home-dirs
     - kerberos-client
-    - yp-client
+    - nis-client
     - autofs
