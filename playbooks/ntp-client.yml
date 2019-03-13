@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: slurm-cluster
   become: true
   tasks:
     - name: Configure NTP client
