@@ -12,3 +12,6 @@
 - src: https://github.com/lukeyeager/ansible-role-hosts.git
   version: '711ba98571f068a8bc6739fa1055ac38fc931010'
   name: lukeyeager.hosts
+
+- src: geerlingguy.ntp
+  version: "1.6.2"
