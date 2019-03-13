@@ -7,7 +7,7 @@ Many HPC applications are built on the Message Passing Interface (MPI) standard,
 This example demonstrates how to build and run simple "hello, world" MPI application on a Slurm cluster.
 It assumes that you have already deployed a cluster with a login node and at least one compute node, and that Slurm has already been set up and configured.
 It also assumes the presence of a shared NFS filesystem on all nodes in the cluster, which is given the path `/shared` in this example.
-If you haven't configured a Slurm cluster yet, see the [Slurm guide](../../docs/slurm-cluster.md) for information on building a GPU-enabled Slurm cluster.
+If you haven't configured a Slurm cluster yet, see the [Slurm guide](/docs/slurm-cluster.md) for information on building a GPU-enabled Slurm cluster.
 
 1. **Install the OpenMPI packages:**
     On many clusters, MPI libraries and tools are built from source to take advantage of the specific cluster hardware.
