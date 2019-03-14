@@ -1,0 +1,13 @@
+---
+# Install OpenMPI packages from Ubuntu repos
+- hosts: all
+  become: true
+  tasks:
+  - name: install openmpi packages
+    apt:
+      name: "{{ item }}"
+    with_items:
+    - openmpi-bin
+    - libopenmpi-dev
+    - libpmi2-pmix
+    - libpmi-pmix-dev
