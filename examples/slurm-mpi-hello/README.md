@@ -12,14 +12,14 @@ If you haven't configured a Slurm cluster yet, see the [Slurm guide](/docs/slurm
 1. **Install the OpenMPI packages:**
     On many clusters, MPI libraries and tools are built from source to take advantage of the specific cluster hardware.
     In this example, we'll just use the OpenMPI provided by Ubuntu to demonstrate running an MPI job.
-    To install OpenMPI, run the following `bootstrap-mpi.yml` script using Ansible.
+    To install OpenMPI, run the `bootstrap-mpi.yml` Ansible playbook in this directory. 
     If you only want to install on a subset of nodes, use the `-l ${HOST_GROUP}` argument to restrict where this playbook is run.
     ```
-    $ ansible-playbook -i ${INVENTORY_FILE} [-l ${HOST_GROUP}] bootstrap-mpi.yml
+    $ ansible-playbook -i ${INVENTORY_FILE} [-l ${HOST_GROUP}] examples/slurm-mpi-hello/bootstrap-mpi.yml
     ```
 1. Upload the source code and job script to the shared filesystem on your login node:
     ```
-    $ scp mpi-hello.c login:/shared/
+    $ scp examples/slurm-mpi-hello/mpi-hello.c login:/shared/
     ```
 1. Log into your cluster and build the MPI application.
     ```
@@ -33,7 +33,7 @@ If you haven't configured a Slurm cluster yet, see the [Slurm guide](/docs/slurm
     ```
     # Validate that we're on the login node
     $ hostname
-    virtual-login
+    login
 
     # Allocate two processors from Slurm
     # (in this case, both processors are on the same node)
