@@ -20,7 +20,7 @@ Deploy Dask:
 vi config/helm/rapids-dask.yml
 
 # Optionally, modify the K8S resources
-vi config/helm/rapids-dask-svc.yml
+vi config/k8s/rapids-dask-sa.yml
 
 # Deploy
 ./scripts/k8s_deploy_rapids_dask.sh

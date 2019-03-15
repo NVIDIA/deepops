@@ -76,8 +76,8 @@ function stand_up() {
   echo "installing dask via helm"
   # Create the Dask resources
   helm install -n ${NAMESPACE} --namespace ${NAMESPACE} --values config/helm/rapids-dask.yml stable/dask
-  kubectl create -f config/helm/rapids-dask-svc.yml
-  # kubectl create -f  config/helm/rapids-dask-autoscale.yml # XXX: Optional install
+  kubectl create -f config/k8s/rapids-dask-sa.yml
+  # kubectl create -f  config/k8s/rapids-dask-autoscale.yml # XXX: Optional install
   sleep 5 # TODO: This should poll
 }
 
