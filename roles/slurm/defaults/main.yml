@@ -4,6 +4,8 @@ slurm_password: ReplaceWithASecurePasswordInTheVault
 slurm_user_uid: 22078
 slurm_user_home: /local/slurm
 
+slurm_allow_ssh_user: []
+
 slurm_db_username: slurm
 slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 
@@ -36,3 +38,6 @@ slurm_exclusive: "EXCLUSIVE"
 
 # Use the provided prolog/epilog
 slurm_enable_prolog_epilog: true
+
+# Disable clearing of shared memory when user login shell exits
+slurm_fix_shm: true

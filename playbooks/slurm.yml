@@ -1,27 +1,21 @@
 ---
 - hosts: all
   become: yes
-  tasks:
-    - name: install custom facts
-      include_role:
-        name: facts
+  roles:
+    - name: facts
 
 - hosts: slurm-masters
   become: yes
-  tasks:
-    - name: install slurm (mgmt node)
-      include_role:
-        name: slurm
+  roles:
+    - name: slurm
       vars:
         user: "{{ ansible_user | default(ansible_env.SUDO_USER) }}"
         is_controller: yes
 
 - hosts: slurm-workers
   become: yes
-  tasks:
-    - name: install slurm (compute node)
-      include_role:
-        name: slurm
+  roles:
+    - name: slurm
       vars:
         user: "{{ ansible_user | default(ansible_env.SUDO_USER) }}"
         is_compute: yes

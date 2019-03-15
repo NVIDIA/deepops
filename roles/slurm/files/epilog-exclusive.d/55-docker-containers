@@ -7,7 +7,7 @@ fi
 
 for id in $(docker ps -aq)
 do
-    if ! docker inspect "$id" --format '{{.HostConfig.CgroupParent}} {{.Name}}' | grep kube
+    if docker inspect "$id" --format '{{.HostConfig.CgroupParent}} {{.Name}}' | grep kube
     then
         continue  # skip kube containers
     fi
@@ -15,5 +15,8 @@ do
     logger -s -t slurm-epilog "Removing docker container $id ..."
 
     docker stop "$id" || true
-    docker rm "$id"
+    if docker inspect "$id"
+    then
+        docker rm "$id"
+    fi
 done

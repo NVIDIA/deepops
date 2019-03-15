@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -ex
 
-numcpus_sys=$(grep -c ^processor /proc/cpuinfo)
+numcpus_sys=$(( $(grep -c ^processor /proc/cpuinfo) * $(scontrol show job "$SLURM_JOBID" | grep -Eio "TRES=.*node=[0-9]+" | cut -d= -f5) ))
 numcpus_job=$(scontrol show job "$SLURM_JOBID" | grep -Eio "TRES=cpu=[0-9]+" | cut -d= -f3)
 if [ "$numcpus_sys" == "$numcpus_job" ] ; then
+    logger -s -t slurm-epilog 'cleaning up after exclusive job'
     run-parts -v --reverse /etc/slurm/epilog-exclusive.d
+else
+    logger -s -t slurm-epilog "skipping exclusive epilog tasks - $numcpus_sys, $numcpus_job"
 fi

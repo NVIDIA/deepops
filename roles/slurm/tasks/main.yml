@@ -46,6 +46,9 @@
 - include: compute.yml
   when: is_compute
 
+- include: shmfix.yml
+  when: is_compute and slurm_fix_shm
+
 # unplug the drain - sometimes nodes get stuck
 # sudo scontrol update node=XXX state=idle
 # where XXX are the nodes that have changed and are marked as *down*

@@ -17,8 +17,5 @@ then
     scontrol update nodename="$HOSTNAME" state=drain reason='Residual GPU processes found'
 fi
 
-nvidia-smi -rac 2>/dev/null         # Reset application clocks
-nvidia-smi -acp 0 2>/dev/null       # Reset application clock permissions
-nvidia-smi -c DEFAULT 2>/dev/null   # Reset compute mode to default
-
 /etc/slurm/shared/bin/set_gpu_power_levels.sh default
+/etc/slurm/shared/bin/set_gpu_clocks.sh default

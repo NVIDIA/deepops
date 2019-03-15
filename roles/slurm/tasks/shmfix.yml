@@ -1,0 +1,8 @@
+---
+
+- name: Fix RemoveIPC
+  lineinfile:
+    dest: /etc/systemd/logind.conf
+    regexp: '^#RemoveIPC=yes'
+    line: 'RemoveIPC=no'
+  notify: "restart logind"

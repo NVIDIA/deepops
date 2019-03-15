@@ -3,4 +3,4 @@ set -ex
 
 type cpupower || exit 0
 cpupower frequency-info | grep -e "^Not Available" && exit 0
-cpupower frequency-set -g performance
+cpupower frequency-set -g powersave
