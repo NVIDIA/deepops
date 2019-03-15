@@ -1,0 +1,7 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Configure NTP client
+      include_role:
+        name: geerlingguy.ntp
