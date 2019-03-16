@@ -1,27 +1,32 @@
 [Ansible Guide](https://www.ansible.com/overview/how-ansible-works)
 ===
 
-Ansible is an automation tool that simplifies configuration of computers.
+Ansible is a tool that automates the configuration of systems.
 
-Install Ansible on any system which can access target nodes via SSH. This can be a laptop,
-small virtual machine, or cluster management server.
+Install Ansible on any system which can access target nodes via SSH. This can be a laptop, small virtual machine, or cluster management server. This system is known in these docs as the provisioning node.
+
+Ansible is:
+* Agentless (there’s nothing that needs to be installed on other nodes in the cluster)
+* Idempotent (you can run the same playbook or task over and over again without repercussions - and tasks that do not require modification of the target nodes will result in Ansible skipping those tasks)
+* Easy to maintain & scale (rather than custom scripts)
+* Easy to read & use (via YAML playbooks, roles, and tasks)
+
 
 ## Ansible Setup
 
 ### Requirements
 
-  * Control machine with supported OS to run Ansible
-  * [Passwordless](docs/ANSIBLE.md#passwordless-configuration-using-ssh-keys) (SSH key) access from Ansible system to Universal GPU servers
+* Control machine with supported OS to run Ansible
+* [Passwordless](docs/ANSIBLE.md#passwordless-configuration-using-ssh-keys) (SSH key) access from Ansible system to Universal GPU servers
 
-A script is provided to install Ansible on Ubuntu and RHEL/CentOS machines. Ansible can
-also be installed on Mac OS and Windows (WSL).
+A script is provided to install Ansible on Ubuntu and RHEL/CentOS machines. Ansible can also be installed on Mac OS and Windows (WSL).
 
 ```sh
 # Install Ansible and required roles from Ansible Galaxy
 ./scripts/setup.sh
 ```
 
-See the [Ansible documentation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+See the official [Ansible documentation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 for more detailed installation information.
 
 ### Passwordless configuration using SSH keys
@@ -48,7 +53,7 @@ If sudo requires a password, add the `-K` flag
 
 ## Ansible Playbooks
 
-[Ansible playbooks](https://docs.ansible.com/ansible/latest/user_guide/playbooks.html) are file which
+[Ansible playbooks](https://docs.ansible.com/ansible/latest/user_guide/playbooks.html) are files which
 manage the configuration of remote machines.
 
 ### Ansible playbook output
