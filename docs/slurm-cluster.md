@@ -51,3 +51,7 @@ Instructions for deploying a GPU cluster with Slurm
    # NOTE: If SSH user is different than current user, add: `-u ubuntu`
    ansible-playbook -l slurm-cluster playbooks/slurm-cluster.yml
    ```
+
+## Using Slurm
+
+Now that Slurm is installed, try a ["Hello World" example using MPI](../examples/slurm-mpi-hello/README.md).
