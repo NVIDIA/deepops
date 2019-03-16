@@ -16,7 +16,7 @@ Instructions for deploying a GPU cluster with Kubernetes
 
 2. Set up your provisioning machine. 
 
-   This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. 
+   This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](ANSIBLE.md). 
 
    ```sh
    # Install software prerequisites and copy default configuration
@@ -39,7 +39,7 @@ Instructions for deploying a GPU cluster with Kubernetes
    # 	     Make sure the [etcd] group has an odd number of hosts
    ```
 
-4. Install Kubernetes using Ansible. 
+4. Install Kubernetes using Ansible and Kubespray.
 
    ```sh
    # NOTE: If SSH requires a password, add: `-k`
@@ -47,6 +47,8 @@ Instructions for deploying a GPU cluster with Kubernetes
    # NOTE: If SSH user is different than current user, add: `-u ubuntu`
    ansible-playbook -i k8s-config/hosts.ini -b playbooks/k8s-cluster.yml
    ```
+   
+   More information on Kubespray can be found in the official [Getting Started Guide](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md)
 
 5. Verify that the Kubernetes cluster is running. 
 
@@ -111,10 +113,4 @@ For more on Kubeflow, please refer to the [official documentation](https://www.k
 ## Using Kubernetes
 
 Now that Kubernetes is installed, consult the [Kubernetes Usage Guide](kubernetes-usage.md) for examples of how to use Kubernetes.
-
-## Additional Documentation
-
-[Ansible](ANSIBLE.md)
-
-More information on Kubespray can be found in the official [Getting Started Guide](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md)
 
