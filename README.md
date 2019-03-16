@@ -12,6 +12,10 @@ Use the provided Ansible playbooks and scripts to deploy Kubernetes, Slurm, or a
 > NOTE: we recommend using the most recent release branch for stable code.
 > The `master` branch is used for development and as such may be unstable or even broken at any point in time.
 
+## Getting Started
+
+Pick one of the deployment options below if you know what kind of cluster you want. If you feel lost, read through our [Getting Started Guide](docs/getting-started.md).
+
 ## Deployment Options
 
 ### Kubernetes
