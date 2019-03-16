@@ -51,7 +51,7 @@ Consult our [Virtual Guide](virtual/README.md) to deploy a virtual cluster with 
 
 ## Updating DeepOps
 
-To upgrade your cluster from a previous version of DeepOps to a newer release, please consult the [Upgrade Guide](docs/upgrading.md).
+To update your cluster from a previous version of DeepOps to a newer release, please consult the [Update Guide](docs/updating.md).
 
 ## Copyright and License
 
