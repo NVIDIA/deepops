@@ -49,6 +49,10 @@ We often don't have a full cluster at our disposal, or wish to try DeepOps befor
 
 Consult our [Virtual Guide](virtual/README.md) to deploy a virtual cluster with DeepOps.
 
+## Updating DeepOps
+
+To upgrade your cluster from a previous version of DeepOps to a newer release, please consult the [Upgrade Guide](docs/upgrading.md).
+
 ## Copyright and License
 
 This project is released under the [BSD 3-clause license](https://github.com/NVIDIA/deepops/blob/master/LICENSE).
