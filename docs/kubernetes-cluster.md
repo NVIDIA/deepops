@@ -91,6 +91,10 @@ Deploy Prometheus and Grafana to monitor Kubernetes and cluster nodes:
 ./scripts/k8s_deploy_monitoring.sh
 ```
 
+### Logging
+
+Follow the [ELK Guide](elk.md) to setup logging in the cluster.
+
 ### Container Registry
 
 The default container registry hostname is `registry.local`. To set another hostname (for example,
