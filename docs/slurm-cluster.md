@@ -29,7 +29,7 @@ Instructions for deploying a GPU cluster with Slurm
    Ansible uses an inventory which outlines the servers in your cluster. An example inventory config exists as `config.example`. If you don't already have one, you can copy this configuration:
    
    ```sh
-   cp -R config.example config
+   cp -r config.example config
    ```
    
    Now edit the inventory: 
