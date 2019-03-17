@@ -1,5 +1,7 @@
 # DGXIE
 
+DGXie is an all-in-one container for DHCP, DNS, and PXE, specifically tailored to the DGX Base OS.
+
 ## Updating DHCP Configuration
 
 If you make changes to `config/dhcpd.hosts.conf`, you can update the file in Kubernetes and restart the service with:
