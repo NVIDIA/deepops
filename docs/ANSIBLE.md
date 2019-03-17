@@ -94,16 +94,24 @@ cat config/group_vars/all.yml
 cat config/group_vars/gpu-servers.yml
 ```
 
-_Configure Servers_
+_Run Commands_
+
+To run arbitrary commands in parallel across nodes in the cluster, you can use ansible and the groups or hosts defined in the inventory file, for example:
+
+```sh
+# ansible <host-group> -a hostname
+ansible management -a hostname
+```
+
+_Run Playbooks_
+
+To run playbooks, use the `ansible-playbook` command:
 
 ```sh
 # If sudo requires a password, add the -K flag
 
-# For servers in the `[management]` group
-ansible-playbook playbooks/setup-management-servers.yml
-
-# For servers in the `[gpu-servers]` group
-ansible-playbook playbooks/setup-gpu-servers.yml
+# ansible-playbook <host-group> playbooks/<playbook>.yml
+ansible-playbook management playbooks/k8s-cluster.yml
 ```
 
 ### Useful commands
