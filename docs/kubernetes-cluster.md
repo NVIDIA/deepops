@@ -83,6 +83,12 @@ Deploy a Ceph cluster running on Kubernetes for services that require persistent
 ./scripts/k8s_deploy_rook.sh
 ```
 
+Poll the Ceph status by running:
+
+```sh
+./scripts/ceph_poll.sh
+```
+
 ### Monitoring
 
 Deploy Prometheus and Grafana to monitor Kubernetes and cluster nodes:
@@ -91,9 +97,17 @@ Deploy Prometheus and Grafana to monitor Kubernetes and cluster nodes:
 ./scripts/k8s_deploy_monitoring.sh
 ```
 
+The services can be reached from the following addresses:
+* Grafana: http://mgmt:30200
+* Prometheus: http://mgmt:30500
+* Alertmanager: http://mgmt:30400
+
 ### Logging
 
 Follow the [ELK Guide](elk.md) to setup logging in the cluster.
+
+The service can be reached from the following address:
+* Kibana: http://mgmt:30700
 
 ### Container Registry
 
