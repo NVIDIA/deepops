@@ -1,37 +1,34 @@
-GPU Server Deployment Guide
+Standalone Deployment Guide
 ===
 
-Instructions for deploying standalone GPU servers.
+For bootstrapping cluster nodes which will run neither Kubernetes nor Slurm, follow this guide.
 
-The install process should be run from a separate control system since
-GPU driver installation may trigger a reboot.
+> NOTE: The install process should be run from a separate provisioning system since GPU driver installation may trigger a reboot.
 
-_Set up control machine_
+1. Set up your provisioning machine.
 
-```sh
-# Install software prerequisites and copy default configuration
-./scripts/setup.sh
-```
+   This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](ANSIBLE.md).
 
-_Edit server inventory and configuration_
+   ```sh
+   # Install software prerequisites and copy default configuration
+   ./scripts/setup.sh
+   ```
 
-```sh
-# Edit inventory
-# Add GPU servers to `gpu-servers` group
-vi config/inventory
+2. Edit the server inventory and configuration.
 
-# (optional) Modify `config/group_vars/*.yml` to set configuration parameters
-```
+   ```sh
+   # Edit inventory
+   # Add GPU servers to `gpu-servers` group
+   vi config/inventory
 
-_Install_
+   # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
+   ```
 
-```sh
-# NOTE: If SSH requires a password, add: `-k`
-# NOTE: If sudo on remote machine requires a password, add: `-K`
-# NOTE: If SSH user is different than current user, add: `-u ubuntu`
-ansible-playbook -l gpu-servers playbooks/standalone.yml
-```
+3. Run the standalone playbook.
 
-## Additional Documentation
-
-[Ansible](ANSIBLE.md)
+   ```sh
+   # NOTE: If SSH requires a password, add: `-k`
+   # NOTE: If sudo on remote machine requires a password, add: `-K`
+   # NOTE: If SSH user is different than current user, add: `-u ubuntu`
+   ansible-playbook -l gpu-servers playbooks/standalone.yml
+   ```
