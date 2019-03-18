@@ -1,59 +1,57 @@
-Slurm GPU Cluster Deployment Guide
+Slurm Deployment Guide
 ===
 
 Instructions for deploying a GPU cluster with Slurm
 
-## Overview
-
-**Install Process**
-
-  * Install a supported operating system (Ubuntu/RHEL)
-  * Install Slurm
-
-**Requirements**
+## Requirements
 
   * Control system to run the install process
   * One server to act as the Slurm controller/login node
   * One or more servers to act as the Slurm compute nodes
-  * (Optional) Management server (if installing OS via PXE)
 
-## Step 1: Operating System Installation
+## Installation Steps
 
-Install a supported operating system on all servers via
-a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/))
-or utilize the provided [OS install container](PXE.md).
+1. Install a supported operating system on all nodes. 
 
-## Step 2: System Configuration
+   Install a supported operating system on all servers via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)) or utilize the provided [OS install container](PXE.md).
 
-_Set up control machine_
+2. Set up your provisioning machine. 
 
-```sh
-# Install software prerequisites and copy default configuration
-./scripts/setup.sh
-```
+   This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](ANSIBLE.md).
 
-_Edit server inventory and configuration_
+   ```sh
+   # Install software prerequisites and copy default configuration
+   ./scripts/setup.sh
+   ```
 
-```sh
-# Edit inventory
-# Add Slurm controller/login host to `login` group
-# Add Slurm worker/compute hosts to `gpu-servers` or `dgx-servers` groups
-vi config/inventory
+3. Create and edit the Ansible inventory. 
 
-# (optional) Modify `config/group_vars/*.yml` to set configuration parameters
-```
+   Ansible uses an inventory which outlines the servers in your cluster. An example inventory config exists as `config.example`. If you don't already have one, you can copy this configuration:
+   
+   ```sh
+   cp -r config.example config
+   ```
+   
+   Now edit the inventory: 
+   
+   ```sh
+   # Edit inventory
+   # Add Slurm controller/login host to `login` group
+   # Add Slurm worker/compute hosts to `gpu-servers` or `dgx-servers` groups
+   vi config/inventory
+   
+   # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
+   ```
 
-## Step 3: Install Slurm
+4. Install Slurm. 
 
-_Install Slurm_ 
+   ```sh
+   # NOTE: If SSH requires a password, add: `-k`
+   # NOTE: If sudo on remote machine requires a password, add: `-K`
+   # NOTE: If SSH user is different than current user, add: `-u ubuntu`
+   ansible-playbook -l slurm-cluster playbooks/slurm-cluster.yml
+   ```
 
-```sh
-# NOTE: If SSH requires a password, add: `-k`
-# NOTE: If sudo on remote machine requires a password, add: `-K`
-# NOTE: If SSH user is different than current user, add: `-u ubuntu`
-ansible-playbook -l slurm-cluster playbooks/slurm-cluster.yml
-```
+## Using Slurm
 
-## Additional Documentation
-
-[Ansible](ANSIBLE.md)
+Now that Slurm is installed, try a ["Hello World" example using MPI](../examples/slurm-mpi-hello/README.md).
