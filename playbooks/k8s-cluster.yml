@@ -37,7 +37,7 @@
     kubeconfig_localhost: true
     helm_enabled: true
     tiller_node_selectors: "node-role.kubernetes.io/master=''"
-    docker_version: 18.06
+    docker_version: latest
     docker_dns_servers_strict: no
     docker_storage_options: -s overlay2
 
@@ -106,8 +106,6 @@
         nvidia:
           path: /usr/bin/nvidia-container-runtime
           runtimeArgs: []
-    nvidia_docker2_package_version: "2.0.3+docker18.06.1-1"
-    nvidia_container_runtime_package_version: "2.0.0+docker18.06.1-1"
   tags:
     - nvidia
 
