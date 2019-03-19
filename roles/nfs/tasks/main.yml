@@ -1,7 +1,17 @@
 ---
 - name: install ubuntu packages
-  action: apt name=nfs-common state=latest
+  apt:
+    name: nfs-common
+    state: latest
   when: ansible_os_family == "Debian"
+  tags:
+    - nfs
+
+- name: install rhel packages
+  yum:
+    name: nfs-utils
+    state: latest
+  when: ansible_os_family == "RedHat"
   tags:
     - nfs
 
