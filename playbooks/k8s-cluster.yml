@@ -7,8 +7,7 @@
     - bootstrap
 
 # Make sure Kubespray submodule is correct
-- hosts: 127.0.0.1
-  connection: local
+- hosts: localhost
   gather_facts: false
   tasks:
     - name: make sure kubespray is at the correct version
@@ -17,6 +16,7 @@
         chdir: "{{ playbook_dir | dirname }}"
   vars:
     ansible_become: no
+    ansible_connection: local
   tags:
     - local
 
@@ -31,6 +31,8 @@
 # Install Kubernetes
 - include: ../kubespray/cluster.yml
   vars:
+    kubeadm_enabled: true
+    kube_api_anonymous_auth: true
     kubectl_localhost: true
     kubeconfig_localhost: true
     helm_enabled: true
@@ -61,23 +63,30 @@
       run_once: true
  
 # Manage Kubernetes cluster access config file
-- hosts: 127.0.0.1
-  connection: local
+- hosts: localhost
   gather_facts: false
   vars:
     ansible_become: no
+    config_dir: "../config"
   tasks:
+    - name: register config path
+      stat:
+        path: "../k8s-config"
+      register: k8s_config_dir
+    - set_fact:
+        config_dir: "../k8s-config"
+      when: k8s_config_dir.stat.exists
     - name: create kube config directory for current user
       file:
         path: "{{ lookup('env','HOME') + '/.kube/' }}"
         state: directory
     - name: check for kube config file
       stat:
-        path: "../k8s-config/artifacts/admin.conf"
+        path: "{{ config_dir }}/artifacts/admin.conf"
       register: kubeconf
     - name: copy kube config file for current user
       copy:
-        src: "../k8s-config/artifacts/admin.conf"
+        src: "{{ config_dir }}/artifacts/admin.conf"
         dest: "{{ lookup('env','HOME') + '/.kube/config' }}"
         backup: yes
       when: kubeconf.stat.exists
@@ -106,24 +115,31 @@
 - include: k8s-gpu-plugin.yml
 
 # Manage kubectl binary
-- hosts: 127.0.0.1
-  connection: local
+- hosts: localhost
   gather_facts: false
   vars:
     ansible_become: no
+    config_dir: "../config"
   tasks:
+    - name: register config path
+      stat:
+        path: "../k8s-config"
+      register: k8s_config_dir
+    - set_fact:
+        config_dir: "../k8s-config"
+      when: k8s_config_dir.stat.exists
     - name: check for kubectl
       stat:
-        path: "../k8s-config/artifacts/kubectl"
+        path: "{{ config_dir }}/artifacts/kubectl"
       register: kubectl_local
     - name: modify kubectl permissions
       file:
-        path: "../k8s-config/artifacts/kubectl"
+        path: "{{ config_dir }}/artifacts/kubectl"
         mode: '0755'
       when: kubectl_local.stat.exists
     - name: copy kubectl 
       copy:
-        src: "../k8s-config/artifacts/kubectl"
+        src: "{{ config_dir }}/artifacts/kubectl"
         dest: "/usr/local/bin/kubectl"
       when: kubectl_local.stat.exists
       become: true
@@ -143,7 +159,7 @@
       when: kubectl_system.stat.exists
     - name: manually move kubectl binary
       debug:
-        msg: "Unable to move kubectl, run: sudo cp ./k8s-config/artifacts/kubectl /usr/local/bin"
+        msg: "Unable to move kubectl, run: sudo cp {{ config_dir }}/artifacts/kubectl /usr/local/bin"
       when: kubectl_copied is failed
   tags:
     - local
