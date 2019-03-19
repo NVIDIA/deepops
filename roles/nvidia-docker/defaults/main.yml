@@ -1,8 +1,6 @@
 # Package version pinning
-ubuntu_nvidia_docker2_package_version: ''
-ubuntu_nvidia_container_runtime_package_version: ''
-rhel_nvidia_docker2_package_version: ''
-rhel_nvidia_container_runtime_package_version: ''
+nvidia_docker2_package_version: ''
+nvidia_container_runtime_package_version: ''
 
 docker_daemon_json:
   runtimes:

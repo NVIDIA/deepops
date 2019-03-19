@@ -20,6 +20,6 @@
     state: present
     update_cache: yes
   with_items:
-    - "nvidia-docker2{{ rhel_nvidia_docker2_package_version | ternary('-'+rhel_nvidia_docker2_package_version, '') }}"
-    - "nvidia-container-runtime{{ rhel_nvidia_container_runtime_package_version | ternary('-'+rhel_nvidia_container_runtime_package_version, '') }}"
+    - "nvidia-docker2{{ nvidia_docker2_package_version | ternary('-'+nvidia_docker2_package_version, '') }}"
+    - "nvidia-container-runtime{{ nvidia_container_runtime_package_version | ternary('-'+nvidia_container_runtime_package_version, '') }}"
   register: install_packages
