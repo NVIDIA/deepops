@@ -9,6 +9,15 @@ VIRT_DIR="${SCRIPT_DIR}/.."
 # Set up VMs for virtual cluster
 #####################################
 
+# Create SSH key in default location if it doesn't exist
+yes n | ssh-keygen -q -t rsa -f ~/.ssh/id_rsa -C "" -N "" || echo "key exists"
+
+# Default to using provided Ubuntu Vagrantfile
+if [ -z "${DEEPOPS_VAGRANT_FILE}" ]; then
+	DEEPOPS_VAGRANT_FILE="${VIRT_DIR}/Vagrantfile-ubuntu"
+fi
+cp "${DEEPOPS_VAGRANT_FILE}" "${VIRT_DIR}/Vagrantfile"
+
 # Ensure we're in the right directory for Vagrant
 cd "${VIRT_DIR}" || exit 1
 

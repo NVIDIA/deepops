@@ -2,6 +2,10 @@ VAGRANTFILE_API_VERSION = "2"
 BOX_IMAGE = "generic/ubuntu1804"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.ssh.insert_key = false
+  config.ssh.private_key_path = ["~/.ssh/id_rsa", "~/.vagrant.d/insecure_private_key"]
+  config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "~/.ssh/authorized_keys"
+
   config.hostmanager.manage_host = true
   config.hostmanager.manage_guest = true
   config.hostmanager.include_offline = true

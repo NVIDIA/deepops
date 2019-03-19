@@ -16,7 +16,7 @@ Also, using VMs and optionally GPU passthrough assumes that the host machine has
 enable virtualization in the BIOS. For instructions on how to accomplish this, refer to the sections
 at the bottom of this README: `Enabling virtualization and GPU passthrough`.
 
-## Bootstrap virtual
+## Bootstrap virtualization dependencies
 
 This project leverages vagrant and libvirt to spin up the appropriate VMs to model a DeepOps
 cluster. To install the necessary dependencies, such as ansible, vagrant, libvirt, etc, run the
@@ -28,6 +28,16 @@ $ ./setup.sh
 
 After you've run this, it's a good idea to start a fresh login shell to ensure your environment is up to date.
 For example, you will need to be in the "libvirt" group to mangage VMs, but your current session won't include this group if libvirt was just installed.
+
+## Select the Vagrant file for your Linux distro
+
+If you want to run your virtual cluster on CentOS, set the `DEEPOPS_VAGRANT_FILE` variable to point to the CentOS Vagrant file:
+
+```
+$ export DEEPOPS_VAGRANT_FILE=./Vagrantfile-centos
+```
+
+If you want to use Ubuntu, you can set this variable to point to the Ubuntu Vagrant file, or just leave it unset (Ubuntu is the default).
 
 ## Start the cluster
 
@@ -47,15 +57,15 @@ list`...
 $ virsh list
  Id    Name                           State
 ----------------------------------------------------
- 7     vagrant_mgmt                   running
- 8     vagrant_login                  running
- 9     vagrant_gpu01                  running
+ 22    virtual_virtual-mgmt           running
+ 23    virtual_virtual-gpu01          running
+ 24    virtual_virtual-login          running
 ```
 
 Connect to any of the nodes via vagrant ssh...
 
 ```
-$ vagrant ssh gpu01
+$ vagrant ssh virtual-gpu01
 ```
 
 ## Destroy the cluster
