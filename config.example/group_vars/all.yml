@@ -62,6 +62,7 @@
 #  - "{{ 'linux-headers-' + ansible_kernel }}"
 
 # Kubernetes configuration
+kubeadm_enabled: true
 kube_api_anonymous_auth: true
 helm_enabled: true
 tiller_node_selectors: "node-role.kubernetes.io/master=''"
