@@ -1,1 +1,8 @@
-repo_dist_name: "{{ ansible_distribution | lower }}{{ ansible_distribution_version }}"
+ubuntu_repo_dist_name: "{{ ansible_distribution | lower }}{{ ansible_distribution_version }}"
+rhel_repo_dist_name: "{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}"
+
+ubuntu_repo_file_name: "nvidia-docker.list"
+ubuntu_repo_file_path: "/etc/apt/sources.list.d/{{ ubuntu_repo_file_name }}"
+
+rhel_repo_file_name: "nvidia-docker.repo"
+rhel_repo_file_path: "/etc/yum.repos.d/{{ rhel_repo_file_name }}"
