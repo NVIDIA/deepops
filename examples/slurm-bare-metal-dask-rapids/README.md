@@ -5,27 +5,115 @@ Running a benchmark with RAPIDS and Dask with Slurm on bare metal
 It's often used in conjunction with [Dask](https://dask.org/), a Python framework for running parallel computing jobs.
 Both these tools can be used either in a containerized workflow, often using Kubernetes, or on "bare metal" with no containers, often using a shared HPC cluster.
 
-In this example, we'll walk through running a simple RAPIDS-based benchmark using a bare-metal workflow, executed on a Slurm HPC cluster deployed using DeepOps.
-The benchmark can be found in `examples/slurm-bare-metal-dask-rapids/sum.py`, and performs a parallel sum reduction test on either the CPUs or GPUs available to it.
-
+In this example, I'll walk through running a simple RAPIDS-based benchmark using a bare-metal workflow, executed on a Slurm HPC cluster deployed using DeepOps.
 The steps outlined below were tested using a virtual DeepOps cluster with one login node and two compute nodes,
 where each compute node has been allocated 8 CPU cores and a single NVIDIA Tesla P4 GPU.
 Any cluster hardware should work to duplicate this example, provided that each compute node you use for the benchmark includes at least one CUDA-capable GPU.
 
-These steps assume that:
+## Assumptions
 
-* You have already set up a Slurm cluster using the [Slurm deployment guide](/docs/slurm-cluster.md).
-* All nodes in your cluster have access to a shared NFS filesystem (`/shared` below).
+These instructions assume that:
+
+* You have already set up a Slurm cluster using DeepOps.
+    * If you haven't configured a cluster yet, see the [Slurm deployment guide](/docs/slurm-cluster.md) for deploying on physical hardware, or the [virtual guide](/virtual/README.md) to set up a virtual DeepOps cluster.
 * You have privileges to run Ansible on this cluster.
+    * If you don't have these privileges, talk to your system administrator to see if they can set up the system dependencies. The only system dependencies for this example are captured in the Ansible playbook, `examples/slurm-bare-metal-dask-rapids/ansible-prereqs.yml`.
+* All compute nodes in your cluster have at least one CUDA-capable GPU.
+* All nodes (compute and login) in your cluster have access to a shared NFS filesystem.
+    * In many clusters `/home` is shared for easy use by users, but we will use `/shared` below to make the use of this filesystem explicit. If your path is different, just adjust the commands below as needed.
+* The user you will use to run jobs has passwordless SSH access from your login node to the compute nodes.
 
-1. From your DeepOps provisioning node, run the provided `prereqs.yml` Ansible playbook to ensure all system-level dependencies are present.
+## Install software dependencies and prepare your environment
+
+1. From your DeepOps provisioning node, run the provided `ansible-prereqs.yml` Ansible playbook to ensure all system-level dependencies are present.
     ```
-    $ ansible-playbook -l slurm-cluster -i <path_to_inventory_file> examples/slurm-bare-metal-dask-rapids/prereqs.yml
+    $ ansible-playbook -l slurm-cluster -i <path_to_inventory_file> examples/slurm-bare-metal-dask-rapids/ansible-prereqs.yml
     ```
 1. Log into your login node, and copy the files from this example to `/shared/benchmark`.
     ```
     $ hostname
     virtual-login
     $ ls /shared/benchmark
-    
+    ansible-prereqs.yml  conda-requirements.yml  README.md
     ```
+1. To install Dask, Rapids, and supporting libraries, I'll create a custom Python environment using the [Anaconda Python Distribution](https://www.anaconda.com/distribution/). I'll install this environment in the NFS filesystem (`/shared`) to make it visible to all the compute nodes.
+    ```
+    $ hostname
+    virtual-login
+    $ /usr/local/anaconda/bin/conda env create --prefix /shared/conda -f /shared/benchmark/conda-requirements.yml
+    ```
+1. Source the Anaconda environment and install extra dependencies.
+    ```
+    $ source /usr/local/anaconda/bin/activate /shared/conda
+    $ pip install git+https://github.com/rapidsai/dask-xgboost@dask-cudf
+    $ pip install git+https://github.com/rapidsai/dask-cudf@master
+    $ pip install git+https://github.com/rapidsai/dask-cuda@master
+    ```
+1. Clone the Git repository that contains the benchmark code.
+    ```
+    vagrant@virtual-login:/shared/benchmark$ git clone https://github.com/GoogleCloudPlatform/ml-on-gcp
+    ```
+
+## Setting up your Dask job
+
+1. Allocate compute nodes for a Slurm interactive job to run the benchmark. In this case we'll use two compute nodes. Note the job allocation number after running `salloc`.
+    ```
+    vagrant@virtual-login:/shared/benchmark$ salloc -N 2  # where 2 is the number of nodes
+    salloc: Granted job allocation 6
+    vagrant@virtual-login:/shared/benchmark$ squeue -j 6  # where 6 is the job id
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+                 6     batch     bash  vagrant  R       2:52      2 virtual-gpu[01-02]
+    ```
+1. If not already done, source the Anaconda environment.
+    ```
+    vagrant@virtual-login:/shared/benchmark$ source /usr/local/anaconda/bin/activate /shared/conda
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$
+    ```
+1. Launch the Dask scheduler on the login node. Note the IP and port for the scheduler process.
+    ```
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ dask-scheduler --host virtual-login &
+    [1] 32322
+    distributed.scheduler - INFO - -----------------------------------------------
+    distributed.scheduler - INFO - Clear task state
+    distributed.scheduler - INFO -   Scheduler at:       tcp://10.0.0.4:8786
+    distributed.scheduler - INFO -       bokeh at:             10.0.0.4:8787
+    distributed.scheduler - INFO - Local Directory:    /tmp/scheduler-78zq3io6
+    distributed.scheduler - INFO - -----------------------------------------------
+    
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ 
+    ```
+1. Using ssh and the provided script, launch the Dask CUDA workers on each of the compute nodes. Pass the script the IP address and port of the scheduler process.
+    ```
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu01 /shared/benchmark/launch-dask-worker.sh 10.0.0.4 8786
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu02 /shared/benchmark/launch-dask-worker.sh 10.0.0.4 8786
+    ```
+1. Use Slurm to get an interactive login with your job environment on a compute node.
+    ```
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ srun -n1 --pty -- /bin/bash
+    srun: Warning: can't run 1 processes on 2 nodes, setting nnodes to 1
+    vagrant@virtual-gpu01:/shared/benchmark$
+    ```
+
+## Actually run the benchmark
+
+1. Run the benchmark on a single GPU (not running in distributed mode)
+    ```
+    vagrant@virtual-gpu01:/shared/benchmark$ ./run.sh -g 1
+    Using GPUs and Local Dask
+    Port 8787 is already in use.
+    Perhaps you already have a cluster running?
+    Hosting the diagnostics dashboard on a random port instead.
+    Allocating and initializing arrays using GPU memory with CuPY
+    Array size: 2.00 TB.  Computing parallel sum . . .
+    Processing complete.
+    Wall time create data + computation time: 254.01085186 seconds
+    ```
+1. Run the benchmark on all compute node GPUs (distributed mode)
+    ```
+
+    ```
+1. Run the benchmark on compute node CPUs.
+
+## Cleaning up
+
+1. End the job.

@@ -1,0 +1,19 @@
+---
+# Anaconda on all hosts
+- hosts: all
+  become: yes
+  roles:
+  - andrewrothstein.anaconda
+
+# CUDA components just on workers
+- hosts: slurm-workers
+  become: yes
+  roles:
+  - nvidia-ml
+  tasks:
+  - name: ensure cuda is installed
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - "cuda=10.0*"      # CUDA 10.0 currently needed
