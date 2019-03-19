@@ -128,13 +128,13 @@ Install the latest version of Ubuntu Server 18.04 LTS on each management server.
 
 ### 3. Deploy Kubernetes to the management node(s)
 
-Deploy Kubernetes to just the management node(s) using the k8s-cluster playbook and the `-l management` flag:
+Deploy Kubernetes to just the management node(s) using the k8s-cluster playbook:
 
 ```sh
 # NOTE: If SSH requires a password, add: `-k`
 # NOTE: If sudo on remote machine requires a password, add: `-K`
 # NOTE: If SSH user is different than current user, add: `-u ubuntu`
-ansible-playbook -l management -i config/inventory -b playbooks/k8s-cluster.yml
+ansible-playbook -l management,localhost -i config/inventory -b playbooks/k8s-cluster.yml
 ```
 
 Test you can access the kubernetes cluster:

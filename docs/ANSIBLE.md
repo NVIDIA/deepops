@@ -111,7 +111,7 @@ To run playbooks, use the `ansible-playbook` command:
 # If sudo requires a password, add the -K flag
 
 # ansible-playbook <host-group> playbooks/<playbook>.yml
-ansible-playbook management playbooks/k8s-cluster.yml
+ansible-playbook -l management,localhost -b playbooks/k8s-cluster.yml
 ```
 
 ### Useful commands
