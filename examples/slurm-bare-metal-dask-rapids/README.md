@@ -69,23 +69,22 @@ These instructions assume that:
     vagrant@virtual-login:/shared/benchmark$ source /usr/local/anaconda/bin/activate /shared/conda
     (/shared/conda) vagrant@virtual-login:/shared/benchmark$
     ```
-1. Launch the Dask scheduler on the login node. Note the IP and port for the scheduler process.
+1. Launch the Dask scheduler on the first compute node. Note the IP and port for the scheduler process.
     ```
-    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ dask-scheduler --host virtual-login &
-    [1] 32322
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu01 /shared/benchmark/launch-dask-scheduler.sh &
+    [1] 32563
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ Launching dask-scheduler on virtual-gpu01
     distributed.scheduler - INFO - -----------------------------------------------
     distributed.scheduler - INFO - Clear task state
-    distributed.scheduler - INFO -   Scheduler at:       tcp://10.0.0.4:8786
-    distributed.scheduler - INFO -       bokeh at:             10.0.0.4:8787
-    distributed.scheduler - INFO - Local Directory:    /tmp/scheduler-78zq3io6
+    distributed.scheduler - INFO -   Scheduler at:      tcp://10.0.0.11:8786
+    distributed.scheduler - INFO -       bokeh at:            10.0.0.11:8787
+    distributed.scheduler - INFO - Local Directory:    /tmp/scheduler-3darpfr_
     distributed.scheduler - INFO - -----------------------------------------------
-    
-    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ 
     ```
-1. Using ssh and the provided script, launch the Dask CUDA workers on each of the compute nodes. Pass the script the IP address and port of the scheduler process.
+1. Launch Dask CUDA workers on each of the compute nodes. Pass the script the IP address and port of the scheduler process.
     ```
-    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu01 /shared/benchmark/launch-dask-worker.sh 10.0.0.4 8786
-    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu02 /shared/benchmark/launch-dask-worker.sh 10.0.0.4 8786
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu01 /shared/benchmark/launch-dask-worker.sh 10.0.0.11 8786 &
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu02 /shared/benchmark/launch-dask-worker.sh 10.0.0.11 8786 &
     ```
 1. Use Slurm to get an interactive login with your job environment on a compute node.
     ```
@@ -110,10 +109,26 @@ These instructions assume that:
     ```
 1. Run the benchmark on all compute node GPUs (distributed mode)
     ```
+    vagrant@virtual-gpu01:/shared/benchmark$ ./run.sh -g 1 -d
+    Using Distributed Dask
+    Allocating and initializing arrays using GPU memory with CuPY
+    Array size: 2.00 TB.  Computing parallel sum . . .
+    Processing complete.
+    Wall time create data + computation time: 128.67964649 seconds
+    ```
+1. Run the benchmark on compute node CPUs. Here we have 8 cores per node, but replace that with the number for your hardware.
+    ```
 
     ```
-1. Run the benchmark on compute node CPUs.
 
 ## Cleaning up
 
-1. End the job.
+1. Exit back to the login node.
+    ```
+    ```
+1. Kill all the Dask processes.
+    ```
+    ```
+1. Exit the shell to end the interactive Slurm job.
+    ```
+    ```
