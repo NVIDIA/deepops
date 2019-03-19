@@ -7,7 +7,7 @@ from dask.distributed import Client, LocalCluster, wait
 from dask.delayed import delayed
 from dask.diagnostics import ProgressBar
 from multiprocessing.pool import ThreadPool
-import subprocess
+import socket
 
 def create_data(rs, xdim, ydim, x_chunk_size, y_chunk_size):
     x = rs.normal(10, 1, size=(xdim, ydim), chunks=(x_chunk_size, y_chunk_size))
@@ -18,8 +18,8 @@ def run(data):
     return
 
 def get_scheduler_info():
-    scheduler_ip = subprocess.check_output(['hostname','--all-ip-addresses'])
-    scheduler_ip = scheduler_ip.decode('UTF-8').split()[0]
+    scheduler_hostname = socket.gethostname()
+    scheduler_ip = socket.gethostbyname(scheduler_hostname)
     scheduler_port = '8786'
     scheduler_uri = str(scheduler_ip) + ':' +  scheduler_port
     return(scheduler_ip, scheduler_uri)

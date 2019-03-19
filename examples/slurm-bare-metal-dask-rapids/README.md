@@ -34,7 +34,8 @@ These instructions assume that:
     $ hostname
     virtual-login
     $ ls /shared/benchmark
-    ansible-prereqs.yml  conda-requirements.yml  README.md
+    ansible-prereqs.yml     launch-dask-cuda-worker.sh  README.md  sum.py
+    conda-requirements.yml  launch-dask-scheduler.sh    run.sh
     ```
 1. To install Dask, Rapids, and supporting libraries, I'll create a custom Python environment using the [Anaconda Python Distribution](https://www.anaconda.com/distribution/). I'll install this environment in the NFS filesystem (`/shared`) to make it visible to all the compute nodes.
     ```
@@ -49,12 +50,8 @@ These instructions assume that:
     $ pip install git+https://github.com/rapidsai/dask-cudf@master
     $ pip install git+https://github.com/rapidsai/dask-cuda@master
     ```
-1. Clone the Git repository that contains the benchmark code.
-    ```
-    vagrant@virtual-login:/shared/benchmark$ git clone https://github.com/GoogleCloudPlatform/ml-on-gcp
-    ```
 
-## Setting up your Dask job
+## Setting up your Dask job and running the GPU benchmark
 
 1. Allocate compute nodes for a Slurm interactive job to run the benchmark. In this case we'll use two compute nodes. Note the job allocation number after running `salloc`.
     ```
@@ -81,10 +78,10 @@ These instructions assume that:
     distributed.scheduler - INFO - Local Directory:    /tmp/scheduler-3darpfr_
     distributed.scheduler - INFO - -----------------------------------------------
     ```
-1. Launch Dask CUDA workers on each of the compute nodes. Pass the script the IP address and port of the scheduler process.
+1. Launch Dask CUDA workers on each of the compute nodes. Pass the script the IP address and port of the scheduler.
     ```
-    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu01 /shared/benchmark/launch-dask-worker.sh 10.0.0.11 8786 &
-    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu02 /shared/benchmark/launch-dask-worker.sh 10.0.0.11 8786 &
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu01 /shared/benchmark/launch-dask-cuda-worker.sh 10.0.0.11 8786 &
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu02 /shared/benchmark/launch-dask-cuda-worker.sh 10.0.0.11 8786 &
     ```
 1. Use Slurm to get an interactive login with your job environment on a compute node.
     ```
@@ -92,9 +89,6 @@ These instructions assume that:
     srun: Warning: can't run 1 processes on 2 nodes, setting nnodes to 1
     vagrant@virtual-gpu01:/shared/benchmark$
     ```
-
-## Actually run the benchmark
-
 1. Run the benchmark on a single GPU (not running in distributed mode)
     ```
     vagrant@virtual-gpu01:/shared/benchmark$ ./run.sh -g 1
@@ -116,19 +110,15 @@ These instructions assume that:
     Processing complete.
     Wall time create data + computation time: 128.67964649 seconds
     ```
-1. Run the benchmark on compute node CPUs. Here we have 8 cores per node, but replace that with the number for your hardware.
+1. Clean up.
     ```
-
-    ```
-
-## Cleaning up
-
-1. Exit back to the login node.
-    ```
-    ```
-1. Kill all the Dask processes.
-    ```
-    ```
-1. Exit the shell to end the interactive Slurm job.
-    ```
+    vagrant@virtual-gpu01:/shared/benchmark$ killall dask-cuda-worker
+    vagrant@virtual-gpu01:/shared/benchmark$ killall dask-scheduler
+    vagrant@virtual-gpu01:/shared/benchmark$ exit
+    exit
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu02 killall dask-cuda-worker
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ exit
+    exit
+    salloc: Relinquishing job allocation 6
+    vagrant@virtual-login:/shared/benchmark$
     ```
