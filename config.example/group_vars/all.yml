@@ -60,20 +60,3 @@
 #software_extra_packages:
 #  - build-essential
 #  - "{{ 'linux-headers-' + ansible_kernel }}"
-
-# Kubernetes configuration
-kube_api_anonymous_auth: true
-helm_enabled: true
-tiller_node_selectors: "node-role.kubernetes.io/master=''"
-docker_dns_servers_strict: no
-docker_storage_options: -s overlay2
-
-kube_apiserver_admission_control:
-  - Initializers
-  - NamespaceLifecycle
-  - LimitRanger
-  - ServiceAccount
-  - DefaultStorageClass
-  - PodNodeSelector
-  - ValidatingAdmissionWebhook
-  - ResourceQuota
