@@ -1,0 +1,25 @@
+---
+- name: remove packages
+  yum:
+    name:
+      - nvidia-docker
+    state: absent
+    autoremove: yes
+
+- name: add repo
+  get_url:
+    url: "https://nvidia.github.io/nvidia-docker/{{ rhel_repo_dist_name }}/{{ rhel_repo_file_name }}"
+    dest: "{{ rhel_repo_file_path }}"
+    mode: 0644
+    owner: root
+    group: root
+
+- name: install packages
+  yum:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - "nvidia-docker2{{ rhel_nvidia_docker2_package_version | ternary('-'+rhel_nvidia_docker2_package_version, '') }}"
+    - "nvidia-container-runtime{{ rhel_nvidia_container_runtime_package_version | ternary('-'+rhel_nvidia_container_runtime_package_version, '') }}"
+  register: install_packages
