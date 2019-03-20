@@ -118,7 +118,28 @@ cuda9.2-runtime-ubuntu16.04: Pulling from nvidia/rapidsai/rapidsai
 ```
 
 The image build can take some time, so this is a good chance to get up and make a cup of coffee. ;-)
-When 
+When the script is completed, you should be able to run the following commands to get URLs for Jupyter and Dask:
+
+```
+export DASK_SCHEDULER=$(kubectl get svc --namespace rapids rapids-dask-scheduler -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+export DASK_SCHEDULER_UI_IP=$(kubectl get svc --namespace rapids rapids-dask-scheduler -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+export JUPYTER_NOTEBOOK_IP=$(kubectl get svc --namespace rapids rapids-dask-jupyter -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+echo http://$JUPYTER_NOTEBOOK_IP:80 -- Jupyter notebook
+
+echo http://$DASK_SCHEDULER_UI_IP:80  -- Dask dashboard
+
+echo http://$DASK_SCHEDULER:8786    -- Dask Client connection
+```
+
+If you open your browser and go to the URL for Jupyter, you can log in with the default password `dask`.
+You'll then find yourself in JupyterLab session where you can interact with the RAPIDS and Dask libraries.
+If you open a terminal window (File -> New -> Terminal in the JupyterLab menu), you should even be able to run `nvidia-smi` to see your GPUs:
+
+![Screenshot of running nvidia-smi in JupyterLab](/examples/k8s-dask-rapids/jupyterlab-nvsmi.png "Screenshot of running nvidia-smi in JupyterLab")
+
 
 ## Setting up the Jupyter notebook
 
