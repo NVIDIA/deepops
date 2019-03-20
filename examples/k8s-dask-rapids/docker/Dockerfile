@@ -16,7 +16,7 @@ RUN source activate $CONDA_ENV && \
     pip install ipyvolume dask-kubernetes matplotlib cupy-cuda92
 
 # Copy the parallel sum notebook in
-COPY ParallelSum.ipynb /rapids/nodebooks/ParallelSum.ipynb
+COPY ParallelSum.ipynb /rapids/notebooks/ParallelSum.ipynb
 
 # Set up image to be run
 COPY prepare.sh /usr/bin/prepare.sh
