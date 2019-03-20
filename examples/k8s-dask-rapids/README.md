@@ -31,7 +31,7 @@ If you haven't used Docker Hub before, the [quickstart documentation](https://do
 
 ### Editing the deployment scripts
 
-We deploy the RAPIDS/Dask container in one step using `scripts/k8s_deploy_rapids_dask.sh`.
+We'll deploy the RAPIDS/Dask container in one step using the `deploy.sh` script.
 This script builds the image, pushes it to the registry, and deploys the container using Helm.
 To make sure we're pointing to the right registry, we'll need to edit this script and the deployment definition.
 
@@ -39,8 +39,6 @@ To make sure we're pointing to the right registry, we'll need to edit this scrip
     In this case, I'm pushing to the Docker Hub repository `ajdecon/dask-rapids-example`.
     So the change to the script looks like this:
     ```
-    --- a/scripts/k8s_deploy_rapids_dask.sh
-    +++ b/scripts/k8s_deploy_rapids_dask.sh
     @@ -30,7 +30,7 @@ function build_image() {
        pushd tmp-rapids-build
     
@@ -53,8 +51,6 @@ To make sure we're pointing to the right registry, we'll need to edit this scrip
     ```
 1. In the same script, replace the `TODO` comment for pushing the image with your `docker push` command.
     ```
-    --- a/scripts/k8s_deploy_rapids_dask.sh
-    +++ b/scripts/k8s_deploy_rapids_dask.sh
     @@ -36,7 +36,7 @@ function build_image() {
        rm -rf tmp-rapids-build
     
@@ -65,11 +61,8 @@ To make sure we're pointing to the right registry, we'll need to edit this scrip
      }
     ```
 1. We also need to edit the Helm config for the RAPIDS deployment to point to the correct image.
-    Edit the `config/helm/rapids-dask.yml` file to point to the right image:
+    Edit the `helm/rapids-dask.yml` file to point to the right image:
     ```
-    $ diff -u config.example/helm/rapids-dask.yml virtual/config/helm/rapids-dask.yml
-    --- config.example/helm/rapids-dask.yml 2019-03-18 18:15:35.097013179 +0000
-    +++ virtual/config/helm/rapids-dask.yml 2019-03-20 20:38:46.101675867 +0000
     @@ -5,7 +5,7 @@
      worker:
        image:
@@ -95,7 +88,7 @@ To make sure we're pointing to the right registry, we'll need to edit this scrip
 At this point we can run the deployment:
 
 ```
-ubuntu@ivb120:~/src/deepops/virtual$ ../scripts/k8s_deploy_rapids_dask.sh
+ubuntu@ivb120:~/src/deepops/examples/k8s-dask-rapis$ ./deploy.sh
 Tearing down existing resources
 Helm resources already exist, would you  like to delete them? (yes/no)yes
 release "rapids" deleted
@@ -140,9 +133,21 @@ If you open a terminal window (File -> New -> Terminal in the JupyterLab menu), 
 
 ![Screenshot of running nvidia-smi in JupyterLab](/examples/k8s-dask-rapids/jupyterlab-nvsmi.png "Screenshot of running nvidia-smi in JupyterLab")
 
-
-## Setting up the Jupyter notebook
-
 ## Running the benchmark
 
-## Cleaning up
+Once you have JupyterLab open, load the `ParallelSum.ipynb` notebook using the file pane.
+This notebook will step through running a simple parallel sum benchmark on both the CPUs and GPUs in your cluster.
+Feel free to adjust the number of CPU cores or GPUs used and the parameters for the model to experiment with the calculation.
+
+![Screenshot of the parallel sum notebook](/examples/k8s-dask-rapids/parallel-sum.png "Screenshot of the parallel sum notebook")
+
+## Experimenting further
+
+The base container we used for this benchmark contains more examples using RAPIDS in the `cuml/` directory,
+as well as an end-to-end wokrflow example based on a Fannie Mae mortgage dataset in the `mortgage/` directory.
+Both directories can be accessed easily via JupyterLab.
+
+You can also experiment with the custom container by making changes to the `Dockerfile` used to create it,
+in `examples/k8s-dask-rapids/docker`.
+
+For more information on RAPIDS, check out [https://rapids.ai](https://rapids.ai).
