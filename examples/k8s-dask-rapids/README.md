@@ -1,0 +1,127 @@
+Running a benchmark with RAPIDS and Dask on Jupyter and Kubernetes
+==================================================================
+
+(add RAPIDS/Dask intro text)
+
+In this example, I'll walk through running a simple RAPIDS-based benchmark, using Dask for parallelism, running in a Jupyter notebook on a Kubernetes cluster.
+
+The steps outlined below were tested using a virtual DeepOps cluster that included one dedicated management node, as well as two compute nodes that were each allocated 8 CPU cores, 16 GB memory, and a single NVIDIA Tesla P4 GPU.
+Any cluster hardware should work to duplicate this example, provided that each compute node you use for the benchmark includes at least one CUDA-capable GPU.
+
+## Assumptions
+
+These instructions assume that:
+
+* You have already set up a [Kubernetes cluster using DeepOps](/docs/kubernetes-cluster.md).
+* Your cluster has a [MetalLB load balancer](/docs/ingress.md) configured for ingress.
+* You have privileges to run containers in your cluster.
+* All compute nodes in your cluster have at least one CUDA-capable GPU.
+* You have push access to a container registry, whether local or public.
+    * DeepOps is capable of running a local container registry, but the configuration for the registry  is out of scope for this example. The example below uses the public [Docker Hub](https://hub.docker.com) registry.
+
+## Deploying a custom RAPIDS container
+
+### A note on registries
+
+This example will include building a custom container image that includes integration between the Dask framework and Kubernetes.
+Because we're building a custom image, we need to push the image to some container registry that Kubernetes can pull from to run the job.
+DeepOps includes support for running a local registry, but configuration of that system can be site-specific and is out of scope for this example.
+In my workflow below, I am pushing the image to [Docker Hub](https://hub.docker.com).
+If you haven't used Docker Hub before, the [quickstart documentation](https://docs.docker.com/docker-hub/) provides a good tutorial.
+
+### Editing the deployment scripts
+
+We deploy the RAPIDS/Dask container in one step using `scripts/k8s_deploy_rapids_dask.sh`.
+This script builds the image, pushes it to the registry, and deploys the container using Helm.
+To make sure we're pointing to the right registry, we'll need to edit this script and the deployment definition.
+
+1. In `scripts/k8s_deploy_rapids_dash.sh`, replace the tag in the `docker build` command with a tag identifying your image in the registry.
+    In this case, I'm pushing to the Docker Hub repository `ajdecon/dask-rapids-example`.
+    So the change to the script looks like this:
+    ```
+    --- a/scripts/k8s_deploy_rapids_dask.sh
+    +++ b/scripts/k8s_deploy_rapids_dask.sh
+    @@ -30,7 +30,7 @@ function build_image() {
+       pushd tmp-rapids-build
+    
+       # Build the docker image
+    -  docker build -t dask-rapids
+    +  docker build -t ajdecon/dask-rapids-example .
+    
+       popd
+       rm -rf tmp-rapids-build
+    ```
+1. In the same script, replace the `TODO` comment for pushing the image with your `docker push` command.
+    ```
+    --- a/scripts/k8s_deploy_rapids_dask.sh
+    +++ b/scripts/k8s_deploy_rapids_dask.sh
+    @@ -36,7 +36,7 @@ function build_image() {
+       rm -rf tmp-rapids-build
+    
+    
+    -  # TODO: Push the docker  image
+    +  docker push ajdecon/dask-rapids-example
+    
+     }
+    ```
+1. We also need to edit the Helm config for the RAPIDS deployment to point to the correct image.
+    Edit the `config/helm/rapids-dask.yml` file to point to the right image:
+    ```
+    $ diff -u config.example/helm/rapids-dask.yml virtual/config/helm/rapids-dask.yml
+    --- config.example/helm/rapids-dask.yml 2019-03-18 18:15:35.097013179 +0000
+    +++ virtual/config/helm/rapids-dask.yml 2019-03-20 20:38:46.101675867 +0000
+    @@ -5,7 +5,7 @@
+     worker:
+       image:
+         # repository: nvcr.io/nvidia/rapidsai/rapidsai
+    -    repository: dask-rapids
+    +    repository: ajdecon/dask-rapids-example
+         tag: latest
+         env:
+       replicas: 3
+    @@ -24,7 +24,7 @@
+     # If you would like to run/test your GPU code without using workers you may comment the resources section
+     jupyter:
+       image:
+    -    repository: dask-rapids
+    +    repository: ajdecon/dask-rapids-example
+         tag: latest
+       resources:
+         requests:
+    ```
+
+### Running the deployment
+
+At this point we can run the deployment:
+
+```
+ubuntu@ivb120:~/src/deepops/virtual$ ../scripts/k8s_deploy_rapids_dask.sh
+Tearing down existing resources
+Helm resources already exist, would you  like to delete them? (yes/no)yes
+release "rapids" deleted
+Kubernetes resources already exist, would you  like to delete them? (yes/no)yes
+namespace "rapids" deleted
+Building custom dask/rapids image
+ls: cannot access 'tmp-rapids-build': No such file or directory
+Cloning into 'tmp-rapids-build'...
+remote: Enumerating objects: 11, done.
+remote: Counting objects: 100% (11/11), done.
+remote: Compressing objects: 100% (9/9), done.
+remote: Total 11 (delta 0), reused 8 (delta 0), pack-reused 0
+Unpacking objects: 100% (11/11), done.
+~/src/deepops/virtual/tmp-rapids-build ~/src/deepops/virtual
+Sending build context to Docker daemon  84.48kB
+Step 1/8 : FROM nvcr.io/nvidia/rapidsai/rapidsai:cuda9.2-runtime-ubuntu16.04
+cuda9.2-runtime-ubuntu16.04: Pulling from nvidia/rapidsai/rapidsai
+
+....... (lots of Docker and Kubernetes output follows) ........
+```
+
+The image build can take some time, so this is a good chance to get up and make a cup of coffee. ;-)
+When 
+
+## Setting up the Jupyter notebook
+
+## Running the benchmark
+
+## Cleaning up
