@@ -40,7 +40,7 @@ We'll deploy the RAPIDS/Dask container in one step using the `deploy.sh` script.
 This script builds the image, pushes it to the registry, and deploys the container using Helm.
 To make sure we're pointing to the right registry, we'll need to edit this script and the deployment definition.
 
-1. In `scripts/k8s_deploy_rapids_dash.sh`, replace the tag in the `docker build` command with a tag identifying your image in the registry.
+1. In `deploy.sh`, replace the tag in the `docker build` command with a tag identifying your image in the registry.
     In this case, I'm pushing to the Docker Hub repository `ajdecon/dask-rapids-example`.
     So the change to the script looks like this:
     ```
