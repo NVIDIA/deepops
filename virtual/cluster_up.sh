@@ -20,6 +20,9 @@ export DEEPOPS_CONFIG_DIR="${VIRT_DIR}/config"
 cp -r "${ROOT_DIR}/config.example/" "${DEEPOPS_CONFIG_DIR}/"
 cp "${VIRT_DIR}/virtual_inventory" "${DEEPOPS_CONFIG_DIR}/inventory"
 
+# Clear any stale fact cache in Ansible
+ansible -m meta -a "clear_facts" -i "${DEEPOPS_CONFIG_DIR}/inventory" all
+
 # Set up VMs for the virtual cluster
 "${VIRT_DIR}"/scripts/setup_vagrant.sh
 
