@@ -1,9 +1,13 @@
 Running a benchmark with RAPIDS and Dask on Jupyter and Kubernetes
 ==================================================================
 
-(add RAPIDS/Dask intro text)
+[RAPIDS](https://rapids.ai/) provides a suite of open source software libraries for doing data science on GPUs.
+It's often used in conjunction with [Dask](https://dask.org/), a Python framework for running parallel computing jobs.
+Both these tools are commonly used to run data science and analytics jobs across large clusters of machines.
 
-In this example, I'll walk through running a simple RAPIDS-based benchmark, using Dask for parallelism, running in a Jupyter notebook on a Kubernetes cluster.
+In this example, I'll walk through running a simple parallel sum benchmark in a  [Jupyter](https://jupyter.org/) notebook, using RAPIDS for working with the GPU and Dask to manage parallelism.
+I'll build a custom Docker container that includes the libraries we need, as well as other useful tools.
+I'll then deploy this container to a DeepOps cluster using [Kubernetes](https://kubernetes.io/), and show how to run the benchmark and experiment further.
 
 The steps outlined below were tested using a virtual DeepOps cluster that included one dedicated management node, as well as two compute nodes that were each allocated 8 CPU cores, 16 GB memory, and a single NVIDIA Tesla P4 GPU.
 Any cluster hardware should work to duplicate this example, provided that each compute node you use for the benchmark includes at least one CUDA-capable GPU.
@@ -23,9 +27,10 @@ These instructions assume that:
 
 ### A note on registries
 
-This example will include building a custom container image that includes integration between the Dask framework and Kubernetes.
+This example will include building a custom container image that includes the libraries we need for integrating RAPIDS, Dask, and Kubernetes.
 Because we're building a custom image, we need to push the image to some container registry that Kubernetes can pull from to run the job.
 DeepOps includes support for running a local registry, but configuration of that system can be site-specific and is out of scope for this example.
+
 In my workflow below, I am pushing the image to [Docker Hub](https://hub.docker.com).
 If you haven't used Docker Hub before, the [quickstart documentation](https://docs.docker.com/docker-hub/) provides a good tutorial.
 

@@ -15,6 +15,9 @@ RUN source activate $CONDA_ENV && \
     conda install -y unzip python-graphviz && \
     pip install ipyvolume dask-kubernetes matplotlib cupy-cuda92
 
+# Copy the parallel sum notebook in
+COPY ParallelSum.ipynb /rapids/nodebooks/ParallelSum.ipynb
+
 # Set up image to be run
 COPY prepare.sh /usr/bin/prepare.sh
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root", "--no-browser", "--NotebookApp.token='dask'"]
