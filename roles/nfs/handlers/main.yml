@@ -1,3 +1,8 @@
 ---
 - name: restart nfs
   service: name=nfs-kernel-server state=restarted
+  when: ansible_os_family == "Debian"
+
+- name: restart nfs
+  service: name=nfs-server state=restarted
+  when: ansible_os_family == "RedHat"
