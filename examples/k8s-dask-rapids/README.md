@@ -49,7 +49,7 @@ To make sure we're pointing to the right registry, we'll need to edit this scrip
     
        # Build the docker image
     -  docker build -t dask-rapids
-    +  docker build -t ajdecon/dask-rapids-example .
+    +  docker build -t ajdecon/deepops-example-k8s-dask-rapids .
     
        popd
        rm -rf tmp-rapids-build
@@ -61,28 +61,38 @@ To make sure we're pointing to the right registry, we'll need to edit this scrip
     
     
     -  # TODO: Push the docker  image
-    +  docker push ajdecon/dask-rapids-example
+    +  docker push ajdecon/deepops-example-k8s-dask-rapids
     
      }
     ```
 1. We also need to edit the Helm config for the RAPIDS deployment to point to the correct image.
     Edit the `helm/rapids-dask.yml` file to point to the right image:
     ```
+    --- a/examples/k8s-dask-rapids/helm/rapids-dask.yml
+    +++ b/examples/k8s-dask-rapids/helm/rapids-dask.yml
     @@ -5,7 +5,7 @@
      worker:
        image:
          # repository: nvcr.io/nvidia/rapidsai/rapidsai
     -    repository: dask-rapids
-    +    repository: ajdecon/dask-rapids-example
+    +    repository: ajdecon/deepops-example-k8s-dask-rapids
          tag: latest
          env:
        replicas: 3
-    @@ -24,7 +24,7 @@
+    @@ -17,14 +17,14 @@ worker:
+    
+     scheduler:
+       image:
+    -    repository: dask-rapids
+    +    repository: ajdecon/deepops-example-k8s-dask-rapids
+         tag: latest
+    
+     # By default we should be doing all Dask works on workers using calls to distributed.Client()
      # If you would like to run/test your GPU code without using workers you may comment the resources section
      jupyter:
        image:
     -    repository: dask-rapids
-    +    repository: ajdecon/dask-rapids-example
+    +    repository: ajdecon/deepops-example-k8s-dask-rapids
          tag: latest
        resources:
          requests:
@@ -94,24 +104,6 @@ At this point we can run the deployment:
 
 ```
 ubuntu@ivb120:~/src/deepops/examples/k8s-dask-rapis$ ./deploy.sh
-Tearing down existing resources
-Helm resources already exist, would you  like to delete them? (yes/no)yes
-release "rapids" deleted
-Kubernetes resources already exist, would you  like to delete them? (yes/no)yes
-namespace "rapids" deleted
-Building custom dask/rapids image
-ls: cannot access 'tmp-rapids-build': No such file or directory
-Cloning into 'tmp-rapids-build'...
-remote: Enumerating objects: 11, done.
-remote: Counting objects: 100% (11/11), done.
-remote: Compressing objects: 100% (9/9), done.
-remote: Total 11 (delta 0), reused 8 (delta 0), pack-reused 0
-Unpacking objects: 100% (11/11), done.
-~/src/deepops/virtual/tmp-rapids-build ~/src/deepops/virtual
-Sending build context to Docker daemon  84.48kB
-Step 1/8 : FROM nvcr.io/nvidia/rapidsai/rapidsai:cuda9.2-runtime-ubuntu16.04
-cuda9.2-runtime-ubuntu16.04: Pulling from nvidia/rapidsai/rapidsai
-
 ....... (lots of Docker and Kubernetes output follows) ........
 ```
 
