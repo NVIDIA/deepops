@@ -3,7 +3,7 @@
 - name: install munge
   package:
     name: munge
-    state: latest
+    state: present
   notify:
     - restart munge
 

@@ -1,20 +1,45 @@
 ---
 
-- name: install mariadb
+- name: install dependencies
   apt:
     name: "{{ item }}"
-    state: latest
+    state: present
   with_items:
     - mariadb-server
     - python-mysqldb
-
-- name: install s-nail and ssmtp
-  apt:
-    name: "{{ item }}"
-    state: latest
-  with_items:
     - s-nail
     - ssmtp
+  when: ansible_os_family == "Debian"
+
+- name: install dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - mariadb-server
+    - MySQL-python
+    - mailx
+    - ssmtp
+  when: ansible_os_family == "RedHat"
+
+- name: Allow mysql to read libaio.so.1
+  sefcontext:
+    target: '/lib64(/.*)?'
+    setype: mysqld_db_t
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Apply new SELinux file context to filesystem
+  command: restorecon -irv /lib64
+  when: ansible_os_family == "RedHat"
+
+- name: start mariadb
+  systemd:
+    name: mariadb
+    state: started
+    enabled: yes
+    daemon-reload: yes
+  when: ansible_os_family == "RedHat"
 
 - name: setup slurm db user
   mysql_user:

@@ -1,5 +1,13 @@
 ---
 
+- name: add epel repo
+  yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: https://download.fedoraproject.org/pub/epel/$releasever/$basearch/
+    gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+  when: ansible_os_family == "RedHat"
+
 - include: munge.yml
 
 - name: install slurm (xenial)
@@ -22,12 +30,22 @@
     - restart slurmctld
   register: install_slurm_bionic
 
-- fail:
+- name: install slurm (RHEL/CentOS)
+  yum:
+    name: "{{ slurm_pkg_url }}/{{ slurm_pkg_tag }}/{{ item }}"
+    state: present
+  with_items:
+    - slurm-18.08.5_2_7-1.x86_64.rpm
+  when: ansible_os_family == "RedHat"
+  register: install_slurm_rhel
+
+- name: Check for supported OS
+  fail:
     msg: OS not supported for slurm packaging
-  when: (install_slurm_xenial|skipped) and (install_slurm_bionic|skipped)
+  when: (install_slurm_xenial|skipped) and (install_slurm_bionic|skipped) and (install_slurm_rhel|skipped)
 
 - name: create slurm user home
-  file: 
+  file:
    path: "{{ slurm_user_home }}"
    recurse: yes
    state: directory
