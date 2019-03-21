@@ -1,20 +1,45 @@
 ---
 
-- name: install mariadb
+- name: install dependencies
   apt:
     name: "{{ item }}"
     state: latest
   with_items:
     - mariadb-server
     - python-mysqldb
+    - s-nail
+    - ssmtp
+  when: ansible_os_family == "Debian"
 
-- name: install s-nail and ssmtp
-  apt:
+- name: install dependencies
+  yum:
     name: "{{ item }}"
     state: latest
   with_items:
-    - s-nail
+    - mariadb-server
+    - MySQL-python
+    - mailx
     - ssmtp
+  when: ansible_os_family == "RedHat"
+
+- name: edit mariadb selinux policy
+  shell: grep mysqld /var/log/audit/audit.log | audit2allow -M mariadb_local
+  args:
+    creates: mariadb_local.pp
+  register: policy_created
+  when: ansible_os_family == "RedHat"
+
+- name: apply mariadb selinux policy
+  command: semodule -i mariadb_local.pp
+  when: ansible_os_family == "RedHat" and policy_created
+
+- name: start mariadb
+  systemd:
+    name: mariadb
+    state: started
+    enabled: yes
+    daemon-reload: yes
+  when: ansible_os_family == "RedHat"
 
 - name: setup slurm db user
   mysql_user:

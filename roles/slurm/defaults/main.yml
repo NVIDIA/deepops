@@ -1,3 +1,5 @@
+slurm_pkg_tag: docker-1.4
+
 slurm_cluster_name: deepops
 slurm_username: slurm
 slurm_password: ReplaceWithASecurePasswordInTheVault

@@ -1,9 +1,17 @@
 ---
-- name: install apt requirements
+- name: install dependencies
   apt:
     name: "{{ item }}"
   with_items:
     - linux-tools-generic  # for cpupower, used in prolog+epilog
+  when: ansible_os_family == "Debian"
+
+- name: install dependencies
+  yum:
+    name: "{{ item }}"
+  with_items:
+    - kernel-tools # for cpupower, used in prolog+epilog
+  when: ansible_os_family == "RedHat"
 
 - name: create prolog directories
   file:
