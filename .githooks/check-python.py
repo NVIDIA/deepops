@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Get a list of changed bash scripts that are staged for commit.
+Get a list of changed python scripts that are staged for commit.
 Run shellcheck on only those files.
 """
 
