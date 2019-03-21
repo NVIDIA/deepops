@@ -8,6 +8,7 @@ Run ansible-lint on only those playbooks and roles.
 from __future__ import print_function
 import subprocess
 import re
+import sys
 
 
 def get_changed_ansible_paths():
@@ -30,11 +31,10 @@ def get_changed_ansible_paths():
 
 def run_ansible_lint(paths):
     cmd = ["ansible-lint"] + paths
-    subprocess.call(cmd)
+    return subprocess.call(cmd)
 
 
 if __name__ == "__main__":
     paths = get_changed_ansible_paths()
-    print(paths)
     if len(paths) > 0:
-        run_ansible_lint(paths)
+        sys.exit(run_ansible_lint(paths))
