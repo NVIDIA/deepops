@@ -1,0 +1,6 @@
+---
+exclude_paths:
+- ./galaxy-roles/
+- ./kubespray/
+use_default_rules: true
+verbosity: 2
