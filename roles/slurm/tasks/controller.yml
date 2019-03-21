@@ -3,7 +3,7 @@
 - name: install dependencies
   apt:
     name: "{{ item }}"
-    state: latest
+    state: present
   with_items:
     - mariadb-server
     - python-mysqldb
@@ -14,7 +14,7 @@
 - name: install dependencies
   yum:
     name: "{{ item }}"
-    state: latest
+    state: present
   with_items:
     - mariadb-server
     - MySQL-python
@@ -22,16 +22,16 @@
     - ssmtp
   when: ansible_os_family == "RedHat"
 
-- name: edit mariadb selinux policy
-  shell: grep mysqld /var/log/audit/audit.log | audit2allow -M mariadb_local
-  args:
-    creates: mariadb_local.pp
-  register: policy_created
+- name: Allow mysql to read libaio.so.1
+  sefcontext:
+    target: '/lib64(/.*)?'
+    setype: mysqld_db_t
+    state: present
   when: ansible_os_family == "RedHat"
 
-- name: apply mariadb selinux policy
-  command: semodule -i mariadb_local.pp
-  when: ansible_os_family == "RedHat" and policy_created
+- name: Apply new SELinux file context to filesystem
+  command: restorecon -irv /lib64
+  when: ansible_os_family == "RedHat"
 
 - name: start mariadb
   systemd:

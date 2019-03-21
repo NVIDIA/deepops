@@ -3,7 +3,7 @@
 - name: install dependencies
   yum:
     name: "{{ item }}"
-    state: latest
+    state: present
   with_items:
     - hwloc
     - hwloc-devel
@@ -18,14 +18,16 @@
 
 - name: update grub
   block:
-    - command: update-grub
+    - name: update grub
+      command: update-grub
     - name: reboot after updating grub config
       reboot:
   when: update_grub.changed and ansible_os_family == "Debian"
 
 - name: update grub
   block:
-    - command: grub2-mkconfig -o /boot/grub2/grub.cfg
+    - name: update grub
+      command: grub2-mkconfig -o /boot/grub2/grub.cfg
     - name: reboot after updating grub config
       reboot:
   when: update_grub.changed and ansible_os_family == "RedHat"

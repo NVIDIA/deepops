@@ -39,12 +39,13 @@
   when: ansible_os_family == "RedHat"
   register: install_slurm_rhel
 
-- fail:
+- name: Check for supported OS
+  fail:
     msg: OS not supported for slurm packaging
   when: (install_slurm_xenial|skipped) and (install_slurm_bionic|skipped) and (install_slurm_rhel|skipped)
 
 - name: create slurm user home
-  file: 
+  file:
    path: "{{ slurm_user_home }}"
    recurse: yes
    state: directory
