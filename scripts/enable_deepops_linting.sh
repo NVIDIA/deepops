@@ -16,7 +16,7 @@ fi
 if [ ${FAILED} -ne 0 ]; then
 	echo
 	echo 'One or more required linters not found!'
-	echo 'Please install the missing linter using pip or your system pacjage manager,'
+	echo 'Please install the missing linter using pip or your system package manager,'
 	echo 'and try again.'
 	echo
 	echo 'Pre-commit hook not enabled.'
