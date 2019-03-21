@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ "${DEEPOPS_BYPASS_LINT}" ]; then
+	exit 0
+fi
+
+# Lint changed Ansible files
+.githooks/check-ansible.py
+
+# Lint changed shell scripts
+.githooks/check-shell.py
+
+# Lint changed Python files
+.githooks/check-python.py
