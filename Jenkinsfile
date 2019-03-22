@@ -51,6 +51,20 @@ pipeline {
             kubectl get nodes
             kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
           '''
+
+          echo "Set up Slurm"
+          sh '''
+            pwd
+            cd virtual
+            ./scripts/setup_slurm.sh
+          '''
+
+          echo "Test Slurm"
+          sh '''
+            pwd
+            export GPU="$(echo ${GPUDATA} | cut -d"-" -f1)"
+            ssh -v -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" -l vagrant -i $HOME/.ssh/id_rsa 10.0.0.4$GPU srun -n1 hostname
+          '''
         }
       }
     }
