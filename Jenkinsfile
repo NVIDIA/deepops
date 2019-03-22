@@ -37,6 +37,7 @@ pipeline {
           sh '''
             pwd
             cd virtual
+            export DEEPOPS_ENABLE_SLURM=1
             ./cluster_up.sh
           '''
 
