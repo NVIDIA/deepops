@@ -51,6 +51,43 @@ These instructions assume that:
     $ pip install git+https://github.com/rapidsai/dask-cuda@master
     ```
 
+### Make sure you have SSH access to nodes in a Slurm job
+
+The instructions below assume that you have SSH access from the login node to compute nodes in your Slurm jobs.
+To test this, start a single-node job and try to SSH:
+
+```
+[vagrant@virtual-login ~]$ salloc -N 1
+salloc: Granted job allocation 4
+[vagrant@virtual-login ~]$ squeue -j 4
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+                 4     batch     bash  vagrant  R       0:05      1 virtual-gpu01
+[vagrant@virtual-login ~]$ ssh virtual-gpu01
+Last login: Fri Mar 22 18:56:58 2019 from 10.0.0.4
+[vagrant@virtual-gpu01 ~]$
+```
+
+If this doesn't work, work with your local system administrator to configure this access.
+
+If you are running this example using the DeepOps [Virtual Cluster](/virtual/README.md) with the default Vagrant config, you can use SSH agent forwarding from your VM host to ensure this access is present.
+For example:
+
+```
+ubuntu@ivb120:~$ eval `ssh-agent`
+Agent pid 21594
+ubuntu@ivb120:~$ ssh-add
+Identity added: /home/ubuntu/.ssh/id_rsa (/home/ubuntu/.ssh/id_rsa)
+ubuntu@ivb120:~$ ssh -A vagrant@virtual-login
+The authenticity of host 'virtual-login (10.0.0.4)' can't be established.
+ECDSA key fingerprint is SHA256:mhLsw3s1KUUMPSHaPSq+JdEqVcxywJATrBpTIohR3Es.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'virtual-login,10.0.0.4' (ECDSA) to the list of known hosts.
+Last login: Fri Mar 22 18:56:00 2019 from 10.0.0.1
+[vagrant@virtual-login ~]$ ssh virtual-gpu01
+Last login: Fri Mar 22 18:41:51 2019 from 10.0.0.4
+[vagrant@virtual-gpu01 ~]$
+```
+
 ## Setting up your Dask job and running the GPU benchmark
 
 1. Allocate compute nodes for a Slurm interactive job to run the benchmark. In this case we'll use two compute nodes. Note the job allocation number after running `salloc`.
