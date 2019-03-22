@@ -28,6 +28,9 @@ source "${VIRT_DIR}/k8s_environment.sh"
 kubectl get nodes
 #kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
 
+# Install helm
+./scripts/install_helm.sh
+
 # Deploy dashboard (optional)
 ./scripts/k8s_deploy_dashboard_user.sh
 
