@@ -88,7 +88,7 @@ Last login: Fri Mar 22 18:41:51 2019 from 10.0.0.4
 [vagrant@virtual-gpu01 ~]$
 ```
 
-## Setting up your Dask job and running the GPU benchmark
+## Setting up your Dask job
 
 1. Allocate compute nodes for a Slurm interactive job to run the benchmark. In this case we'll use two compute nodes. Note the job allocation number after running `salloc`.
     ```
@@ -120,6 +120,9 @@ Last login: Fri Mar 22 18:41:51 2019 from 10.0.0.4
     (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu01 /shared/benchmark/launch-dask-cuda-worker.sh 10.0.0.11 8786 &
     (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu02 /shared/benchmark/launch-dask-cuda-worker.sh 10.0.0.11 8786 &
     ```
+
+## Run the GPU benchmark
+
 1. Use Slurm to get an interactive login with your job environment on a compute node.
     ```
     (/shared/conda) vagrant@virtual-login:/shared/benchmark$ srun -n1 --pty -- /bin/bash
