@@ -37,7 +37,6 @@ pipeline {
           sh '''
             pwd
             cd virtual
-            export DEEPOPS_ENABLE_SLURM=1
             ./cluster_up.sh
           '''
 
@@ -51,6 +50,20 @@ pipeline {
             chmod 755 $K8S_CONFIG_DIR/artifacts/kubectl
             kubectl get nodes
             kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
+          '''
+
+          echo "Set up Slurm"
+          sh '''
+            pwd
+            cd virtual
+            ./scripts/setup_slurm.sh
+          '''
+
+          echo "Test Slurm"
+          sh '''
+            pwd
+            export GPU="$(echo ${GPUDATA} | cut -d"-" -f1)"
+            ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" -l vagrant -i $HOME/.ssh/id_rsa 10.0.0.4$GPU srun -n1 hostname
           '''
         }
       }
