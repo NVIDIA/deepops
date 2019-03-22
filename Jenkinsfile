@@ -13,6 +13,7 @@ pipeline {
         lock(resource: null, label: 'gpu', quantity: 1, variable: 'GPUDATA') {
           echo "Modifying Vagrantfiles"
           sh '''
+            pwd
             export GPU="$(echo ${GPUDATA} | cut -d"-" -f1)"
             export BUS="$(echo ${GPUDATA} | cut -d"-" -f2)"
             sed -i -e "s/#v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'/v.pci :bus => '$BUS', :slot => '0x00', :function => '0x0'/g" virtual/Vagrant*
