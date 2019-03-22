@@ -2,4 +2,4 @@
 - hosts: slurm-cluster
   become: yes
   roles:
-  - andrewrothstein.anaconda
+  - andrewrothstein.miniconda

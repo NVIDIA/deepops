@@ -3,17 +3,27 @@
 - hosts: all
   become: yes
   roles:
-  - andrewrothstein.anaconda
+  - andrewrothstein.miniconda
 
 # CUDA components just on workers
 - hosts: slurm-workers
   become: yes
   roles:
   - nvidia-ml
+
   tasks:
-  - name: ensure cuda is installed
+  - name: ensure cuda is installed (Ubuntu)
     package:
       name: "{{ item }}"
       state: present
     with_items:
     - "cuda=10.0*"      # CUDA 10.0 currently needed
+    when: ansible_os_family == "Debian"
+
+  - name: ensure cuda is installed (RHEL)
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - "cuda-10-0"
+    when: ansible_os_family == "RedHat"

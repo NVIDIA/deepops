@@ -16,5 +16,5 @@
 - src: geerlingguy.ntp
   version: "1.6.2"
 
-- src: andrewrothstein.anaconda
-  version: "v4.0"
+- src: andrewrothstein.miniconda
+  version: "v5.2.3"
