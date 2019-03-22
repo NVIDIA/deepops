@@ -13,7 +13,9 @@ ROOT_DIR="${VIRT_DIR}/.."
 cd "${ROOT_DIR}"
 
 # Ensure a fresh start for Ansible Galaxy roles
-rm -r "${ROOT_DIR}/galaxy-roles"
+if [ -d "${ROOT_DIR}/galaxy-roles" ]; then
+	rm -r "${ROOT_DIR}/galaxy-roles"
+fi
 ansible-galaxy install -r "${ROOT_DIR}/requirements.yml"
 
 # Create the config for deepops servers (and use the virtual inventory)
