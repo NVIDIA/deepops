@@ -21,7 +21,7 @@ cp "${VIRT_DIR}/k8s_hosts.ini" "${VIRT_DIR}/k8s-config/hosts.ini"
 ansible-playbook -i "${VIRT_DIR}/k8s-config/hosts.ini" -b "${ROOT_DIR}/playbooks/k8s-cluster.yml"
 
 # Source K8s environment for interacting with the cluster
-# shellcheck source=../k8s_environment.sh
+# shellcheck disable=SC1091 disable=SC1090
 source "${VIRT_DIR}/k8s_environment.sh"
 
 # Verify that the cluster is up
@@ -30,6 +30,9 @@ kubectl get nodes
 
 # Install helm
 ./scripts/install_helm.sh
+
+# Deploy MetalLB load balancer (optional but recommended)
+helm install --name metallb --values "${VIRT_DIR}/config/helm/metallb.yml" stable/metallb
 
 # Deploy dashboard (optional)
 ./scripts/k8s_deploy_dashboard_user.sh
