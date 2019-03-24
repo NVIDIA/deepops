@@ -31,9 +31,6 @@ kubectl get nodes
 # Install helm
 ./scripts/install_helm.sh
 
-# Deploy MetalLB load balancer (optional but recommended)
-helm install --name metallb --values "${VIRT_DIR}/config/helm/metallb.yml" stable/metallb
-
 # Deploy dashboard (optional)
 ./scripts/k8s_deploy_dashboard_user.sh
 
@@ -42,3 +39,6 @@ helm install --name metallb --values "${VIRT_DIR}/config/helm/metallb.yml" stabl
 
 # Deploy monitoring (optional)
 ./scripts/k8s_deploy_monitoring.sh
+
+# Deploy MetalLB load balancer (optional but recommended)
+helm install --name metallb --values "${VIRT_DIR}/config/helm/metallb.yml" stable/metallb
