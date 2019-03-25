@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 
 . /etc/os-release
+set -xe
+# Get absolute path for script, and convenience vars for virtual and root
+VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPT_DIR="${VIRT_DIR}/scripts"
 
 # Install Software
 case "$ID_LIKE" in
     rhel*)
         # Install Vagrant
-	set -xe
 
 
 	# update yum
@@ -17,7 +20,7 @@ case "$ID_LIKE" in
 	sudo yum group install -y "Development Tools"
 	sudo yum install -y centos-release-qemu-ev qem-kvm-ev qemu-kvm libvirt virt-install bridge-utils libvirt-devel  libxslt-devel libxml2-devel libvirt-devel libguestfs-tools-c
 
-	# set up networking for Vagrant VMs
+	# Optional set up networking for Vagrant VMs. Uncomment and adjust if needed
 	#sudo echo "net.ipv4.ip_forward = 1"|sudo tee /etc/sysctl.d/99-ipforward.conf
 	#sudo sysctl -p /etc/sysctl.d/99-ipforward.conf
 
@@ -46,7 +49,7 @@ case "$ID_LIKE" in
 	vagrant plugin install vagrant-host-shell vagrant-scp vagrant-mutate
 
 	#set up Vagrantfile and start up the configuration in Vagrant
-	export DEEPOPS_VAGRANT_FILE="/home/$(whoami)/deepops/virtual/Vagrantfile-centos"
+	export DEEPOPS_VAGRANT_FILE="${VIRT_DIR}/Vagrantfile-centos"
 
 
 
@@ -55,7 +58,6 @@ case "$ID_LIKE" in
     debian*)
         # Install Vagrant
 
-set -xe
 
 	# update apt
 	sudo apt update
@@ -81,14 +83,14 @@ set -xe
 	vagrant plugin install vagrant-host-shell vagrant-scp vagrant-mutate
 
 	#set up Vagrantfile and start up the configuration in Vagrant
-	export DEEPOPS_VAGRANT_FILE="/home/$(whoami)/deepops/virtual/Vagrantfile-ubuntu"
+	export DEEPOPS_VAGRANT_FILE="${VIRT_DIR}/Vagrantfile-ubuntu"
 
 
 	# End Install Vagrant
         ;;
     *)
         echo "Unsupported Operating System $ID_LIKE"
-        echo "Please install Ansible, Git, and python-netaddr manually"
+        echo "You are on your own to install Vagrant and build a Vagrantfile then you can manually start the DeepOps virtual setup"
         ;;
 esac
 
