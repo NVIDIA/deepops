@@ -16,7 +16,10 @@ fi
 # Set up the MetalLB load balancer
 if ! helm status metallb >/dev/null 2>&1; then
 	helm install --values "${config_dir}/helm/metallb.yml" --name metallb stable/metallb
+	echo "Waiting for load balancer to come online"
+	sleep 60
 fi
+
 
 # Set up the ingress controller
 if ! helm status nginx-ingress >/dev/null 2>&1; then
