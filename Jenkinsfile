@@ -28,6 +28,13 @@ pipeline {
             sed -i -e "s/virtual_virtual-gpu01/virtual_virtual-gpu01-$GPU/g" virtual/cluster_destroy.sh
           '''
 
+          echo "Modifying loadbalancer config to use unique IPs"
+          sh '''
+            pwd
+            export GPU="$(echo ${GPUDATA} | cut -d"-" -f1)"
+            sed -i -e "s/10.0.0.100-10.0.0.110/10.0.0.1${GPU}0-10.0.0.1${GPU}9/g" config.example/helm/metallb.yml
+          '''
+
           echo "Increase debug scope for ansible-playbook commands"
           sh '''
             sed -i -e "s/ansible-playbook/ansible-playbook -vvv/g" virtual/scripts/*
@@ -41,7 +48,7 @@ pipeline {
           '''
 
           // TODO: Use junit-style tests
-          echo "Test Cluster"
+          echo "Verify we can run a GPU job"
           sh '''
             cd virtual
             export K8S_CONFIG_DIR=$(pwd)/k8s-config
@@ -50,6 +57,17 @@ pipeline {
             chmod 755 $K8S_CONFIG_DIR/artifacts/kubectl
             kubectl get nodes
             kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
+          '''
+
+          echo "Verify ingress config"
+          sh '''
+            cd virtual
+            export K8S_CONFIG_DIR="$(pwd)/k8s-config"
+            export KUBECONFIG="${K8S_CONFIG_DIR}/artifacts/admin.conf"
+            export PATH="${K8S_CONFIG_DIR}/artifacts:${PATH}"
+            chmod 755 $K8S_CONFIG_DIR/artifacts/kubectl
+            nginx_external_ip=$(kubectl get services -l app=nginx-ingress -l component=controller --no-headers | awk '{print $4}')
+            curl "http://${nginx_external_ip}/" 
           '''
 
           echo "Set up Slurm"
