@@ -21,7 +21,7 @@ cp "${VIRT_DIR}/k8s_hosts.ini" "${VIRT_DIR}/k8s-config/hosts.ini"
 ansible-playbook -i "${VIRT_DIR}/k8s-config/hosts.ini" -b "${ROOT_DIR}/playbooks/k8s-cluster.yml"
 
 # Source K8s environment for interacting with the cluster
-# shellcheck source=../k8s_environment.sh
+# shellcheck disable=SC1091 disable=SC1090
 source "${VIRT_DIR}/k8s_environment.sh"
 
 # Verify that the cluster is up
@@ -29,13 +29,16 @@ kubectl get nodes
 #kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
 
 # Install helm
-./scripts/install_helm.sh
+"${ROOT_DIR}/scripts/install_helm.sh"
 
 # Deploy dashboard (optional)
-./scripts/k8s_deploy_dashboard_user.sh
+"${ROOT_DIR}/scripts/k8s_deploy_dashboard_user.sh"
 
 # Deploy rook (optional, but highly recommended)
-./scripts/k8s_deploy_rook.sh
+"${ROOT_DIR}/scripts/k8s_deploy_rook.sh"
 
 # Deploy monitoring (optional)
-./scripts/k8s_deploy_monitoring.sh
+"${ROOT_DIR}/scripts/k8s_deploy_monitoring.sh"
+
+# Deploy load balancer and ingress (optional but recommended)
+"${ROOT_DIR}/scripts/k8s_deploy_ingress_metallb.sh"
