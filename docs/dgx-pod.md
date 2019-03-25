@@ -150,7 +150,7 @@ mgmt    Ready     master,node   7m        v1.12.4
 
 1. Install an ingress controller for the cluster.
 
-   Install one of the two ingress controllers recommended in the [Ingress Guide](ingress.md).
+   See the [Ingress Guide](ingress.md) for details on how to install and configure ingress.
 
 2. Deploy the internal apt package repository.
 
