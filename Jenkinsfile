@@ -66,8 +66,12 @@ pipeline {
             export KUBECONFIG="${K8S_CONFIG_DIR}/artifacts/admin.conf"
             export PATH="${K8S_CONFIG_DIR}/artifacts:${PATH}"
             chmod 755 $K8S_CONFIG_DIR/artifacts/kubectl
+            cat config/helm/metallb.yml
+            cat config/helm/ingress.yml
+            kubectl describe service nginx-ingress-controller
+            kubectl describe pod -l app=metallb,component=controller
             kubectl get pods
-            kubectl get services
+            kubectl get services --all-namespaces
             sleep 30
             kubectl get pods
             kubectl get services
