@@ -20,9 +20,9 @@ pipeline {
             git grep -lz virtual-mgmt | xargs -0 sed -i -e "s/virtual-mgmt/virtual-mgmt-$GPU/g"
             git grep -lz virtual-login | xargs -0 sed -i -e "s/virtual-login/virtual-login-$GPU/g"
             git grep -lz virtual-gpu01 | xargs -0 sed -i -e "s/virtual-gpu01/virtual-gpu01-$GPU/g"
-            git grep -lz 10.0.0.2 | xargs -0 sed -i -e "s/10.0.0.2/10.0.0.2$GPU/g"
-            git grep -lz 10.0.0.4 | xargs -0 sed -i -e "s/10.0.0.4/10.0.0.4$GPU/g"
-            git grep -lz 10.0.0.11 | xargs -0 sed -i -e "s/10.0.0.11/10.0.0.11$GPU/g"
+            git grep -lz 10.0.0.2 virtual/ | xargs -0 sed -i -e "s/10.0.0.2/10.0.0.2$GPU/g"
+            git grep -lz 10.0.0.4 virtual/ | xargs -0 sed -i -e "s/10.0.0.4/10.0.0.4$GPU/g"
+            git grep -lz 10.0.0.11 virtual/ | xargs -0 sed -i -e "s/10.0.0.11/10.0.0.11$GPU/g"
             sed -i -e "s/virtual_virtual-mgmt/virtual_virtual-mgmt-$GPU/g" virtual/cluster_destroy.sh
             sed -i -e "s/virtual_virtual-login/virtual_virtual-login-$GPU/g" virtual/cluster_destroy.sh
             sed -i -e "s/virtual_virtual-gpu01/virtual_virtual-gpu01-$GPU/g" virtual/cluster_destroy.sh
