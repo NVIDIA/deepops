@@ -7,9 +7,11 @@
 controller:
   # Use host network to listen on ports 80 and 443
   hostNetwork: true
+  # Service type LoadBalancer requires a load balancer to be configured, e.g.
+  # MetalLB in an on-prem cluster. See metallb.yml for a sample definition.
   # Use NodePort for on-prem where we don't have a load balancer
   service:
-    type: NodePort
+    type: LoadBalancer
   # Always run on master nodes
   nodeSelector:
     node-role.kubernetes.io/master: ""

@@ -29,16 +29,16 @@ kubectl get nodes
 #kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
 
 # Install helm
-./scripts/install_helm.sh
+"${ROOT_DIR}/scripts/install_helm.sh"
 
 # Deploy dashboard (optional)
-./scripts/k8s_deploy_dashboard_user.sh
+"${ROOT_DIR}/scripts/k8s_deploy_dashboard_user.sh"
 
 # Deploy rook (optional, but highly recommended)
-./scripts/k8s_deploy_rook.sh
+"${ROOT_DIR}/scripts/k8s_deploy_rook.sh"
 
 # Deploy monitoring (optional)
-./scripts/k8s_deploy_monitoring.sh
+"${ROOT_DIR}/scripts/k8s_deploy_monitoring.sh"
 
-# Deploy MetalLB load balancer (optional but recommended)
-helm install --name metallb --values "${VIRT_DIR}/config/helm/metallb.yml" stable/metallb
+# Deploy load balancer and ingress (optional but recommended)
+"${ROOT_DIR}/scripts/k8s_deploy_ingress_metallb.sh"
