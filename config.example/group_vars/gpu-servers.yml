@@ -2,6 +2,7 @@
 # GPU Server Configuration
 
 # Docker Configuration
+# Setting reference: https://docs.nvidia.com/deeplearning/dgx/user-guide/index.html
 docker_daemon_json:
   bip: 192.168.99.1/24
   default-shm-size: 1G
