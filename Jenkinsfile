@@ -32,7 +32,10 @@ pipeline {
           sh '''
             pwd
             export GPU="$(echo ${GPUDATA} | cut -d"-" -f1)"
-            sed -i -e  "s/10\\.0\\.0\\.100-10\\.0\\.0\\.110/10.0.0.1${GPU}0-10.0.0.1${GPU}9/g" config.example/helm/metallb.yml
+            cat config.example/helm/metallb.yml
+            sed -i -e  "s/10\\.0\\.0\\.100-10\\.0\\.0\\.110$/10.0.0.1${GPU}0-10.0.0.1${GPU}9/g" config.example/helm/metallb.yml
+            cat config.example/helm/metallb.yml
+            exit 1
           '''
 
           echo "Increase debug scope for ansible-playbook commands"
