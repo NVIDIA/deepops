@@ -24,7 +24,7 @@ cp "${VIRT_DIR}/virtual_inventory" "${DEEPOPS_CONFIG_DIR}/inventory"
 ansible -m meta -a "clear_facts" -i "${DEEPOPS_CONFIG_DIR}/inventory" all
 
 # Set up VMs for the virtual cluster
-"${VIRT_DIR}"/scripts/setup_vagrant.sh
+#"${VIRT_DIR}"/scripts/setup_vagrant.sh
 
 # Set up Kubernetes (enabled by default)
 if [ -z "${DEEPOPS_DISABLE_K8S}" ]; then
