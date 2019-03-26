@@ -46,7 +46,7 @@ pipeline {
           sh '''
             pwd
             cd virtual
-            ./vagrant_up.sh
+            ./vagrant_startup.sh
           '''
 
           // TODO: Use junit-style tests
