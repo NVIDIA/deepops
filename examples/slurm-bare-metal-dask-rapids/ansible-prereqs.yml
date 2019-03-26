@@ -4,6 +4,11 @@
   become: yes
   roles:
   - andrewrothstein.miniconda
+  tasks:
+  - name: ensure git is installed
+    package:
+      name: "git"
+      state: present
 
 # CUDA components just on workers
 - hosts: slurm-workers
