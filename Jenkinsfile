@@ -47,6 +47,7 @@ pipeline {
             pwd
             cd virtual
             ./vagrant_startup.sh
+            ./cluster_up.sh
           '''
 
           // TODO: Use junit-style tests
