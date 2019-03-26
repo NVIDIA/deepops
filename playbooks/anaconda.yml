@@ -1,0 +1,5 @@
+---
+- hosts: slurm-cluster
+  become: yes
+  roles:
+  - andrewrothstein.miniconda

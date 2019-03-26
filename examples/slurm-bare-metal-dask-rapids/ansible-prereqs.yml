@@ -1,0 +1,68 @@
+---
+# Anaconda on all hosts
+- hosts: all
+  become: yes
+  roles:
+  - andrewrothstein.miniconda
+  tasks:
+  - name: ensure git is installed
+    package:
+      name: "git"
+      state: present
+
+# CUDA components just on workers
+- hosts: slurm-workers
+  become: yes
+  roles:
+  - facts
+  - nvidia-ml
+
+  tasks:
+  - name: ensure cuda is installed (Ubuntu)
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - "cuda=10.0*"      # CUDA 10.0 currently needed
+    when: (ansible_os_family == "Debian") and (ansible_local['gpus']['count'])
+
+  - name: ensure cuda is installed (RHEL)
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - "cuda-10-0"
+    when: (ansible_os_family == "RedHat") and (ansible_local['gpus']['count'])
+
+# Pre-copy scripts to all nodes
+- hosts: all
+  become: yes
+  vars:
+    share_dir: "/usr/share/deepops"
+  tasks:
+  - name: create a doc directory for these files
+    file:
+      path: "{{ share_dir }}"
+      mode: 0777
+      owner: root
+      group: root
+      state: directory
+  - name: copy conda requirements to doc dir
+    copy:
+      src: "conda-requirements.yml"
+      dest: "{{ share_dir}}/conda-requirements.yml"
+      owner: root
+      group: root
+      mode: 0444
+  - name: copy scripts to doc dir
+    copy:
+      src: "{{ item }}"
+      dest: "{{ share_dir }}/{{ item }}"
+      owner: root
+      group: root
+      mode: 0555
+    with_items:
+    - launch-dask-cuda-worker.sh
+    - launch-dask-scheduler.sh
+    - run.sh
+    - sum.py
