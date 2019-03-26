@@ -26,29 +26,26 @@ These instructions assume that:
 ## Install software dependencies and prepare your environment
 
 1. From your DeepOps provisioning node, run the provided `ansible-prereqs.yml` Ansible playbook to ensure all system-level dependencies are present.
+    This playbook will also copy the scripts from this directory to `/usr/share/deepops`.
     ```
     $ ansible-playbook -l slurm-cluster -i <path_to_inventory_file> examples/slurm-bare-metal-dask-rapids/ansible-prereqs.yml
-    ```
-1. Log into your login node, and copy the files from this example to `/shared/benchmark`.
-    ```
-    $ hostname
-    virtual-login
-    $ ls /shared/benchmark
-    ansible-prereqs.yml     launch-dask-cuda-worker.sh  README.md  sum.py
-    conda-requirements.yml  launch-dask-scheduler.sh    run.sh
     ```
 1. To install Dask, Rapids, and supporting libraries, I'll create a custom Python environment using the [Anaconda Python Distribution](https://www.anaconda.com/distribution/). I'll install this environment in the NFS filesystem (`/shared`) to make it visible to all the compute nodes.
     ```
     $ hostname
     virtual-login
-    $ /usr/local/anaconda/bin/conda env create --prefix /shared/conda -f /shared/benchmark/conda-requirements.yml
+    $ /usr/local/anaconda/bin/conda env create --prefix /shared/conda -f /usr/share/deepops/conda-requirements.yml
     ```
 1. Source the Anaconda environment and install extra dependencies.
     ```
     $ source /usr/local/anaconda/bin/activate /shared/conda
     $ pip install git+https://github.com/rapidsai/dask-xgboost@dask-cudf
-    $ pip install git+https://github.com/rapidsai/dask-cudf@master
     $ pip install git+https://github.com/rapidsai/dask-cuda@master
+    ```
+1. Make a `/shared/benchmark` directory for working files while we run.
+    ```
+    $ mkdir /shared/benchmark
+    $ cd /shared/benchmark
     ```
 
 ### Make sure you have SSH access to nodes in a Slurm job
@@ -105,7 +102,7 @@ Last login: Fri Mar 22 18:41:51 2019 from 10.0.0.4
     ```
 1. Launch the Dask scheduler on the first compute node. Note the IP and port for the scheduler process.
     ```
-    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu01 /shared/benchmark/launch-dask-scheduler.sh &
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu01 /usr/share/deepops/launch-dask-scheduler.sh &
     [1] 32563
     (/shared/conda) vagrant@virtual-login:/shared/benchmark$ Launching dask-scheduler on virtual-gpu01
     distributed.scheduler - INFO - -----------------------------------------------
@@ -117,8 +114,8 @@ Last login: Fri Mar 22 18:41:51 2019 from 10.0.0.4
     ```
 1. Launch Dask CUDA workers on each of the compute nodes. Pass the script the IP address and port of the scheduler.
     ```
-    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu01 /shared/benchmark/launch-dask-cuda-worker.sh 10.0.0.11 8786 &
-    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu02 /shared/benchmark/launch-dask-cuda-worker.sh 10.0.0.11 8786 &
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu01 /usr/share/deepops/launch-dask-cuda-worker.sh 10.0.0.11 8786 &
+    (/shared/conda) vagrant@virtual-login:/shared/benchmark$ ssh virtual-gpu02 /usr/share/deepops/launch-dask-cuda-worker.sh 10.0.0.11 8786 &
     ```
 
 ## Run the GPU benchmark
@@ -131,7 +128,7 @@ Last login: Fri Mar 22 18:41:51 2019 from 10.0.0.4
     ```
 1. Run the benchmark on a single GPU (not running in distributed mode)
     ```
-    vagrant@virtual-gpu01:/shared/benchmark$ ./run.sh -g 1
+    vagrant@virtual-gpu01:/shared/benchmark$ /usr/share/deepops/run.sh -g 1
     Using GPUs and Local Dask
     Port 8787 is already in use.
     Perhaps you already have a cluster running?
@@ -143,7 +140,7 @@ Last login: Fri Mar 22 18:41:51 2019 from 10.0.0.4
     ```
 1. Run the benchmark on all compute node GPUs (distributed mode)
     ```
-    vagrant@virtual-gpu01:/shared/benchmark$ ./run.sh -g 1 -d
+    vagrant@virtual-gpu01:/shared/benchmark$ /usr/share/deepops/run.sh -g 1 -d
     Using Distributed Dask
     Allocating and initializing arrays using GPU memory with CuPY
     Array size: 2.00 TB.  Computing parallel sum . . .

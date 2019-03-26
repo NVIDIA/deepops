@@ -1,3 +1,4 @@
+# pylint: disable-all
 import os, sys, argparse, time
 import cupy
 import dask
