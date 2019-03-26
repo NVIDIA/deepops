@@ -13,8 +13,7 @@ ROOT_DIR="${VIRT_DIR}/.."
 cd "${ROOT_DIR}"
 
 # Ensure Ansible Galaxy dependencies are present
-# TODO: should use the /scripts/setup.sh instead
-ansible-galaxy install -r "${ROOT_DIR}/requirements.yml"
+./scripts/setup.sh
 
 # Create the config for deepops servers (and use the virtual inventory)
 export DEEPOPS_CONFIG_DIR="${VIRT_DIR}/config"
