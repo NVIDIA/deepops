@@ -6,92 +6,100 @@ set -xe
 VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SCRIPT_DIR="${VIRT_DIR}/scripts"
 
-# Install Software
+#####################################
+# Install Vagrant and Dependencies
+#####################################
+
 case "$ID_LIKE" in
-    rhel*)
-        # Install Vagrant
+  rhel*)
+    # End Install Vagrant & Dependencies for RHEL Systems
 
+    # Update yum
+    sudo yum update
 
-	# update yum
-	sudo yum  update
+    # Install essential packages and tools
+    sudo yum -y install wget
+    sudo yum group install -y "Development Tools"
+    sudo yum install -y centos-release-qemu-ev qem-kvm-ev qemu-kvm libvirt virt-install bridge-utils libvirt-devel libxslt-devel libxml2-devel libvirt-devel libguestfs-tools-c
 
-	# install essential packages and tools
-	sudo yum -y install wget
-	sudo yum group install -y "Development Tools"
-	sudo yum install -y centos-release-qemu-ev qem-kvm-ev qemu-kvm libvirt virt-install bridge-utils libvirt-devel  libxslt-devel libxml2-devel libvirt-devel libguestfs-tools-c
+    # Optional set up networking for Vagrant VMs. Uncomment and adjust if needed
+    #sudo echo "net.ipv4.ip_forward = 1"|sudo tee /etc/sysctl.d/99-ipforward.conf
+    #sudo sysctl -p /etc/sysctl.d/99-ipforward.conf
 
-	# Optional set up networking for Vagrant VMs. Uncomment and adjust if needed
-	#sudo echo "net.ipv4.ip_forward = 1"|sudo tee /etc/sysctl.d/99-ipforward.conf
-	#sudo sysctl -p /etc/sysctl.d/99-ipforward.conf
+    # Install other dependencies
+    sudo yum install -y sshpass
 
-	# start up libvirt as our VM method for Vagrant
-	sudo usermod -a -G libvirt $(whoami)
-	sudo systemctl enable libvirtd
-	sudo systemctl start libvirtd
+    # Install KVM packages
+    sudo yum install -y qemu-kvm libvirt-bin libvirt-dev bridge-utils libguestfs-tools
+    sudo yum install -y qemu virt-manager firewalld OVMF
 
+    # Start up libvirt as our VM method for Vagrant
+    sudo usermod -a -G libvirt $(whoami)
+    sudo systemctl enable libvirtd
+    sudo systemctl start libvirtd
 
-	# install vagrant (frozen at 2.2.3 to avoid various issues)
-	pushd "$(mktemp -d)"
-	wget https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_x86_64.rpm -O vagrant.rpm
-	#sudo rpm -i vagrant.rpm
-	sudo yum -y localinstall vagrant.rpm
-	popd
+    # Install Vagrant
+    type vagrant >/dev/null 2>&1
+    if [ $? -ne 0 ] ; then
+      # install vagrant (frozen at 2.2.3 to avoid various issues)
+      pushd "$(mktemp -d)"
+      wget https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_x86_64.rpm -O vagrant.rpm
+      #sudo rpm -i vagrant.rpm
+      sudo yum -y localinstall vagrant.rpm
+      popd
 
-	# install other dependencies
-	sudo yum install -y sshpass
+      # install vagrant plugins
+      vagrant plugin install vagrant-hostmanager vagrant-libvirt
+      vagrant plugin install vagrant-host-shell vagrant-scp vagrant-mutate
+    fi
+    vagrant --version | head 1
 
-	# install kvm packages
-	sudo yum install -y qemu-kvm libvirt-bin libvirt-dev bridge-utils libguestfs-tools
-	sudo yum install -y qemu virt-manager firewalld OVMF
+    # Set up Vagrantfile and start up the configuration in Vagrant
+    export DEEPOPS_VAGRANT_FILE="${VIRT_DIR}/Vagrantfile-centos"
 
-	# install vagrant plugins
-	vagrant plugin install vagrant-hostmanager vagrant-libvirt
-	vagrant plugin install vagrant-host-shell vagrant-scp vagrant-mutate
+    # End Install Vagrant & Dependencies for RHEL Systems
+    ;;
 
-	#set up Vagrantfile and start up the configuration in Vagrant
-	export DEEPOPS_VAGRANT_FILE="${VIRT_DIR}/Vagrantfile-centos"
+  debian*)
+    # Install Vagrant & Dependencies for Debian Systems
 
+    # Update apt
+    sudo apt update
 
+    # Install build-essential tools
+    sudo apt install build-essential
 
-	# End Install Vagrant
-        ;;
-    debian*)
-        # Install Vagrant
+    # Install other dependencies
+    sudo apt install -y sshpass
+    
+    # Install KVM packages
+    sudo apt install -y qemu-kvm libvirt-bin libvirt-dev bridge-utils libguestfs-tools
+    sudo apt install -y qemu ovmf virt-manager firewalld
 
+    # Install Vagrant
+    type vagrant >/dev/null 2>&1
+    if [ $? -ne 0 ] ; then
+      # install vagrant (frozen at 2.2.3 to avoid various issues)
+      pushd "$(mktemp -d)"
+      wget https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_x86_64.deb -O vagrant.deb
+      sudo dpkg -i vagrant.deb
+      popd
 
-	# update apt
-	sudo apt update
+      # install vagrant plugins
+      vagrant plugin install vagrant-hostmanager vagrant-libvirt
+      vagrant plugin install vagrant-host-shell vagrant-scp vagrant-mutate
+    fi
+    vagrant --version | head 1
 
-	# install build-essential tools
-	sudo apt install build-essential
+    # Set up Vagrantfile and start up the configuration in Vagrant
+    export DEEPOPS_VAGRANT_FILE="${VIRT_DIR}/Vagrantfile-ubuntu"
 
-	# install vagrant (frozen at 2.2.3 to avoid various issues)
-	pushd "$(mktemp -d)"
-	wget https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_x86_64.deb -O vagrant.deb
-	sudo dpkg -i vagrant.deb
-	popd
-
-	# install other dependencies
-	sudo apt install -y sshpass
-	
-	# install kvm packages
-	sudo apt install -y qemu-kvm libvirt-bin libvirt-dev bridge-utils libguestfs-tools
-	sudo apt install -y qemu ovmf virt-manager firewalld
-
-	# install vagrant plugins
-	vagrant plugin install vagrant-hostmanager vagrant-libvirt
-	vagrant plugin install vagrant-host-shell vagrant-scp vagrant-mutate
-
-	#set up Vagrantfile and start up the configuration in Vagrant
-	export DEEPOPS_VAGRANT_FILE="${VIRT_DIR}/Vagrantfile-ubuntu"
-
-
-	# End Install Vagrant
-        ;;
-    *)
-        echo "Unsupported Operating System $ID_LIKE"
-        echo "You are on your own to install Vagrant and build a Vagrantfile then you can manually start the DeepOps virtual setup"
-        ;;
+    # End Install Vagrant & Dependencies for Debian Systems
+    ;;
+  *)
+    echo "Unsupported Operating System $ID_LIKE"
+    echo "You are on your own to install Vagrant and build a Vagrantfile then you can manually start the DeepOps virtual setup"
+    ;;
 esac
 
 # Get absolute path for script, and convenience vars for virtual and root
@@ -118,11 +126,3 @@ vagrant up --provider=libvirt
 
 # Show the running VMs
 virsh list
-
-
-cd ..
-
-# Install ansible and ansible-galaxy roles
-./scripts/setup.sh
-
-cd "${VIRT_DIR}" || exit 1
