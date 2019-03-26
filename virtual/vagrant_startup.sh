@@ -5,7 +5,6 @@ set -xe
 # Get absolute path for script, and convenience vars for virtual and root
 VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SCRIPT_DIR="${VIRT_DIR}/scripts"
-<<<<<<< HEAD
 
 #####################################
 # Install Vagrant and Dependencies
