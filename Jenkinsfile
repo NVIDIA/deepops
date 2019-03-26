@@ -23,9 +23,9 @@ pipeline {
             git grep -lz 10.0.0.2 virtual/ | xargs -0 sed -i -e "s/10.0.0.2/10.0.0.2$GPU/g"
             git grep -lz 10.0.0.4 virtual/ | xargs -0 sed -i -e "s/10.0.0.4/10.0.0.4$GPU/g"
             git grep -lz 10.0.0.11 virtual/ | xargs -0 sed -i -e "s/10.0.0.11/10.0.0.11$GPU/g"
-            sed -i -e "s/virtual_virtual-mgmt/virtual_virtual-mgmt-$GPU/g" virtual/cluster_destroy.sh
-            sed -i -e "s/virtual_virtual-login/virtual_virtual-login-$GPU/g" virtual/cluster_destroy.sh
-            sed -i -e "s/virtual_virtual-gpu01/virtual_virtual-gpu01-$GPU/g" virtual/cluster_destroy.sh
+            sed -i -e "s/virtual_virtual-mgmt/virtual_virtual-mgmt-$GPU/g" virtual/vagrant_destroy.sh
+            sed -i -e "s/virtual_virtual-login/virtual_virtual-login-$GPU/g" virtual/vagrant_destroy.sh
+            sed -i -e "s/virtual_virtual-gpu01/virtual_virtual-gpu01-$GPU/g" virtual/vagrant_destroy.sh
           '''
 
           echo "Modifying loadbalancer config to use unique IPs"
@@ -46,7 +46,7 @@ pipeline {
           sh '''
             pwd
             cd virtual
-            ./cluster_up.sh
+            ./vagrant_up.sh
           '''
 
           // TODO: Use junit-style tests
@@ -102,7 +102,7 @@ pipeline {
     always {
       sh '''
         pwd
-        cd virtual && ./cluster_destroy.sh
+        cd virtual && ./vagrant_destroy.sh
       '''
     }
   }
