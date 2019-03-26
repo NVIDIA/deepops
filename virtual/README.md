@@ -39,34 +39,32 @@ $ export DEEPOPS_VAGRANT_FILE=./Vagrantfile-centos
 
 If you want to use Ubuntu, you can set this variable to point to the Ubuntu Vagrant file, or just leave it unset (Ubuntu is the default).
 
+## Start vagrant
+
+Boot up the VMs by starting vagrant. Vagrant will spin up three VMs:
+* virtual-login
+* virtual-mgmt
+* virtual-gpu01
+
+```
+$ ./vagrant_startup.sh
+```
+
+Afterwards, connect to any of the nodes via vagrant ssh...
+
+```
+$ vagrant ssh virtual-gpu01
+```
+
 ## Start the cluster
 
-To start the cluster, run the `cluster_up.sh` script...
+To start the cluster, run the `cluster_up.sh` script, which will run the ansible playbooks to deploy DeepOps...
 
 ```
 $ ./cluster_up.sh
 ```
 
-Vagrant will spin up three VMs - login, mgmt, and gpu01. Afterwards, the script will use ansible
-to configure the nodes and set up DeepOps.
-
-The script should complete without errors and three nodes should show up when running `virsh
-list`...
-
-```
-$ virsh list
- Id    Name                           State
-----------------------------------------------------
- 22    virtual_virtual-mgmt           running
- 23    virtual_virtual-gpu01          running
- 24    virtual_virtual-login          running
-```
-
-Connect to any of the nodes via vagrant ssh...
-
-```
-$ vagrant ssh virtual-gpu01
-```
+The script should complete without errors.
 
 ## Destroy the cluster
 
