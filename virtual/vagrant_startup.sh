@@ -89,7 +89,7 @@ case "$ID_LIKE" in
       vagrant plugin install vagrant-hostmanager vagrant-libvirt
       vagrant plugin install vagrant-host-shell vagrant-scp vagrant-mutate
     fi
-    vagrant --version | head 1
+    vagrant --version
 
     # Set up Vagrantfile and start up the configuration in Vagrant
     export DEEPOPS_VAGRANT_FILE="${VIRT_DIR}/Vagrantfile-ubuntu"
