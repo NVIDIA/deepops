@@ -12,11 +12,8 @@ ROOT_DIR="${VIRT_DIR}/.."
 # Ensure working directory is root
 cd "${ROOT_DIR}"
 
-# Ensure a fresh start for Ansible Galaxy roles
-if [ -d "${ROOT_DIR}/galaxy-roles" ]; then
-	rm -r "${ROOT_DIR}/galaxy-roles"
-fi
-ansible-galaxy install -r "${ROOT_DIR}/requirements.yml"
+# Ensure Ansible Galaxy dependencies are present
+./scripts/setup.sh
 
 # Create the config for deepops servers (and use the virtual inventory)
 export DEEPOPS_CONFIG_DIR="${VIRT_DIR}/config"
@@ -25,9 +22,6 @@ cp "${VIRT_DIR}/virtual_inventory" "${DEEPOPS_CONFIG_DIR}/inventory"
 
 # Clear any stale fact cache in Ansible
 ansible -m meta -a "clear_facts" -i "${DEEPOPS_CONFIG_DIR}/inventory" all
-
-# Set up VMs for the virtual cluster
-#"${VIRT_DIR}"/scripts/setup_vagrant.sh
 
 # Set up Kubernetes (enabled by default)
 if [ -z "${DEEPOPS_DISABLE_K8S}" ]; then
