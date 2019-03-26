@@ -11,14 +11,13 @@ case "$ID_LIKE" in
     rhel*)
         # Install Vagrant
 
-
 	# update yum
-	sudo yum  update
+	sudo yum update
 
 	# install essential packages and tools
 	sudo yum -y install wget
 	sudo yum group install -y "Development Tools"
-	sudo yum install -y centos-release-qemu-ev qem-kvm-ev qemu-kvm libvirt virt-install bridge-utils libvirt-devel  libxslt-devel libxml2-devel libvirt-devel libguestfs-tools-c
+	sudo yum install -y centos-release-qemu-ev qem-kvm-ev qemu-kvm libvirt virt-install bridge-utils libvirt-devel libxslt-devel libxml2-devel libvirt-devel libguestfs-tools-c
 
 	# Optional set up networking for Vagrant VMs. Uncomment and adjust if needed
 	#sudo echo "net.ipv4.ip_forward = 1"|sudo tee /etc/sysctl.d/99-ipforward.conf
@@ -28,7 +27,6 @@ case "$ID_LIKE" in
 	sudo usermod -a -G libvirt $(whoami)
 	sudo systemctl enable libvirtd
 	sudo systemctl start libvirtd
-
 
 	# install vagrant (frozen at 2.2.3 to avoid various issues)
 	pushd "$(mktemp -d)"
@@ -51,13 +49,11 @@ case "$ID_LIKE" in
 	#set up Vagrantfile and start up the configuration in Vagrant
 	export DEEPOPS_VAGRANT_FILE="${VIRT_DIR}/Vagrantfile-centos"
 
-
-
 	# End Install Vagrant
         ;;
+
     debian*)
         # Install Vagrant
-
 
 	# update apt
 	sudo apt update
@@ -84,7 +80,6 @@ case "$ID_LIKE" in
 
 	#set up Vagrantfile and start up the configuration in Vagrant
 	export DEEPOPS_VAGRANT_FILE="${VIRT_DIR}/Vagrantfile-ubuntu"
-
 
 	# End Install Vagrant
         ;;
@@ -118,7 +113,6 @@ vagrant up --provider=libvirt
 
 # Show the running VMs
 virsh list
-
 
 cd ..
 
