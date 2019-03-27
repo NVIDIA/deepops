@@ -4,7 +4,6 @@
 set -xe
 # Get absolute path for script, and convenience vars for virtual and root
 VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-SCRIPT_DIR="${VIRT_DIR}/scripts"
 
 #####################################
 # Install Vagrant and Dependencies
@@ -34,13 +33,12 @@ case "$ID_LIKE" in
     sudo yum install -y qemu virt-manager firewalld OVMF
 
     # Start up libvirt as our VM method for Vagrant
-    sudo usermod -a -G libvirt $(whoami)
+    sudo usermod -a -G libvirt "$(whoami)"
     sudo systemctl enable libvirtd
     sudo systemctl start libvirtd
 
     # Install Vagrant
-    type vagrant >/dev/null 2>&1
-    if [ $? -ne 0 ] ; then
+    if ! vagrant >/dev/null 2>&1; then
       # install vagrant (frozen at 2.2.3 to avoid various issues)
       pushd "$(mktemp -d)"
       wget https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_x86_64.rpm -O vagrant.rpm
@@ -55,7 +53,7 @@ case "$ID_LIKE" in
     vagrant --version
 
     # Set up Vagrantfile and start up the configuration in Vagrant
-    export DEEPOPS_VAGRANT_FILE="${VIRT_DIR}/Vagrantfile-centos"
+    export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos}"
 
     # End Install Vagrant & Dependencies for RHEL Systems
     ;;
@@ -77,8 +75,7 @@ case "$ID_LIKE" in
     sudo apt install -y qemu ovmf virt-manager firewalld
 
     # Install Vagrant
-    type vagrant >/dev/null 2>&1
-    if [ $? -ne 0 ] ; then
+    if ! vagrant >/dev/null 2>&1; then
       # install vagrant (frozen at 2.2.3 to avoid various issues)
       pushd "$(mktemp -d)"
       wget https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_x86_64.deb -O vagrant.deb
@@ -92,7 +89,7 @@ case "$ID_LIKE" in
     vagrant --version
 
     # Set up Vagrantfile and start up the configuration in Vagrant
-    export DEEPOPS_VAGRANT_FILE="${VIRT_DIR}/Vagrantfile-ubuntu"
+    export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu}"
 
     # End Install Vagrant & Dependencies for Debian Systems
     ;;
@@ -101,10 +98,6 @@ case "$ID_LIKE" in
     echo "You are on your own to install Vagrant and build a Vagrantfile then you can manually start the DeepOps virtual setup"
     ;;
 esac
-
-# Get absolute path for script, and convenience vars for virtual and root
-VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-SCRIPT_DIR="${VIRT_DIR}/scripts"
 
 #####################################
 # Set up VMs for virtual cluster

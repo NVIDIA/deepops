@@ -34,7 +34,7 @@ For example, you will need to be in the "libvirt" group to mangage VMs, but your
 If you want to run your virtual cluster on CentOS, set the `DEEPOPS_VAGRANT_FILE` variable to point to the CentOS Vagrant file:
 
 ```
-$ export DEEPOPS_VAGRANT_FILE=./Vagrantfile-centos
+$ export DEEPOPS_VAGRANT_FILE=$(pwd)/Vagrantfile-centos
 ```
 
 If you want to use Ubuntu, you can set this variable to point to the Ubuntu Vagrant file, or just leave it unset (Ubuntu is the default).
