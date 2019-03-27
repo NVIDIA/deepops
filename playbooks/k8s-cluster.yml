@@ -169,7 +169,7 @@
       when: kubectl_system.stat.exists
     - name: manually move kubectl binary
       debug:
-        msg: "Unable to move kubectl, run: sudo cp {{ config_dir }}/artifacts/kubectl /usr/local/bin"
+        msg: "Unable to move kubectl, run: sudo cp {{ config_dir | realpath }}/artifacts/kubectl /usr/local/bin"
       when: kubectl_copied is failed
   tags:
     - local
