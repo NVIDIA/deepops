@@ -5,10 +5,12 @@
   vars:
     docker_daemon_json: {}
   tasks:
+
     - name: create docker config directory
       file:
         path: /etc/docker
         state: directory
+
     - name: write new docker config
       copy:
         content: "{{ docker_daemon_json | to_nice_json }}"
@@ -16,5 +18,19 @@
         owner: root
         group: root
         mode: 0644
-  roles:
-    - geerlingguy.docker
+
+    - name: install docker
+      include_role:
+        name: geerlingguy.docker
+      vars:
+        # matches: kubespray/roles/container-engine/docker/vars/ubuntu-bionic.yml
+        docker_package: 'docker-ce=18.06.1~ce~3-0~ubuntu'
+      when: ansible_distribution == "Ubuntu"
+
+    - name: install docker
+      include_role:
+        name: geerlingguy.docker
+      vars:
+        # matches: kubespray/roles/container-engine/docker/vars/redhat.yml
+        docker_package: 'docker-ce-18.06.2.ce-3.el7'
+      when: ansible_os_family == "RedHat"
