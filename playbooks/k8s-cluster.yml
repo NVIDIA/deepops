@@ -37,7 +37,6 @@
     kubeconfig_localhost: true
     helm_enabled: true
     tiller_node_selectors: "node-role.kubernetes.io/master=''"
-    docker_version: latest
     docker_dns_servers_strict: no
     docker_storage_options: -s overlay2
 
