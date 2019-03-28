@@ -3,12 +3,12 @@
   yum_repository:
     name: epel
     description: EPEL YUM repo
-    baseurl: https://download.fedoraproject.org/pub/epel/$releasever/$basearch/
-    gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+    baseurl: "{{ epel_baseurl }}"
+    gpgkey: "{{ epel_gpgkey }}"
 
 - name: add repo
   yum_repository:
     name: machine-learning
     description: NVIDIA Machine Learning YUM Repo
-    gpgkey: "https://developer.download.nvidia.com/compute/machine-learning/repos/{{ rhel_repo_dir }}/7fa2af80.pub"
-    baseurl: "https://developer.download.nvidia.com/compute/machine-learning/repos/{{ rhel_repo_dir }}/"
+    gpgkey: "{{ rhel_nvidiaml_gpgkey }}"
+    baseurl: "{{ rhel_nvidiaml_baseurl }}"

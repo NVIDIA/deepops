@@ -6,7 +6,7 @@
       version: "{{ container_registry_version }}"
       source:
         type: repo
-        location: https://kubernetes-charts.storage.googleapis.com
+        location: "{{ helm_chart_location }}"
     state: present
     name: "{{ container_registry_name }}"
     namespace: "{{ container_registry_namespace }}"

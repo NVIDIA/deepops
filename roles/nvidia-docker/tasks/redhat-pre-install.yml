@@ -8,7 +8,7 @@
 
 - name: add repo
   get_url:
-    url: "https://nvidia.github.io/nvidia-docker/{{ rhel_repo_dist_name }}/{{ rhel_repo_file_name }}"
+    url: "{{ nvdocker_repo_base_url }}/{{ rhel_repo_dist_name }}/{{ rhel_repo_file_name }}"
     dest: "{{ rhel_repo_file_path }}"
     mode: 0644
     owner: root
