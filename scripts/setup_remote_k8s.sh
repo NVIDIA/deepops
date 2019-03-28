@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+KUBECTL_BINARY_URL="${KUBECTL_BINARY_URL:-https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl}"
+
 # Install dependencies
 . /etc/os-release
 case "$ID_LIKE" in
@@ -25,7 +27,7 @@ esac
 ansible gpu-servers -b -m fetch -a "src=/etc/kubernetes/admin.conf flat=yes dest=./"
 
 # Grab kubectl binary
-curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+curl -LO "${KUBECTL_BINARY_URL}"
 chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin
 

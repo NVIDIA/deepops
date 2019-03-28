@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+HELM_COREOS_CHART_REPO="${HELM_COREOS_CHART_REPO:-https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/}"
+
 type helm >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
     ./scripts/install_helm.sh
@@ -8,7 +10,7 @@ fi
 # Add repo for prometheus charts
 helm repo list | grep coreos >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
-    helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+    helm repo add coreos "${HELM_COREOS_CHART_REPO}"
 fi
 
 # Determine DeepOps config dir

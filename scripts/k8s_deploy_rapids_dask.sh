@@ -5,6 +5,8 @@
 # The Dask workers can be scaled from  the K8S command line using `kubectl scale` commands or through jupyter using dask_kubernetes commands
 # See the included sample notebooks for details.
 
+RAPIDS_DASK_DOCKER_REPO="${RAPIDS_DASK_DOCKER_REPO:-https://github.com/supertetelman/k8s-rapids-dask.git}"
+
 NAMESPACE="rapids" # TODO: Pass through different ns end to end
 if [ -z "${NAMESPACE}" ]; then
     NAMESPACE="rapids"
@@ -26,7 +28,7 @@ function build_image() {
 	;;
     esac
   fi	  
-  git clone https://github.com/supertetelman/k8s-rapids-dask.git tmp-rapids-build
+  git clone "${RAPIDS_DASK_DOCKER_REPO}" tmp-rapids-build
   pushd tmp-rapids-build
 
   # Build the docker image

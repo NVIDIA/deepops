@@ -5,6 +5,8 @@
 # `helm search rook` # get latest version number
 # `helm upgrade --namespace rook-ceph-system rook-ceph rook-master/rook-ceph --version v0.9.0-174.g3b14e51`
 
+HELM_ROOK_CHART_REPO="${HELM_ROOK_CHART_REPO:-HELM_ROOK_CHART_REPO}"
+
 type helm >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
     ./scripts/install_helm.sh
@@ -12,7 +14,7 @@ fi
 
 helm repo list | grep rook-master >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
-    helm repo add rook-master https://charts.rook.io/master
+    helm repo add rook-master "${HELM_ROOK_CHART_REPO}"
 fi
 
 helm status rook-ceph >/dev/null 2>&1
