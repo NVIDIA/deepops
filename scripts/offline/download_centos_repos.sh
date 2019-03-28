@@ -3,7 +3,7 @@ set -ex
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-CENTOS_MIRRIR_URL="${CENTOS_MIRROR_URL:-http://mirrors.ocf.berkeley.edu/centos/7.6.1810/isos/x86_64/}"
+CENTOS_MIRROR_URL="${CENTOS_MIRROR_URL:-http://mirrors.ocf.berkeley.edu/centos/7.6.1810/isos/x86_64/}"
 CENTOS_ISO="${CENTOS_ISO:-CentOS-7-x86_64-Minimal-1810.iso}"
 
 SYNC_YUM_CONF="${SYNC_YUM_CONF:-${SCRIPT_DIR}/yum.conf}"
