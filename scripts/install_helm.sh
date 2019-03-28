@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 HELM_INSTALL_DIR=/usr/local/bin
+HELM_INSTALL_SCRIPT_URL="${HELM_INSTALL_SCRIPT_URL:-https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get}"
 
 # Install dependencies
 . /etc/os-release
@@ -23,7 +24,7 @@ case "$ID_LIKE" in
         ;;
 esac
 
-curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > /tmp/get_helm.sh
+curl "${HELM_INSTALL_SCRIPT_URL}" > /tmp/get_helm.sh
 chmod +x /tmp/get_helm.sh
 #sed -i 's/sudo//g' /tmp/get_helm.sh
 mkdir -p ${HELM_INSTALL_DIR}

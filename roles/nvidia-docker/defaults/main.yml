@@ -7,3 +7,6 @@ docker_daemon_json:
     nvidia:
       path: /usr/bin/nvidia-container-runtime
       runtimeArgs: []
+
+nvdocker_repo_base_url: "https://nvidia.github.io/nvidia-docker"
+nvdocker_gpg_path: "{{ nvdocker_repo_base_url }}/gpgkey"

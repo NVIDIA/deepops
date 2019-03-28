@@ -1,0 +1,5 @@
+---
+# Extra variables to be used during kubernetes turnup
+# Will be copied into the k8s-config directory when building config for Kubespray
+
+nvidia_k8s_device_plugin_def: "https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.12/nvidia-device-plugin.yml"

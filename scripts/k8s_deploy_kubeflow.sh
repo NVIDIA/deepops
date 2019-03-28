@@ -8,6 +8,9 @@ export KUBEFLOW_TAG=v0.4.1
 export KFAPP=kubeflow
 export KUBEFLOW_SRC=/opt/kubeflow
 
+KSONNET_URL="${KSONNET_URL:-https://github.com/ksonnet/ksonnet/releases/download/v${KS_VER}/${KS_PKG}.tar.gz}"
+KUBEFLOW_URL="${KUBEFLOW_URL:-https://raw.githubusercontent.com/kubeflow/kubeflow/${KUBEFLOW_TAG}/scripts/download.sh}"
+
 ###
 
 # Install dependencies
@@ -40,7 +43,7 @@ if [ $? -eq 0 ] ; then
 fi
 
 # Ksonnet
-wget -O /tmp/${KS_PKG}.tar.gz https://github.com/ksonnet/ksonnet/releases/download/v${KS_VER}/${KS_PKG}.tar.gz \
+wget -O /tmp/${KS_PKG}.tar.gz "${KSONNET_URL}" \
       --no-check-certificate
 mkdir -p ${KS_INSTALL_DIR}
 tempd=$(mktemp -d)
@@ -52,7 +55,7 @@ rm -rf ${tempd} /tmp/${KS_PKG}.tar.gz
 if [ ! -d ${KUBEFLOW_SRC} ] ; then
     tempd=$(mktemp -d)
     cd ${tempd}
-    curl https://raw.githubusercontent.com/kubeflow/kubeflow/${KUBEFLOW_TAG}/scripts/download.sh | bash
+    curl "${KUBEFLOW_URL}" | bash
     cd -
     sudo mv ${tempd} ${KUBEFLOW_SRC}
 fi

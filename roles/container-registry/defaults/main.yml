@@ -1,4 +1,5 @@
 tiller_host: localhost
+helm_chart_location: "https://kubernetes-charts.storage.googleapis.com"
 container_registry_name: docker-registry
 container_registry_namespace: default
 container_registry_version: 1.7.0

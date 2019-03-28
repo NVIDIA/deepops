@@ -25,7 +25,7 @@
     - name: create GPU device plugin
       k8s:
         state: present
-        definition: "{{ lookup('url', 'https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.12/nvidia-device-plugin.yml', split_lines=False) }}"
+        definition: "{{ lookup('url', nvidia_k8s_device_plugin_def, split_lines=False) }}"
       run_once: true
   tags:
     - k8s_gpu_device_plugin
