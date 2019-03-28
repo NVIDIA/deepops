@@ -4,9 +4,10 @@ set -ex
 HELM_REPO_URL="https://github.com/helm/charts"
 HELM_DEST_DIR="${HELM_DEST_DIR:-/tmp/deepops/helm_charts}"
 
-if [ ! -d "${HELM_DEST_DIR}" ]; then
-	mkdir -p "${HELM_DEST_DIR}"
+if [ -d "${HELM_DEST_DIR}" ]; then
+	rm -rf "${HELM_DEST_DIR}"
 fi
+mkdir -p "${HELM_DEST_DIR}"
 
 cd "${HELM_DEST_DIR}"
 if ! git clone --recursive "${HELM_REPO_URL}"; then
