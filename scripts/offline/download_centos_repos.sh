@@ -23,6 +23,10 @@ if ! which reposync; then
 	exit 1
 fi
 
+if [ ! -d "${SYNC_DEST_DIR}" ]; then
+	mkdir -p "${SYNC_DEST_DIR}"
+fi
+
 echo "Downloading the installation ISO for convenience"
 if [ "${SYNC_DRY_RUN}" ]; then
 	echo "DRY RUN: would have attempted download of ${CENTOS_MIRROR_URL}/${CENTOS_ISO}"
