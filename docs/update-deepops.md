@@ -7,9 +7,9 @@ This document details how to upgrade DeepOps to the next release.
 
 ## Updating the DeepOps repository
 
-### Update the repository branch
+### Update the repository
 
-Each release of DeepOps is just a named branch of the Git repository, with versions using the `YY.MM` numbering scheme. So, for example, the August 2018 release of DeepOps is just a branch named `release-18.08`.
+Each release of DeepOps is a named tag of the Git repository, with versions using the `YY.MM` numbering scheme. So, for example, the March 2019 release of DeepOps is a tag named `19.03`.
 
 If you don’t have a local clone of the DeepOps repository, you should clone one to your local provisioning host.
 
@@ -17,20 +17,27 @@ If you don’t have a local clone of the DeepOps repository, you should clone on
 git clone https://github.com/NVIDIA/deepops
 ```
 
-Check out the git branch for the release you’re upgrading to:
+Check out the git tag for the release you’re upgrading to:
 
 ```sh
-git checkout release-<YY.MM>
+git checkout <YY.MM>
 ```
 
-If you’ve made local changes to the DeepOps repository in your own branch, you can rebase your branch onto the release branch to port your changes to the new release. 
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+```sh
+git checkout -b <new-branch-name>
+```
+
+If you’ve made local changes to the DeepOps repository in your own branch, you can rebase your branch onto the release to port your changes to the new release. 
 
 ```sh
 git checkout <your-branch>
-git rebase release-<YY.MM>
+git rebase <YY.MM>
 ```
 
-> Note that if there are any conflicts between your local branch and the release branch, you will need to resolve those conflicts as part of the rebase process.
+> Note that if there are any conflicts between your local branch and the release, you will need to resolve those conflicts as part of the rebase process.
 
 ### Port your config
 
