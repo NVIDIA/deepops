@@ -1,9 +1,6 @@
 # Configuration common to all hosts
 # Define per-group or per-host values in the other configuration files
 
-# External URLs for downloads. Override these variables if using local mirrors.
-nvidia_k8s_device_plugin_def: "https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.12/nvidia-device-plugin.yml"
-
 # Docker Configuration
 #docker_daemon_json:
 #  bip: 192.168.99.1/24
