@@ -9,4 +9,15 @@
     - name: install nvidia-docker
       include_role:
         name: nvidia-docker
-      when: ansible_local['gpus']['count']
+      vars:
+        nvidia_docker2_package_version: '2.0.3+docker18.06.1-1'
+        nvidia_container_runtime_package_version: '2.0.0+docker18.06.1-1'
+      when: ansible_local['gpus']['count'] and ansible_distribution == "Ubuntu"
+
+    - name: install nvidia-docker
+      include_role:
+        name: nvidia-docker
+      vars:
+        nvidia_docker2_package_version: '2.0.3-1.docker18.06.1.ce'
+        nvidia_container_runtime_package_version: '2.0.0-1.docker18.06.'
+      when: ansible_local['gpus']['count'] and ansible_os_family == "RedHat"
