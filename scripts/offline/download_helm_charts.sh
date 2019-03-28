@@ -9,7 +9,7 @@ if [ ! -d "${HELM_DEST_DIR}" ]; then
 fi
 
 cd "${HELM_DEST_DIR}"
-if ! git clone "${HELM_REPO_URL}"; then
+if ! git clone --recursive "${HELM_REPO_URL}"; then
 	echo "Failed to clone helm charts repository"
 	exit 1
 fi
