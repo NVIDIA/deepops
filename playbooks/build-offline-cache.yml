@@ -3,7 +3,7 @@
 # WIP: dependency list is probably incomplete, currently supports CentOS only
 
 # Ensure Docker is installed
-#- import_playbook: docker.yml
+- import_playbook: docker.yml
 
 
 # Install prerequisite tools
