@@ -6,7 +6,7 @@ deepops_repo_url: "https://github.com/NVIDIA/deepops"
 
 centos_iso_mirror: "http://mirrors.ocf.berkeley.edu/centos/7.6.1810/isos/x86_64"
 centos_iso: "CentOS-7-x86_64-Minimal-1810.iso"
-download_yum_repos: yes
+download_yum_repos: no
 yum_repos_to_sync:
 - "base"
 - "updates"
