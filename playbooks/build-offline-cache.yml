@@ -4,8 +4,6 @@
 
 # Ensure Docker is installed
 - import_playbook: docker.yml
-  tags:
-  - skip_ansible_lint
 
 
 # Install prerequisite tools
@@ -56,13 +54,23 @@
     tags:
     - skip_ansible_lint
 
+  - name: download helm
+    get_url:
+      url: "{{ helm_download_url }}"
+      dest: "{{ offline_cache_dir }}/helm/"
+
   - name: clone helm repos
     git:
       repo: "{{ item.value }}"
       dest: "{{ offline_cache_dir }}/helm/{{ item.key }}"
       recursive: yes
       version: "master"
-    loop: "{{ helm_chart_repos|dict2items }}"
+    loop: "{{ helm_chart_git_repos|dict2items }}"
+
+  - name: download rook helm chart
+    get_url:
+      url: "{{ rook_helm_chart_url }}"
+      dest: "{{ offline_cache_dir }}/helm/"
 
   - name: archive docker images
     docker_image:
@@ -76,10 +84,15 @@
       url: "{{ centos_iso_mirror }}/{{ centos_iso }}"
       dest: "{{ offline_cache_dir }}/yum/{{ centos_iso }}"
       mode: 0444
-    when: download_yum_repos
+
+  - name: copy yum.conf to cache dir
+    copy:
+      src: "offline_cache/yum.conf"
+      dest: "{{ offline_cache_dir }}/yum.conf"
+      mode: 0444
 
   - name: sync yum repositories
-    command: reposync -c config/offline_cache/yum.conf -r "{{ yum_repos_to_sync|join(',') }}" -p "{{ offline_cache_dir }}/yum/"
+    command: reposync -c "{{ offline_cache_dir }}/yum.conf" -r "{{ yum_repos_to_sync|join(',') }}" -p "{{ offline_cache_dir }}/yum/"
     when: download_yum_repos
 
   - name: tar everything up
