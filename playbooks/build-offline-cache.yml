@@ -4,6 +4,8 @@
 
 # Ensure Docker is installed
 - import_playbook: docker.yml
+  tags:
+  - skip_ansible_lint
 
 
 # Install prerequisite tools
@@ -49,6 +51,11 @@
       update: yes
       version: "master"
 
+  - name: install Ansible Galaxy dependencies in repo
+    command: ansible-galaxy install -p "{{ offline_cache_dir }}/deepops/galaxy-roles" -r "{{ offline_cache_dir }}/deepops/requirements.yml"
+    tags:
+    - skip_ansible_lint
+
   - name: clone helm repos
     git:
       repo: "{{ item.value }}"
@@ -69,6 +76,7 @@
       url: "{{ centos_iso_mirror }}/{{ centos_iso }}"
       dest: "{{ offline_cache_dir }}/yum/{{ centos_iso }}"
       mode: 0444
+    when: download_yum_repos
 
   - name: sync yum repositories
     command: reposync -c config/offline_cache/yum.conf -r "{{ yum_repos_to_sync|join(',') }}" -p "{{ offline_cache_dir }}/yum/"
