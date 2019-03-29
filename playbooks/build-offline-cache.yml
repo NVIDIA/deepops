@@ -1,0 +1,81 @@
+---
+# Download and archive a list of DeepOps dependencies. 
+# WIP: dependency list is probably incomplete, currently supports CentOS only
+
+# Ensure Docker is installed
+#- import_playbook: docker.yml
+
+
+# Install prerequisite tools
+- hosts: localhost
+  become: yes
+  tasks:
+  - name: install necessary system packages
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - "git"
+    - "yum-utils"
+    - "python-pip"
+  - name: install necessary pip modules
+    pip:
+      name: "{{ item }}"
+    with_items:
+    - "docker-py"
+
+
+# Download everything
+- hosts: localhost
+  become: no
+  tasks:
+
+  - name: ensure offline cache directories exist
+    file:
+      name: "{{ item }}"
+      state: directory
+      mode: 0755
+    with_items:
+    - "{{ offline_cache_dir }}"
+    - "{{ offline_cache_dir }}/helm"
+    - "{{ offline_cache_dir }}/docker-images"
+    - "{{ offline_cache_dir }}/yum"
+
+  - name: clone fresh deepops repo
+    git:
+      repo: "https://github.com/NVIDIA/deepops"
+      dest: "{{ offline_cache_dir }}/deepops"
+      recursive: yes
+      update: yes
+      version: "master"
+
+  - name: clone helm repos
+    git:
+      repo: "{{ item.value }}"
+      dest: "{{ offline_cache_dir }}/helm/{{ item.key }}"
+      recursive: yes
+      version: "master"
+    loop: "{{ helm_chart_repos|dict2items }}"
+
+  - name: archive docker images
+    docker_image:
+      name: "{{ item.value }}"
+      archive_path: "{{ offline_cache_dir }}/docker-images/{{ item.key }}.tar"
+      state: present
+    loop: "{{ docker_image_list|dict2items }}"
+
+  - name: download CentOS ISO
+    get_url:
+      url: "{{ centos_iso_mirror }}/{{ centos_iso }}"
+      dest: "{{ offline_cache_dir }}/yum/{{ centos_iso }}"
+      mode: 0444
+
+  - name: sync yum repositories
+    command: reposync -c config/offline_cache/yum.conf -r "{{ yum_repos_to_sync|join(',') }}" -p "{{ offline_cache_dir }}/yum/"
+    when: download_yum_repos
+
+  - name: tar everything up
+    archive:
+      dest: "{{ tar_file_path }}"
+      path: "{{ offline_cache_dir }}"
+      format: bz2
