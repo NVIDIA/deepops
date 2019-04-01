@@ -3,7 +3,7 @@
 git submodule update --init
 
 k8s_config_dir=${K8S_CONFIG_DIR:-./k8s-config}
-deepops_config=${DEEPOPS_CONFIG_DIR:-$(pwd)/config}
+deepops_config=${DEEPOPS_CONFIG_DIR:-$(pwd)/config.example}
 
 if [ ! -d "${k8s_config_dir}" ] ; then
 	# Copy the kubespray default configuration
