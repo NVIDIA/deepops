@@ -2,7 +2,6 @@
 # Download and archive a list of DeepOps dependencies. 
 # WIP: dependency list is probably incomplete, currently supports CentOS only
 
-<<<<<<< HEAD
 # We don't install docker directly in this playbook because it's likely
 # to be run on an admin's laptop or some other non-DeepOps host, and there
 # are many ways to install Docker that a user may otherwise prefer on their
@@ -50,7 +49,6 @@
 - hosts: cache_builder
   become: no
   tasks:
-<<<<<<< HEAD
   - name: build an online cache
     include_role:
       name: offline-repo-mirrors

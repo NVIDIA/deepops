@@ -1,0 +1,71 @@
+---
+- name: ensure offline cache directories exist
+  file:
+    name: "{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+  - "{{ offline_cache_dir }}"
+  - "{{ offline_cache_dir }}/helm"
+  - "{{ offline_cache_dir }}/docker-images"
+  - "{{ offline_cache_dir }}/yum"
+
+- name: clone fresh deepops repo
+  git:
+    repo: "https://github.com/NVIDIA/deepops"
+    dest: "{{ offline_cache_dir }}/deepops"
+    recursive: yes
+    update: yes
+    version: "master"
+
+- name: install Ansible Galaxy dependencies in repo
+  command: ansible-galaxy install -p "{{ offline_cache_dir }}/deepops/galaxy-roles" -r "{{ offline_cache_dir }}/deepops/requirements.yml"
+  tags:
+  - skip_ansible_lint
+
+- name: download helm
+  get_url:
+    url: "{{ helm_download_url }}"
+    dest: "{{ offline_cache_dir }}/helm/"
+
+- name: clone helm repos
+  git:
+    repo: "{{ item.value }}"
+    dest: "{{ offline_cache_dir }}/helm/{{ item.key }}"
+    recursive: yes
+    version: "master"
+  loop: "{{ helm_chart_git_repos|dict2items }}"
+
+- name: download rook helm chart
+  get_url:
+    url: "{{ rook_helm_chart_url }}"
+    dest: "{{ offline_cache_dir }}/helm/"
+
+- name: archive docker images
+  docker_image:
+    name: "{{ item.value }}"
+    archive_path: "{{ offline_cache_dir }}/docker-images/{{ item.key }}.tar"
+    state: present
+  loop: "{{ docker_image_list|dict2items }}"
+
+- name: download CentOS ISO
+  get_url:
+    url: "{{ centos_iso_mirror }}/{{ centos_iso }}"
+    dest: "{{ offline_cache_dir }}/yum/{{ centos_iso }}"
+    mode: 0444
+
+- name: copy yum.conf to cache dir
+  copy:
+    src: "yum.conf"
+    dest: "{{ offline_cache_dir }}/yum.conf"
+    mode: 0444
+
+- name: sync yum repositories
+  command: reposync -c "{{ offline_cache_dir }}/yum.conf" -r "{{ yum_repos_to_sync|join(',') }}" -p "{{ offline_cache_dir }}/yum/"
+  when: download_yum_repos
+
+- name: tar everything up
+  archive:
+    dest: "{{ tar_file_path }}"
+    path: "{{ offline_cache_dir }}"
+    format: bz2
