@@ -26,7 +26,19 @@
     - "git"
     - "yum-utils"
     - "python-pip"
-  - name: install necessary pip modules
+  - name: install python gpg integration (Ubuntu)
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - "libgpgme-dev"
+    - "python-gpg"
+    when: ansible_distribution == "Ubuntu"
+  - name: install python gpg integration (Ubuntu)
+    pip:
+      name: "pygpgme"
+    when: ansible_distribution == "Ubuntu"
+  - name: install necessary pip modules for docker
     pip:
       name: "{{ item }}"
     with_items:
