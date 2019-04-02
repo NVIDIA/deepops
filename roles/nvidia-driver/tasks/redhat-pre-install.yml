@@ -15,5 +15,5 @@
   yum_repository:
     name: cuda
     description: NVIDIA CUDA YUM Repo
-    gpgkey: "{{ cuda_gpgkey }}"
-    baseurl: "{{ cuda_baseurl }}"
+    gpgkey: "{{ rhel_cuda_gpgkey }}"
+    baseurl: "{{ rhel_cuda_baseurl }}"
