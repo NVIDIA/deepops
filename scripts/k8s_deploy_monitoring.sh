@@ -6,6 +6,8 @@ HELM_COREOS_CHART_REPO="${HELM_COREOS_CHART_REPO:-https://s3-eu-west-1.amazonaws
 config_dir="$(pwd)/config.example"
 if [ "${DEEPOPS_CONFIG_DIR}" ]; then
     config_dir="${DEEPOPS_CONFIG_DIR}"
+elif [ -d "$(pwd)/config" ] ; then
+    config_dir="$(pwd)/config"
 fi
 
 # Get IP of first master
