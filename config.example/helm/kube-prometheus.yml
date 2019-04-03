@@ -1,21 +1,8 @@
 prometheus:
   ingress:
     enabled: true
-    hosts:
-    - prometheus.local
-    annotations:
-      kubernetes.io/ingress.class: "nginx"
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
-      nginx.ingress.kubernetes.io/rewrite-target: /
-    # Support HTTPS (required)
-    tls:
-    - hosts:
-      -  prometheus.local
   nodeSelector:
     node-role.kubernetes.io/master: ""
-  service:
-    type: NodePort
-    nodePort: 30500
   serviceMonitors:
   - name: dcgm-exporter
     selector:
@@ -32,39 +19,13 @@ prometheus:
 alertmanager:
   ingress:
     enabled: true
-    hosts:
-    - alertmanager.local
-    annotations:
-      kubernetes.io/ingress.class: "nginx"
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
-      nginx.ingress.kubernetes.io/rewrite-target: /
-    # Support HTTPS (required)
-    tls:
-    - hosts:
-      -  alertmanager.local
   nodeSelector:
     node-role.kubernetes.io/master: ""
-  service:
-    type: NodePort
-    nodePort: 30400
 
 grafana:
   ingress:
     enabled: true
-    hosts:
-    - grafana.local
-    annotations:
-      kubernetes.io/ingress.class: "nginx"
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
-      nginx.ingress.kubernetes.io/rewrite-target: /
-    # Support HTTPS (required)
-    tls:
-    - hosts:
-      -  grafana.local
   nodeSelector:
     node-role.kubernetes.io/master: ""
-  service:
-    type: NodePort
-    nodePort: 30200
   serverDashboardConfigmaps:
     - kube-prometheus-grafana-gpu

@@ -2,6 +2,9 @@
 
 HELM_COREOS_CHART_REPO="${HELM_COREOS_CHART_REPO:-https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/}"
 
+# Get IP of first master
+master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
+
 type helm >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
     ./scripts/install_helm.sh
@@ -31,10 +34,17 @@ if [ $? -ne 0 ] ; then
     kubectl create configmap kube-prometheus-grafana-gpu --from-file=${config_dir}/gpu-dashboard.json -n monitoring
 fi
 
+# Deploy the ingress controller
+if ! helm status nginx-ingress >/dev/null 2>&1; then
+	helm install --name nginx-ingress --values "${config_dir}/helm/ingress.yml" stable/nginx-ingress
+fi
 # Deploy Monitoring stack
 helm status kube-prometheus >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
-    helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values ${config_dir}/helm/kube-prometheus.yml
+    helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values ${config_dir}/helm/kube-prometheus.yml \
+        --set alertmanager.ingress.hosts[0]=alertmanager-$(echo ${master_ip} | tr '.' '-').nip.io \
+        --set prometheus.ingress.hosts[0]=prometheus-$(echo ${master_ip} | tr '.' '-').nip.io \
+        --set grafana.ingress.hosts[0]=grafana-$(echo ${master_ip} | tr '.' '-').nip.io
 fi
 
 # Label GPU nodes
@@ -47,11 +57,8 @@ if [ $? -eq 0 ] ; then
     kubectl create -f services/dcgm-exporter.yml
 fi
 
-# Get IP of first master
-master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
-
-# Get Grafana port
-grafana_port=$(kubectl  -n monitoring get svc -l app=kube-prometheus-grafana --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
-
-# Print Grafana address
-echo "Grafana is available at: http://${master_ip}:${grafana_port}"
+# Print URLs
+echo
+echo "Grafana: http://grafana-$(echo ${master_ip} | tr '.' '-').nip.io"
+echo "Prometheus: http://prometheus-$(echo ${master_ip} | tr '.' '-').nip.io"
+echo "Alertmanager: http://alertmanager-$(echo ${master_ip} | tr '.' '-').nip.io"
