@@ -18,11 +18,12 @@ fi
 # Get IP of first master
 master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
 
-type helm >/dev/null 2>&1
-if [ $? -ne 0 ] ; then
+# Install/initialize Helm client
+if ! type helm >/dev/null 2>&1 ; then
     ./scripts/install_helm.sh
 fi
 
+<<<<<<< HEAD
 case "$1" in
     delete)
         helm del --purge prometheus-operator
