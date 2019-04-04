@@ -18,12 +18,12 @@ ansible-playbook \
 
 echo "Running Kubespray download"
 
+cd "${ROOT_DIR}/kubespray" || exit 1
 tmp_dir="${TEMPDIR:-/tmp}"
 export K8S_CONFIG_DIR="${tmp_dir}/download-k8s-config"
 "${ROOT_DIR}/scripts/k8s_inventory.sh" 127.0.0.1
 
-cd "${ROOT_DIR}/kubespray" || exit 1
-ansible-playbook -b \
+ansible-playbook \
 	-i "${K8S_CONFIG_DIR}/hosts.ini" \
 	-e download_run_one=true \
 	-e download_localhost=true \
