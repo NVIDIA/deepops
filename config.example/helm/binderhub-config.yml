@@ -2,3 +2,12 @@ config:
   BinderHub:
     use_registry: false
     # hub_url: 
+
+# Require 1 GPU for each Notebook deployment
+jupyterhub:
+  singleuser:
+    extraResource:
+      guarantees:
+        nvidia.com/gpu: "1"
+      limits:
+        nvidia.com/gpu: "1"
