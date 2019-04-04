@@ -1,0 +1,76 @@
+---
+- name: Add epel repo
+  yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: "{{ epel_baseurl }}"
+    gpgkey: "{{ epel_gpgkey }}"
+
+- name: Add DGX repo
+  yum_repository:
+    name: nvidia-dgx-7
+    description: NVIDIA DGX EL7
+    gpgkey: "{{ rhel_gpgkey }}"
+    baseurl: "{{ rhel_baseurl }}"
+
+- name: Install packages
+  yum:
+    name: "@DGX-1 Configurations"
+    state: present
+    update_cache: yes
+  when: ansible_product_name == "DGX-1"
+
+- name: Install packages
+  yum:
+    name: "@DGX-2 Configurations"
+    state: present
+    update_cache: yes
+  when: ansible_product_name == "DGX-2"
+
+- name: Install kernel headers
+  yum:
+    name: kernel-headers
+    update_cache: yes
+    state: present
+
+- name: check kernel versions
+  yum:
+    list: kernel
+  register: yum_list
+
+- name: register installed kernel version
+  debug:
+    msg: "{{ yum_list.results | selectattr('yumstate', 'equalto', 'installed') | list }}"
+  register: kernel_version
+
+- name: check kernel-headers versions
+  yum:
+    list: kernel-headers
+  register: yum_list
+
+- name: register installed kernel-headers version
+  debug:
+    msg: "{{ yum_list.results | selectattr('yumstate', 'equalto', 'installed') | list }}"
+  register: kernel_headers_version
+
+- name: update kernel if headers don't match
+  yum:
+    name:
+      - kernel
+      - kernel-tools
+      - kernel-tools-libs
+      - kernel-devel
+      - kernel-debug-devel
+      - kernel-headers
+    state: latest
+  register: kernel_update
+  when: kernel_version.msg[0].release != kernel_headers_version.msg[0].release
+  tags: skip_ansible_lint
+
+- name: Register cachefilesd package install state
+  command: "rpm -q {{ dgx_cachefilesd_package_name }}"
+  args:
+    warn: no
+  changed_when: False
+  ignore_errors: yes
+  register: cachefilesd_installed

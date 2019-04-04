@@ -1,0 +1,15 @@
+---
+- name: remove ppa
+  apt_repository:
+    repo: ppa:graphics-drivers/ppa
+    state: absent
+
+- name: add key
+  apt_key:
+    url: "{{ ubuntu_cuda_gpgkey }}"
+    id: "{{ ubuntu_cuda_apt_key }}"
+
+- name: add repo
+  apt_repository:
+    repo: "deb {{ ubuntu_cuda_baseurl }} /"
+    update_cache: yes

@@ -1,0 +1,10 @@
+epel_baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"
+epel_gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+rhel_baseurl: "https://international.download.nvidia.com/dgx/repos/{{ rhel_repo_dir }}/"
+rhel_gpgkey: "https://international.download.nvidia.com/dgx/repos/rhel-files/RPM-GPG-KEY-dgx-cosmos-support"
+#ubuntu_cuda_gpgkey: "https://developer.download.nvidia.com/compute/cuda/repos/{{ ubuntu_repo_dir }}/7fa2af80.pub"
+#ubuntu_cuda_apt_key: "7fa2af80"
+#ubuntu_cuda_baseurl: "http://developer.download.nvidia.com/compute/cuda/repos/{{ ubuntu_repo_dir }}"
+
+dgx_configure_raid_array: false
+nvidia_driver_skip_reboot: false
