@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: all:!dgx-servers
   become: true
   become_method: sudo
   vars:

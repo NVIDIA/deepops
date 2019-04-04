@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: all:!dgx-servers
   become: true
   tasks:
     - name: Install NVIDIA Machine Learning packages
@@ -8,7 +8,7 @@
   tags:
     - install
 
-- hosts: all
+- hosts: all:!dgx-servers
   become: true
   tasks:
     - name: Remove NVIDIA Machine Learning packages

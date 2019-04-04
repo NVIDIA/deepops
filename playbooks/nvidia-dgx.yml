@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: dgx-servers
   become: true
   tasks:
     - name: Include NVIDIA DGX role
