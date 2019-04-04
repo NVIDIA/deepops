@@ -1,0 +1,4 @@
+config:
+  BinderHub:
+    use_registry: false
+    # hub_url: 
