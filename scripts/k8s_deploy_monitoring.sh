@@ -18,10 +18,7 @@ fi
 # Get IP of first master
 master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
 
-# Install/initialize Helm client
-if ! type helm >/dev/null 2>&1 ; then
-    ./scripts/install_helm.sh
-fi
+./scripts/install_helm.sh
 
 <<<<<<< HEAD
 case "$1" in
