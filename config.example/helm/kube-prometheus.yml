@@ -7,6 +7,9 @@ prometheus:
       nginx.ingress.kubernetes.io/rewrite-target: /
   nodeSelector:
     node-role.kubernetes.io/master: ""
+  service:
+    type: NodePort
+    nodePort: 30500
   serviceMonitors:
   - name: dcgm-exporter
     selector:
@@ -29,6 +32,9 @@ alertmanager:
       nginx.ingress.kubernetes.io/rewrite-target: /
   nodeSelector:
     node-role.kubernetes.io/master: ""
+  service:
+    type: NodePort
+    nodePort: 30400
 
 grafana:
   ingress:
@@ -39,5 +45,8 @@ grafana:
       nginx.ingress.kubernetes.io/rewrite-target: /
   nodeSelector:
     node-role.kubernetes.io/master: ""
+  service:
+    type: NodePort
+    nodePort: 30200
   serverDashboardConfigmaps:
     - kube-prometheus-grafana-gpu
