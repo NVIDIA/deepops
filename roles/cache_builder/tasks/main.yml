@@ -63,9 +63,3 @@
 - name: sync yum repositories
   command: reposync -c "{{ offline_cache_dir }}/yum.conf" -r "{{ yum_repos_to_sync|join(',') }}" -p "{{ offline_cache_dir }}/yum/"
   when: download_yum_repos
-
-- name: tar everything up
-  archive:
-    dest: "{{ tar_file_path }}"
-    path: "{{ offline_cache_dir }}"
-    format: bz2
