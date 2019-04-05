@@ -44,7 +44,7 @@ if ! helm status kube-prometheus >/dev/null 2>&1 ; then
 fi
 
 # Label GPU nodes
-for node in $(kubectl get node --no-headers -o custom-columns=NAME:.metadata.name,GPU:.status.allocatable.nvidia\\.com\\/gpu | awk '{print $1}') ; do
+for node in $(kubectl get node --no-headers -o custom-columns=NAME:.metadata.name,GPU:.status.allocatable.nvidia\\.com\\/gpu | grep -v none | awk '{print $1}') ; do
     kubectl label nodes ${node} hardware-type=NVIDIAGPU --overwrite >/dev/null
 done
 
