@@ -3,7 +3,7 @@
 HELM_COREOS_CHART_REPO="${HELM_COREOS_CHART_REPO:-https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/}"
 
 # Determine DeepOps config dir
-config_dir="$(pwd)/config.example"
+config_dir="$(pwd)/config"
 if [ "${DEEPOPS_CONFIG_DIR}" ]; then
     config_dir="${DEEPOPS_CONFIG_DIR}"
 elif [ -d "$(pwd)/config" ] ; then
@@ -13,10 +13,7 @@ fi
 # Get IP of first master
 master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
 
-# Install/initialize Helm client
-if ! type helm >/dev/null 2>&1 ; then
-    ./scripts/install_helm.sh
-fi
+./scripts/install_helm.sh
 
 # Add repo for Prometheus charts
 if ! helm repo list | grep coreos >/dev/null 2>&1 ; then
