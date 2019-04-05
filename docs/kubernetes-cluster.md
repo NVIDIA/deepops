@@ -23,20 +23,18 @@ Instructions for deploying a GPU cluster with Kubernetes
    ./scripts/setup.sh
    ```
 
-3. Create the server inventory. 
+3. Create and edit the Ansible inventory. 
 
-   Ansible uses an inventory which outlines the servers in your cluster. Use the script below to create the server inventory by supplying host IP addresses as argument inputs. 
-
+   Ansible uses an inventory which outlines the servers in your cluster. The setup script from the previous step will copy an example inventory configuration to the `config` directory. 
+   
+   Edit the inventory: 
+   
    ```sh
-   # Specify IP addresses of Kubernetes nodes
-   ./scripts/k8s_inventory.sh 10.0.0.1 10.0.0.2 10.0.0.3
-   ``` 
-
-   A `k8s-config` inventory directory should now exist. Optionally, modify the `k8s-config/hosts.ini` to configure hosts for specific roles (ex: master node vs worker node). 
-
-   ```sh
-   # (optional) Modify `k8s-config/hosts.ini` to configure hosts for specific roles
-   # 	     Make sure the [etcd] group has an odd number of hosts
+   # Edit inventory and add nodes to the "KUBERNETES" section
+   # Note: Etcd requires an odd number of servers
+   vi config/inventory
+   
+   # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
    ```
 
 4. Install Kubernetes using Ansible and Kubespray.

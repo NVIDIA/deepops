@@ -57,7 +57,7 @@ gpu-servers
 ######
 # SLURM
 ######
-[slurm-masters:children]
+[slurm-master:children]
 login
 
 [slurm-workers:children]
@@ -65,7 +65,7 @@ dgx-servers
 gpu-servers
 
 [slurm-cluster:children]
-slurm-masters
+slurm-master
 slurm-workers
 
 ######

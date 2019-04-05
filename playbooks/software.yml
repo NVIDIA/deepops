@@ -31,7 +31,7 @@
         update_cache: yes
       when: software_extra_packages is defined
 
-- hosts: compute-nodes
+- hosts: all
   become: true
   tasks:
     - name: install packages for compute nodes
@@ -41,7 +41,7 @@
         state: present
 
 # DGX servers should come pre-configured with the DGX repo
-- hosts: dgx-servers
+- hosts: all
   become: true
   tasks:
     - name: install packages for DGX nodes
