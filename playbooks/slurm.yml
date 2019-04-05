@@ -12,7 +12,7 @@
         user: "{{ ansible_user | default(ansible_env.SUDO_USER) }}"
         is_controller: yes
 
-- hosts: slurm-nodes
+- hosts: slurm-node
   become: yes
   roles:
     - name: slurm
