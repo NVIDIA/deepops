@@ -3,6 +3,9 @@ prometheus:
     enabled: true
   nodeSelector:
     node-role.kubernetes.io/master: ""
+  service:
+    type: NodePort
+    nodePort: 30500
   serviceMonitors:
   - name: dcgm-exporter
     selector:
@@ -21,11 +24,17 @@ alertmanager:
     enabled: true
   nodeSelector:
     node-role.kubernetes.io/master: ""
+  service:
+    type: NodePort
+    nodePort: 30400
 
 grafana:
   ingress:
     enabled: true
   nodeSelector:
     node-role.kubernetes.io/master: ""
+  service:
+    type: NodePort
+    nodePort: 30200
   serverDashboardConfigmaps:
     - kube-prometheus-grafana-gpu
