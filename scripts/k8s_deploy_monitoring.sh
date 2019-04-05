@@ -49,7 +49,7 @@ for node in $(kubectl get node --no-headers -o custom-columns=NAME:.metadata.nam
 done
 
 # Deploy DCGM node exporter
-if ! kubectl -n monitoring get pod -l app=dcgm-exporter 2>&1 | grep "No resources found." >/dev/null 2>&1 ; then
+if kubectl -n monitoring get pod -l app=dcgm-exporter 2>&1 | grep "No resources found." >/dev/null 2>&1 ; then
     kubectl create -f services/dcgm-exporter.yml
 fi
 
