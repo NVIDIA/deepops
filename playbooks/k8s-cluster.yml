@@ -31,6 +31,7 @@
 # Install Kubernetes
 - include: ../kubespray/cluster.yml
   vars:
+    ansible_become: true
     kubeadm_enabled: true
     kube_api_anonymous_auth: true
     kubectl_localhost: true

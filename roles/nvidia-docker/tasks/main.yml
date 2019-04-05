@@ -25,6 +25,14 @@
     mode: 0644
   register: daemon_json
 
+- name: grab nvidia-docker wrapper
+  get_url:
+    url: "{{ nvidia_docker_wrapper_url }}"
+    dest: /usr/local/bin/nvidia-docker
+    mode: 0755
+    owner: root
+    group: root
+
 - name: reload docker service
   service:
     name: docker

@@ -10,3 +10,5 @@ docker_daemon_json:
 
 nvdocker_repo_base_url: "https://nvidia.github.io/nvidia-docker"
 nvdocker_gpg_path: "{{ nvdocker_repo_base_url }}/gpgkey"
+
+nvidia_docker_wrapper_url: https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/nvidia-docker

@@ -1,5 +1,5 @@
 ---
-- hosts: all:!dgx-servers
+- hosts: all
   become: true
   tasks:
     - name: install custom facts

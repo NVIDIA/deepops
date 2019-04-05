@@ -3,6 +3,7 @@
   apt:
     name:
       - nvidia-docker
+      - nvidia-docker2
     state: absent
     autoremove: yes
     purge: yes
@@ -22,11 +23,8 @@
 
 - name: install packages
   apt:
-    name: "{{ item }}"
+    name: nvidia-container-runtime
     state: present
     update_cache: yes
-  with_items:
-    - "nvidia-docker2{{ nvidia_docker2_package_version | ternary('='+nvidia_docker2_package_version, '') }}"
-    - "nvidia-container-runtime{{ nvidia_container_runtime_package_version | ternary('='+nvidia_container_runtime_package_version, '') }}"
   register: install_packages
 
