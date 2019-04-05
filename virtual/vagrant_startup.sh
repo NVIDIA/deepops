@@ -70,18 +70,24 @@ case "$ID_LIKE" in
   debian*)
     # Install Vagrant & Dependencies for Debian Systems
 
-    # Update apt
-    sudo apt update
+    if ! dpkg -l build-essential sshpass qemu-kvm libvirt-bin libvirt-dev bridge-utils libguestfs-tools \
+      qemu ovmf virt-manager firewalld >/dev/null 2>&1; then
 
-    # Install build-essential tools
-    sudo apt install build-essential
+      echo "Installing apt dependencies..."
 
-    # Install other dependencies
-    sudo apt install -y sshpass
+      # Update apt
+      sudo apt update
+
+      # Install build-essential tools
+      sudo apt install build-essential
+
+      # Install other dependencies
+      sudo apt install -y sshpass
     
-    # Install KVM packages
-    sudo apt install -y qemu-kvm libvirt-bin libvirt-dev bridge-utils libguestfs-tools
-    sudo apt install -y qemu ovmf virt-manager firewalld
+      # Install KVM packages
+      sudo apt install -y qemu-kvm libvirt-bin libvirt-dev bridge-utils libguestfs-tools
+      sudo apt install -y qemu ovmf virt-manager firewalld
+    fi
 
     # Ensure we have permissions to manage VMs
     case "${VERSION_ID}" in
