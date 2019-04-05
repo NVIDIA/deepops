@@ -8,7 +8,7 @@ worker:
     repository: dask-rapids
     tag: latest
     env:
-  replicas: 3
+  replicas: 1
   resources: 
     requests:
       nvidia.com/gpu: 1
