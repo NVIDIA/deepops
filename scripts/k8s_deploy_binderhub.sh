@@ -169,7 +169,8 @@ function get_url() {
     IP=${local_ip}
   fi
 
-  echo "BinderHub located at: ${IP}:${binderhub_port}"
+  echo -e "\nBinderHub NodePort located at: http://${IP}:${binderhub_port}"
+  echo "BinderHub External IP located at: http://${binderhub_ip}"
 }
 
 
