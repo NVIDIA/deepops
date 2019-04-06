@@ -26,7 +26,7 @@ function help_me() {
 
 
 function get_opts() {
-while getopts "n:d:ph" option; do
+while getopts "n:d:pth" option; do
   case $option in
     n)
       RAPIDS_NAMESPACE=$OPTARG
@@ -50,6 +50,7 @@ done
 
 # Set default values if they were not specified
 RAPIDS_NAMESPACE="${RAPIDS_NAMESPACE:-rapids}"
+RAPIDS_HELM_NAME=${RAPIDS_HELM_NAME:-${RAPIDS_NAMESPACE}-rapids}
 RAPIDS_TMP_BUILD_DIR="${RAPIDS_TMP_BUILD_DIR:-tmp-rapids-build}"
 DASK_IMAGE="${DASK_IMAGE:-dask-rapids}"
 }
@@ -87,13 +88,16 @@ function build_image() {
 
 function tear_down() {
   # Delete existing resources
-  helm list ${RAPIDS_NAMESPACE} | grep ${RAPIDS_NAMESPACE} 2> /dev/null 1> /dev/null
+  helm list ${RAPIDS_HELM_NAME} | grep ${RAPIDS_NAMESPACE} 2> /dev/null 1> /dev/null
   if [ "${?}" == "0" ]; then
-    read -r -p "Helm resources already exist, would you  like to delete them? (yes/no)" response
+    read -r -p "Helm resources already exist, would you  like to delete them? (yes/no/skip)" response
     case "$response" in
       [yY][eE][sS]|[yY])
-        helm delete --purge ${RAPIDS_NAMESPACE}
+        helm delete --purge ${RAPIDS_HELM_NAME}
         sleep 2
+        ;;
+      skip)
+        echo "Continuing with no cleanup"
         ;;
       *)
         echo "Quitting install"
@@ -104,11 +108,14 @@ function tear_down() {
 
   kubectl get ns ${RAPIDS_NAMESPACE} 2> /dev/null 1> /dev/null
   if [ "${?}" == "0" ]; then
-    read -r -p "Kubernetes resources already exist, would you  like to delete them? (yes/no)" response
+    read -r -p "Kubernetes resources already exist, would you  like to delete them? (yes/no/skip)" response
     case "$response" in
       [yY][eE][sS]|[yY])
         kubectl delete ns ${RAPIDS_NAMESPACE}
         sleep 2
+        ;;
+      skip)
+        echo "Continuing with no cleanup"
         ;;
       *)
         echo "Quitting install"
@@ -121,9 +128,11 @@ function tear_down() {
 
 function stand_up() {
   echo "installing dask via helm"
+
   # Create the Dask resources
-  helm install -n ${RAPIDS_NAMESPACE} --namespace ${RAPIDS_NAMESPACE} --values config/helm/rapids-dask.yml ${DASK_CHART_NAME}
+  helm install -n ${RAPIDS_HELM_NAME} --namespace ${RAPIDS_NAMESPACE} --values config/helm/rapids-dask.yml ${DASK_CHART_NAME}
   kubectl create -n ${RAPIDS_NAMESPACE}  -f config/k8s/rapids-dask-sa.yml
+
   # kubectl create -f  config/k8s/rapids-dask-autoscale.yml # XXX: Optional install
   while [ `kubectl -n ${RAPIDS_NAMESPACE} get pods | grep Running | wc -l` != ${pod_count} ]; do
     sleep 1
@@ -133,7 +142,7 @@ function stand_up() {
 
 function copy_config() {
   echo "Copying dask-worker yaml file into running jupyter container"
-  kubectl -n ${RAPIDS_NAMESPACE} scale deployment ${RAPIDS_NAMESPACE}-dask-worker --replicas=1
+  kubectl -n ${RAPIDS_NAMESPACE} scale deployment ${RAPIDS_HELM_NAME}-dask-worker --replicas=1
   # Wait for containers to initialize
   while [ `kubectl -n ${RAPIDS_NAMESPACE} get pods | grep Running | wc -l` != ${pod_count_scale} ]; do
     sleep 1
@@ -152,7 +161,7 @@ function copy_config() {
 
   # Scale worker Deployment to 0 so it can be controlled via Jupyter rather than k8s directly
   # XXX: This is an issue until we figure  out how to  join the existing cluster/deployment with the dask_kubernetes flow
-  kubectl -n ${RAPIDS_NAMESPACE} scale deployment ${RAPIDS_NAMESPACE}-dask-worker --replicas=0
+  kubectl -n ${RAPIDS_NAMESPACE} scale deployment ${RAPIDS_HELM_NAME}-dask-worker --replicas=0
   # Wait for containers to initialize
   while [ `kubectl -n ${RAPIDS_NAMESPACE} get pods | grep Running | wc -l` != ${pod_count_scale_down} ]; do
     sleep 1
@@ -161,10 +170,10 @@ function copy_config() {
 
 function get_url() {
   # Output connection info
-  jupyter_ip="$(kubectl -n ${RAPIDS_NAMESPACE} get svc ${RAPIDS_NAMESPACE}-dask-jupyter -ocustom-columns=:.status.loadBalancer.ingress[0].ip | tail -n1)"
-  jupyter_port="$(kubectl -n ${RAPIDS_NAMESPACE} get svc ${RAPIDS_NAMESPACE}-dask-jupyter -ocustom-columns=:.spec.ports[0].nodePort | tail -n1)"
-  dask_port="$(kubectl -n ${RAPIDS_NAMESPACE} get svc ${RAPIDS_NAMESPACE}-dask-jupyter -ocustom-columns=:.spec.ports[0].nodePort | tail -n1)"
-  dask_ip="$(kubectl -n ${RAPIDS_NAMESPACE} get svc ${RAPIDS_NAMESPACE}-dask-scheduler -ocustom-columns=:.status.loadBalancer.ingress[0].ip | tail -n1)"
+  jupyter_ip="$(kubectl -n ${RAPIDS_NAMESPACE} get svc ${RAPIDS_HELM_NAME}-dask-jupyter -ocustom-columns=:.status.loadBalancer.ingress[0].ip | tail -n1)"
+  jupyter_port="$(kubectl -n ${RAPIDS_NAMESPACE} get svc ${RAPIDS_HELM_NAME}-dask-jupyter -ocustom-columns=:.spec.ports[0].nodePort | tail -n1)"
+  dask_port="$(kubectl -n ${RAPIDS_NAMESPACE} get svc ${RAPIDS_HELM_NAME}-dask-scheduler -ocustom-columns=:.spec.ports[1].nodePort | tail -n1)"
+  dask_ip="$(kubectl -n ${RAPIDS_NAMESPACE} get svc ${RAPIDS_HELM_NAME}-dask-scheduler -ocustom-columns=:.status.loadBalancer.ingress[0].ip | tail -n1)"
   
   aws_ip=`curl --max-time .1 --connect-timeout .1 http://169.254.169.254/latest/meta-data/public-hostname`
   gcp_ip=`curl --max-time .1 --connect-timeout .1 -H "Metadata-Flavor: Google" http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip`
@@ -187,10 +196,10 @@ function get_url() {
   fi
 
   echo -e "\nJupyter default password: dask"
-  echo "Jupyter located via NodePort at: ${IP}:${jupyter_port}"
-  echo "Jupyter located via External IP at: ${jupyter_ip}"
-  echo "Dask located via NodePort at: ${IP}:${dask_port}"
-  echo "Dask located via External IP at: ${dask_ip}"
+  echo "Jupyter located via NodePort at: http://${IP}:${jupyter_port}"
+  echo "Jupyter located via External IP at: http://${jupyter_ip}"
+  echo "Dask located via NodePort at: http://${IP}:${dask_port}"
+  echo "Dask located via External IP at: http://${dask_ip}"
 }
 
 
@@ -200,3 +209,4 @@ build_image
 stand_up
 copy_config
 get_url
+
