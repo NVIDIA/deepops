@@ -11,26 +11,33 @@ VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 case "$ID_LIKE" in
   rhel*)
-    # End Install Vagrant & Dependencies for RHEL Systems
+    # Install Vagrant & Dependencies for RHEL Systems
 
-    # Update yum
-    sudo yum update
+    if ! rpm -q wget "Development Tools" centos-release-qemu-ev qem-kvm-ev qemu-kvm libvirt virt-install \
+      bridge-utils libvirt-devel libxslt-devel libxml2-devel libguestfs-tools-c sshpass qemu-kvm libvirt-bin \
+      libvirt-dev bridge-utils libguestfs-tools qemu virt-manager firewalld OVMF 2>&1; then
 
-    # Install essential packages and tools
-    sudo yum -y install wget
-    sudo yum group install -y "Development Tools"
-    sudo yum install -y centos-release-qemu-ev qem-kvm-ev qemu-kvm libvirt virt-install bridge-utils libvirt-devel libxslt-devel libxml2-devel libvirt-devel libguestfs-tools-c
+      echo "Installing yum dependencies..."
 
-    # Optional set up networking for Vagrant VMs. Uncomment and adjust if needed
-    #sudo echo "net.ipv4.ip_forward = 1"|sudo tee /etc/sysctl.d/99-ipforward.conf
-    #sudo sysctl -p /etc/sysctl.d/99-ipforward.conf
+      # Update yum
+      sudo yum update
 
-    # Install other dependencies
-    sudo yum install -y sshpass
+      # Install essential packages and tools
+      sudo yum -y install wget
+      sudo yum group install -y "Development Tools"
+      sudo yum install -y centos-release-qemu-ev qem-kvm-ev qemu-kvm libvirt virt-install bridge-utils libvirt-devel libxslt-devel libxml2-devel libguestfs-tools-c
 
-    # Install KVM packages
-    sudo yum install -y qemu-kvm libvirt-bin libvirt-dev bridge-utils libguestfs-tools
-    sudo yum install -y qemu virt-manager firewalld OVMF
+      # Optional set up networking for Vagrant VMs. Uncomment and adjust if needed
+      #sudo echo "net.ipv4.ip_forward = 1"|sudo tee /etc/sysctl.d/99-ipforward.conf
+      #sudo sysctl -p /etc/sysctl.d/99-ipforward.conf
+
+      # Install other dependencies
+      sudo yum install -y sshpass
+
+      # Install KVM packages
+      sudo yum install -y qemu-kvm libvirt-bin libvirt-dev bridge-utils libguestfs-tools
+      sudo yum install -y qemu virt-manager firewalld OVMF
+    fi
 
     # Ensure we have permissions to manage VMs
     export LIBVIRT_GROUP="libvirt"
