@@ -16,18 +16,16 @@ Also, using VMs and optionally GPU passthrough assumes that the host machine has
 enable virtualization in the BIOS. For instructions on how to accomplish this, refer to the sections
 at the bottom of this README: `Enabling virtualization and GPU passthrough`.
 
-## Bootstrap virtualization dependencies
+## Bootstrap dependencies
 
-This project leverages vagrant and libvirt to spin up the appropriate VMs to model a DeepOps
-cluster. To install the necessary dependencies, such as ansible, vagrant, libvirt, etc, run the
-included `setup.sh` on the host machine...
+To install basic dependencies for running Ansible and managing a DeepOps cluster,
+run the `setup.sh` found in the `scripts` directory of the repository root.
 
 ```
-$ ./setup.sh
+$ <deepops repo>/scripts/setup.sh
 ```
 
-After you've run this, it's a good idea to start a fresh login shell to ensure your environment is up to date.
-For example, you will need to be in the "libvirt" group to mangage VMs, but your current session won't include this group if libvirt was just installed.
+Virtualization-related dependencies will be installed if needed by the `vagrant_startup.sh` script.
 
 ## Select the Vagrant file for your Linux distro
 
