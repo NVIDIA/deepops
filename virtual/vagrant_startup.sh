@@ -17,7 +17,7 @@ case "$ID_LIKE" in
       bridge-utils libvirt-devel libxslt-devel libxml2-devel libguestfs-tools-c sshpass qemu-kvm libvirt-bin \
       libvirt-dev bridge-utils libguestfs-tools qemu virt-manager firewalld OVMF"
 
-    if ! (yum grouplist installed "Development Tools" && rpm -q $YUM_DEPENDENCIES) >/dev/null 2>&1; then
+    if ! (yum grouplist installed | grep "Development Tools" && rpm -q $YUM_DEPENDENCIES) >/dev/null 2>&1; then
       echo "Installing yum dependencies..."
 
       sudo yum group install -y "Development Tools"
@@ -69,7 +69,7 @@ case "$ID_LIKE" in
     export APT_DEPENDENCIES="build-essential sshpass qemu-kvm libvirt-bin libvirt-dev bridge-utils \
       libguestfs-tools qemu ovmf virt-manager firewalld"
 
-    if ! (dpkg -l $APT_DEPENDENCIES) >/dev/null 2>&1; then
+    if ! (dpkg -s $APT_DEPENDENCIES) >/dev/null 2>&1; then
       echo "Installing apt dependencies..."
 
       # Update apt
