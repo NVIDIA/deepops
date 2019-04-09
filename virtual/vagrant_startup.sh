@@ -11,26 +11,22 @@ VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 case "$ID_LIKE" in
   rhel*)
-    # End Install Vagrant & Dependencies for RHEL Systems
+    # Install Vagrant & Dependencies for RHEL Systems
 
-    # Update yum
-    sudo yum update
+    export YUM_DEPENDENCIES="centos-release-qemu-ev qem-kvm-ev qemu-kvm libvirt virt-install \
+      bridge-utils libvirt-devel libxslt-devel libxml2-devel libguestfs-tools-c sshpass qemu-kvm libvirt-bin \
+      libvirt-dev bridge-utils libguestfs-tools qemu virt-manager firewalld OVMF"
 
-    # Install essential packages and tools
-    sudo yum -y install wget
-    sudo yum group install -y "Development Tools"
-    sudo yum install -y centos-release-qemu-ev qem-kvm-ev qemu-kvm libvirt virt-install bridge-utils libvirt-devel libxslt-devel libxml2-devel libvirt-devel libguestfs-tools-c
+    if ! (yum grouplist installed | grep "Development Tools" && rpm -q $YUM_DEPENDENCIES) >/dev/null 2>&1; then
+      echo "Installing yum dependencies..."
+
+      sudo yum group install -y "Development Tools"
+      sudo yum install -y $YUM_DEPENDENCIES
+    fi
 
     # Optional set up networking for Vagrant VMs. Uncomment and adjust if needed
     #sudo echo "net.ipv4.ip_forward = 1"|sudo tee /etc/sysctl.d/99-ipforward.conf
     #sudo sysctl -p /etc/sysctl.d/99-ipforward.conf
-
-    # Install other dependencies
-    sudo yum install -y sshpass
-
-    # Install KVM packages
-    sudo yum install -y qemu-kvm libvirt-bin libvirt-dev bridge-utils libguestfs-tools
-    sudo yum install -y qemu virt-manager firewalld OVMF
 
     # Ensure we have permissions to manage VMs
     export LIBVIRT_GROUP="libvirt"
@@ -70,18 +66,18 @@ case "$ID_LIKE" in
   debian*)
     # Install Vagrant & Dependencies for Debian Systems
 
-    # Update apt
-    sudo apt update
+    export APT_DEPENDENCIES="build-essential sshpass qemu-kvm libvirt-bin libvirt-dev bridge-utils \
+      libguestfs-tools qemu ovmf virt-manager firewalld"
 
-    # Install build-essential tools
-    sudo apt install build-essential
+    if ! (dpkg -s $APT_DEPENDENCIES) >/dev/null 2>&1; then
+      echo "Installing apt dependencies..."
 
-    # Install other dependencies
-    sudo apt install -y sshpass
-    
-    # Install KVM packages
-    sudo apt install -y qemu-kvm libvirt-bin libvirt-dev bridge-utils libguestfs-tools
-    sudo apt install -y qemu ovmf virt-manager firewalld
+      # Update apt
+      sudo apt update -y
+
+      # Install build-essential tools
+      sudo apt install -y $APT_DEPENDENCIES
+    fi
 
     # Ensure we have permissions to manage VMs
     case "${VERSION_ID}" in

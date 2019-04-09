@@ -64,12 +64,12 @@ $ ./cluster_up.sh
 
 The script should complete without errors.
 
-## Destroy the cluster
+## Shutdown vagrant
 
-To destroy the cluster, run the `cluster_destroy.sh` script...
+To destroy the cluster and shutdown the VMs, run the `vagrant_shutdown.sh` script...
 
 ```
-$ ./cluster_destroy.sh
+$ ./vagrant_shutdown.sh
 ```
 
 Check that there are no running VMs using `virsh list`.
@@ -110,7 +110,7 @@ v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
 
 ```
 
-Destroy the virtual cluster (if it is running) and run cluster up again.
+Shutdown the virtual cluster (if it is running) and startup vagrant + run cluster up again.
 
 # Enabling virtualization and GPU passthrough
 
