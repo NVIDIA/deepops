@@ -2,6 +2,9 @@
 
 . /etc/os-release
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
+
 # Install Software
 case "$ID_LIKE" in
     rhel*)
