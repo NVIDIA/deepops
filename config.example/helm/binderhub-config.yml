@@ -1,0 +1,17 @@
+config:
+  BinderHub:
+    use_registry: false
+    # hub_url: 
+
+# Require 1 GPU for each Notebook deployment
+jupyterhub:
+  singleuser:
+    extraResource:
+      guarantees:
+        nvidia.com/gpu: "1"
+      limits:
+        nvidia.com/gpu: "1"
+  cull:
+    enabled: true
+    timeout: 3600 # Delete Pods that have been inactive for over n seconds
+    every: 600 # Check for inactive Pods ever n seconds
