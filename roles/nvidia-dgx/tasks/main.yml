@@ -4,6 +4,12 @@
     msg: "Role supports DGX-1 and DGX-2 systems only"
   when: ansible_product_name != "DGX-1" and ansible_product_name != "DGX-2"
 
+- name: include os specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution | lower }}.yml"
+    - "{{ ansible_os_family | lower }}.yml"
+
 - name: ubuntu pre-install tasks
   include_tasks: ubuntu-pre-install.yml
   when: ansible_distribution == 'Ubuntu'
@@ -41,6 +47,10 @@
     - dgx-persistence-mode
   register: install_driver
   notify: reboot after driver install
+
+- name: ubuntu family post-install tasks
+  include_tasks: ubuntu-post-install.yml
+  when: ansible_distribution == 'Ubuntu'
 
 - name: redhat family post-install tasks
   include_tasks: redhat-post-install.yml

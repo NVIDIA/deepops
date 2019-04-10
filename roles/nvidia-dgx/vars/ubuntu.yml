@@ -1,0 +1,65 @@
+dgx_repo_dir: "{{ ansible_distribution | lower }}{{ ansible_distribution_version | replace('.', '') }}/{{ ansible_architecture }}"
+dgx_cachefilesd_package_name: cachefilesd
+
+dgx_packages:
+  - dgx-ast-modeset
+  - dgx-blacklist-acpi-pad
+  - dgx-blacklist-nouveau
+  - dgx-cpu-governor
+  - dgx-crashdump
+  - dgx-deadline-scheduler
+  - dgx-disable-grubedit
+  - dgx-disable-iscsid
+  - dgx-disable-recommends
+  - dgx-disable-x2apic-optout
+  - dgx-enable-journaling
+  - dgx-enable-nvme-hot-plug
+  - dgx-grubmenu
+  - dgx-hugepage
+  - dgx-icmp
+  - dgx-ipmisol
+  - dgx-limits
+  - dgx-logrotate
+  - dgx-motd
+  - dgx-nvme-core-options
+  - dgx-persistence-mode
+  - dgx-quickfix-18-11-repo
+  - dgx-raid-config
+  - dgx-repo
+  - dgx-repo-keys
+  - dgx-smartd-disable
+  - dgx-swap-disable
+  - dgx-sysmgmt-sw
+  - dgx-update-disable
+  - dgx1-ota-update-meta
+  - dgxserver-configurations
+  - dgxserver-ota-update-meta
+  - nvsm-apis
+  - nvsm-dshm
+  - dgx-docker-cleanup
+  - dgx-docker-options
+  - dgx-docker-repo
+
+dgx_kvm_packages:
+  - dgx-kvm-guest-ota-update-meta
+  - dgx-kvm-guest-utils
+  - dgx-kvm-host-conf
+  - dgx-kvm-host-utils
+  - dgx-kvm-image-4-0-2
+  - dgx-kvm-image-4-0-3
+  - dgx-kvm-image-4-0-4
+  - dgx-kvm-image-4-0-5
+  - dgx-kvm-sw
+
+dgx2_packages:
+  - dgx2-ota-update-meta
+
+dgx_docker_packages:
+  - nvidia-docker2
+  - libnvidia-container-tools
+  - nvidia-container-runtime
+  - nvidia-container-runtime-hook
+
+dgx_extra_packages:
+  - nvhealth
+  - nvsysinfo

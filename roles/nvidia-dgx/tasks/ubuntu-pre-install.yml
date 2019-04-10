@@ -4,12 +4,18 @@
     repo: ppa:graphics-drivers/ppa
     state: absent
 
-- name: add key
-  apt_key:
-    url: "{{ ubuntu_cuda_gpgkey }}"
-    id: "{{ ubuntu_cuda_apt_key }}"
+- name: add repo keys
+  apt:
+    deb: "{{ nvidia_dgx_ubuntu_gpgkey }}"
 
 - name: add repo
-  apt_repository:
-    repo: "deb {{ ubuntu_cuda_baseurl }} /"
+  template:
+    src: dgx.list.j2
+    dest: /etc/apt/sources.list.d/dgx.list
+    mode: 0644
+
+- name: Install dgxserver-configurations meta package
+  apt:
+    name: "dgxserver-configurations"
+    state: present
     update_cache: yes

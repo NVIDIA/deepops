@@ -10,8 +10,8 @@
   yum_repository:
     name: nvidia-dgx-7
     description: NVIDIA DGX EL7
-    gpgkey: "{{ rhel_gpgkey }}"
-    baseurl: "{{ rhel_baseurl }}"
+    gpgkey: "{{ nvidia_dgx_rhel_gpgkey }}"
+    baseurl: "{{ nvidia_dgx_rhel_baseurl }}"
 
 - name: Install packages
   yum:
