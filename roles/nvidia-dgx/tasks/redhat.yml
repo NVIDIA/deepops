@@ -1,4 +1,7 @@
 ---
+- name: include os specific variables
+  include_vars: redhat.yml
+
 - name: Add epel repo
   yum_repository:
     name: epel
@@ -27,11 +30,11 @@
     update_cache: yes
   when: ansible_product_name == "DGX-2"
 
-- name: Install kernel headers
+- name: Install extra packages
   yum:
-    name: kernel-headers
-    update_cache: yes
+    name: "{{ dgx_extra_packages }}"
     state: present
+    update_cache: yes
 
 - name: check kernel versions
   yum:
@@ -67,10 +70,30 @@
   when: kernel_version.msg[0].release != kernel_headers_version.msg[0].release
   tags: skip_ansible_lint
 
-- name: Register cachefilesd package install state
-  command: "rpm -q {{ dgx_cachefilesd_package_name }}"
-  args:
-    warn: no
-  changed_when: False
-  ignore_errors: yes
-  register: cachefilesd_installed
+- name: Install driver packages
+  package:
+    name: "{{ item }}"
+  with_items:
+    - cuda-drivers
+    - cuda-drivers-diagnostic
+    - dgx-persistence-mode
+  register: install_driver
+  notify: reboot after driver install
+
+- name: Install Docker and the NVIDIA container runtime
+  yum:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - docker
+    - "@NVIDIA container runtime"
+
+- name: Install DGX System Management Tools
+  yum:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - python36
+    - "@DGX System Management"

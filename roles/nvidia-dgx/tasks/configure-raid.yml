@@ -1,0 +1,13 @@
+---
+- name: Stop cachefilesd when reconfiguring RAID array
+  service:
+    name: cachefilesd
+    state: stopped
+
+- name: Configure RAID array
+  command: /usr/bin/configure_raid_array.py -c -f
+
+- name: Restore SELinux label on RAID array
+  command: restorecon /raid
+  notify: restart cachefilesd
+

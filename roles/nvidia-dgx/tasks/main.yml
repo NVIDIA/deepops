@@ -4,54 +4,14 @@
     msg: "Role supports DGX-1 and DGX-2 systems only"
   when: ansible_product_name != "DGX-1" and ansible_product_name != "DGX-2"
 
-- name: include os specific variables
-  include_vars: "{{ item }}"
-  with_first_found:
-    - "{{ ansible_distribution | lower }}.yml"
-    - "{{ ansible_os_family | lower }}.yml"
-
-- name: ubuntu pre-install tasks
-  include_tasks: ubuntu-pre-install.yml
+- name: ubuntu tasks
+  include_tasks: ubuntu.yml
   when: ansible_distribution == 'Ubuntu'
 
-- name: redhat family pre-install tasks
-  include_tasks: redhat-pre-install.yml
+- name: redhat family tasks
+  include_tasks: redhat.yml
   when: ansible_os_family == 'RedHat'
 
-- name: Stop cachefilesd when reconfiguring RAID array
-  service:
-    name: cachefilesd
-    state: stopped
-  when: dgx_configure_raid_array and cachefilesd_installed.rc == 0
-
-- name: Configure RAID array
-  command: /usr/bin/configure_raid_array.py -c -f
+- name: configure raid array
+  include_tasks: configure-raid.yml
   when: dgx_configure_raid_array
-
-- name: Install Cachefilesd
-  package:
-    name: "{{ dgx_cachefilesd_package_name }}"
-    state: present
-
-- name: Restore SELinux label on RAID array
-  command: restorecon /raid
-  when: dgx_configure_raid_array
-  notify: restart cachefilesd
-
-- name: Install driver packages
-  package:
-    name: "{{ item }}"
-  with_items:
-    - cuda-drivers
-    - cuda-drivers-diagnostic
-    - dgx-persistence-mode
-  register: install_driver
-  notify: reboot after driver install
-
-- name: ubuntu family post-install tasks
-  include_tasks: ubuntu-post-install.yml
-  when: ansible_distribution == 'Ubuntu'
-
-- name: redhat family post-install tasks
-  include_tasks: redhat-post-install.yml
-  when: ansible_os_family == 'RedHat'

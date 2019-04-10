@@ -1,0 +1,36 @@
+---
+- name: include os specific variables
+  include_vars: ubuntu.yml
+
+- name: remove ppa
+  apt_repository:
+    repo: ppa:graphics-drivers/ppa
+    state: absent
+
+- name: add repo keys
+  apt:
+    deb: "{{ nvidia_dgx_ubuntu_gpgkey }}"
+
+- name: add repo
+  template:
+    src: dgx.list.j2
+    dest: /etc/apt/sources.list.d/dgx.list
+    mode: 0644
+
+- name: install dgx packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - "{{ PKGS_DGX1_ALL }}"
+  when: ansible_product_name == "DGX-1"
+
+- name: install dgx packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - "{{ PKGS_DGX2_ALL }}"
+  when: ansible_product_name == "DGX-2"
