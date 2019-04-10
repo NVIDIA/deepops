@@ -1,6 +1,3 @@
-dgx_repo_dir: "{{ ansible_distribution | lower }}{{ ansible_distribution_version | replace('.', '') }}/{{ ansible_architecture }}"
-dgx_cachefilesd_package_name: cachefilesd
-
 dgx_extra_packages:
   - dgx-ast-modeset
   - dgx-blacklist-acpi-pad
