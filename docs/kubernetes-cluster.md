@@ -43,7 +43,7 @@ Instructions for deploying a GPU cluster with Kubernetes
    # NOTE: If SSH requires a password, add: `-k`
    # NOTE: If sudo on remote machine requires a password, add: `-K`
    # NOTE: If SSH user is different than current user, add: `-u ubuntu`
-   ansible-playbook playbooks/k8s-cluster.yml
+   ansible-playbook -l k8s-cluster playbooks/k8s-cluster.yml
    ```
    
    More information on Kubespray can be found in the official [Getting Started Guide](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md)
