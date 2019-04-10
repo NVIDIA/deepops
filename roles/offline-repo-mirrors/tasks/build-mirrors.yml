@@ -1,0 +1,36 @@
+---
+- name: create deepops destination dir
+  file:
+    path: "{{ deepops_dest_path }}"
+    owner: "{{ deepops_dest_owner }}"
+    group: "{{ deepops_dest_group }}"
+    mode: "0755"
+    state: "directory"
+
+- name: ensure extraction directory exists
+  file:
+    path: "{{ extract_path }}"
+    owner: "{{ deepops_dest_owner }}"
+    group: "{{ deepops_dest_group }}"
+    mode: "0755"
+    state: "directory"
+
+- name: extract deepops archive
+  unarchive:
+    src: "{{ tar_file_path }}"
+    dest: "{{ extract_path }}"
+
+- name: configure docker to use insecure registry
+  copy:
+    content: "{{ docker_daemon_json | to_nice_json }}"
+    dest: "/etc/docker/daemon.json"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  register: daemon_json
+
+- name: reload docker if config changed
+  service:
+    name: "docker"
+    state: "reloaded"
+  when: "daemon_json.changed"

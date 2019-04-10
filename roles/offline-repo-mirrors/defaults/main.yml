@@ -2,16 +2,36 @@
 offline_cache_dir: "/tmp/deepops"
 build_tar_file: true
 tar_file_path: "/tmp/deepops-archive.tar.bz2"
-deepops_repo_url: "https://github.com/NVIDIA/deepops"
+extract_path: "/tmp/deepops-extracted"
 
-# Flags
+# Destination for files on repo mirror machine
+deepops_dest_path: "/opt/deepops"
+deepops_dest_owner: "root"
+deepops_dest_group: "root"
+
+# DeepOps repository
+deepops_repo_url: "https://github.com/NVIDIA/deepops"
+deepops_repo_dest_path: "{{ deepops_dest_path }}/deepops-repo"
+
+# Flags for downloading content
 download_yum_repos: yes
 download_docker_images: yes
 download_helm_repos: yes
 download_deepops_repo: yes
 
+# Flags for building mirrors
+build_yum_mirror: yes
+build_docker_registry: yes
+upload_docker_images: yes
+build_helm_mirror: yes
+upload_helm_chats: yes
+
+
+# Configure download of yum repos
 centos_iso_mirror: "http://mirrors.ocf.berkeley.edu/centos/7.6.1810/isos/x86_64"
 centos_iso: "CentOS-7-x86_64-Minimal-1810.iso"
+deepops_yum_dest_path: "{{ deepops_dest_path }}/yum"
+# Default to syncing only NVIDIA repos
 yum_repos_to_sync:
 - "libnvidia-container"
 - "nvidia-container-runtime"
@@ -25,11 +45,13 @@ yum_repos_to_sync:
 #- "docker-engine"
 #- "epel"
 
+# Configure download of helm charts
 helm_download_url: "https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz"
 helm_chart_git_repos:
   base: "https://github.com/helm/charts"
 rook_helm_chart_url: "https://charts.rook.io/master/rook-ceph-v0.9.0-79.g1a1ffdd.tgz"
 
+# Configure download of docker images
 docker_http_timeout: 120
 docker_image_list:
 - name: "ceph"
@@ -226,3 +248,10 @@ docker_image_list:
   repo: ""
   image: "registry"
   version: "latest"
+
+
+# Configure docker registry on mirror machine
+docker_dest_registry: "localhost:5000"
+docker_daemon_json:
+  insecure-registries:
+  - "{{ docker_dest_registry }}"
