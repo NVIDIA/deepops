@@ -39,7 +39,7 @@ If you want to use Ubuntu, you can set this variable to point to the Ubuntu Vagr
 
 ## Start vagrant
 
-Boot up the VMs by starting vagrant. Vagrant will spin up three VMs:
+Boot up the VMs by starting vagrant. Run `vagrant_startup.sh` found in the `virtual` directory of the repository root. Vagrant will spin up three VMs:
 * virtual-login
 * virtual-mgmt
 * virtual-gpu01
