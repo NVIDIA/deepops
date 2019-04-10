@@ -45,5 +45,5 @@ sudo chown -R "$(whoami)" "${DEST_DIR}"
 
 if [ "${DEEPOPS_BUILD_TARBALL}" -ne 0 ]; then
 	echo "Building a big tarball of everything"
-	tar cjf "${TARBALL}" "${DEST_DIR}"
+	tar cjf "${TARBALL}" -C "${DEST_DIR}" .
 fi
