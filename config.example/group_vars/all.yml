@@ -54,5 +54,16 @@
 
 # Extra software to install via software.yml playbook
 #software_extra_packages:
+#  - curl
+#  - git
+#  - rsync
+#  - screen
+#  - tmux
+#  - vim
+#  - wget
 #  - build-essential
+#  - linux-tools-generic
 #  - "{{ 'linux-headers-' + ansible_kernel }}"
+
+#software_remove_packages:
+#  - popularity-contest
