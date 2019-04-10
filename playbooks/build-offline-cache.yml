@@ -48,5 +48,8 @@
 # Download everything
 - hosts: cache_builder
   become: no
-  roles:
-  - cache_builder
+  tasks:
+  - name: build an online cache
+    include_role:
+      name: offline-repo-mirrors
+      tasks_from: build-cache
