@@ -30,6 +30,7 @@ helm_chart_git_repos:
   base: "https://github.com/helm/charts"
 rook_helm_chart_url: "https://charts.rook.io/master/rook-ceph-v0.9.0-79.g1a1ffdd.tgz"
 
+docker_http_timeout: 120
 docker_image_list:
 - name: "ceph"
   repo: ""

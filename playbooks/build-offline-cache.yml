@@ -26,6 +26,7 @@
     - "git"
     - "yum-utils"
     - "python-pip"
+    - "bzip2"
   - name: install python gpg integration (Ubuntu)
     package:
       name: "{{ item }}"
