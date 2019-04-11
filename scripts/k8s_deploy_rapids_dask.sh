@@ -43,6 +43,7 @@ while getopts "c:n:d:pth" option; do
       count=$OPTARG
       let pod_count=${pod_count}+${count}
       let pod_count_scale_down=${pod_count_scale_down}+${count}
+      let pod_count_scale=${pod_count_scale}+${count}
       ;;
     h)
       help_me
