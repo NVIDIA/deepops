@@ -6,7 +6,7 @@ type nvidia-smi || exit 0
 # Clean up processes still running.  If processes don't exit node is drained.
 if nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}' | grep -v - > /dev/null
 then
-    for i in $(nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}')
+    for i in $(nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}' | grep -v -)
     do
         logger -s -t slurm-epilog "Killing residual GPU process $i ..."
         kill -9 "$i"
