@@ -10,6 +10,15 @@ elif [ -d "$(pwd)/config" ] ; then
     config_dir="$(pwd)/config"
 fi
 
+case "$1" in
+    delete)
+        helm del --purge prometheus-operator
+        helm del --purge kube-prometheus
+        kubectl delete ns monitoring
+        exit 0
+        ;;
+esac
+
 # Get IP of first master
 master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
 
