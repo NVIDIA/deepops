@@ -38,8 +38,9 @@ kubectl get nodes
 # Deploy rook (optional, but highly recommended)
 "${ROOT_DIR}/scripts/k8s_deploy_rook.sh"
 
+# Deploy load balancer and ingress (optional but recommended)
+"${ROOT_DIR}/scripts/k8s_deploy_loadbalancer.sh"
+"${ROOT_DIR}/scripts/k8s_deploy_ingress.sh"
+
 # Deploy monitoring (optional)
 "${ROOT_DIR}/scripts/k8s_deploy_monitoring.sh"
-
-# Deploy load balancer and ingress (optional but recommended)
-"${ROOT_DIR}/scripts/k8s_deploy_ingress_metallb.sh"
