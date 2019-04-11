@@ -8,7 +8,11 @@ Set up a virtual cluster with DeepOps. Useful for...
 
 ## Prerequisites
 
-Running DeepOps virtually assumes that the host machine's OS is Ubuntu 16.04 or greater. DeepOps is also supported on CentOS 7.6 or greater. If this is not the case, the `bootstrap_virtual.sh` and `cluster_up.sh` scripts may be modified to work with a different OS.
+Approved OS:
+
+Ubuntu 16.04 (or greater)
+CentOS 7.6 (or greater)
+Running DeepOps virtually assumes that the host machine's OS is an approved OS. If this is not the case, the bootstrap_virtual.sh and cluster_up.sh scripts may be modified to work with a different OS.
 
 Also, using VMs and optionally GPU passthrough assumes that the host machine has been configured to enable virtualization in the BIOS. For instructions on how to accomplish this, refer to the sections at the bottom of this README: `Enabling virtualization and GPU passthrough`.
 
