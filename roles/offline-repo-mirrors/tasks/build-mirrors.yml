@@ -19,6 +19,8 @@
   unarchive:
     src: "{{ tar_file_path }}"
     dest: "{{ extract_path }}"
+  tags:
+  - extract_archive
 
 - name: configure docker to use insecure registry
   copy:
@@ -34,3 +36,37 @@
     name: "docker"
     state: "reloaded"
   when: "daemon_json.changed"
+
+- name: import the registry container locally
+  docker_image:
+    name: "{{ docker_registry_image.image }}"
+    load_path: "{{ docker_image_source }}/{{ docker_registry_image.name }}-{{ docker_registry_image.version }}.tar"
+  when: build_docker_registry
+
+- name: launch a local registry on this machine
+  docker_container:
+    name: "{{ docker_local_registry_name }}"
+    image: "{{ docker_registry_image.image }}:{{ docker_registry_image.version }}"
+    state: started
+    ports:
+    - "5000:5000"
+  when: build_docker_registry
+
+- name: load all docker images locally
+  docker_image:
+    name: "{{ item.image }}:{{ item.version }}"
+    load_path: "{{ docker_image_source }}/{{ item.name }}-{{ item.version }}.tar"
+    timeout: "{{ docker_http_timeout }}"
+    http_timeout: "{{ docker_http_timeout }}"
+  with_items: "{{ docker_image_list }}"
+  when: upload_docker_images
+
+- name: push all docker images to registry
+  docker_image:
+    name: "{{ item.repo }}{{ item.image }}:{{ item.version }}"
+    repository: "{{ docker_dest_registry }}/{{ item.image }}:{{ item.version }}"
+    push: yes
+    timeout: "{{ docker_http_timeout }}"
+    http_timeout: "{{ docker_http_timeout }}"
+  with_items: "{{ docker_image_list }}"
+  when: upload_docker_images
