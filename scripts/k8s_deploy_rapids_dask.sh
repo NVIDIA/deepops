@@ -8,6 +8,7 @@
 
 # Global K8S/Helm variables
 RAPIDS_DASK_DOCKER_REPO="${RAPIDS_DASK_DOCKER_REPO:-https://github.com/supertetelman/k8s-rapids-dask.git}"
+RAPIDS_DASK_DOCKER_REPO_BRANCH=${RAPIDS_DASK_DOCKER_REPO_BRANCH:-master}
 DASK_CHART_NAME=stable/dask
 DOCKER_REGISTRY=registry.local
 
@@ -79,7 +80,7 @@ function build_image() {
 	;;
     esac
   fi	  
-  git clone "${RAPIDS_DASK_DOCKER_REPO}" "${RAPIDS_TMP_BUILD_DIR}"
+  git clone --depth=1 --single-branch --branch ${RAPIDS_DASK_DOCKER_REPO_BRANCH} "${RAPIDS_DASK_DOCKER_REPO}" "${RAPIDS_TMP_BUILD_DIR}"
   pushd "${RAPIDS_TMP_BUILD_DIR}"
 
   # Build the docker image
