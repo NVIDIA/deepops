@@ -1,4 +1,13 @@
 ---
+- name: ensure necessary packages are present
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - "yum-utils"
+  - "rsync"
+  - "createrepo"
+
 - name: create deepops destination dir
   file:
     path: "{{ deepops_dest_path }}"
@@ -70,3 +79,31 @@
     http_timeout: "{{ docker_http_timeout }}"
   with_items: "{{ docker_image_list }}"
   when: upload_docker_images
+
+- name: ensure yum destination path exists
+  file:
+    path: "{{ deepops_yum_dest_path }}"
+    owner: "{{ deepops_dest_owner }}"
+    group: "{{ deepops_dest_group }}"
+    mode: "0755"
+  when: build_yum_mirror
+
+- name: copy selected yum content to destination path
+  command: rsync -a "{{ extract_path }}/yum/{{ item }}" "{{ deepops_yum_dest_path }}/"
+  with_items: "{{ yum_repos_to_sync }}"
+  when: build_yum_mirror
+
+- name: run createrepo for each yum repo
+  command: createrepo "{{ deepops_yum_dest_path }}/{{ item }}"
+  with_items: "{{ yum_repos_to_sync }}"
+  when: build_yum_repo
+
+- name: start nginx container to serve yum repo
+  docker_container:
+    name: "nginx-yum-repos"
+    image: "{{ docker_dest_registry }}/nginx"
+    volumes:
+    - "{{ deepops_yum_dest_path }}:/usr/share/nginx/html:ro"
+    ports:
+    - "{{ yum_mirror_port }}:80"
+  when: build_yum_repo

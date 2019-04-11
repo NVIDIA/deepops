@@ -14,7 +14,6 @@ cd "${ROOT_DIR}" || exit 1
 ansible-playbook \
 	-i "${DEEPOPS_CONFIG_DIR}/inventory" \
 	-e offline_cache_dir="${DEST_DIR}" \
-	-e download_yum_repos=false \
 	playbooks/build-offline-cache.yml
 
 echo "Running Kubespray download"
