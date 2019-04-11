@@ -18,15 +18,4 @@ if ! helm status metallb >/dev/null 2>&1; then
 	helm install --values "${config_dir}/helm/metallb.yml" --name metallb stable/metallb
 fi
 
-for i in {1..10}; do
-	echo "Check for load balancer online... check ${i}"
-	if kubectl get pods -l app=metallb,component=controller --no-headers | grep -i running;
-	then
-		break
-	else
-		sleep 30
-	fi
-done
-
-# Show services
-kubectl get services
+kubectl wait --for=condition=Ready -l app=metallb,component=controller pod
