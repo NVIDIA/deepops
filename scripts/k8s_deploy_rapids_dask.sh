@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/bash -ex
+
 # In order for this deployment to properly work across your cluster you will need to build the customer Docker image and push it out to your local Docker repository
 
 # This script will create a dask cluster including 1 Jupyter container,  1 Dask  scheduler, and N Dask workers.
@@ -22,11 +23,12 @@ function help_me() {
   echo "-n    Kubernetes namespace"
   echo "-d    Docker image name"
   echo "-p    Push the Docker image after building it"
+  echo "-c    The number of Pods already running in this namespace (if deploying to existing namespace)"
 }
 
 
 function get_opts() {
-while getopts "n:d:pth" option; do
+while getopts "c:n:d:pth" option; do
   case $option in
     n)
       RAPIDS_NAMESPACE=$OPTARG
@@ -36,6 +38,11 @@ while getopts "n:d:pth" option; do
       ;;
    p)
       PUSH_IMAGE=true
+      ;;
+   c)
+      count=$OPTARG
+      let pod_count=${pod_count}+${count}
+      let pod_count_scale_down=${pod_count_scale_down}+${count}
       ;;
     h)
       help_me
@@ -58,8 +65,8 @@ DASK_IMAGE="${DASK_IMAGE:-dask-rapids}"
 
 function build_image() {
   echo "Building custom dask/rapids image: ${DASK_IMAGE}"
-  ls "${RAPIDS_TMP_BUILD_DIR}"
-  if [ "${?}" == "0" ]; then
+
+  if [ -d "${RAPIDS_TMP_BUILD_DIR}" ]; then
 	  read -r -p "rapids build directory (${RAPIDS_TMP_BUILD_DIR}) already exist, would you  like to delete it? (yes/no)" response
     case "$response" in
       [yY][eE][sS]|[yY])
@@ -75,7 +82,7 @@ function build_image() {
   pushd "${RAPIDS_TMP_BUILD_DIR}"
 
   # Build the docker image
-  docker build -t ${DASK_IMAGE} .
+  docker build --network=host -t ${DASK_IMAGE} .
 
   popd
   rm -rf "${RAPIDS_TMP_BUILD_DIR}"
@@ -88,12 +95,12 @@ function build_image() {
 
 function tear_down() {
   # Delete existing resources
-  helm list ${RAPIDS_HELM_NAME} | grep ${RAPIDS_NAMESPACE} 2> /dev/null 1> /dev/null
-  if [ "${?}" == "0" ]; then
-    read -r -p "Helm resources already exist, would you  like to delete them? (yes/no/skip)" response
+  if [ "$(helm list ${RAPIDS_HELM_NAME})" != "" ]; then
+    read -r -p "Helm resources already exist, would you  like to delete them (this will include associated non-helm k8s service accounts as well)? (yes/no/skip)" response
     case "$response" in
       [yY][eE][sS]|[yY])
         helm delete --purge ${RAPIDS_HELM_NAME}
+        kubectl delete -n ${RAPIDS_NAMESPACE} -f config/k8s/rapids-dask-sa.yml || true # Best effort to delete any existing service accounts in the ns
         sleep 2
         ;;
       skip)
@@ -106,8 +113,7 @@ function tear_down() {
     esac
   fi
 
-  kubectl get ns ${RAPIDS_NAMESPACE} 2> /dev/null 1> /dev/null
-  if [ "${?}" == "0" ]; then
+  if [ "$(kubectl get ns ${RAPIDS_NAMESPACE})" != "" ]; then
     read -r -p "Kubernetes resources already exist, would you  like to delete them? (yes/no/skip)" response
     case "$response" in
       [yY][eE][sS]|[yY])
@@ -174,7 +180,9 @@ function get_url() {
   jupyter_port="$(kubectl -n ${RAPIDS_NAMESPACE} get svc ${RAPIDS_HELM_NAME}-dask-jupyter -ocustom-columns=:.spec.ports[0].nodePort | tail -n1)"
   dask_port="$(kubectl -n ${RAPIDS_NAMESPACE} get svc ${RAPIDS_HELM_NAME}-dask-scheduler -ocustom-columns=:.spec.ports[1].nodePort | tail -n1)"
   dask_ip="$(kubectl -n ${RAPIDS_NAMESPACE} get svc ${RAPIDS_HELM_NAME}-dask-scheduler -ocustom-columns=:.status.loadBalancer.ingress[0].ip | tail -n1)"
-  
+
+  # We need to poll until the service comes up and to get IPs, this will return non-zero codes for a while
+  set +e
   aws_ip=`curl --max-time .1 --connect-timeout .1 http://169.254.169.254/latest/meta-data/public-hostname`
   gcp_ip=`curl --max-time .1 --connect-timeout .1 -H "Metadata-Flavor: Google" http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip`
 
@@ -186,6 +194,7 @@ function get_url() {
     echo "WARNING: Could not determine local IP"
     local_ip=""
   fi
+  set -e
 
   if [ "${gcp_ip}" != "" ]; then
     IP=${gcp_ip}
