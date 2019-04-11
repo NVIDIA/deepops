@@ -250,8 +250,13 @@ docker_image_list:
   version: "latest"
 
 
-# Configure docker registry on mirror machine
+# Configure what docker registry to upload images to
 docker_dest_registry: "localhost:5000"
+docker_image_source: "{{ extract_path }}/docker-images"
 docker_daemon_json:
   insecure-registries:
   - "{{ docker_dest_registry }}"
+
+# Configure launching local docker registry
+docker_registry_image: "{{ docker_image_list | selectattr('name', 'equalto', 'registry') | list | first }}"
+docker_local_registry_name: "deepops-registry"
