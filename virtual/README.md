@@ -8,18 +8,13 @@ Set up a virtual cluster with DeepOps. Useful for...
 
 ## Prerequisites
 
-Running DeepOps virtually assumes that the host machine's OS is Ubuntu 16.04 or greater. If this is
-not the case, the `bootstrap_virtual.sh` and `cluster_up.sh` scripts may be modified to work with
-a different OS.
+Running DeepOps virtually assumes that the host machine's OS is Ubuntu 16.04 or greater. DeepOps is also supported on CentOS 7.6 or greater. If this is not the case, the `bootstrap_virtual.sh` and `cluster_up.sh` scripts may be modified to work with a different OS.
 
-Also, using VMs and optionally GPU passthrough assumes that the host machine has been configured to
-enable virtualization in the BIOS. For instructions on how to accomplish this, refer to the sections
-at the bottom of this README: `Enabling virtualization and GPU passthrough`.
+Also, using VMs and optionally GPU passthrough assumes that the host machine has been configured to enable virtualization in the BIOS. For instructions on how to accomplish this, refer to the sections at the bottom of this README: `Enabling virtualization and GPU passthrough`.
 
 ## Bootstrap dependencies
 
-To install basic dependencies for running Ansible and managing a DeepOps cluster,
-run the `setup.sh` found in the `scripts` directory of the repository root.
+To install basic dependencies for running Ansible and managing a DeepOps cluster,run the `setup.sh` found in the `scripts` directory of the repository root.
 
 ```
 $ <deepops repo>/scripts/setup.sh
@@ -102,8 +97,7 @@ $ lspci -nnk | grep NVIDIA
 
 In this example, we've chosen the GPU at `08:00.0`.
 
-In the `Vagrantfile`, uncomment the `v.pci` configuration and update it with a mapping to the bus
-discovered with `lspci`...
+In the `Vagrantfile`, uncomment the `v.pci` configuration and update it with a mapping to the bus discovered with `lspci`...
 
 ```
 v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
@@ -114,14 +108,11 @@ Shutdown the virtual cluster (if it is running) and startup vagrant + run cluste
 
 # Enabling virtualization and GPU passthrough
 
-On many machines, virtualization and GPU passthrough are not enabled by
-default. Follow these directions so that a virtual DeepOps cluster can start on your host machine
-with GPU access on the VMs.
+On many machines, virtualization and GPU passthrough are not enabled by default. Follow these directions so that a virtual DeepOps cluster can start on your host machine with GPU access on the VMs.
 
 ## BIOS and bootloader changes
 
-To support KVM, we need GPU pass through. To enable GPU pass through, we need to enable VFIO support
-in BIOS and Bootloader.
+To support KVM, we need GPU pass through. To enable GPU pass through, we need to enable VFIO support in BIOS and Bootloader.
 
 ### BIOS changes
 
@@ -142,8 +133,7 @@ in BIOS and Bootloader.
 **DGX Station SBIOS**
 * VT-x: 
 * VT-d: 
-* MMIO above 4G: verify virtualization support is enabled in the BIOS, by looking for vmx for Intel or svm for AMD
-processors...
+* MMIO above 4G: verify virtualization support is enabled in the BIOS, by looking for vmx for Intel or svm for AMD processors...
 
 ```
 $ grep -oE 'svm|vmx' /proc/cpuinfo | uniq
@@ -152,9 +142,7 @@ vmx
 
 ### Bootloader changes
 
-1. Add components necessary to load VFIO (Virtual Function I/O). VFIO is required to pass full
-devices through to a virtual machine, so that Ubuntu loads everything it needs. Edit and add the
-following to `/etc/modules` file:
+1. Add components necessary to load VFIO (Virtual Function I/O). VFIO is required to pass full devices through to a virtual machine, so that Ubuntu loads everything it needs. Edit and add the following to `/etc/modules` file:
 ```
 pci_stub
 vfio
@@ -164,10 +152,7 @@ kvm
 kvm_intel
 ```
 
-2. Next, need Ubuntu to load IOMMU properly. Edit `/etc/default/grub` and modify
-"GRUB_CMDLINE_LINUX_DEFAULT", by adding "intel_iommu=on" to enable IOMMU. May also need to add
-"vfio_iommu_type1.allow_unsafe_interrupts=1" if interrupt remapping should be enabled. Post these
-changes, the GRUB command line should look like this:
+2. Next, need Ubuntu to load IOMMU properly. Edit `/etc/default/grub` and modify "GRUB_CMDLINE_LINUX_DEFAULT", by adding "intel_iommu=on" to enable IOMMU. May also need to add "vfio_iommu_type1.allow_unsafe_interrupts=1" if interrupt remapping should be enabled. Post these changes, the GRUB command line should look like this:
 ```
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash intel_iommu=on vfio_iommu_type1.allow_unsafe_interrupts=1
 iommu=pt"
@@ -182,9 +167,7 @@ $ echo vfio-pci | sudo tee /etc/modules-load.d/vfio-pci.conf
 
 ### Blacklist the GPU devices
 
-We do not want the host running DGX Base OS to use the GPU Devices. Instead we want Guest VMs to get
-full access to the NVIDIA GPU devices. Hence, in the DGX Base OS on the host,  blacklist them by
-adding their IDs to the initramfs.
+We do not want the host running DGX Base OS to use the GPU Devices. Instead we want Guest VMs to get full access to the NVIDIA GPU devices. Hence, in the DGX Base OS on the host,  blacklist them by adding their IDs to the initramfs.
 
 1. Run the command `lspci -nn | grep NVIDIA` to get the list of PCI-IDs
 ```
@@ -210,8 +193,7 @@ NOTE: First entry is for Volta and the latter for NVSwitch
 
 3. Rebuild the initramfs by running `sudo update-initramfs -u` and reboot the system.
 
-4. After the system reboots, verify GPU devices and NVSwitches are claimed by vfio_pci driver by
-running `dmesg | grep vfio_pci`...
+4. After the system reboots, verify GPU devices and NVSwitches are claimed by vfio_pci driver by running `dmesg | grep vfio_pci`...
 ```
 [   15.668150] vfio_pci: add [10de:1db1[ffff:ffff]] class 0x000000/00000000
 [   15.736099] vfio_pci: add [10de:1ac1[ffff:ffff]] class 0x000000/00000000
@@ -227,8 +209,7 @@ $ lspci -nnk -d 10de:1ac1
 	Kernel driver in use: vfio-pci
 ```
 
-If the `Kernel driver in use` is not `vfio-pci` and instead the nvidia driver, it may be necessary
-to blacklist the nvidia driver or instruct it to load vfio-pci beforehand...
+If the `Kernel driver in use` is not `vfio-pci` and instead the nvidia driver, it may be necessary to blacklist the nvidia driver or instruct it to load vfio-pci beforehand...
 
 ```
 $ cat /etc/modprobe.d/nvidia.conf
