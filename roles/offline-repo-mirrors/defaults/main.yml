@@ -30,7 +30,6 @@ upload_helm_chats: yes
 # Configure download of yum repos
 centos_iso_mirror: "http://mirrors.ocf.berkeley.edu/centos/7.6.1810/isos/x86_64"
 centos_iso: "CentOS-7-x86_64-Minimal-1810.iso"
-deepops_yum_dest_path: "{{ deepops_dest_path }}/yum"
 # Default to syncing only NVIDIA repos
 yum_repos_to_sync:
 - "libnvidia-container"
@@ -44,6 +43,10 @@ yum_repos_to_sync:
 #- "docker-ce-stable"
 #- "docker-engine"
 #- "epel"
+
+# Configure creation of local yum repos
+deepops_yum_dest_path: "{{ deepops_dest_path }}/yum"
+yum_mirror_port: 8001
 
 # Configure download of helm charts
 helm_download_url: "https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz"
@@ -255,6 +258,8 @@ docker_dest_registry: "localhost:5000"
 docker_image_source: "{{ extract_path }}/docker-images"
 docker_daemon_json:
   insecure-registries:
+  - "{{ docker_dest_registry }}"
+  registry-mirrors:
   - "{{ docker_dest_registry }}"
 
 # Configure launching local docker registry
