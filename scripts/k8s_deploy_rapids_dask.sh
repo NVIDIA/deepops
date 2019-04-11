@@ -115,7 +115,7 @@ function tear_down() {
     esac
   fi
 
-  if [ "$(kubectl get ns ${RAPIDS_NAMESPACE})" != "" ]; then
+  if [ "$(kubectl get ns ${RAPIDS_NAMESPACE})" != "" -a "${RAPIDS_SKIP_KUBERNETES}" != "true"  ]; then
     read -r -p "Kubernetes resources already exist, would you  like to delete them? (yes/no/skip)" response
     case "$response" in
       [yY][eE][sS]|[yY])
