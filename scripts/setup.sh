@@ -40,6 +40,15 @@ case "$ID_LIKE" in
             sudo yum -y install ipmitool >/dev/null
         fi
         ipmitool -V
+
+	# Install pip and ensure Jinja2 is updated
+	if ! which pip >/dev/null 2>&1; then
+	    echo "Installing pip..."
+	    sudo yum -y install python-pip >/dev/null
+	fi
+	pip --version
+        echo "Upgrading jinja2"
+        sudo pip install --upgrade Jinja2
         ;;
     debian*)
         # Update apt cache
