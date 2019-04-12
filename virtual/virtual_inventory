@@ -4,92 +4,54 @@
 # Uncomment and change the IP addresses in this file to match your environment
 # Define per-group or per-host configuration in group_vars/*.yml
 
-# Management Servers
-# See group_vars/management.yml for configuration
-[management]
+######
+# ALL NODES
+######
+[all]
 virtual-mgmt
-
-# Login Servers
-# See group_vars/login.yml for configuration
-[login]
-virtual-login
-
-# GPU Servers - All GPU servers, including DGX if desired
-# See group_vars/gpu-servers.yml for configuration
-[gpu-servers]
-virtual-gpu01
-
-# DGX Servers - DGX specific
-# See group_vars/dgx-servers.yml for configuration
-[dgx-servers]
-
-# Configure nodes for Kubernetes
-# Only add the 'gpu-servers' and 'dgx-servers' group once the GPU/DGX nodes are up and available
-# Kubespray may fail otherwise
-[kube-node:children]
-management
-gpu-servers
-#dgx-servers
-
-[k8s-gpu:children]
-gpu-servers
-#dgx-servers
-
-######
-# SSH connection configuration
-######
-
-[all:vars]
-ansible_user=vagrant
-ansible_password=vagrant
-
-###############################################################################
-## You shouldn't need to make changes below here
-################################################################################
-
-######
-# Cluster compute (non-management/login) nodes
-######
-[compute-nodes:children]
-dgx-servers
-gpu-servers
-
-######
-# SLURM
-######
-[slurm-master:children]
-login
-
-[slurm-workers:children]
-dgx-servers
-gpu-servers
-
-[slurm-cluster:children]
-slurm-master
-slurm-workers
-
-######
-# NFS
-######
-[nfs-server:children]
-login
-
-[nfs-clients:children]
-compute-nodes
 
 ######
 # KUBERNETES
 ######
-[kube-master:children]
-management
+[kube-master]
+virtual-mgmt
 
-[etcd:children]
-management
+[etcd]
+virtual-mgmt
+
+[kube-node]
+virtual-mgmt
+virtual-gpu01
 
 [k8s-cluster:children]
-kube-node
+kube-master 	 
+kube-node 	 
 
-[calico-rr]
+######
+# SLURM
+######
+[slurm-master]
+virtual-login
 
-[vault:children]
-management
+[slurm-node]
+virtual-gpu01
+
+[slurm-cluster]
+slurm-master
+slurm-node
+
+######
+# NFS
+######
+[nfs-server]
+virtual-login
+
+[nfs-clients]
+virtual-gpu01
+
+######
+# SSH connection configuration
+######
+[all:vars]
+ansible_user=vagrant
+ansible_password=vagrant

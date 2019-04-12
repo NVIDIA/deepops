@@ -46,6 +46,10 @@ kube-node
 #gpu01
 #gpu02
 
+[slurm-cluster:children]
+slurm-master
+slurm-node
+
 ######
 # NFS
 ######
