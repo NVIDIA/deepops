@@ -10,6 +10,6 @@ spec:
       args:
       resources:
         limits:
-          nvidia.com/gpu: 8
+          nvidia.com/gpu: 1
   restartPolicy: Never
 
