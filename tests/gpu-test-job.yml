@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
     - name: cuda-container
-      image: nvidia/cuda:10.0-devel
+      image: nvcr.io/nvidia/cuda:10.0-devel
       command: ["sleep", "6000"]
       args:
       resources:
