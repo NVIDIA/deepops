@@ -252,6 +252,9 @@ docker_image_list:
   image: "registry"
   version: "latest"
 
+# Specific images we need to reference later
+nginx_image: "{{ docker_image_list | selectattr('name', 'equalto', 'nginx') | list | first }}"
+docker_registry_image: "{{ docker_image_list | selectattr('name', 'equalto', 'registry') | list | first }}"
 
 # Configure what docker registry to upload images to
 docker_dest_registry: "localhost:5000"
@@ -263,5 +266,5 @@ docker_daemon_json:
   - "{{ docker_dest_registry }}"
 
 # Configure launching local docker registry
-docker_registry_image: "{{ docker_image_list | selectattr('name', 'equalto', 'registry') | list | first }}"
 docker_local_registry_name: "deepops-registry"
+
