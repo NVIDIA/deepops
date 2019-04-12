@@ -1,0 +1,19 @@
+---
+- name: create raid array mount point
+  file:
+    path: "{{ dgx_raid_mount_path }}"
+    state: directory
+
+- name: Stop cachefilesd when reconfiguring RAID array
+  service:
+    name: cachefilesd
+    state: stopped
+
+- name: Configure RAID array
+  command: /usr/bin/configure_raid_array.py -c -f
+
+- name: Restore SELinux label on RAID array
+  command: restorecon /raid
+  when: ansible_os_family == 'RedHat'
+  notify: restart cachefilesd
+

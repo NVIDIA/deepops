@@ -26,18 +26,14 @@ Instructions for deploying a GPU cluster with Slurm
 
 3. Create and edit the Ansible inventory. 
 
-   Ansible uses an inventory which outlines the servers in your cluster. An example inventory config exists as `config.example`. If you don't already have one, you can copy this configuration:
+   Ansible uses an inventory which outlines the servers in your cluster. The setup script from the previous step will copy an example inventory configuration to the `config` directory. 
    
-   ```sh
-   cp -r config.example config
-   ```
-   
-   Now edit the inventory: 
+   Edit the inventory: 
    
    ```sh
    # Edit inventory
-   # Add Slurm controller/login host to `login` group
-   # Add Slurm worker/compute hosts to `gpu-servers` or `dgx-servers` groups
+   # Add Slurm controller/login host to `slurm-master` group
+   # Add Slurm worker/compute hosts to the `slurm-node` groups
    vi config/inventory
    
    # (optional) Modify `config/group_vars/*.yml` to set configuration parameters

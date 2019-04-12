@@ -1,0 +1,11 @@
+epel_baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"
+epel_gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+nvidia_dgx_rhel_baseurl: "https://international.download.nvidia.com/dgx/repos/{{ dgx_repo_dir }}/"
+nvidia_dgx_rhel_gpgkey: "https://international.download.nvidia.com/dgx/repos/rhel-files/RPM-GPG-KEY-dgx-cosmos-support"
+
+nvidia_dgx_ubuntu_baseurl: "http://international.download.nvidia.com/dgx/repos"
+nvidia_dgx_ubuntu_gpgkey: "https://international.download.nvidia.com/dgx/repos/bionic/pool/multiverse/d/dgx-repo-keys/dgx-repo-keys_2.0_amd64.deb"
+
+dgx_configure_raid_array: false
+nvidia_driver_skip_reboot: false
+dgx_raid_mount_path: /raid

@@ -1,10 +1,6 @@
 # Configuration common to all hosts
 # Define per-group or per-host values in the other configuration files
 
-# Docker Configuration
-#docker_daemon_json:
-#  bip: 192.168.99.1/24
-
 # dns-config
 #dns_config_servers: [8.8.8.8]
 #dns_config_search: [example.com]
@@ -58,5 +54,16 @@
 
 # Extra software to install via software.yml playbook
 #software_extra_packages:
+#  - curl
+#  - git
+#  - rsync
+#  - screen
+#  - tmux
+#  - vim
+#  - wget
 #  - build-essential
+#  - linux-tools-generic
 #  - "{{ 'linux-headers-' + ansible_kernel }}"
+
+#software_remove_packages:
+#  - popularity-contest

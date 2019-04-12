@@ -15,6 +15,7 @@
 - name: install driver packages
   package:
     name: "{{ nvidia_driver_package_version | ternary('cuda-drivers='+nvidia_driver_package_version, 'cuda-drivers') }}"
+    state: present
   register: install_driver
 
 - name: redhat family post-install tasks

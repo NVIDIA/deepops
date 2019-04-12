@@ -25,6 +25,7 @@ ansible-playbook -i "${VIRT_DIR}/k8s-config/hosts.ini" -b "${ROOT_DIR}/playbooks
 source "${VIRT_DIR}/k8s_environment.sh"
 
 # Verify that the cluster is up
+file ${K8S_CONFIG_DIR}/artifacts/kubectl && chmod +x ${K8S_CONFIG_DIR}/artifacts/kubectl
 kubectl get nodes
 #kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
 

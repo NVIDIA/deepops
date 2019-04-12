@@ -1,0 +1,7 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Include NVIDIA DGX role
+      include_role:
+        name: nvidia-dgx

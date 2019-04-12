@@ -1,0 +1,225 @@
+dgx_extra_packages:
+  - dgx-ast-modeset
+  - dgx-blacklist-acpi-pad
+  - dgx-blacklist-nouveau
+  - dgx-cpu-governor
+  - dgx-crashdump
+  - dgx-deadline-scheduler
+  - dgx-disable-x2apic-optout
+  - dgx-grubmenu
+  - dgx-hugepage
+  - dgx-limits
+  - dgx-logrotate
+  - dgx-persistence-mode
+  - dgx-quickfix-18-11-repo
+  - dgx-swap-disable
+  - dgx-update-disable
+  - dgxserver-ota-update-meta
+  - nvsm-apis
+  - nvsm-dshm
+
+PKGS_NONVM:
+  - grub-efi-amd64
+
+PKGS_COMMON:
+  - dmidecode
+  - psmisc
+  - autoconf
+  - automake
+  - autotools-dev
+  - libelf-dev
+  - dpatch
+  - flex
+  - libltdl-dev
+  - m4
+  - swig
+  - tcl
+  - tk
+  - apt-transport-https
+  - cifs-utils
+  - dosfstools
+  - gdisk
+  - bison
+  - chrpath
+  - ipmitool
+  - ssh
+  - ethtool
+  - fail2ban
+  - cachefilesd
+  - bash-completion
+  - vim
+  - linux-tools-generic
+  - linux-tools-common
+  - cmake
+  - man-db
+  - nvme-cli
+  - nfs-common
+  - dgx-disable-iscsid
+
+PKGS_DRIVER:
+  - nvidia-headless-410
+  - libnvidia-diagnostic-410
+  - nvidia-settings
+  - nvidia-modprobe
+
+PKGS_DGX1_DGX2:
+  - vlan
+
+PKGS_KVM_ONLY:
+  - parted
+  - dgx-kvm-guest-utils
+  - dgx-kvm-guest-ota-update-meta
+  - dgx-smartd-disable
+
+PKGS_KVM_DGX2:
+  - datacenter-gpu-manager-fabricmanager
+
+PKGS_DGX2_ONLY:
+  - dgx-nvme-core-options
+  - dgx2-ota-update-meta
+  - dgx-disable-grubedit
+  - dgx-sysmgmt-sw
+  - nvidia-acs-disable
+  - msecli
+  - dgx-enable-nvme-hot-plug
+
+PKGS_DGX1_ONLY:
+  - dgx1-ota-update-meta
+  - storcli
+  - datacenter-gpu-manager
+
+#PKGS_KVM:
+#  - "{{ PKGS_KVM_DGX2 }}"
+#  - "{{ PKGS_KVM_ONLY }}"
+
+#PKGS_DGX2:
+#  - "{{ PKGS_KVM_DGX2 }}"
+#  - "{{ PKGS_DGX1_DGX2 }}"
+#  - "{{ PKGS_DGX2_ONLY }}"
+
+#PKGS_DGX1:
+#  - "{{ PKGS_DGX1_DGX2 }}"
+#  - "{{ PKGS_DGX1_ONLY }}"
+
+PKGS_MELLANOX:
+  - dapl2-utils
+  - ibacm
+  - ibacm-dev
+  - ibsim
+  - ibsim-doc
+  - ibutils
+  - ibverbs-utils
+  - infiniband-diags
+  - iser-dkms
+  - kernel-mft-dkms
+  - mft
+  - libdapl2
+  - libdapl-dev
+  - libibcm1
+  - libibcm-dev
+  - libibdm1
+  - libibmad
+  - libibmad-devel
+  - libibmad-static
+  - libibumad
+  - libibumad-devel
+  - libibumad-static
+  - libibverbs1
+  - libibverbs1-dbg
+  - libibverbs-dev
+  - libmlx4-1
+  - libmlx4-1-dbg
+  - libmlx4-dev
+  - libmlx5-1
+  - libmlx5-1-dbg
+  - libmlx5-dev
+  - libopensm
+  - librdmacm1
+  - librdmacm-dev
+  - librdmacm-utils
+  - knem
+  - knem-dkms
+  - mlnx-ethtool
+  - mlnx-ofed-kernel-dkms
+  - mlnx-ofed-kernel-utils
+  - mstflint
+  - ofed-scripts
+  - opensm
+  - perftest
+  - srp-dkms
+  - srptools
+  - nvidia-peer-memory
+  - nvidia-peer-memory-dkms
+
+PKGS_MLNX_UPDATER:
+  - mlnx-fw-updater
+
+PKGS_DOCKER:
+  - docker-ce
+  - dgx-docker-cleanup
+  - dgx-docker-repo
+  - dgx-docker-options
+  - nvidia-docker2
+
+PKGS_DG_CONFIG:
+  - dgxserver-configurations
+  - dgx-raid-config
+  - dgx-enable-journaling
+  - dgx-disable-recommends
+  - dgx-repo
+  - dgx-repo-keys
+  - dgx-ipmisol
+  - dgx-motd
+  - dgx-icmp
+
+PKGS_NVHEALTH:
+  - nvsysinfo
+  - nvhealth
+
+PKGS_DGX1_ALL:
+  - "{{ PKGS_NONVM }}"
+  - "{{ PKGS_COMMON }}"
+  - "{{ PKGS_DRIVER }}"
+    #- "{{ PKGS_DGX1 }}"
+  - "{{ PKGS_DGX1_DGX2 }}"
+  - "{{ PKGS_DGX1_ONLY }}"
+  - "{{ PKGS_MELLANOX }}"
+  - "{{ PKGS_MLNX_UPDATER }}"
+  - "{{ PKGS_DOCKER }}"
+  - "{{ PKGS_DG_CONFIG }}"
+  - "{{ PKGS_NVHEALTH }}"
+
+PKGS_DGX2_ALL:
+  - "{{ PKGS_NONVM }}"
+  - "{{ PKGS_COMMON }}"
+  - "{{ PKGS_DRIVER }}"
+    #- "{{ PKGS_DGX2 }}"
+  - "{{ PKGS_KVM_DGX2 }}"
+  - "{{ PKGS_DGX1_DGX2 }}"
+  - "{{ PKGS_DGX2_ONLY }}"
+  - "{{ PKGS_MELLANOX }}"
+  - "{{ PKGS_MLNX_UPDATER }}"
+  - "{{ PKGS_DOCKER }}"
+  - "{{ PKGS_DG_CONFIG }}"
+  - "{{ PKGS_NVHEALTH }}"
+
+PKGS_KVM_ALL:
+  - "{{ PKGS_COMMON }}"
+  - "{{ PKGS_DRIVER }}"
+    #- "{{ PKGS_KVM }}"
+  - "{{ PKGS_KVM_DGX2 }}"
+  - "{{ PKGS_KVM_ONLY }}"
+  - "{{ PKGS_KVM_DGX2 }}"
+  - "{{ PKGS_MELLANOX }}"
+  - "{{ PKGS_DOCKER }}"
+  - "{{ PKGS_DG_CONFIG }}"
+  - "{{ PKGS_NVHEALTH }}"
+
+PKGS_XEN_ALL:
+  - "{{ PKGS_COMMON }}"
+  - "{{ PKGS_DRIVER }}"
+  - "{{ PKGS_DOCKER }}"
+  - "{{ PKGS_DG_CONFIG }}"
+  - "{{ PKGS_NVHEALTH }}"
+
+PKGS_VBOX_ALL: []
