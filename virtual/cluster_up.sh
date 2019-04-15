@@ -30,6 +30,12 @@ cp "${VIRT_DIR}/virtual_inventory" "${DEEPOPS_CONFIG_DIR}/inventory"
 # Clear any stale fact cache in Ansible
 ansible -m meta -a "clear_facts" -i "${DEEPOPS_CONFIG_DIR}/inventory" all
 
+# Optionally force DNS config to be sane
+DEEPOPS_FORCE_DNS="${DEEPOPS_FORCE_DNS:-1}"
+if [ "${DEEPOPS_FORCE_DNS}" -ne 0 ]; then
+	"${VIRT_DIR}/scripts/force_dns_config.sh"
+fi
+
 # Set up Kubernetes (enabled by default)
 if [ -z "${DEEPOPS_DISABLE_K8S}" ]; then
 	"${VIRT_DIR}"/scripts/setup_k8s.sh
