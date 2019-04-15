@@ -41,7 +41,6 @@ case "$ID_LIKE" in
         fi
         ipmitool -V
 
-<<<<<<< Updated upstream
 	# Install pip and ensure Jinja2 is updated
 	if ! which pip >/dev/null 2>&1; then
 	    echo "Installing pip..."
