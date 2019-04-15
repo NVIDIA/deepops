@@ -9,6 +9,8 @@
 ######
 [all]
 virtual-mgmt
+virtual-gpu01
+virtual-login
 
 ######
 # KUBERNETES
