@@ -46,6 +46,7 @@ pipeline {
           sh '''
             pwd
             cd virtual
+            export DEEPOPS_VAGRANT_FILE=$(pwd)/Vagrantfile-centos
             ./vagrant_startup.sh
             ./cluster_up.sh
           '''
