@@ -52,7 +52,7 @@ case "$ID_LIKE" in
       popd
 
       # install vagrant plugins
-      vagrant plugin install vagrant-hostmanager vagrant-libvirt
+      vagrant plugin install vagrant-libvirt
       vagrant plugin install vagrant-host-shell vagrant-scp vagrant-mutate
     fi
     vagrant --version
@@ -103,7 +103,7 @@ case "$ID_LIKE" in
       popd
   
       # install vagrant plugins
-      vagrant plugin install vagrant-hostmanager vagrant-libvirt
+      vagrant plugin install vagrant-libvirt
       vagrant plugin install vagrant-host-shell vagrant-scp vagrant-mutate
     fi
     vagrant --version
