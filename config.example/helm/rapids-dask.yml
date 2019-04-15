@@ -30,4 +30,4 @@ jupyter:
     requests:
       nvidia.com/gpu: 0
     limits:
-      nvidia.com/gpu: 1
+      nvidia.com/gpu: 0
