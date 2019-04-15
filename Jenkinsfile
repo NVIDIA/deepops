@@ -39,7 +39,7 @@ pipeline {
 
           echo "Increase debug scope for ansible-playbook commands"
           sh '''
-            sed -i -e "s/ansible-playbook/ansible-playbook -vvv/g" virtual/scripts/*
+            sed -i -e "s/ansible-playbook/ansible-playbook -v/g" virtual/scripts/*
           '''
 
           echo "Cluster Up"
