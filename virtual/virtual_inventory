@@ -8,7 +8,7 @@
 # ALL NODES
 ######
 [all]
-virtual-mgmt
+virtual-mgmt ansible_host=10.0.0.2 ip=10.0.0.2
 
 ######
 # KUBERNETES
@@ -21,7 +21,7 @@ virtual-mgmt
 
 [kube-node]
 virtual-mgmt
-virtual-gpu01
+virtual-gpu01 ansible_host=10.0.0.11 ip=10.0.0.11
 
 [k8s-cluster:children]
 kube-master 	 
@@ -31,7 +31,7 @@ kube-node
 # SLURM
 ######
 [slurm-master]
-virtual-login
+virtual-login ansible_host=10.0.0.4 ip=10.0.0.4
 
 [slurm-node]
 virtual-gpu01
