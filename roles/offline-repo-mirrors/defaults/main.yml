@@ -1,7 +1,7 @@
 ---
 offline_cache_dir: "/tmp/deepops"
 build_tar_file: true
-tar_file_path: "/tmp/deepops-archive.tar.bz2"
+tar_file_path: "/tmp/deepops-archive.tar"
 extract_path: "/tmp/deepops-extracted"
 
 # Destination for files on repo mirror machine
@@ -250,6 +250,11 @@ docker_image_list:
 - name: "registry"
   repo: ""
   image: "registry"
+  version: "latest"
+
+- name: "chartmuseum"
+  repo: ""
+  image: "chartmuseum/chartmuseum"
   version: "latest"
 
 # Specific images we need to reference later

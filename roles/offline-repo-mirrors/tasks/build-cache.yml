@@ -29,20 +29,20 @@
     url: "{{ helm_download_url }}"
     dest: "{{ offline_cache_dir }}/helm/"
 
-- name: clone helm repos
-  git:
-    repo: "{{ item.value }}"
-    dest: "{{ offline_cache_dir }}/helm/{{ item.key }}"
-    recursive: yes
-    version: "master"
-  loop: "{{ helm_chart_git_repos|dict2items }}"
-  when: download_helm_repos
-
-- name: download rook helm chart
-  get_url:
-    url: "{{ rook_helm_chart_url }}"
-    dest: "{{ offline_cache_dir }}/helm/"
-  when: download_helm_repos
+#- name: clone helm repos
+#  git:
+#    repo: "{{ item.value }}"
+#    dest: "{{ offline_cache_dir }}/helm/{{ item.key }}"
+#    recursive: yes
+#    version: "master"
+#  loop: "{{ helm_chart_git_repos|dict2items }}"
+#  when: download_helm_repos
+#
+#- name: download rook helm chart
+#  get_url:
+#    url: "{{ rook_helm_chart_url }}"
+#    dest: "{{ offline_cache_dir }}/helm/"
+#  when: download_helm_repos
 
 - name: archive docker images
   docker_image:

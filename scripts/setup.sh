@@ -41,6 +41,7 @@ case "$ID_LIKE" in
         fi
         ipmitool -V
 
+<<<<<<< Updated upstream
 	# Install pip and ensure Jinja2 is updated
 	if ! which pip >/dev/null 2>&1; then
 	    echo "Installing pip..."
@@ -49,6 +50,13 @@ case "$ID_LIKE" in
 	pip --version
         echo "Upgrading jinja2"
         sudo pip install --upgrade Jinja2
+
+	# Install wget
+	if ! which wget >/dev/null 2>&1; then
+	    echo "Installing wget..."
+            sudo yum -y install wget >/dev/null
+        fi
+        wget --version
         ;;
     debian*)
         # Update apt cache
@@ -93,6 +101,13 @@ case "$ID_LIKE" in
             sudo apt -y install ipmitool >/dev/null
         fi
         ipmitool -V
+
+	# Install wget
+	if ! which wget >/dev/null 2>&1; then
+	    echo "Installing wget..."
+            sudo apt -y install wget >/dev/null
+        fi
+        wget --version
         ;;
     *)
         echo "Unsupported Operating System $ID_LIKE"
