@@ -47,7 +47,6 @@ pipeline {
             pwd
             cd virtual
             ./vagrant_startup.sh
-            export DEEPOPS_FORCE_DNS=0
             ./cluster_up.sh
           '''
 
