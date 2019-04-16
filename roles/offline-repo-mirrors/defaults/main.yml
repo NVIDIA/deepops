@@ -260,6 +260,7 @@ docker_image_list:
 # Specific images we need to reference later
 nginx_image: "{{ docker_image_list | selectattr('name', 'equalto', 'nginx') | list | first }}"
 docker_registry_image: "{{ docker_image_list | selectattr('name', 'equalto', 'registry') | list | first }}"
+helm_repo_image: "{{ docker_image_list | selectattr('name', 'equalto', 'chartmuseum') | list | first }}"
 
 # Configure what docker registry to upload images to
 docker_dest_registry: "localhost:5000"
@@ -273,3 +274,8 @@ docker_daemon_json:
 # Configure launching local docker registry
 docker_local_registry_name: "deepops-registry"
 
+# Configure Helm repo
+helm_src_path: "{{ extract_path }}/helm/mirror"
+helm_dest_path: "{{ deepops_dest_path }}/helm"
+helm_port: 8082
+helm_index_generator_name: "helm-chartmuseum-gen-index"
