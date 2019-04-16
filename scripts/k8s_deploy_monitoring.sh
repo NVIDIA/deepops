@@ -45,15 +45,24 @@ if ! kubectl -n monitoring get configmap kube-prometheus-grafana-gpu >/dev/null 
     kubectl create configmap kube-prometheus-grafana-gpu --from-file=${config_dir}/gpu-dashboard.json -n monitoring
 fi
 
-# Deploy the ingress controller
-./scripts/k8s_deploy_ingress.sh
+# Deploy the ingress controller with a set name
+ingress_name="nginx-ingress"
+NGINX_INGRESS_APP_NAME="${ingress_name}" ./scripts/k8s_deploy_ingress.sh
+
+# Determine correct IP for ingress URL
+ingress_ip_string="$(echo ${master_ip} | tr '.' '-').nip.io"
+if kubectl describe service -l "app=${ingress_name},component=controller" | grep 'LoadBalancer Ingress' >/dev/null 2>&1; then
+	lb_ip="$(kubectl describe service -l "app=${ingress_name},component=controller" | grep 'LoadBalancer Ingress' | awk '{print $3}')"
+	ingress_ip_string="$(echo ${lb_ip} | tr '.' '-').nip.io"
+	echo "Using load balancer url: ${ingress_ip_string}"
+fi
 
 # Deploy Monitoring stack
 if ! helm status kube-prometheus >/dev/null 2>&1 ; then
     helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values ${config_dir}/helm/kube-prometheus.yml \
-        --set alertmanager.ingress.hosts[0]=alertmanager-$(echo ${master_ip} | tr '.' '-').nip.io \
-        --set prometheus.ingress.hosts[0]=prometheus-$(echo ${master_ip} | tr '.' '-').nip.io \
-        --set grafana.ingress.hosts[0]=grafana-$(echo ${master_ip} | tr '.' '-').nip.io
+        --set alertmanager.ingress.hosts[0]="alertmanager-${ingress_ip_string}" \
+        --set prometheus.ingress.hosts[0]="prometheus-${ingress_ip_string}" \
+        --set grafana.ingress.hosts[0]="grafana-${ingress_ip_string}"
 fi
 
 # Label GPU nodes
@@ -68,6 +77,6 @@ fi
 
 # Print URLs
 echo
-echo "Grafana: http://grafana-$(echo ${master_ip} | tr '.' '-').nip.io"
-echo "Prometheus: http://prometheus-$(echo ${master_ip} | tr '.' '-').nip.io"
-echo "Alertmanager: http://alertmanager-$(echo ${master_ip} | tr '.' '-').nip.io"
+echo "Grafana: http://grafana-${ingress_ip_string}"
+echo "Prometheus: http://prometheus-${ingress_ip_string}"
+echo "Alertmanager: http://alertmanager-${ingress_ip_string}"
