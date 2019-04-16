@@ -277,5 +277,5 @@ docker_local_registry_name: "deepops-registry"
 # Configure Helm repo
 helm_src_path: "{{ extract_path }}/helm/mirror"
 helm_dest_path: "{{ deepops_dest_path }}/helm"
-helm_port: 8082
+helm_port: 8002
 helm_index_generator_name: "helm-chartmuseum-gen-index"
