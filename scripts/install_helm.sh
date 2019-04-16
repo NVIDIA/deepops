@@ -15,9 +15,6 @@ kubectl taint nodes --all node-role.kubernetes.io/master:NoSchedule- >/dev/null 
 # wait for tiller pod
 kubectl -n kube-system wait --for=condition=Ready -l app=helm,name=tiller --timeout=90s pod
 
-# wait for tiller pod
-kubectl wait --for=condition=Ready -l app=tiller,component=controller --timeout=90s pod
-
 # Install dependencies
 . /etc/os-release
 case "$ID_LIKE" in

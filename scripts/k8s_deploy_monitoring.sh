@@ -24,6 +24,12 @@ case "$1" in
         ;;
 esac
 
+kubectl version
+if [ $? -ne 0 ] ; then
+    echo "Unable to talk to Kubernetes API"
+    exit 1
+fi
+
 # Get IP of first master
 master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
 

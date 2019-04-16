@@ -13,6 +13,12 @@ if [ ! -d "${config_dir}" ]; then
 	exit 1
 fi
 
+kubectl version
+if [ $? -ne 0 ] ; then
+    echo "Unable to talk to Kubernetes API"
+    exit 1
+fi
+
 # Set up the ingress controller
 if ! helm status nginx-ingress >/dev/null 2>&1; then
 	helm install --name nginx-ingress --values "${config_dir}/helm/ingress.yml" stable/nginx-ingress
