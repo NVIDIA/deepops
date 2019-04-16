@@ -15,3 +15,6 @@ jupyterhub:
     enabled: true
     timeout: 3600 # Delete Pods that have been inactive for over n seconds
     every: 600 # Check for inactive Pods ever n seconds
+
+dind:
+  enabled: true
