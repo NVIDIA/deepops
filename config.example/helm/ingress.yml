@@ -9,12 +9,11 @@ controller:
   hostNetwork: true
   # Service type LoadBalancer requires a load balancer to be configured, e.g.
   # MetalLB in an on-prem cluster. See metallb.yml for a sample definition.
-  # NodePort can be used instead for on-prem where we don't have a load balancer,
-  # but since we're using the host network, the service type can be left as
-  # LoadBalancer and the ingress controller can be reached on an IP of any
-  # master node
+  # NodePort can be used instead where we don't have a load balancer.
+  # Since we're using the host network, the ingress controller can be reached
+  # on an IP of any master node
   service:
-    type: LoadBalancer
+    type: NodePort
   # Always run on master nodes
   nodeSelector:
     node-role.kubernetes.io/master: ""
