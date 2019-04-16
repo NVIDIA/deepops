@@ -16,7 +16,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.define "virtual-login" do |login|
-    mgmt.vm.provider "libvirt" do |v|
+    login.vm.provider "libvirt" do |v|
       v.memory = 2048
       v.cpus = 2
     end
