@@ -29,7 +29,6 @@ master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o
 
 ./scripts/install_helm.sh
 
-<<<<<<< HEAD
 case "$1" in
     delete)
         helm del --purge prometheus-operator

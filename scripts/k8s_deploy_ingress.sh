@@ -18,4 +18,4 @@ if ! helm status nginx-ingress >/dev/null 2>&1; then
 	helm install --name nginx-ingress --values "${config_dir}/helm/ingress.yml" stable/nginx-ingress
 fi
 
-kubectl wait --for=condition=Ready -l app=nginx-ingress,component=controller pod
+kubectl wait --for=condition=Ready -l app=nginx-ingress,component=controller --timeout=90s pod
