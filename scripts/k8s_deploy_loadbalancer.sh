@@ -13,6 +13,12 @@ if [ ! -d "${config_dir}" ]; then
 	exit 1
 fi
 
+kubectl version
+if [ $? -ne 0 ] ; then
+    echo "Unable to talk to Kubernetes API"
+    exit 1
+fi
+
 # Set up the MetalLB load balancer
 if ! helm status metallb >/dev/null 2>&1; then
 	helm install --values "${config_dir}/helm/metallb.yml" --name metallb stable/metallb

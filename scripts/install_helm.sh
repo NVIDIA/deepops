@@ -3,11 +3,17 @@
 HELM_INSTALL_DIR=/usr/local/bin
 HELM_INSTALL_SCRIPT_URL="${HELM_INSTALL_SCRIPT_URL:-https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get}"
 
+kubectl version
+if [ $? -ne 0 ] ; then
+    echo "Unable to talk to Kubernetes API"
+    exit 1
+fi
+
 # un-taint master nodes so they'll run the tiller pod
-kubectl taint nodes --all node-role.kubernetes.io/master- 2>&1
+kubectl taint nodes --all node-role.kubernetes.io/master:NoSchedule- >/dev/null 2>&1
 
 # wait for tiller pod
-kubectl wait --for=condition=Ready -l app=tiller,component=controller --timeout=90s pod
+kubectl -n kube-system wait --for=condition=Ready -l app=helm,name=tiller --timeout=90s pod
 
 # Install dependencies
 . /etc/os-release
