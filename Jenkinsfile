@@ -16,7 +16,12 @@ pipeline {
             pwd
             export GPU="$(echo ${GPUDATA} | cut -d"-" -f1)"
             export BUS="$(echo ${GPUDATA} | cut -d"-" -f2)"
+            # modify GPU passthrough to point to this resource's GPU
             sed -i -e "s/#v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'/v.pci :bus => '$BUS', :slot => '0x00', :function => '0x0'/g" virtual/Vagrant*
+            # modify CPU and RAM requirements
+            git grep -lz "v.cpus = 2" | xargs -0 sed -i -e "s/v.cpus = 2/v.cpus = 4/g"
+            git grep -lz "v.memory = 2048" | xargs -0 sed -i -e "s/v.memory = 2048/v.memory = 16384/g"
+            # modify machine names and IPs
             git grep -lz virtual-mgmt | xargs -0 sed -i -e "s/virtual-mgmt/virtual-mgmt-$GPU/g"
             git grep -lz virtual-login | xargs -0 sed -i -e "s/virtual-login/virtual-login-$GPU/g"
             git grep -lz virtual-gpu01 | xargs -0 sed -i -e "s/virtual-gpu01/virtual-gpu01-$GPU/g"
