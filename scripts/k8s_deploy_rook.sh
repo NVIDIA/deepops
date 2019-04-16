@@ -7,10 +7,7 @@
 
 HELM_ROOK_CHART_REPO="${HELM_ROOK_CHART_REPO:-https://charts.rook.io/master}"
 
-type helm >/dev/null 2>&1
-if [ $? -ne 0 ] ; then
-    ./scripts/install_helm.sh
-fi
+./scripts/install_helm.sh
 
 helm repo list | grep rook-master >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
