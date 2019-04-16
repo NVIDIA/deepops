@@ -6,6 +6,9 @@ HELM_INSTALL_SCRIPT_URL="${HELM_INSTALL_SCRIPT_URL:-https://raw.githubuserconten
 # un-taint master nodes so they'll run the tiller pod
 kubectl taint nodes --all node-role.kubernetes.io/master- 2>&1
 
+# wait for tiller pod
+kubectl wait --for=condition=Ready -l app=tiller,component=controller --timeout=90s pod
+
 # Install dependencies
 . /etc/os-release
 case "$ID_LIKE" in

@@ -40,9 +40,7 @@ if ! kubectl -n monitoring get configmap kube-prometheus-grafana-gpu >/dev/null 
 fi
 
 # Deploy the ingress controller
-if ! helm status nginx-ingress >/dev/null 2>&1; then
-	helm install --name nginx-ingress --values "${config_dir}/helm/ingress.yml" stable/nginx-ingress
-fi
+./scripts/k8s_deploy_ingress.sh
 
 # Deploy Monitoring stack
 if ! helm status kube-prometheus >/dev/null 2>&1 ; then
