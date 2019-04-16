@@ -13,7 +13,7 @@ controller:
   # Since we're using the host network, the ingress controller can be reached
   # on an IP of any master node
   service:
-    type: NodePort
+    type: LoadBalancer
   # Always run on master nodes
   nodeSelector:
     node-role.kubernetes.io/master: ""
