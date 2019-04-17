@@ -56,6 +56,13 @@
   with_items: "{{ pip_package_list }}"
   when: download_pip_packages
 
+- name: download slurm package
+  get_url:
+    url: "{{ deepops_centos_slurm_url }}"
+    dest: "{{ offline_cache_dir }}/misc-files/"
+    mode: 0444
+  when: download_yum_repos
+
 - name: download CentOS ISO
   get_url:
     url: "{{ centos_iso_mirror }}/{{ centos_iso }}"
