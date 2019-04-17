@@ -18,6 +18,7 @@ download_yum_repos: yes
 download_docker_images: yes
 download_helm_repos: yes
 download_deepops_repo: yes
+download_pip_packages: yes
 
 # Flags for building mirrors
 build_yum_mirror: yes
@@ -25,6 +26,7 @@ build_docker_registry: yes
 upload_docker_images: yes
 build_helm_mirror: yes
 upload_helm_chats: yes
+build_pip_mirror: yes
 
 
 # Configure download of yum repos
@@ -257,10 +259,16 @@ docker_image_list:
   image: "chartmuseum/chartmuseum"
   version: "latest"
 
+- name: "pypiserver"
+  repo: ""
+  image: "pypiserver/pypiserver"
+  version: "latest"
+
 # Specific images we need to reference later
 nginx_image: "{{ docker_image_list | selectattr('name', 'equalto', 'nginx') | list | first }}"
 docker_registry_image: "{{ docker_image_list | selectattr('name', 'equalto', 'registry') | list | first }}"
 helm_repo_image: "{{ docker_image_list | selectattr('name', 'equalto', 'chartmuseum') | list | first }}"
+pypi_image: "{{ docker_image_list | selectattr('name', 'equalto', 'pypiserver') | list | first }}"
 
 # Configure what docker registry to upload images to
 docker_dest_registry: "localhost:5000"
@@ -279,3 +287,15 @@ helm_src_path: "{{ extract_path }}/helm/mirror"
 helm_dest_path: "{{ deepops_dest_path }}/helm"
 helm_port: 8002
 helm_index_generator_name: "helm-chartmuseum-gen-index"
+
+# Configure download of required pip packages
+pip_package_list:
+- name: "pyhelm"
+- name: "grpcio"
+- name: "openshift"
+- name: "pip"
+- name: "setuptools"
+
+pip_port: 8003
+pip_src_path: "{{ extract_path }}/pip"
+pip_dest_path: "{{ deepops_dest_path }}/pip"

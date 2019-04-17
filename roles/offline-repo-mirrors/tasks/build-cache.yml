@@ -9,6 +9,7 @@
   - "{{ offline_cache_dir }}/helm"
   - "{{ offline_cache_dir }}/docker-images"
   - "{{ offline_cache_dir }}/yum"
+  - "{{ offline_cache_dir }}/pip"
 
 - name: clone fresh deepops repo
   git:
@@ -54,6 +55,20 @@
     state: present
   with_items: "{{ docker_image_list }}"
   when: download_docker_images
+
+- name: force up to date pip packages for downloads
+  pip:
+    name: "{{ item }}"
+    state: "latest"
+  with_items:
+  - "setuptools"
+  - "pip"
+  when: download_pip_packages
+
+- name: download python packages
+  command: "pip download --dest {{ offline_cache_dir }}/pip {{ item.name }}"
+  with_items: "{{ pip_package_list }}"
+  when: download_pip_packages
 
 - name: download CentOS ISO
   get_url:

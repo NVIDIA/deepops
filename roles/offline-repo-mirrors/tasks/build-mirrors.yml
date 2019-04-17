@@ -165,3 +165,22 @@
   when: build_helm_mirror
   tags:
   - helm_mirror
+
+- name: copy python packages to destination
+  command: "rsync -a {{ pip_src_path }}/ {{ pip_dest_path }}/"
+  when: build_pip_mirror
+  tags:
+  - pip_mirror
+
+- name: launch pypi mirror
+  docker_container:
+    name: "pypi-mirror"
+    image: "{{ docker_dest_registry }}/{{ pypi_image.image }}:{{ pypi_image.version }}"
+    volumes:
+    - "{{ pip_dest_path }}:/data/packages"
+    entrypoint: "/usr/bin/pypi-server -p {{ pip_port }} -v /data/packages"
+    ports:
+    - "{{ pip_port }}:{{ pip_port }}"
+  when: build_pip_mirror
+  tags:
+  - pip_mirror
