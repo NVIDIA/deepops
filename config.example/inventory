@@ -76,9 +76,3 @@ localhost	ansible_connection=local
 #ansible_user=ubuntu
 # Configure SSH bastion/jumpbox for the cluster
 #ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
-
-######
-# OFFLINE CACHE BUILDER
-######
-[cache_builder]
-localhost	ansible_connection=local
