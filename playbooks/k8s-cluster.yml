@@ -7,13 +7,14 @@
     - bootstrap
 
 # Make sure Kubespray submodule is correct
-- hosts: localhost
+- hosts: all
   gather_facts: false
   tasks:
     - name: make sure kubespray is at the correct version
       command: git submodule update --init
       args:
         chdir: "{{ playbook_dir | dirname }}"
+      delegate_to: localhost
   vars:
     ansible_become: no
     ansible_connection: local
@@ -63,7 +64,7 @@
       run_once: true
  
 # Manage Kubernetes cluster access config file
-- hosts: localhost
+- hosts: all
   gather_facts: false
   vars:
     ansible_become: no
@@ -73,23 +74,28 @@
       stat:
         path: "../k8s-config"
       register: k8s_config_dir
+      delegate_to: localhost
     - set_fact:
         config_dir: "../k8s-config"
       when: k8s_config_dir.stat.exists
+      delegate_to: localhost
     - name: create kube config directory for current user
       file:
         path: "{{ lookup('env','HOME') + '/.kube/' }}"
         state: directory
+      delegate_to: localhost
     - name: check for kube config file
       stat:
         path: "{{ config_dir }}/artifacts/admin.conf"
       register: kubeconf
+      delegate_to: localhost
     - name: copy kube config file for current user
       copy:
         src: "{{ config_dir }}/artifacts/admin.conf"
         dest: "{{ lookup('env','HOME') + '/.kube/config' }}"
         backup: yes
       when: kubeconf.stat.exists
+      delegate_to: localhost
   tags:
     - local
 
@@ -125,7 +131,7 @@
 - include: k8s-gpu-plugin.yml
 
 # Manage kubectl binary
-- hosts: localhost
+- hosts: all
   gather_facts: false
   vars:
     ansible_become: no
@@ -135,18 +141,22 @@
       stat:
         path: "../k8s-config"
       register: k8s_config_dir
+      delegate_to: localhost
     - set_fact:
         config_dir: "../k8s-config"
       when: k8s_config_dir.stat.exists
+      delegate_to: localhost
     - name: check for kubectl
       stat:
         path: "{{ config_dir }}/artifacts/kubectl"
       register: kubectl_local
+      delegate_to: localhost
     - name: modify kubectl permissions
       file:
         path: "{{ config_dir }}/artifacts/kubectl"
         mode: '0755'
       when: kubectl_local.stat.exists
+      delegate_to: localhost
     - name: copy kubectl 
       copy:
         src: "{{ config_dir }}/artifacts/kubectl"
@@ -155,10 +165,12 @@
       become: true
       ignore_errors: yes
       register: kubectl_copied
+      delegate_to: localhost
     - name: check for copied kubectl
       stat:
         path: "/usr/local/bin/kubectl"
       register: kubectl_system
+      delegate_to: localhost
     - name: modify kubectl permissions
       file:
         path: "/usr/local/bin/kubectl"
@@ -167,9 +179,11 @@
         mode: '0755'
       ignore_errors: yes
       when: kubectl_system.stat.exists
+      delegate_to: localhost
     - name: manually move kubectl binary
       debug:
         msg: "Unable to move kubectl, run: sudo cp {{ config_dir | realpath }}/artifacts/kubectl /usr/local/bin"
       when: kubectl_copied is failed
+      delegate_to: localhost
   tags:
     - local
