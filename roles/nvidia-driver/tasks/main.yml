@@ -3,6 +3,7 @@
   modprobe:
     name: nouveau
     state: absent
+  ignore_errors: true
 
 - name: ubuntu pre-install tasks
   include_tasks: ubuntu-pre-install.yml
