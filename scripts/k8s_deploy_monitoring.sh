@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Ensure we start in the correct working directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/.."
+cd "${ROOT_DIR}" || exit 1
+
 HELM_COREOS_CHART_REPO="${HELM_COREOS_CHART_REPO:-https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/}"
 
 # Determine DeepOps config dir
@@ -75,8 +80,18 @@ if kubectl -n monitoring get pod -l app=dcgm-exporter 2>&1 | grep "No resources 
     kubectl create -f services/dcgm-exporter.yml
 fi
 
-# Print URLs
-echo
-echo "Grafana: http://grafana-${ingress_ip_string}"
-echo "Prometheus: http://prometheus-${ingress_ip_string}"
-echo "Alertmanager: http://alertmanager-${ingress_ip_string}"
+# Use NodePort directly if the IP string uses the master IP, otherwise use Ingress URL
+if echo "${ingress_ip_string}" | grep "${master_ip}" >/dev/null 2>&1; then
+	grafana_port=$(kubectl  -n monitoring get svc -l app=kube-prometheus-grafana --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
+	prometheus_port=$(kubectl  -n monitoring get svc -l app=prometheus --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
+	alertmanager_port=$(kubectl  -n monitoring get svc -l app=alertmanager --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
+	echo
+	echo "Grafana: http://${master_ip}:${grafana_port}/"
+	echo "Prometheus: http://${master_ip}:${prometheus_port}/"
+	echo "Alertmanager: http://${master_ip}:${alertmananger_port}/"
+else
+	echo
+	echo "Grafana: http://grafana-${ingress_ip_string}/"
+	echo "Prometheus: http://prometheus-${ingress_ip_string}/"
+	echo "Alertmanager: http://alertmanager-${ingress_ip_string}/"
+fi
