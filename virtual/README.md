@@ -62,7 +62,7 @@ To start the cluster, run the `cluster_up.sh` script, which will run the ansible
 $ ./cluster_up.sh
 ```
 
-The script should complete without errors.
+The script should complete without errors. Once the script has completed executing `source k8s_environment.sh` will enable the execution of `kubectl` commands directly from the provisioing node without the need to ssh to a VM, as descibed earlier under [Start vagrant](https://github.com/satindern/deepops/tree/patch-1/virtual#start-vagrant).
 
 ## Shutdown vagrant
 
