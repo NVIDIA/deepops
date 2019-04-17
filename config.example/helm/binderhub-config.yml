@@ -1,6 +1,7 @@
 config:
   BinderHub:
     use_registry: false
+    # image_prefix: <docker-id|organization-name>/<prefix>- # Used to name docker images if use_registry is true
     # hub_url: 
 
 # Require 1 GPU for each Notebook deployment
