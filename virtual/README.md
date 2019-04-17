@@ -17,6 +17,19 @@ Running DeepOps virtually assumes that the host machine's OS is an approved OS. 
 
 Also, using VMs and optionally GPU passthrough assumes that the host machine has been configured to enable virtualization in the BIOS. For instructions on how to accomplish this, refer to the sections at the bottom of this README: [Enabling virtualization and GPU passthrough](https://github.com/NVIDIA/deepops/pull/221#enabling-virtualization-and-gpu-passthrough).
 
+Host Requirements
+Enough resources to satisfy the following VM requirements
+
+VM Requirements
+
+* virtual-login
+2 vCPU, 2GB RAM and 32GB Storage
+* virtual-mgmt
+2 vCPU, 2GB RAM and 32GB Storage
+* virtual-gpu01
+2 vCPU, 16GB RAM and 32GB Storage
+
+
 ## Bootstrap dependencies
 
 To install basic dependencies for running Ansible and managing a DeepOps cluster,run the `setup.sh` found in the `scripts` directory of the repository root.
