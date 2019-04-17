@@ -56,7 +56,7 @@ $ vagrant ssh virtual-gpu01
 
 ## Start the cluster
 
-To start the cluster, run the `cluster_up.sh` script, which will run the ansible playbooks to deploy DeepOps...
+To start the cluster, run the `cluster_up.sh` script, which will run the ansible playbooks to deploy DeepOps. This will deploy a Kubernetes Cluster on the VM's that where created in the [Start vagrant](https://github.com/satindern/deepops/tree/master/virtual#start-vagrant) section earlier. The default action is to install Kubernetes, if you are wanting to install Slurm you will need to `export DEEPOPS_ENABLE_SLURM=1` before executing the `cluster_up.sh` script.
 
 ```
 $ ./cluster_up.sh
