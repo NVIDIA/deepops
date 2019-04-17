@@ -5,11 +5,11 @@ metadata:
 spec:
   containers:
     - name: cuda-container
-      image: nvidia/cuda:10.0-devel
+      image: nvcr.io/nvidia/cuda:10.0-devel
       command: ["sleep", "6000"]
       args:
       resources:
         limits:
-          nvidia.com/gpu: 8
+          nvidia.com/gpu: 1
   restartPolicy: Never
 
