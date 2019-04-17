@@ -27,6 +27,7 @@ upload_docker_images: yes
 build_helm_mirror: yes
 upload_helm_chats: yes
 build_pip_mirror: yes
+build_misc_mirror: yes
 
 
 # Configure download of yum repos
@@ -270,6 +271,7 @@ docker_registry_image: "{{ docker_image_list | selectattr('name', 'equalto', 're
 helm_repo_image: "{{ docker_image_list | selectattr('name', 'equalto', 'chartmuseum') | list | first }}"
 pypi_image: "{{ docker_image_list | selectattr('name', 'equalto', 'pypiserver') | list | first }}"
 
+
 # Configure what docker registry to upload images to
 docker_dest_registry: "localhost:5000"
 docker_image_source: "{{ extract_path }}/docker-images"
@@ -282,11 +284,13 @@ docker_daemon_json:
 # Configure launching local docker registry
 docker_local_registry_name: "deepops-registry"
 
+
 # Configure Helm repo
 helm_src_path: "{{ extract_path }}/helm/mirror"
 helm_dest_path: "{{ deepops_dest_path }}/helm"
 helm_port: 8002
 helm_index_generator_name: "helm-chartmuseum-gen-index"
+
 
 # Configure download of required pip packages
 pip_package_list:
@@ -299,3 +303,10 @@ pip_package_list:
 pip_port: 8003
 pip_src_path: "{{ extract_path }}/pip"
 pip_dest_path: "{{ deepops_dest_path }}/pip"
+
+
+# Configure serving kubespray files over http
+nginx_misc_name: "deepops-misc-files"
+nginx_misc_port: 8004
+nginx_misc_dest_path: "{{ deepops_dest_path }}/misc-files"
+nginx_misc_src_path: "{{ extract_path }}/misc-files"

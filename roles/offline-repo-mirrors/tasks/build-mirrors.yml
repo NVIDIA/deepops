@@ -184,3 +184,21 @@
   when: build_pip_mirror
   tags:
   - pip_mirror
+
+- name: sync misc files
+  command: "rsync -a {{ nginx_misc_src_path }}/ {{ nginx_misc_dest_path }}/"
+  when: build_misc_mirror
+  tags:
+  - misc_mirror
+
+- name: launch nginx container to serve misc files
+  docker_container:
+    name: "{{ nginx_misc_name }}"
+    image: "{{ docker_dest_registry }}/{{ nginx_image.image }}:{{ nginx_image.version }}"
+    volumes:
+    - "{{ nginx_misc_dest_path }}:/usr/share/nginx/html:ro"
+    ports:
+    - "{{ nginx_misc_port }}:80"
+  when: build_misc_mirror
+  tags:
+  - misc_mirror

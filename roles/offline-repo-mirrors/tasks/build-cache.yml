@@ -6,6 +6,7 @@
     mode: 0755
   with_items:
   - "{{ offline_cache_dir }}"
+  - "{{ offline_cache_dir }}/misc-files"
   - "{{ offline_cache_dir }}/helm"
   - "{{ offline_cache_dir }}/docker-images"
   - "{{ offline_cache_dir }}/yum"
@@ -28,22 +29,7 @@
 - name: download helm
   get_url:
     url: "{{ helm_download_url }}"
-    dest: "{{ offline_cache_dir }}/helm/"
-
-#- name: clone helm repos
-#  git:
-#    repo: "{{ item.value }}"
-#    dest: "{{ offline_cache_dir }}/helm/{{ item.key }}"
-#    recursive: yes
-#    version: "master"
-#  loop: "{{ helm_chart_git_repos|dict2items }}"
-#  when: download_helm_repos
-#
-#- name: download rook helm chart
-#  get_url:
-#    url: "{{ rook_helm_chart_url }}"
-#    dest: "{{ offline_cache_dir }}/helm/"
-#  when: download_helm_repos
+    dest: "{{ offline_cache_dir }}/misc-files/"
 
 - name: archive docker images
   docker_image:

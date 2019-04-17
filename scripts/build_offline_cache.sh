@@ -58,6 +58,7 @@ tmp_dir="${TEMPDIR:-/tmp}"
 export K8S_CONFIG_DIR="${tmp_dir}/download-k8s-config"
 "${ROOT_DIR}/scripts/k8s_inventory.sh" 127.0.0.1
 cd "${ROOT_DIR}/kubespray" || exit 1
+mkdir -p "${DEST_DIR}/misc-files"
 ansible-playbook -b \
 	-i "${K8S_CONFIG_DIR}/hosts.ini" \
 	-e download_run_one=true \
@@ -67,7 +68,7 @@ ansible-playbook -b \
 	-e cephfs_provisioner_enabled=true \
 	-e dashboard_enabled=true \
         -e registry_enabled=true \
-	-e local_release_dir="${DEST_DIR}" \
+	-e local_release_dir="${DEST_DIR}/misc-files" \
 	--tags download \
 	--skip-tags upload,upgrade \
 	cluster.yml
