@@ -8,10 +8,10 @@
 
 # Define K8s/helm params
 BINDERHUB_NAMESPACE=binderhub
-BINDERHUB_VERSION=0.2.0-3b53fce
+BINDERHUB_VERSION=0.2.0-1eac3a0
 JUPYTERHUB_CHART_REPO=https://jupyterhub.github.io/helm-chart
 BINDERHUB_CHART_NAME=jupyterhub/binderhub
-pod_count=4 # Currently we need 4 pods to be running for BinderHub, this may change in the future
+pod_count=5 # Currently we need 5 pods to be running for BinderHub, this may change in the future
 
 
 # Define the configuration files
@@ -130,7 +130,7 @@ function stand_up() {
 
   # Install Binderhub
   helm install ${BINDERHUB_CHART_NAME} --version=${BINDERHUB_VERSION}  --name=${BINDERHUB_NAMESPACE} --namespace=${BINDERHUB_NAMESPACE} -f ${secret_file} -f ${config_file}
-  while [ `kubectl -n ${BINDERHUB_NAMESPACE} get pods | grep Running | wc -l` != ${pod_count} ]; do
+  while [ `kubectl -n ${BINDERHUB_NAMESPACE} get pods | grep Running | wc -l` -lt ${pod_count} ]; do
     sleep 1
   done
   sleep 1 # Give services time to start after pods are created
