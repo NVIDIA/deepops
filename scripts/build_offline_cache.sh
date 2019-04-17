@@ -62,14 +62,11 @@ ansible-playbook -b \
 	-i "${K8S_CONFIG_DIR}/hosts.ini" \
 	-e download_run_one=true \
 	-e download_localhost=true \
-	-e kubeadm_enabled=true \
 	-e kubectl_localhost=true \
-	-e kubeconfig_localhost=true \
 	-e helm_enabled=true \
 	-e cephfs_provisioner_enabled=true \
-	-e registry_enabled=true \
 	-e dashboard_enabled=true \
-	-e enable_network_policy=true \
+        -e registry_enabled=true \
 	-e local_release_dir="${DEST_DIR}" \
 	--tags download \
 	--skip-tags upload,upgrade \
