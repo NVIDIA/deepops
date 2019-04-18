@@ -3,7 +3,7 @@
 # By default, we assume that all our software mirrors are on the same host,
 # docker_mirror_host
 
-deepops_mirror_host: "localhost"
+deepops_mirror_host: "10.32.217.124"
 
 # If your software mirrors are present at different locations, you can also
 # adjust the locations of particular repository types.
@@ -29,14 +29,38 @@ deepops_misc_mirror: "http://{{ deepops_mirror_host }}:8004"
 helm_chart_location: "{{ deepops_charts_mirror }}"
 
 # Yum 
+
+# Base repos
+base_baseurl: "{{ deepops_yum_mirror }}/base"
+updates_baseurl: "{{ deepops_yum_mirror }}/updates"
+extras_baseurl: "{{ deepops_yum_mirror }}/extras"
+docker_ce_baseurl: "{{ deepops_yum_mirror }}/docker-ce"
+docker_engine_baseurl: "{{ deepops_yum_mirror }}/docker-engine"
 epel_baseurl: "{{ deepops_yum_mirror }}/epel"
 epel_gpgkey: "{{ deepops_yum_mirror }}/gpgkeys/epel.pub"
+
+# NVIDIA repos
 rhel_cuda_baseurl: "{{ deepops_yum_mirror }}/cuda"
 rhel_cuda_gpgkey: "{{ deepops_yum_mirror }}/gpgkeys/cuda.pub"
 rhel_nvidiaml_baseurl: "{{ deepops_yum_mirror }}/nvidia-ml"
 rhel_nvidiaml_gpgkey: "{{ deepops_yum_mirror }}/gpgkeys/nvidia-ml.pub"
 nvdocker_repo_base_url: "{{ deepops_yum_mirror }}/nvidia-docker"
 nvdocker_gpg_path: "{{ deepops_yum_mirror }}/gpgkeys/nvidia-docker.pub"
+
+# Convenience format for initial config
+yum_base_repos:
+- name: "base"
+  url: "{{ base_baseurl }}"
+- name: "updates"
+  url: "{{ updates_baseurl }}"
+- name: "extras"
+  url: "{{ extras_baseurl }}"
+- name: "docker-ce"
+  url: "{{ docker_ce_baseurl }}"
+- name: "docker-engine"
+  url: "{{ docker_engine_baseurl }}"
+- name: "epel"
+  url: "{{ epel_baseurl }}"
 
 # Slurm download directory
 slurm_pkg_url: "{{ deepops_misc_mirror }}/"
