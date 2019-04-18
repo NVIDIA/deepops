@@ -108,9 +108,8 @@
   tags:
   - yum_mirror
 
-- name: copy selected yum content to destination path
-  command: rsync -a "{{ extract_path }}/yum/{{ item }}" "{{ deepops_yum_dest_path }}/"
-  with_items: "{{ yum_repos_to_sync }}"
+- name: copy yum content to destination path
+  command: rsync -a "{{ extract_path }}/yum/" "{{ deepops_yum_dest_path }}/"
   when: build_yum_mirror
   tags:
   - yum_mirror

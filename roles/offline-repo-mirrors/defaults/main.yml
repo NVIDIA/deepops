@@ -39,6 +39,7 @@ yum_repos_to_sync:
 - "libnvidia-container"
 - "nvidia-container-runtime"
 - "nvidia-docker"
+- "nvidia-ml"
 - "cuda"
 #- "base"
 #- "updates"
@@ -47,6 +48,24 @@ yum_repos_to_sync:
 #- "docker-ce-stable"
 #- "docker-engine"
 #- "epel"
+
+yum_repo_gpg_keys:
+- name: "epel"
+  url: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-7"
+- name: "libnvidia-container"
+  url: "https://nvidia.github.io/libnvidia-container/gpgkey"
+- name: "nvidia-container-runtime"
+  url: "https://nvidia.github.io/nvidia-container-runtime/gpgkey"
+- name: "nvidia-docker"
+  url: "https://nvidia.github.io/nvidia-docker/gpgkey"
+- name: "nvidia-ml"
+  url: "https://developer.download.nvidia.com/compute/machine-learning/repos/rhel7/x86_64/7fa2af80.pub"
+- name: "cuda"
+  url: "https://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/7fa2af80.pub"
+- name: "docker-ce-stable"
+  url: "https://download.docker.com/linux/centos/gpg"
+- name: "docker-engine"
+  url: "https://yum.dockerproject.org/gpg"
 
 # Configure creation of local yum repos
 deepops_yum_dest_path: "{{ deepops_dest_path }}/yum"

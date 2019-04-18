@@ -10,6 +10,7 @@
   - "{{ offline_cache_dir }}/helm"
   - "{{ offline_cache_dir }}/docker-images"
   - "{{ offline_cache_dir }}/yum"
+  - "{{ offline_cache_dir }}/yum/gpgkeys"
   - "{{ offline_cache_dir }}/pip"
 
 - name: clone fresh deepops repo
@@ -75,6 +76,14 @@
     src: "yum.conf"
     dest: "{{ offline_cache_dir }}/yum.conf"
     mode: 0444
+  when: download_yum_repos
+
+- name: copy gpg keys to cache dir
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ offline_cache_dir }}/yum/gpgkeys/{{ item.name }}.pub"
+    mode: "0444"
+  with_items: "{{ yum_repo_gpg_keys }}"
   when: download_yum_repos
 
 - name: sync yum repositories
