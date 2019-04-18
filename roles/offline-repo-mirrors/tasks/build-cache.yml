@@ -32,6 +32,21 @@
     url: "{{ helm_download_url }}"
     dest: "{{ offline_cache_dir }}/misc-files/"
 
+- name: download docker compose
+  get_url:
+    url: "{{ docker_compose_url }}"
+    dest: "{{ offline_cache_dir }}/misc-files/docker-compose"
+
+- name: download ksonnet
+  get_url:
+    url: "{{ ksonnet_url }}"
+    dest: "{{ offline_cache_dir }}/misc-files/"
+
+- name: download kubectl
+  get_url:
+    url: "{{ kubectl_url }}"
+    dest: "{{ offline_cache_dir }}/misc-files/kubectl"
+
 - name: archive docker images
   docker_image:
     name: "{{ item.repo }}{{ item.image }}"

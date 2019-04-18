@@ -77,6 +77,11 @@ helm_chart_git_repos:
   base: "https://github.com/helm/charts"
 rook_helm_chart_url: "https://charts.rook.io/master/rook-ceph-v0.9.0-79.g1a1ffdd.tgz"
 
+# Misc download urls
+docker_compose_url: "https://github.com/docker/compose/releases/download/1.23.2/docker-compose-Linux-x86_64"
+ksonnet_url: "https://github.com/ksonnet/ksonnet/releases/download/v0.13.1/ks_0.13.1_linux_amd64.tar.gz"
+kubectl_url: "https://storage.googleapis.com/kubernetes-release/release/v1.14.1/bin/linux/amd64/kubectl"
+
 # Configure download of docker images
 docker_http_timeout: 120
 docker_image_list:
