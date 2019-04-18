@@ -41,17 +41,6 @@ nvdocker_gpg_path: "{{ deepops_yum_mirror }}/gpgkeys/nvidia-docker.pub"
 # Slurm download directory
 slurm_pkg_url: "{{ deepops_misc_mirror }}/"
 
-# Bash variable TODOs (relocate later)
-DOCKER_COMPOSE_URL
-HELM_INSTALL_SCRIPT_URL
-KSONNET_URL
-KUBEFLOW_URL
-HELM_COREDNS_CHART_REPO
-RAPIDS_DASK_DOCKER_REPO
-HELM_ROOK_CHART_REPO
-KUBECTL_BINARY_URL
-
-
 ###############################################################################
 # Kubespray-related variables
 ###############################################################################
@@ -68,4 +57,3 @@ coredns_image_repo: "{{ deepops_docker_mirror }}/coredns/coredns"
 etcd_image_repo: "{{ deepops_docker_mirror }}/coreos/etcd"
 helm_image_repo: "{{ deepops_docker_mirror }}/lachlanevenson/k8s-helm"
 tiller_image_repo: "{{ deepops_docker_mirror }}/kubernetes-helm/tiller"
-
