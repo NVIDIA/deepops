@@ -10,8 +10,6 @@ controller:
   # Service type LoadBalancer requires a load balancer to be configured, e.g.
   # MetalLB in an on-prem cluster. See metallb.yml for a sample definition.
   # NodePort can be used instead where we don't have a load balancer.
-  # Since we're using the host network, the ingress controller can be reached
-  # on an IP of any master node
   service:
     type: LoadBalancer
   # Always run on master nodes

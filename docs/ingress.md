@@ -10,19 +10,6 @@ Two key concepts for routing traffic to your services are:
 
 DeepOps provides scripts you can run to configure a simple Load Balancer and/or Ingress setup:
 
-### Ingress controller
-
-By default the Ingress controller will use host networking and can be accessed at the IP of any master node.
-
-To expose the Ingress controller on an external IP managed by the Load Balancer, modify `config/helm/ingress.yml` and set the service type to `LoadBalancer`.
-
-Run the script to deploy the Ingress controller:
-
-```
-./scripts/k8s_deploy_ingress.sh
-```
-This script will set up an Ingress controller based on [NGINX](https://github.com/kubernetes/ingress-nginx).
-
 ### Load Balancer
 
 Modify `config/helm/metallb.yml` to configure the IP range that the load balancer will hand out.
@@ -34,6 +21,22 @@ Run the script to deploy the load balancer:
 ```
 
 This script will set up a software-based L2 Load Balancer using [MetalLb](https://metallb.universe.tf/)
+
+### Ingress controller
+
+By default the Ingress controller will be assigned an external IP managed by the Load Balancer.
+
+If you do not have control over your subnet to assign IPs to the load balancer, you can expose
+ingress routes on specific ports and access them via the IP of any management node. To do this, 
+modify `config/helm/ingress.yml` and set the service type to `NodePort`.
+
+Run the script to deploy the Ingress controller:
+
+```
+./scripts/k8s_deploy_ingress.sh
+```
+
+This script will set up an Ingress controller based on [NGINX](https://github.com/kubernetes/ingress-nginx).
 
 ----------------------
 
