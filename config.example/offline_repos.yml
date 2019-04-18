@@ -30,14 +30,16 @@ helm_chart_location: "{{ deepops_charts_mirror }}"
 
 # Yum 
 epel_baseurl: "{{ deepops_yum_mirror }}/epel"
-epel_gpgkey: TODO
+epel_gpgkey: "{{ deepops_yum_mirror }}/gpgkeys/epel.pub"
 rhel_cuda_baseurl: "{{ deepops_yum_mirror }}/cuda"
-rhel_cuda_gpgkey: TODO
-rhel_nvidiaml_baseurl: TODO
-rhel_nvidiaml_gpgkey: TODO
-slurm_pkg_url: "{{ deepops_misc_mirror }}/"
+rhel_cuda_gpgkey: "{{ deepops_yum_mirror }}/gpgkeys/cuda.pub"
+rhel_nvidiaml_baseurl: "{{ deepops_yum_mirror }}/nvidia-ml"
+rhel_nvidiaml_gpgkey: "{{ deepops_yum_mirror }}/gpgkeys/nvidia-ml.pub"
 nvdocker_repo_base_url: "{{ deepops_yum_mirror }}/nvidia-docker"
-nvdocker_gpg_path: TODO
+nvdocker_gpg_path: "{{ deepops_yum_mirror }}/gpgkeys/nvidia-docker.pub"
+
+# Slurm download directory
+slurm_pkg_url: "{{ deepops_misc_mirror }}/"
 
 # Bash variable TODOs (relocate later)
 DOCKER_COMPOSE_URL
