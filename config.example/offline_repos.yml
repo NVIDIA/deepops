@@ -1,0 +1,69 @@
+---
+
+# By default, we assume that all our software mirrors are on the same host,
+# docker_mirror_host
+
+deepops_mirror_host: "localhost"
+
+# If your software mirrors are present at different locations, you can also
+# adjust the locations of particular repository types.
+# Port numbers below assume that the mirrors are configured using the defaults
+# in the offline-repo-mirrors Ansible role.
+
+deepops_docker_mirror: "{{ deepops_mirror_host }}:5000"
+deepops_yum_mirror: "http://{{ deepops_mirror_host }}:8001"
+deepops_charts_mirror: "http://{{ deepops_mirror_host }}:8002"
+deepops_pypi_mirror: "http://{{ deepops_mirror_host }}:8003"
+deepops_misc_mirror: "http://{{ deepops_mirror_host }}:8004"
+
+# Individual software sources are specified below. If there are particular
+# objects which are not present at one of the mirrors defined above, or if
+# you have additional site-specific changes to make, you can override
+# particular locations below.
+
+###############################################################################
+# DeepOps-specific variables
+###############################################################################
+
+# Helm
+helm_chart_location: "{{ deepops_charts_mirror }}"
+
+# Yum 
+epel_baseurl: "{{ deepops_yum_mirror }}/epel"
+epel_gpgkey: TODO
+rhel_cuda_baseurl: "{{ deepops_yum_mirror }}/cuda"
+rhel_cuda_gpgkey: TODO
+rhel_nvidiaml_baseurl: TODO
+rhel_nvidiaml_gpgkey: TODO
+slurm_pkg_url: "{{ deepops_misc_mirror }}/"
+nvdocker_repo_base_url: "{{ deepops_yum_mirror }}/nvidia-docker"
+nvdocker_gpg_path: TODO
+
+# Bash variable TODOs (relocate later)
+DOCKER_COMPOSE_URL
+HELM_INSTALL_SCRIPT_URL
+KSONNET_URL
+KUBEFLOW_URL
+HELM_COREDNS_CHART_REPO
+RAPIDS_DASK_DOCKER_REPO
+HELM_ROOK_CHART_REPO
+KUBECTL_BINARY_URL
+
+
+###############################################################################
+# Kubespray-related variables
+###############################################################################
+
+cni_download_url: "{{ deepops_misc_mirror }}/cni-plugins-amd64-v0.6.0.tgz"
+hyperkube_download_url: "{{ deepops_misc_mirror }}/hyperkube"
+kubeadm_download_url: "{{ deepops_misc_mirror }}/kubeadm"
+
+calico_cni_image_repo: "{{ deepops_docker_mirror }}/calico/cni"
+calico_policy_image_repo: "{{ deepops_docker_mirror }}/calico/kube-controllers"
+calico_node_image_repo: "{{ deepops_docker_mirror }}/calico/node"
+calicoctl_image_repo: "{{ deepops_docker_mirror }}/calico/ctl"
+coredns_image_repo: "{{ deepops_docker_mirror }}/coredns/coredns"
+etcd_image_repo: "{{ deepops_docker_mirror }}/coreos/etcd"
+helm_image_repo: "{{ deepops_docker_mirror }}/lachlanevenson/k8s-helm"
+tiller_image_repo: "{{ deepops_docker_mirror }}/kubernetes-helm/tiller"
+
