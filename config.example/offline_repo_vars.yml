@@ -23,6 +23,7 @@ deepops_misc_mirror: "http://{{ deepops_mirror_host }}:8004"
 
 ###############################################################################
 # DeepOps-specific variables
+# - These variables appear in DeepOps Ansible playbooks
 ###############################################################################
 
 # Helm
@@ -34,7 +35,7 @@ helm_chart_location: "{{ deepops_charts_mirror }}"
 base_baseurl: "{{ deepops_yum_mirror }}/base"
 updates_baseurl: "{{ deepops_yum_mirror }}/updates"
 extras_baseurl: "{{ deepops_yum_mirror }}/extras"
-docker_ce_baseurl: "{{ deepops_yum_mirror }}/docker-ce"
+docker_ce_baseurl: "{{ deepops_yum_mirror }}/docker-ce-stable"
 docker_engine_baseurl: "{{ deepops_yum_mirror }}/docker-engine"
 epel_baseurl: "{{ deepops_yum_mirror }}/epel"
 epel_gpgkey: "{{ deepops_yum_mirror }}/gpgkeys/epel.pub"
@@ -65,8 +66,10 @@ yum_base_repos:
 # Slurm download directory
 slurm_pkg_url: "{{ deepops_misc_mirror }}/"
 
+
 ###############################################################################
 # Kubespray-related variables
+# - These variables appear in Ansible playbooks from Kubespray
 ###############################################################################
 
 cni_download_url: "{{ deepops_misc_mirror }}/cni-plugins-amd64-v0.6.0.tgz"
@@ -78,6 +81,14 @@ calico_policy_image_repo: "{{ deepops_docker_mirror }}/calico/kube-controllers"
 calico_node_image_repo: "{{ deepops_docker_mirror }}/calico/node"
 calicoctl_image_repo: "{{ deepops_docker_mirror }}/calico/ctl"
 coredns_image_repo: "{{ deepops_docker_mirror }}/coredns/coredns"
+dashboard_image_repo: "{{ deepops_docker_mirror }}/google_containers/kubernetes-dashboard-amd64"
+dnsautoscaler_image_repo: "{{ deepops_docker_mirror }}/google_containers/cluster-proportional-autoscaler-amd64"
+dnsmasqautoscaler_image_repo: "{{ deepops_docker_mirror }}/google_containers/cluster-proportional-autoscaler-amd64"
 etcd_image_repo: "{{ deepops_docker_mirror }}/coreos/etcd"
 helm_image_repo: "{{ deepops_docker_mirror }}/lachlanevenson/k8s-helm"
+nginx_image_repo: "{{ deepops_docker_mirror }}/nginx"
+pod_infra_image_repo: "{{ deepops_docker_mirror }}/google_containers/pause-amd64"
 tiller_image_repo: "{{ deepops_docker_mirror }}/kubernetes-helm/tiller"
+
+docker_insecure_registries:
+- "{{ deepops_docker_mirror }}"
