@@ -76,31 +76,32 @@
   get_url:
     url: "{{ deepops_centos_slurm_url }}"
     dest: "{{ offline_cache_dir }}/misc-files/"
-    mode: 0444
+    mode: 0644
   when: download_yum_repos
 
 - name: download CentOS ISO
   get_url:
     url: "{{ centos_iso_mirror }}/{{ centos_iso }}"
     dest: "{{ offline_cache_dir }}/yum/{{ centos_iso }}"
-    mode: 0444
+    mode: 0644
   when: download_yum_repos
 
 - name: copy yum.conf to cache dir
   copy:
     src: "yum.conf"
     dest: "{{ offline_cache_dir }}/yum.conf"
-    mode: 0444
+    mode: 0644
   when: download_yum_repos
 
 - name: copy gpg keys to cache dir
   get_url:
     url: "{{ item.url }}"
     dest: "{{ offline_cache_dir }}/yum/gpgkeys/{{ item.name }}.pub"
-    mode: "0444"
+    mode: "0644"
   with_items: "{{ yum_repo_gpg_keys }}"
   when: download_yum_repos
 
 - name: sync yum repositories
-  command: reposync -c "{{ offline_cache_dir }}/yum.conf" -r "{{ yum_repos_to_sync|join(',') }}" -p "{{ offline_cache_dir }}/yum/"
+  command: reposync -c "{{ offline_cache_dir }}/yum.conf" -r "{{ item }}" -p "{{ offline_cache_dir }}/yum/"
   when: download_yum_repos
+  with_items: "{{ yum_repos_to_sync }}"
