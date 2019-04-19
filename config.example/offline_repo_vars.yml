@@ -66,6 +66,9 @@ yum_base_repos:
 # Slurm download directory
 slurm_pkg_url: "{{ deepops_misc_mirror }}/"
 
+# NVIDIA k8s device plugin definition
+nvidia_k8s_device_plugin_def: "{{ deepops_misc_mirror }}/nvidia-device-plugin.yml"
+
 
 ###############################################################################
 # Kubespray-related variables
@@ -75,6 +78,8 @@ slurm_pkg_url: "{{ deepops_misc_mirror }}/"
 cni_download_url: "{{ deepops_misc_mirror }}/cni-plugins-amd64-v0.6.0.tgz"
 hyperkube_download_url: "{{ deepops_misc_mirror }}/hyperkube"
 kubeadm_download_url: "{{ deepops_misc_mirror }}/kubeadm"
+
+kube_image_repo: "{{ deepops_docker_mirror }}/google-containers"
 
 calico_cni_image_repo: "{{ deepops_docker_mirror }}/calico/cni"
 calico_policy_image_repo: "{{ deepops_docker_mirror }}/calico/kube-controllers"
@@ -92,3 +97,4 @@ tiller_image_repo: "{{ deepops_docker_mirror }}/kubernetes-helm/tiller"
 
 docker_insecure_registries:
 - "{{ deepops_docker_mirror }}"
+helm_stable_repo_url: "{{ deepops_charts_mirror }}"

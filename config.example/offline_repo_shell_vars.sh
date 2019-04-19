@@ -5,6 +5,11 @@
 # This script sets the relevant environment variables so that these scripts can
 # use a local mirror.
 
+# Set a variable that DeepOps is being built offline, so that other scripts
+# can modify their behavior as needed.
+export DEEPOPS_OFFLINE=1
+
+# Set the mirror server location
 export DEEPOPS_MISC_MIRROR="${DEEPOPS_MISC_MIRROR:-fake-ip-address}"
 if echo "${DEEPOPS_MISC_MIRROR}" | grep "fake-ip-address" >/dev/null 2>&1; then
 	echo "You need to set DEEPOPS_MISC_MIRROR to point to the mirror host"
