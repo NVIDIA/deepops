@@ -47,6 +47,11 @@
     url: "{{ kubectl_url }}"
     dest: "{{ offline_cache_dir }}/misc-files/kubectl"
 
+- name: download nv k8s device plugin definition
+  get_url:
+    url: "{{ nvidia_k8s_device_plugin_url }}"
+    dest: "{{ offline_cache_dir }}/misc-files/"
+
 - name: archive docker images
   docker_image:
     name: "{{ item.repo }}{{ item.image }}"
