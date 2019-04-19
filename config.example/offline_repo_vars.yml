@@ -3,7 +3,7 @@
 # By default, we assume that all our software mirrors are on the same host,
 # docker_mirror_host
 
-deepops_mirror_host: "10.32.217.124"
+deepops_mirror_host: "specify-ip-here"
 
 # If your software mirrors are present at different locations, you can also
 # adjust the locations of particular repository types.
