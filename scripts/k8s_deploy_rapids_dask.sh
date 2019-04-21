@@ -24,12 +24,13 @@ function help_me() {
   echo "-n    Kubernetes namespace"
   echo "-d    Docker image name"
   echo "-p    Push the Docker image after building it"
+  echo "-b    Build the Docker image, default is to pull from DockerHub"
   echo "-c    The number of Pods already running in this namespace (if deploying to existing namespace)"
 }
 
 
 function get_opts() {
-while getopts "c:n:d:pth" option; do
+while getopts "bc:n:d:pth" option; do
   case $option in
     n)
       RAPIDS_NAMESPACE=$OPTARG
@@ -37,10 +38,13 @@ while getopts "c:n:d:pth" option; do
     d)
       DASK_IMAGE=$OPTARG
       ;;
-   p)
+    b)
+      BUILD_IMAGE=true
+      ;;
+    p)
       PUSH_IMAGE=true
       ;;
-   c)
+    c)
       count=$OPTARG
       let pod_count=${pod_count}+${count}
       let pod_count_scale_down=${pod_count_scale_down}+${count}
@@ -66,6 +70,10 @@ DASK_IMAGE="${DASK_IMAGE:-dask-rapids}"
 
 
 function build_image() {
+  if [ -z ${BUILD_IMAGE} ]; then
+    return
+  fi
+
   echo "Building custom dask/rapids image: ${DASK_IMAGE}"
 
   if [ -d "${RAPIDS_TMP_BUILD_DIR}" ]; then
