@@ -15,6 +15,7 @@ Deploy the [LoadBalancer](ingress.md#on-prem-loadbalancer)
 
 Deploy [Ceph](kubernetes-cluster.md#persistent-storage)
 
+Update the binderhub-config.yml and binderhub-secret.yml with the proper `username` and `password` values for your DockerHub account. Optionally update the fields for GitHub tokens.
 
 Deploy Binderhub:
 

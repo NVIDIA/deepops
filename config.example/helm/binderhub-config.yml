@@ -1,8 +1,11 @@
 config:
   BinderHub:
-    use_registry: false
-    # image_prefix: <docker-id|organization-name>/<prefix>- # Used to name docker images if use_registry is true
-    # hub_url: 
+    use_registry: true
+    image_prefix: username/binderhub- # Used to name docker images if use_registry is true
+    # hub_url: # Controlled by scripting, do not modify #
+# Used for private Docker registries (the default is DockerHub)
+  # DockerRegistry:
+    # token_url:
 
 # Require 1 GPU for each Notebook deployment
 jupyterhub:
@@ -21,3 +24,5 @@ jupyterhub:
 # It is recommended to enable this. Doing so will launch an additional dind pod to help in this process.
 dind:
   enabled: true
+
+
