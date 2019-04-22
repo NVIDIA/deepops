@@ -64,7 +64,8 @@ yum_base_repos:
   url: "{{ epel_baseurl }}"
 
 # Slurm download directory
-slurm_pkg_url: "{{ deepops_misc_mirror }}/"
+slurm_pkg_url: "{{ deepops_misc_mirror }}"
+slurm_pkg_tag: ""
 
 # NVIDIA k8s device plugin definition
 nvidia_k8s_device_plugin_def: "{{ deepops_misc_mirror }}/nvidia-device-plugin.yml"
