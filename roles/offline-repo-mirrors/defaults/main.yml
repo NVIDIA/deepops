@@ -70,6 +70,7 @@ yum_repo_gpg_keys:
 # Configure creation of local yum repos
 deepops_yum_dest_path: "{{ deepops_dest_path }}/yum"
 yum_mirror_port: 8001
+yum_dest_base_url: "http://{{ ansible_default_ipv4.address }}:{{ yum_mirror_port }}"
 
 # Configure download of helm charts
 helm_download_url: "https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz"

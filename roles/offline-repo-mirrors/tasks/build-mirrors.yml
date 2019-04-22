@@ -121,6 +121,17 @@
   tags:
   - yum_mirror
 
+- name: write out a repo file for each 
+  template:
+    src: "dest-file.repo.j2"
+    dest: "{{ deepops_yum_dest_path }}/{{ item }}.repo"
+  vars:
+    repo_name: "{{ item }}"
+    repo_baseurl: "{{ yum_dest_base_url }}/{{ item }}"
+    repo_enabled: "1"
+    repo_gpgcheck: "0"
+  with_items: "{{ yum_repos_to_sync }}"
+
 - name: start nginx container to serve yum repo
   docker_container:
     name: "nginx-yum-repos"
