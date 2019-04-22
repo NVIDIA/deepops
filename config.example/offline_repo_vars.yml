@@ -45,7 +45,11 @@ rhel_cuda_baseurl: "{{ deepops_yum_mirror }}/cuda"
 rhel_cuda_gpgkey: "{{ deepops_yum_mirror }}/gpgkeys/cuda.pub"
 rhel_nvidiaml_baseurl: "{{ deepops_yum_mirror }}/nvidia-ml"
 rhel_nvidiaml_gpgkey: "{{ deepops_yum_mirror }}/gpgkeys/nvidia-ml.pub"
+nvcontainer_runtime_baseurl: "{{ deepops_yum_mirror }}/nvidia-container-runtime"
+libnv_container_baseurl: "{{ deepops_yum_mirror }}/libnvidia-container"
+
 nvdocker_repo_base_url: "{{ deepops_yum_mirror }}/nvidia-docker"
+nvdocker_rhel_repo_file_download_url: "{{ deepops_yum_mirror }}/nvidia-docker.repo"
 nvdocker_gpg_path: "{{ deepops_yum_mirror }}/gpgkeys/nvidia-docker.pub"
 
 # Convenience format for initial config
@@ -62,17 +66,23 @@ yum_base_repos:
   url: "{{ docker_engine_baseurl }}"
 - name: "epel"
   url: "{{ epel_baseurl }}"
+- name: "nvidia-container-runtime"
+  url: "{{ nvcontainer_runtime_baseurl }}"
+- name: "libnvidia-container"
+  url: "{{ libnv_container_baseurl }}"
 
 # Slurm download directory
 slurm_pkg_url: "{{ deepops_misc_mirror }}"
 slurm_pkg_tag: ""
 
 # Docker compose download
-docker_compose_url: "{{ deepops_misc_mirror }}/docker-compose"
+docker_compose_download_url: "{{ deepops_misc_mirror }}/docker-compose"
 
 # NVIDIA k8s device plugin definition
 nvidia_k8s_device_plugin_def: "{{ deepops_misc_mirror }}/nvidia-device-plugin.yml"
 
+# NVIDIA Docker wrapper script
+nvidia_docker_wrapper_url: "{{ deepops_misc_mirror }}/nvidia-docker"
 
 ###############################################################################
 # Kubespray-related variables
