@@ -52,6 +52,11 @@
     url: "{{ nvidia_k8s_device_plugin_url }}"
     dest: "{{ offline_cache_dir }}/misc-files/"
 
+- name: download nvidia-docker wrapper script
+  get_url:
+    url: "{{ nvidia_docker_wrapper_url }}"
+    dest: "{{ offline_cache_dir }}/misc-files/nvidia-docker"
+
 - name: archive docker images
   docker_image:
     name: "{{ item.repo }}{{ item.image }}"
