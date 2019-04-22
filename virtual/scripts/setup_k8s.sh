@@ -18,13 +18,13 @@ K8S_CONFIG_DIR="${VIRT_DIR}/k8s-config" "${ROOT_DIR}/scripts/k8s_inventory.sh" 1
 cp "${VIRT_DIR}/k8s_hosts.ini" "${VIRT_DIR}/k8s-config/hosts.ini"
 
 DEEPOPS_OFFLINE="${DEEPOPS_OFFLINE:-0}"
-k8s_cluster_extra_args=""
+ansible_extra_args=""
 if [ "${DEEPOPS_OFFLINE}" -ne 0 ]; then
-	k8s_cluster_extra_args="-e "@${VIRT_DIR}/config/offline_repo_vars.yml""
+	ansible_extra_args="-e "@${VIRT_DIR}/config/offline_repo_vars.yml""
 fi
 
 # Deploy the K8s cluster
-ansible-playbook -b -i "${VIRT_DIR}/k8s-config/hosts.ini" ${k8s_cluster_extra_args} "${ROOT_DIR}/playbooks/k8s-cluster.yml"
+ansible-playbook -b -i "${VIRT_DIR}/k8s-config/hosts.ini" ${ansible_extra_args} "${ROOT_DIR}/playbooks/k8s-cluster.yml"
 
 # Source K8s environment for interacting with the cluster
 # shellcheck disable=SC1091 disable=SC1090
