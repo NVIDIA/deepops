@@ -150,11 +150,11 @@ function get_url() {
   binderhub_ip=`kubectl -n ${BINDERHUB_NAMESPACE} get svc binder -ocustom-columns=:.status.loadBalancer.ingress[0].ip | tail -n1`
   binderhub_port=`kubectl -n ${BINDERHUB_NAMESPACE} get svc binder -ocustom-columns=:.spec.ports[0].nodePort | tail -n1`
 
-  aws_ip=`curl --max-time .1 --connect-timeout .1 http://169.254.169.254/latest/meta-data/public-hostname`
-  gcp_ip=`curl --max-time .1 --connect-timeout .1 -H "Metadata-Flavor: Google" http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip`
+  aws_ip=`curl --max-time 1 --connect-timeout 1 http://169.254.169.254/latest/meta-data/public-hostname`
+  gcp_ip=`curl --max-time 1 --connect-timeout 1 -H "Metadata-Flavor: Google" http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip`
 
   for local_ip in `ip -br addr  | awk '{print $3}' | awk -F/ '{print $1}'`; do
-    curl --max-time .1 --connect-timeout .1 -L ${local_ip}:${binderhub_port} && break
+    curl --max-time 1 --connect-timeout 1 -L ${local_ip}:${binderhub_port} && break
   done
   if [ "${?}" != "0" ]; then
     echo "WARNING: Could not determine local IP"
