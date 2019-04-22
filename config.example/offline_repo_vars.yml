@@ -67,6 +67,9 @@ yum_base_repos:
 slurm_pkg_url: "{{ deepops_misc_mirror }}"
 slurm_pkg_tag: ""
 
+# Docker compose download
+docker_compose_url: "{{ deepops_misc_mirror }}/docker-compose"
+
 # NVIDIA k8s device plugin definition
 nvidia_k8s_device_plugin_def: "{{ deepops_misc_mirror }}/nvidia-device-plugin.yml"
 
