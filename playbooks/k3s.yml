@@ -4,11 +4,18 @@
   vars:
     k3s_install_script: https://get.k3s.io
     k3s_installer_path: /tmp/install_k3s.sh
+    helm_install_script: https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get
+    helm_installer_path: /tmp/install_helm.sh
   tasks:
-    - name: download k3s binary
+    - name: download k3s installer
       get_url:
         url: "{{ k3s_install_script }}"
         dest: "{{ k3s_installer_path }}"
+        mode: 0755
+    - name: download helm installer
+      get_url:
+        url: "{{ helm_install_script }}"
+        dest: "{{ helm_installer_path }}"
         mode: 0755
 
 - hosts: slurm-master
@@ -49,6 +56,41 @@
 - hosts: slurm-master
   become: true
   vars:
+    k3s_manifest_path: /var/lib/rancher/k3s/server/manifests
+  tasks:
+    - name: create helm chart
+      blockinfile:
+        path: "{{ k3s_manifest_path }}/prometheus-operator.yml"
+        create: yes
+        block: |
+          apiVersion: k3s.cattle.io/v1
+          kind: HelmChart
+          metadata:
+            name: prometheus-operator
+            namespace: kube-system
+          spec:
+            chart: stable/prometheus-operator
+            targetNamespace: monitoring
+    - name: create helm chart
+      blockinfile:
+        path: "{{ k3s_manifest_path }}/kube-prometheus.yml"
+        create: yes
+        block: |
+          apiVersion: k3s.cattle.io/v1
+          kind: HelmChart
+          metadata:
+            name: kube-prometheus
+            namespace: kube-system
+          spec:
+            chart: stable/kube-prometheus
+            targetNamespace: monitoring
+  tags:
+    - never
+    - helm
+
+- hosts: slurm-master
+  become: true
+  vars:
     k3s_bin_path: /usr/local/bin/k3s
     k3s_uninstaller_path: /usr/local/bin/k3s-uninstall.sh
   tasks:
@@ -73,3 +115,54 @@
   tags:
     - never
     - uninstall
+
+- hosts: slurm-master
+  become: true
+  vars:
+    deepops_repo_url: https://github.com/NVIDIA/deepops.git
+    deepops_repo_path: /opt/deepops
+    helm_installer_path: /tmp/install_helm.sh
+    helm_installer_args: ""
+    helm_bin_path: /usr/local/bin/helm
+  environment:
+    PATH: /usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+  tasks:
+    - name: install git
+      package:
+        name: git
+        state: present
+    - name: grab deepops repo
+      git:
+        repo: "{{ deepops_repo_url }}"
+        dest: "{{ deepops_repo_path }}"
+        depth: 1
+    - name: modify repo permissions
+      file:
+        path: "{{ deepops_repo_path }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        recurse: yes
+    - name: run helm install script
+      command: "{{ helm_installer_path }} {{ helm_installer_args }}"
+      args:
+        creates: "{{ helm_bin_path }}"
+  tags:
+    - never
+    - deepops
+
+- hosts: slurm-master
+  vars:
+    deepops_repo_path: /opt/deepops
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  tasks:
+    - name: setup deepops
+      command: ./scripts/setup.sh
+      args:
+        chdir: "{{ deepops_repo_path }}"
+        creates: "{{ deepops_repo_path }}/config"
+    - name: init helm
+      command: helm init --history-max 200
+  tags:
+    - never
+    - deepops
