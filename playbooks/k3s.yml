@@ -1,0 +1,75 @@
+---
+- hosts: slurm-cluster
+  become: true
+  vars:
+    k3s_install_script: https://get.k3s.io
+    k3s_installer_path: /tmp/install_k3s.sh
+  tasks:
+    - name: download k3s binary
+      get_url:
+        url: "{{ k3s_install_script }}"
+        dest: "{{ k3s_installer_path }}"
+        mode: 0755
+
+- hosts: slurm-master
+  become: true
+  vars:
+    k3s_bin_path: /usr/local/bin/k3s
+    k3s_installer_path: /tmp/install_k3s.sh
+    k3s_installer_args: ""
+    k3s_token_file: /var/lib/rancher/k3s/server/node-token
+  tasks:
+    - name: run k3s install script
+      command: "{{ k3s_installer_path }} {{ k3s_installer_args }}"
+      args:
+        creates: "{{ k3s_bin_path }}"
+    - name: wait for server token to generate
+      wait_for:
+        path: "{{ k3s_token_file }}"
+    - name: register master token
+      slurp:
+        src: "{{ k3s_token_file }}"
+      register: k3s_token
+
+- hosts: slurm-node
+  become: true
+  vars:
+    k3s_bin_path: /usr/local/bin/k3s
+    k3s_installer_path: /tmp/install_k3s.sh
+    k3s_installer_args: ""
+  environment:
+    K3S_URL: "https://{{ groups['slurm-master'][0] }}:6443"
+    K3S_TOKEN: "{{ hostvars[groups['slurm-master'][0]]['k3s_token'].content | b64decode }}"
+  tasks:
+    - name: run k3s install script
+      command: "{{ k3s_installer_path }} {{ k3s_installer_args }}"
+      args:
+        creates: "{{ k3s_bin_path }}"
+
+- hosts: slurm-master
+  become: true
+  vars:
+    k3s_bin_path: /usr/local/bin/k3s
+    k3s_uninstaller_path: /usr/local/bin/k3s-uninstall.sh
+  tasks:
+    - name: uninstall k3s
+      command: "{{ k3s_uninstaller_path }}"
+      args:
+        removes: "{{ k3s_bin_path }}"
+  tags:
+    - never
+    - uninstall
+
+- hosts: slurm-node
+  become: true
+  vars:
+    k3s_bin_path: /usr/local/bin/k3s
+    k3s_uninstaller_path: /usr/local/bin/k3s-agent-uninstall.sh
+  tasks:
+    - name: uninstall k3s
+      command: "{{ k3s_uninstaller_path }}"
+      args:
+        removes: "{{ k3s_bin_path }}"
+  tags:
+    - never
+    - uninstall
