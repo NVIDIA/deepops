@@ -39,3 +39,11 @@ export KUBECTL_BINARY_URL="${DEEPOPS_MISC_MIRROR}/kubectl"
 # Rook/Ceph
 export HELM_ROOK_CHART_REPO="${DEEPOPS_HELM_REPO}"
 export ROOK_CEPH_IMAGE_REPO="${DEEPOPS_DOCKER_REGISTRY}/rook/ceph"
+
+# MetalLB
+export METALLB_SPEAKER_REPO="${DEEPOPS_DOCKER_REGISTRY}/metallb/speaker"
+export METALLB_CONTROLLER_REPO="${DEEPOPS_DOCKER_REGISTRY}/metallb/controller"
+
+# NGINX ingress
+export NGINX_INGRESS_CONTROLLER_REPO="${DEEPOPS_DOCKER_REGISTRY}/kubernetes-ingress-controller/nginx-ingress-controller"
+export NGINX_INGRESS_BACKEND_REPO="${DEEPOPS_DOCKER_REGISTRY}/defaultbackend"

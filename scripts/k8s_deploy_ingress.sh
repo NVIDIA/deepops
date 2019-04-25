@@ -23,9 +23,21 @@ if [ $? -ne 0 ] ; then
     exit 1
 fi
 
+# Check for environment vars overriding image names
+helm_extra_args=""
+if [ "${NGINX_INGRESS_CONTROLLER_REPO}" ]; then
+	helm_extra_args="${helm_extra_args} --set-string controller.image.repository="${NGINX_INGRESS_CONTROLLER_REPO}""
+fi
+if [ "${NGINX_INGRESS_BACKEND_REPO}" ]; then
+	helm_extra_args="${helm_extra_args} --set-string defaultBackend.image.repository="${NGINX_INGRESS_BACKEND_REPO}""
+fi
+
 # Set up the ingress controller
 if ! helm status "${app_name}" >/dev/null 2>&1; then
-	helm install --name "${app_name}" --values "${config_dir}/helm/ingress.yml" stable/nginx-ingress
+	helm install \
+		--name "${app_name}" \
+		--values "${config_dir}/helm/ingress.yml" ${helm_extra_args} \
+		stable/nginx-ingress
 fi
 
 kubectl wait --for=condition=Ready -l "app=${app_name},component=controller" --timeout=90s pod
