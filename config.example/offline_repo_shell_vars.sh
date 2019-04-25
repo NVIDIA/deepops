@@ -48,3 +48,12 @@ export METALLB_CONTROLLER_REPO="${DEEPOPS_DOCKER_REGISTRY}/metallb/controller"
 # NGINX ingress
 export NGINX_INGRESS_CONTROLLER_REPO="${DEEPOPS_DOCKER_REGISTRY}/kubernetes-ingress-controller/nginx-ingress-controller"
 export NGINX_INGRESS_BACKEND_REPO="${DEEPOPS_DOCKER_REGISTRY}/defaultbackend"
+
+# Monitoring
+export HELM_COREOS_CHART_REPO="${DEEPOPS_HELM_REPO}"
+export PROMETHEUS_OPER_REPO="${DEEPOPS_DOCKER_REGISTRY}/coreos/prometheus-operator"
+export ALERTMANAGER_REPO="${DEEPOPS_DOCKER_REGISTRY}/prometheus/alertmanager"
+export PROMETHEUS_REPO="${DEEPOPS_DOCKER_REGISTRY}/prometheus/prometheus"
+export GRAFANA_WATCHER_REPO="${DEEPOPS_DOCKER_REGISTRY}/coreos/grafana-watcher"
+export GRAFANA_REPO="${DEEPOPS_DOCKER_REGISTRY}/grafana/grafana"
+export DCGM_DOCKER_REGISTRY="${DEEPOPS_DOCKER_REGISTRY}"

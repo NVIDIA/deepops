@@ -60,9 +60,18 @@ if ! helm repo list | grep coreos >/dev/null 2>&1 ; then
     helm repo add coreos "${HELM_COREOS_CHART_REPO}"
 fi
 
-# Install Prometheus Operator
+
+# Install Prometheus Operator, with alternate repo if needed
+helm_prom_oper_args=""
+if [ "${PROMETHEUS_OPER_REPO}" ]; then
+	helm_prom_oper_args="${helm_prom_oper_args} --set-string image.repository="${PROMETHEUS_OPER_REPO}""
+fi
 if ! helm status prometheus-operator >/dev/null 2>&1 ; then
-    helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring --values ${config_dir}/helm/prometheus-operator.yml
+    helm install \
+	    coreos/prometheus-operator \
+	    --name prometheus-operator \
+	    --namespace monitoring \
+	    --values ${config_dir}/helm/prometheus-operator.yml ${helm_prom_oper_args}
 fi
 
 # Create GPU Dashboard config map
@@ -82,12 +91,28 @@ if kubectl describe service -l "app=${ingress_name},component=controller" | grep
 	echo "Using load balancer url: ${ingress_ip_string}"
 fi
 
-# Deploy Monitoring stack
+# Deploy Monitoring stack, with alternate repo if needed
+helm_kube_prom_args=""
+if [ "${ALERTMANAGER_REPO}" ]; then
+	helm_kube_prom_args="${helm_kube_prom_args} --set-string alertmanager.image.repository="${ALERTMANAGER_REPO}""
+fi
+if [ "${PROMETHEUS_REPO}" ]; then
+	helm_kube_prom_args="${helm_kube_prom_args} --set-string prometheus.image.repository="${PROMETHEUS_REPO}""
+fi
+if [ "${GRAFANA_REPO}" ]; then
+	helm_kube_prom_args="${helm_kube_prom_args} --set-string grafana.image.repository="${GRAFANA_REPO}""
+fi
+if [ "${GRAFANA_WATCHER_REPO}" ]; then
+	helm_kube_prom_args="${helm_kube_prom_args} --set-string grafana.grafanaWatcher.repository="${GRAFANA_WATCHER_REPO}""
+fi
 if ! helm status kube-prometheus >/dev/null 2>&1 ; then
-    helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring --values ${config_dir}/helm/kube-prometheus.yml \
+    helm install coreos/kube-prometheus \
+	--name kube-prometheus \
+	--namespace monitoring \
+	--values ${config_dir}/helm/kube-prometheus.yml \
         --set alertmanager.ingress.hosts[0]="alertmanager-${ingress_ip_string}" \
         --set prometheus.ingress.hosts[0]="prometheus-${ingress_ip_string}" \
-        --set grafana.ingress.hosts[0]="grafana-${ingress_ip_string}"
+        --set grafana.ingress.hosts[0]="grafana-${ingress_ip_string}" ${helm_kube_prom_args}
 fi
 
 # Label GPU nodes
@@ -97,7 +122,14 @@ done
 
 # Deploy DCGM node exporter
 if kubectl -n monitoring get pod -l app=dcgm-exporter 2>&1 | grep "No resources found." >/dev/null 2>&1 ; then
-    kubectl create -f services/dcgm-exporter.yml
+    if [ "${DCGM_DOCKER_REGISTRY}" ]; then
+        cat services/dcgm-exporter.yml \
+		| sed "s/image: quay.io/image: ${DCGM_DOCKER_REGISTRY}/g" \
+		| sed "s/image: nvcr.io/image: ${DCGM_DOCKER_REGISTRY}/g" \
+		| kubectl create -f -
+    else
+        kubectl create -f services/dcgm-exporter.yml
+    fi
 fi
 
 # Use NodePort directly if the IP string uses the master IP, otherwise use Ingress URL
