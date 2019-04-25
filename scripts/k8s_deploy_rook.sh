@@ -32,10 +32,15 @@ if [ $? -ne 0 ] ; then
 	    --version v0.9.0-79.g1a1ffdd ${helm_install_extra_flags}
 fi
 
-kubectl -n rook-ceph get pod -l app=rook-ceph-tools 2>&1 | grep "No resources found." >/dev/null 2>&1
-if [ $? -eq 0 ] ; then
+
+if kubectl -n rook-ceph get pod -l app=rook-ceph-tools 2>&1 | grep "No resources found." >/dev/null 2>&1; then
     sleep 5
-    kubectl create -f services/rook-cluster.yml
+    # If we have an alternate registry defined, dynamically substitute it in
+    if [ "${DEEPOPS_ROOK_DOCKER_REGISTRY}" ]; then
+        cat services/rook-cluster.yml | sed "s/image: /image: ${DEEPOPS_ROOK_DOCKER_REGISTRY}\//g" | kubectl create -f -
+    else
+        kubectl create -f services/rook-cluster.yml
+    fi
 fi
 
 sleep 5
