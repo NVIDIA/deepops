@@ -251,7 +251,7 @@ docker_image_list:
 - name: "nginx-ingress-controller"
   repo: "quay.io/"
   image: "kubernetes-ingress-controller/nginx-ingress-controller"
-  version: "0.22.0"
+  version: "0.23.0"
 
 - name: "alertmanager"
   repo: "quay.io/"
