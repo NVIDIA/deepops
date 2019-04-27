@@ -22,76 +22,96 @@ Total: 6 vCPU, 20 GB RAM, 96 GB Storage
 * Ubuntu 16.04 (or greater)
 * CentOS 7.6 (or greater)
 
-Running DeepOps virtually assumes that the host machine's OS is an approved OS. If this is not the case, the `bootstrap_virtual.sh` and `cluster_up.sh` scripts may be modified to work with a different OS.
+Running DeepOps virtually assumes that the host machine's OS is an approved OS. If this is not the case, the scripts used in the steps below may be modified to work with a different OS.
 
 Also, using VMs and optionally GPU passthrough assumes that the host machine has been configured to enable virtualization in the BIOS. For instructions on how to accomplish this, refer to the sections at the bottom of this README: [Enabling virtualization and GPU passthrough](#enabling-virtualization-and-gpu-passthrough).
 
-## Bootstrap dependencies
+## Start the Virtual Cluster
 
-To install basic dependencies for running Ansible and managing a DeepOps cluster, run the [/scripts/setup.sh](/scripts/setup.sh) script from the root deepops directory.
+1. From the main deepops directory, run the setup script.
 
+   This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](/docs/ANSIBLE.md).
+
+   ```sh
+   ./scripts/setup.sh
+   ```
+
+2. In the virtual directory, startup vagrant. This will start 3 VMs:
+   * virtual-login
+   * virtual-mgmt
+   * virtual-gpu01
+
+   ```sh
+   # NOTE: The default VM OS is Ubuntu. If you wish the VMs to spawn CentOS,
+   #       configure the DEEPOPS_VAGRANT_FILE variable accordingly...
+   #       export DEEPOPS_VAGRANT_FILE=$(pwd)/Vagrantfile-centos
+   # NOTE: virtual-gpu01 requires GPU passthrough, by default it is not enabled
+   cd virtual
+   ./vagrant_startup.sh
+   ```
+
+3. Start the cluster.
+
+   ```sh
+   # NOTE: Only Kubernetes is deployed by default. To also deploy Slurm,
+   #       configure the DEEPOPS_ENABLE_SLURM variable accordingly...
+   #       export DEEPOPS_ENABLE_SLURM=1
+   ./cluster_up.sh
+   ```
+   
+   This script will run the ansible playbooks to deploy DeepOps to the Vagrant VMs and should complete without errors.
+   
+4. Export `kubectl` to PATH and set KUBECONFIG.
+
+   As part of `cluster_up.sh`, a fresh `kubectl` executable and the Kubernetes cluster's `admin.conf` are downloaded. To use these so commands may be run locally, a convenient script may be sourced...
+   
+   ```sh
+   source k8s_environment.sh
+   ```
+   
+   Optionally, `kubectl` can permanently be added to the PATH and `admin.conf` can be copied to `~/.kube/config`, which results in a more permanent solution.
+
+## Using the Virtual Cluster
+
+### Kubernetes
+
+Consult the [Kubernetes Usage Guide](/docs/kubernetes-usage.md) for examples of how to use Kubernetes.
+
+### Connecting to the VMs
+
+Connect to any of the VM nodes directly via vagrant ssh...
+
+```sh
+# NOTE: Must be in the `deepops/virtual` directory
+vagrant ssh virtual-gpu01
 ```
-$ cd deepops
-$ ./scripts/setup.sh
-```
 
-Virtualization-related dependencies will be installed if needed by the [vagrant_startup.sh](vagrant_startup.sh) script.
-
-## Select the Vagrant file for your Linux distro
-
-If you want to run your virtual cluster on CentOS, set the `DEEPOPS_VAGRANT_FILE` variable to point to the `Vagrantfile-centos` file:
-
-```
-$ cd virtual
-$ export DEEPOPS_VAGRANT_FILE=$(pwd)/Vagrantfile-centos
-```
-
-If you want to use Ubuntu, you can set this variable to point to the `Vagrantfile-ubuntu` file, or just leave it unset (Ubuntu is the default).
-
-## Start vagrant
-
-Boot up the VMs by starting vagrant. Run `vagrant_startup.sh` found in the `virtual` directory of the repository root. Vagrant will spin up three VMs:
-* virtual-login
-* virtual-mgmt
-* virtual-gpu01
-
-```
-$ ./vagrant_startup.sh
-```
-
-Afterwards, connect to any of the nodes via vagrant ssh...
-
-```
-$ vagrant ssh virtual-gpu01
-```
-
-## Start the cluster
-
-To start the cluster, run the `cluster_up.sh` script, which will run the ansible playbooks to deploy DeepOps. This will deploy a Kubernetes Cluster on the VM's that where created in the [Start vagrant](https://github.com/satindern/deepops/tree/master/virtual#start-vagrant) section earlier. The default action is to install Kubernetes, if you are wanting to install Slurm you will need to `export DEEPOPS_ENABLE_SLURM=1` before executing the `cluster_up.sh` script.
-
-```
-$ ./cluster_up.sh
-```
-
-The script should complete without errors. Once the script has completed executing `source k8s_environment.sh` will enable the execution of `kubectl` commands directly from the provisioing node without the need to ssh to a VM, as descibed earlier under [Start vagrant](https://github.com/satindern/deepops/tree/patch-1/virtual#start-vagrant).
-
-## Shutdown vagrant
+## Destroy the Virtual Cluster
 
 To destroy the cluster and shutdown the VMs, run the `vagrant_shutdown.sh` script...
 
-```
-$ ./vagrant_shutdown.sh
+```sh
+./vagrant_shutdown.sh
 ```
 
-Check that there are no running VMs using `virsh list`.
+Check that there are no running VMs using `virsh list`...
+
+```sh
+virsh list
+ Id    Name                           State
+----------------------------------------------------
+ 14    virtual_virtual-mgmt           running
+ 15    virtual_virtual-login          running
+ 16    virtual_virtual-gpu01          running
+```
 
 ## Configure GPU passthrough
 
-If your host machine has a GPU, it is possible to enable GPU passthrough to the gpu01 VM.
+If your host machine has a GPU, it is possible to enable GPU passthrough to the `virtual-gpu01` VM.
 
 Run `lspci` to discover the appropriate bus...
 
-```
+```sh
 $ lspci -nnk | grep NVIDIA
 07:00.0 VGA compatible controller [0300]: NVIDIA Corporation Device [10de:15fc] (rev a1)
 	Subsystem: NVIDIA Corporation Device [10de:1195]
@@ -115,12 +135,18 @@ In this example, we've chosen the GPU at `08:00.0`.
 
 In the `Vagrantfile`, uncomment the `v.pci` configuration and update it with a mapping to the bus discovered with `lspci`...
 
-```
+```sh
 v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
 
 ```
 
-Shutdown the virtual cluster (if it is running) and startup vagrant + run cluster up again.
+Shutdown the virtual cluster (if it is running) and startup vagrant + run cluster up again...
+
+```sh
+./vagrant_shutdown.sh
+./vagrant_startup.sh
+./cluster_up.sh
+```
 
 # Enabling virtualization and GPU passthrough
 
