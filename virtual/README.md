@@ -6,49 +6,47 @@ Set up a virtual cluster with DeepOps. Useful for...
 2. Testing new features in DeepOps
 3. Tailoring DeepOps in a local environment before deploying it to the production cluster
 
-## Prerequisites
+## Requirements
 
-Approved OS:
+### Single Node Hardware Requirements
+
+The host machine should have enough resources to fufill the minimum VM needs...
+
+Total: 6 vCPU, 20 GB RAM, 96 GB Storage
+* virtual-login: 2 vCPU, 2GB RAM and 32GB Storage
+* virtual-mgmt: 2 vCPU, 2GB RAM and 32GB Storage
+* virtual-gpu01: 2 vCPU, 16GB RAM and 32GB Storage
+
+### Operating System Requirements
 
 * Ubuntu 16.04 (or greater)
 * CentOS 7.6 (or greater)
 
 Running DeepOps virtually assumes that the host machine's OS is an approved OS. If this is not the case, the `bootstrap_virtual.sh` and `cluster_up.sh` scripts may be modified to work with a different OS.
 
-Also, using VMs and optionally GPU passthrough assumes that the host machine has been configured to enable virtualization in the BIOS. For instructions on how to accomplish this, refer to the sections at the bottom of this README: [Enabling virtualization and GPU passthrough](https://github.com/NVIDIA/deepops/pull/221#enabling-virtualization-and-gpu-passthrough).
-
-Host Requirements
-Enough resources to satisfy the following VM requirements
-
-VM Requirements
-
-* virtual-login
-2 vCPU, 2GB RAM and 32GB Storage
-* virtual-mgmt
-2 vCPU, 2GB RAM and 32GB Storage
-* virtual-gpu01
-2 vCPU, 16GB RAM and 32GB Storage
-
+Also, using VMs and optionally GPU passthrough assumes that the host machine has been configured to enable virtualization in the BIOS. For instructions on how to accomplish this, refer to the sections at the bottom of this README: [Enabling virtualization and GPU passthrough](#enabling-virtualization-and-gpu-passthrough).
 
 ## Bootstrap dependencies
 
-To install basic dependencies for running Ansible and managing a DeepOps cluster,run the `setup.sh` found in the `scripts` directory of the repository root.
+To install basic dependencies for running Ansible and managing a DeepOps cluster, run the [/scripts/setup.sh](/scripts/setup.sh) script from the root deepops directory.
 
 ```
-$ <deepops repo>/scripts/setup.sh
+$ cd deepops
+$ ./scripts/setup.sh
 ```
 
-Virtualization-related dependencies will be installed if needed by the `vagrant_startup.sh` script.
+Virtualization-related dependencies will be installed if needed by the [vagrant_startup.sh](vagrant_startup.sh) script.
 
 ## Select the Vagrant file for your Linux distro
 
-If you want to run your virtual cluster on CentOS, set the `DEEPOPS_VAGRANT_FILE` variable to point to the CentOS Vagrant file:
+If you want to run your virtual cluster on CentOS, set the `DEEPOPS_VAGRANT_FILE` variable to point to the `Vagrantfile-centos` file:
 
 ```
+$ cd virtual
 $ export DEEPOPS_VAGRANT_FILE=$(pwd)/Vagrantfile-centos
 ```
 
-If you want to use Ubuntu, you can set this variable to point to the Ubuntu Vagrant file, or just leave it unset (Ubuntu is the default).
+If you want to use Ubuntu, you can set this variable to point to the `Vagrantfile-ubuntu` file, or just leave it unset (Ubuntu is the default).
 
 ## Start vagrant
 
