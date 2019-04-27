@@ -29,11 +29,11 @@ Each of the deployment options in DeepOps is highly modular and does not need to
 
 ## Scripts
 
-Optional components are included as scripts in the [/scripts](/scripts) directory. They can also be used on an existing cluster that did not use DeepOps. For example, on an existing Kubernetes cluster, the [/scripts/k8s_deploy_kubeflow.sh](scripts/k8s_deploy_kubeflow.sh) script can be launched to deploy Kubeflow.
+Optional components are included as scripts in the [/scripts](/scripts) directory. They can also be used on an existing cluster that did not use DeepOps. For example, on an existing Kubernetes cluster, the [/scripts/k8s_deploy_kubeflow.sh](/scripts/k8s_deploy_kubeflow.sh) script can be launched to deploy Kubeflow.
 
 ## Examples
 
-Examples are included in the [/examples](/examples) directory. Each example starts with the cluster type, so [examples/k8s-dask-rapids](examples/k8s-dask-rapids) requires a Kubernetes cluster.
+Examples are included in the [/examples](/examples) directory. Each example starts with the cluster type, so [/examples/k8s-dask-rapids](/examples/k8s-dask-rapids) requires a Kubernetes cluster.
 
 ## Docs
 
