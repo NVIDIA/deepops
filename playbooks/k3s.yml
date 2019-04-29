@@ -23,7 +23,7 @@
   vars:
     k3s_bin_path: /usr/local/bin/k3s
     k3s_installer_path: /tmp/install_k3s.sh
-    k3s_installer_args: ""
+    k3s_installer_args: "--resolv-conf /etc/resolv.conf"
     k3s_token_file: /var/lib/rancher/k3s/server/node-token
   tasks:
     - name: run k3s install script
@@ -43,21 +43,57 @@
   vars:
     k3s_bin_path: /usr/local/bin/k3s
     k3s_installer_path: /tmp/install_k3s.sh
-    k3s_installer_args: ""
+    k3s_installer_args: "--resolv-conf /etc/resolv.conf"
+    k3s_containerd_template_dir: /var/lib/rancher/k3s/agent/etc/containerd/
   environment:
     K3S_URL: "https://{{ groups['slurm-master'][0] }}:6443"
     K3S_TOKEN: "{{ hostvars[groups['slurm-master'][0]]['k3s_token'].content | b64decode }}"
+    INSTALL_K3S_SKIP_DOWNLOAD: true
   tasks:
+    - name: create containerd config directory
+      file:
+        path: "{{ k3s_containerd_template_dir }}"
+        state: directory
+    - name: create containerd config template
+      blockinfile:
+        path: "{{ k3s_containerd_template_dir }}/config.toml.tmpl"
+        create: yes
+        block: |
+          {% raw %}
+          [plugins.linux]
+          runtime = "/usr/bin/nvidia-container-runtime"
+          [plugins.opt]
+          path = "{{ .NodeConfig.Containerd.Opt }}"
+          [plugins.cri]
+          stream_server_address = "{{ .NodeConfig.AgentConfig.NodeName }}"
+          stream_server_port = "10010"
+          {{ if .IsRunningInUserNS }}
+          disable_cgroup = true
+          disable_apparmor = true
+          restrict_oom_score_adj = true
+          {{ end }}
+          {{ if not .NodeConfig.NoFlannel }}
+            [plugins.cri.cni]
+              bin_dir = "{{ .NodeConfig.AgentConfig.CNIBinDir }}"
+              conf_dir = "{{ .NodeConfig.AgentConfig.CNIConfDir }}"
+          {{ end }}
+          {% endraw %}
     - name: run k3s install script
       command: "{{ k3s_installer_path }} {{ k3s_installer_args }}"
-      args:
-        creates: "{{ k3s_bin_path }}"
+      #args:
+      #  creates: "{{ k3s_bin_path }}"
 
 - hosts: slurm-master
   become: true
   vars:
     k3s_manifest_path: /var/lib/rancher/k3s/server/manifests
+    gpu_device_plugin_url: https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/master/nvidia-device-plugin.yml
+    #gpu_device_plugin_url: https://raw.githubusercontent.com/kubernetes/kubernetes/release-1.12/cluster/addons/device-plugins/nvidia-gpu/daemonset.yaml
   tasks:
+    - name: create GPU device plugin
+      get_url:
+        url: "{{ gpu_device_plugin_url }}"
+        dest: "{{ k3s_manifest_path }}/nvidia-device-plugin.yml"
     - name: create helm chart
       blockinfile:
         path: "{{ k3s_manifest_path }}/prometheus-operator.yml"
@@ -71,21 +107,62 @@
           spec:
             chart: stable/prometheus-operator
             targetNamespace: monitoring
-    - name: create helm chart
-      blockinfile:
-        path: "{{ k3s_manifest_path }}/kube-prometheus.yml"
-        create: yes
-        block: |
-          apiVersion: k3s.cattle.io/v1
-          kind: HelmChart
-          metadata:
-            name: kube-prometheus
-            namespace: kube-system
-          spec:
-            chart: stable/kube-prometheus
-            targetNamespace: monitoring
+            valuesContent: |
+              alertmanager:
+                service:
+                  type: LoadBalancer
+              prometheus:
+                service:
+                  type: LoadBalancer
+              grafana:
+                service:
+                  type: LoadBalancer
+#    - name: create helm chart
+#      blockinfile:
+#        path: "{{ k3s_manifest_path }}/kube-prometheus.yml"
+#        create: yes
+#        block: |
+#          apiVersion: k3s.cattle.io/v1
+#          kind: HelmChart
+#          metadata:
+#            name: kube-prometheus
+#            namespace: kube-system
+#          spec:
+#            chart: kube-prometheus
+#            targetNamespace: monitoring
+#            repo: https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+#            valuesContent: |
+#              prometheus:
+#                #nodeSelector:
+#                #  node-role.kubernetes.io/master: ""
+#                service:
+#                  type: LoadBalancer
+#                serviceMonitors:
+#                - name: dcgm-exporter
+#                  selector:
+#                    matchLabels:
+#                      app: dcgm-exporter
+#                  endpoints:
+#                  - port: scrape
+#                    interval: 1s
+#                    honorLabels: true       
+#                serviceMonitorsSelector:
+#                  matchLabels:
+#                    prometheus: "kube-prometheus"
+#              alertmanager:
+#                #nodeSelector:
+#                #  node-role.kubernetes.io/master: ""
+#                service:
+#                  type: LoadBalancer
+#              grafana:
+#                #nodeSelector:
+#                #  node-role.kubernetes.io/master: ""
+#                service:
+#                  type: LoadBalancer
+#                #serverDashboardConfigmaps:
+#                #  - kube-prometheus-grafana-gpu
   tags:
-    - never
+    #- never
     - helm
 
 - hosts: slurm-master
