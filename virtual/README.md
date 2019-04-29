@@ -8,7 +8,7 @@ Set up a virtual cluster with DeepOps. Useful for...
 
 ## Requirements
 
-### Single Node Hardware Requirements
+### Hardware Requirements
 
 The host machine should have enough resources to fufill the minimum VM needs...
 
@@ -36,16 +36,15 @@ Also, using VMs and optionally GPU passthrough assumes that the host machine has
    ./scripts/setup.sh
    ```
 
-2. In the virtual directory, startup vagrant. This will start 3 VMs:
-   * virtual-login
-   * virtual-mgmt
-   * virtual-gpu01
+2. In the virtual directory, startup vagrant. This will start 3 VMs by default.
 
    ```sh
    # NOTE: The default VM OS is Ubuntu. If you wish the VMs to spawn CentOS,
    #       configure the DEEPOPS_VAGRANT_FILE variable accordingly...
    #       export DEEPOPS_VAGRANT_FILE=$(pwd)/Vagrantfile-centos
    # NOTE: virtual-gpu01 requires GPU passthrough, by default it is not enabled
+   # NOTE: 3 VMs are started by default: virtual-mgmt, virtual-login, virtual-gpu01
+   
    cd virtual
    ./vagrant_startup.sh
    ```
@@ -56,12 +55,13 @@ Also, using VMs and optionally GPU passthrough assumes that the host machine has
    # NOTE: Only Kubernetes is deployed by default. To also deploy Slurm,
    #       configure the DEEPOPS_ENABLE_SLURM variable accordingly...
    #       export DEEPOPS_ENABLE_SLURM=1
+   
    ./cluster_up.sh
    ```
    
    This script will run the ansible playbooks to deploy DeepOps to the Vagrant VMs and should complete without errors.
    
-4. Export `kubectl` to PATH and set KUBECONFIG.
+4. Set up the Kubernetes environment.
 
    As part of `cluster_up.sh`, a fresh `kubectl` executable and the Kubernetes cluster's `admin.conf` are downloaded. To use these so commands may be run locally, a convenient script may be sourced...
    
@@ -83,6 +83,7 @@ Connect to any of the VM nodes directly via vagrant ssh...
 
 ```sh
 # NOTE: Must be in the `deepops/virtual` directory
+
 vagrant ssh virtual-gpu01
 ```
 
@@ -97,17 +98,14 @@ To destroy the cluster and shutdown the VMs, run the `vagrant_shutdown.sh` scrip
 Check that there are no running VMs using `virsh list`...
 
 ```sh
-virsh list
+$ virsh list --all
  Id    Name                           State
 ----------------------------------------------------
- 14    virtual_virtual-mgmt           running
- 15    virtual_virtual-login          running
- 16    virtual_virtual-gpu01          running
 ```
 
 ## Configure GPU passthrough
 
-If your host machine has a GPU, it is possible to enable GPU passthrough to the `virtual-gpu01` VM.
+If the host machine has a GPU and is configured for GPU passthrough, it is possible to configure the `virtual-gpu01` VM to use the GPU.
 
 Run `lspci` to discover the appropriate bus...
 
@@ -131,16 +129,17 @@ $ lspci -nnk | grep NVIDIA
 	Subsystem: NVIDIA Corporation Device [10de:1195]
 ```
 
-In this example, we've chosen the GPU at `08:00.0`.
+In this example, the GPU at `08:00.0` is chosen.
 
 In the `Vagrantfile`, uncomment the `v.pci` configuration and update it with a mapping to the bus discovered with `lspci`...
 
-```sh
+```
 v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
-
 ```
 
-Shutdown the virtual cluster (if it is running) and startup vagrant + run cluster up again...
+Note that more than one GPU may be passed through by adding additional `v.pci` lines.
+
+Next, shutdown the virtual cluster (if it is running) and startup vagrant + run cluster up again...
 
 ```sh
 ./vagrant_shutdown.sh
