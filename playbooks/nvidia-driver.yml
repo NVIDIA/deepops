@@ -8,7 +8,7 @@
 
     - name: install nvidia driver
       include_role:
-        name: nvidia-driver
+        name: lukeyeager.nvidia-driver
       when: ansible_local['gpus']['count']
 
     - name: test nvidia-smi
