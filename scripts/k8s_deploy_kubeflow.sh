@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 
+export KS_VER=0.13.1
+export KS_PKG=ks_${KS_VER}_linux_amd64
+export KS_INSTALL_DIR=/usr/local/bin
+
 export KUBEFLOW_TAG=v0.5.0
 export KFAPP=kubeflow
 export KUBEFLOW_SRC=/opt/kubeflow
 
-KUBEFLOW_URL="${KUBEFLOW_URL:-https://github.com/kubeflow/kubeflow/releases/download/v0.5.0/kfctl_${KUBEFLOW_TAG}_linux.tar.gz}"
+KSONNET_URL="${KSONNET_URL:-https://github.com/ksonnet/ksonnet/releases/download/v${KS_VER}/${KS_PKG}.tar.gz}"
+KUBEFLOW_URL="${KUBEFLOW_URL:-https://raw.githubusercontent.com/kubeflow/kubeflow/${KUBEFLOW_TAG}/scripts/download.sh}"
 
 ###
 
@@ -37,29 +42,64 @@ if [ $? -eq 0 ] ; then
     exit 1
 fi
 
+# Ksonnet
+wget -O /tmp/${KS_PKG}.tar.gz "${KSONNET_URL}" \
+      --no-check-certificate
+mkdir -p ${KS_INSTALL_DIR}
+tempd=$(mktemp -d)
+tar -xvf /tmp/${KS_PKG}.tar.gz -C ${tempd}
+sudo mv ${tempd}/${KS_PKG}/ks ${KS_INSTALL_DIR}
+rm -rf ${tempd} /tmp/${KS_PKG}.tar.gz
+
 # Kubeflow
 if [ ! -d ${KUBEFLOW_SRC} ] ; then
-    echo ${KUBEFLOW_URL}
     tempd=$(mktemp -d)
     cd ${tempd}
-    wget ${KUBEFLOW_URL}
-    tar -xvf "kfctl_${KUBEFLOW_TAG}_linux.tar.gz"
+    curl "${KUBEFLOW_URL}" | bash
     cd -
     sudo mv ${tempd} ${KUBEFLOW_SRC}
 fi
 
-pushd ${HOME}
-${KUBEFLOW_SRC}/kfctl init ${KFAPP}
-cd ${KFAPP}
-${KUBEFLOW_SRC}/kfctl generate all
-${KUBEFLOW_SRC}/kfctl apply all
+# Get master ip
+master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
 
-kfip=$(kubectl get nodes --no-headers -o custom-columns=:.status.addresses.*.address -l node-role.kubernetes.io/master= | cut -f1 -d, | head -1)
-kfnp=$(kubectl -n kubeflow get svc ambassador --no-headers -o custom-columns=:.spec.ports.*.nodePort)
+# Check for ingress controller
+ingress_name="nginx-ingress"
+ingress_ip_string="$(echo ${master_ip} | tr '.' '-')"
+if kubectl describe service -l "app=${ingress_name},component=controller" | grep 'LoadBalancer Ingress' >/dev/null 2>&1; then
+    lb_ip="$(kubectl describe service -l "app=${ingress_name},component=controller" | grep 'LoadBalancer Ingress' | awk '{print $3}')"
+    ingress_ip_string="$(echo ${lb_ip} | tr '.' '-').nip.io"
+    echo "Using load balancer url: ${ingress_ip_string}"
+fi
+
+# Initialize and generate kubeflow
+pushd ${HOME}
+${KUBEFLOW_SRC}/scripts/kfctl.sh init ${KFAPP} --platform none
+cd ${KFAPP}
+${KUBEFLOW_SRC}/scripts/kfctl.sh generate k8s
+pushd ks_app
+
+# Use NodePort directly if the IP string uses the master IP, otherwise use Ingress URL
+if echo "${ingress_ip_string}" | grep "${master_ip}" >/dev/null 2>&1; then
+    ks param set ambassador ambassadorServiceType NodePort
+    popd
+    ${KUBEFLOW_SRC}/scripts/kfctl.sh apply k8s
+    popd
+    kf_ip=$master_ip
+    kf_port=$(kubectl -n kubeflow get svc ambassador --no-headers -o custom-columns=:.spec.ports.*.nodePort)
+    kf_url="http://${kf_ip}:${kf_port}"
+else
+    ks param set ambassador ambassadorServiceType LoadBalancer
+    popd
+    ${KUBEFLOW_SRC}/scripts/kfctl.sh apply k8s
+    popd
+    kf_ip=$(kubectl -n kubeflow get svc ambassador --no-headers -o custom-columns=:.status.loadBalancer.ingress[0].ip)
+    kf_url="http://${kf_ip}"
+fi
 
 echo
 echo "Kubeflow app installed to: ${HOME}/${KFAPP}"
-echo "To remove, run: cd ${HOME}/${KFAPP} && ${KUBEFLOW_SRC}/kfctl delete all --delete_storage"
+echo "To remove, run: cd ${HOME}/${KFAPP} && ${KUBEFLOW_SRC}/scripts/kfctl.sh delete k8s"
 echo
-echo "Kubeflow Ambassador: http://${kfip}:${kfnp}"
+echo "Kubeflow Dashboard: ${kf_url}"
 echo
