@@ -19,5 +19,5 @@
 - src: andrewrothstein.miniconda
   version: "v5.2.3"
 
-- src: lukeyeager.nvidia_driver
-  version: "v1.0.1"
+- src: nvidia.nvidia_driver
+  version: "v1.0.0"
