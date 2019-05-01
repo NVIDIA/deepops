@@ -15,7 +15,7 @@ The DeepOps project encapsulates best practices in the deployment of GPU server 
 
 Latest release: [DeepOps 19.03 Release](releases/tag/19.03)
 
-It is recommended to use the latest release branch for stable code (linked above). The master branch is generally stable, but is used for development.
+It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally functional but may change significantly between releases.
 
 ## Getting Started
 
@@ -61,7 +61,7 @@ This project is released under the [BSD 3-clause license](https://github.com/NVI
 
 ## Issues
 
-NVIDIA DGX customers should file and NVES ticket via [NVIDIA Enterprise Services](https://nvid.nvidia.com/enterpriselogin/).
+NVIDIA DGX customers should file an NVES ticket via [NVIDIA Enterprise Services](https://nvid.nvidia.com/enterpriselogin/).
 
 Otherwise, bugs and feature requests can be made by [filing a GitHub Issue](issues/new).
 

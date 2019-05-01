@@ -3,7 +3,7 @@ Getting Started
 
 ## Requirements
 
-* A control system to run the install process (AKA: a provisioning node)
+* A pre-existing "provisioning" node which can be used to run Ansible and the install scripts
 * A cluster to deploy to (potentially a cluster of one server or a [virtual one](/virtual/README.md))
 
 ## Steps
