@@ -8,10 +8,5 @@
 
     - name: install nvidia-docker
       include_role:
-        name: nvidia-docker
-      when: ansible_local['gpus']['count'] and ansible_distribution == "Ubuntu"
-
-    - name: install nvidia-docker
-      include_role:
-        name: nvidia-docker
-      when: ansible_local['gpus']['count'] and ansible_os_family == "RedHat"
+        name: nvidia.nvidia_docker
+      when: ansible_local['gpus']['count'] and (ansible_distribution == "Ubuntu" or ansible_os_family == "RedHat")
