@@ -3,6 +3,7 @@ offline_cache_dir: "/tmp/deepops"
 build_tar_file: true
 tar_file_path: "/tmp/deepops-archive.tar"
 extract_path: "/tmp/deepops-extracted"
+tar_file_copy: "no"
 
 # Destination for files on repo mirror machine
 deepops_dest_path: "/opt/deepops"

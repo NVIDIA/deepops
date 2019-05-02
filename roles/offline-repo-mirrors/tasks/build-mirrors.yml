@@ -33,6 +33,7 @@
   unarchive:
     src: "{{ tar_file_path }}"
     dest: "{{ extract_path }}"
+    copy: "{{ tar_file_copy }}"
   tags:
   - extract_archive
 
