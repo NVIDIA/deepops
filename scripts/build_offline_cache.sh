@@ -26,8 +26,8 @@ if ! which python36; then
     exit 1
 fi
 
-if ! which docker; then
-    echo "docker needed for Kubespray, please install"
+if ! docker ps; then
+    echo "docker must be installed and running for Kubespray, please install/verify"
     exit 1
 fi
 
