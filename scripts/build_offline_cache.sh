@@ -21,6 +21,21 @@ if ! which ruby; then
     exit 1
 fi
 
+if ! which python36; then
+    echo "python36 needed for Kubespray, please install"
+    exit 1
+fi
+
+if ! docker ps; then
+    echo "docker must be installed and running for Kubespray, please install/verify"
+    exit 1
+fi
+
+if ! ls config; then
+    echo "It looks like you have not run scripts/setup.sh, please see the README and run setup."
+    exit 1
+fi
+
 get_all_helm_tgzs() {
     local repo_url="$1"
     rm -f index.yaml
