@@ -86,7 +86,7 @@ nvidia_k8s_device_plugin_url: "https://raw.githubusercontent.com/NVIDIA/k8s-devi
 nvidia_docker_wrapper_url: "https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/nvidia-docker"
 
 # Configure download of docker images
-docker_http_timeout: 120
+docker_http_timeout: 180
 docker_image_list:
 - name: "ceph"
   repo: ""
