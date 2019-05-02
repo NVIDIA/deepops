@@ -1,7 +1,0 @@
----
-
-- name: reload docker service
-  service:
-    name: docker
-    state: reloaded
-  when: install_packages.changed or daemon_json.changed
