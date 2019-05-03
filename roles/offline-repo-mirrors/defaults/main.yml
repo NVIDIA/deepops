@@ -304,6 +304,11 @@ docker_image_list:
   image: "pypiserver/pypiserver"
   version: "latest"
 
+- name: "cuda"
+  repo: "nvcr.io/"
+  image: "nvidia/cuda"
+  version: "9.2-base-centos7"
+
 # Specific images we need to reference later
 nginx_image: "{{ docker_image_list | selectattr('name', 'equalto', 'nginx') | list | first }}"
 docker_registry_image: "{{ docker_image_list | selectattr('name', 'equalto', 'registry') | list | first }}"
