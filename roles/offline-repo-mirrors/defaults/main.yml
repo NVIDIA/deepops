@@ -274,6 +274,11 @@ docker_image_list:
   image: "prometheus/prometheus"
   version: "v2.2.1"
 
+- name: "local-volume-provisioner"
+  repo: "quay.io/"
+  image: "external_storage/local-volume-provisioner"
+  version: "v2.1.0"
+
 - name: "ceph"
   repo: ""
   image: "rook/ceph"
