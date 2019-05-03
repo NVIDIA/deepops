@@ -147,6 +147,19 @@ Next, shutdown the virtual cluster (if it is running) and startup vagrant + run 
 ./cluster_up.sh
 ```
 
+## Other Customization
+
+The default Vagrantfiles create VMs that are very minimal in terms of resources to maximize where a virtual DeepOps cluster can be run. To run resource-intensive Kubernetes applications such as Kubeflow, it's necessary to increase some of the settings.
+
+In the Vagrantfile of choice (Vagrantfile-<os_type>), make the following modifications...
+
+1. Increase the memory and cpus for the `virtual-mgmt` VM. Suggested - v.memory = 16384, v.cpus = 8.
+2. Comment out the `virtual-login` VM. Unless you are running slurm, this is not necessary and just takes up resources.
+3. Increase the cpus for the `virtual-gpu01` VM. Suggested - v.cpus = 8.
+4. If more GPUs are available, pass all of them through using the instructions in the section above.
+
+NOTE: The amount of CPUs and memory on the host system will vary. Change the amounts above accordingly to values that make sense.
+
 # Enabling virtualization and GPU passthrough
 
 On many machines, virtualization and GPU passthrough are not enabled by default. Follow these directions so that a virtual DeepOps cluster can start on your host machine with GPU access on the VMs.
