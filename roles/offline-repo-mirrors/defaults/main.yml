@@ -338,6 +338,7 @@ pip_package_list:
 - name: "openshift"
 - name: "pip"
 - name: "setuptools"
+- name: "Jinja2"
 
 pip_port: 8003
 pip_src_path: "{{ extract_path }}/pip"
