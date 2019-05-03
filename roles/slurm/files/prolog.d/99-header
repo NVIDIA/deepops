@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-set -e
-
-logger -s -t slurm-prolog "START user=$SLURM_JOB_USER job=$SLURM_JOB_ID"
