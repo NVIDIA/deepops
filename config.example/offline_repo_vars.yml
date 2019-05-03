@@ -108,6 +108,7 @@ helm_image_repo: "{{ deepops_docker_mirror }}/lachlanevenson/k8s-helm"
 nginx_image_repo: "{{ deepops_docker_mirror }}/nginx"
 pod_infra_image_repo: "{{ deepops_docker_mirror }}/google_containers/pause-amd64"
 tiller_image_repo: "{{ deepops_docker_mirror }}/kubernetes-helm/tiller"
+local_volume_provisioner_image_repo: "{{ deepops_docker_mirror }}/external_storage/local-volume-provisioner"
 
 docker_insecure_registries:
 - "{{ deepops_docker_mirror }}"
