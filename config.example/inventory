@@ -64,6 +64,12 @@ slurm-node
 #slurm-node
 
 ######
+# OFFLINE CACHE BUILDER
+######
+[cache_builder]
+localhost	ansible_connection=local
+
+######
 # SSH connection configuration
 ######
 [all:vars]

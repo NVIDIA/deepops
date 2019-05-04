@@ -1,0 +1,55 @@
+---
+# Download and archive a list of DeepOps dependencies. 
+# WIP: dependency list is probably incomplete, currently supports CentOS only
+
+# We don't install docker directly in this playbook because it's likely
+# to be run on an admin's laptop or some other non-DeepOps host, and there
+# are many ways to install Docker that a user may otherwise prefer on their
+# own system. So let's just make sure it's present.
+- hosts: cache_builder
+  become: no
+  tasks:
+  - name: check for docker
+    command: which docker
+    tags:
+    - skip_ansible_lint
+
+# Install prerequisite tools
+- hosts: cache_builder
+  become: yes
+  tasks:
+  - name: install necessary system packages
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - "git"
+    - "yum-utils"
+    - "python-pip"
+    - "bzip2"
+  - name: install python gpg integration (Ubuntu)
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - "libgpgme-dev"
+    - "python-gpg"
+    when: ansible_distribution == "Ubuntu"
+  - name: install python gpg integration (Ubuntu)
+    pip:
+      name: "pygpgme"
+    when: ansible_distribution == "Ubuntu"
+  - name: install necessary pip modules for docker
+    pip:
+      name: "{{ item }}"
+    with_items:
+    - "docker-py"
+
+# Download everything
+- hosts: cache_builder
+  become: no
+  tasks:
+  - name: build an online cache
+    include_role:
+      name: offline-repo-mirrors
+      tasks_from: build-cache

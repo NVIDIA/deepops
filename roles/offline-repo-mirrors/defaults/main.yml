@@ -1,0 +1,346 @@
+---
+offline_cache_dir: "/tmp/deepops"
+build_tar_file: true
+tar_file_path: "/tmp/deepops-archive.tar"
+extract_path: "/tmp/deepops-extracted"
+tar_file_copy: "no"
+
+# Destination for files on repo mirror machine
+deepops_dest_path: "/opt/deepops"
+deepops_dest_owner: "root"
+deepops_dest_group: "root"
+
+# DeepOps repository
+deepops_repo_url: "https://github.com/NVIDIA/deepops"
+deepops_repo_dest_path: "{{ deepops_dest_path }}/deepops-repo"
+deepops_centos_slurm_url: "https://github.com/DeepOps/slurm/releases/download/docker-1.4/slurm-18.08.5_2_7-1.x86_64.rpm"
+
+# Flags for downloading content
+download_yum_repos: yes
+download_docker_images: yes
+download_helm_repos: yes
+download_deepops_repo: yes
+download_pip_packages: yes
+
+# Flags for building mirrors
+build_yum_mirror: yes
+build_docker_registry: yes
+upload_docker_images: yes
+build_helm_mirror: yes
+upload_helm_chats: yes
+build_pip_mirror: yes
+build_misc_mirror: yes
+
+
+# Configure download of yum repos
+centos_iso_mirror: "http://mirrors.ocf.berkeley.edu/centos/7.6.1810/isos/x86_64"
+centos_iso: "CentOS-7-x86_64-Minimal-1810.iso"
+# Default to syncing only NVIDIA repos
+yum_repos_to_sync:
+- "libnvidia-container"
+- "nvidia-container-runtime"
+- "nvidia-docker"
+- "nvidia-ml"
+- "cuda"
+- "base"
+- "updates"
+- "extras"
+#- "centosplus"
+- "docker-ce-stable"
+- "docker-engine"
+- "epel"
+
+yum_repo_gpg_keys:
+- name: "epel"
+  url: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-7"
+- name: "libnvidia-container"
+  url: "https://nvidia.github.io/libnvidia-container/gpgkey"
+- name: "nvidia-container-runtime"
+  url: "https://nvidia.github.io/nvidia-container-runtime/gpgkey"
+- name: "nvidia-docker"
+  url: "https://nvidia.github.io/nvidia-docker/gpgkey"
+- name: "nvidia-ml"
+  url: "https://developer.download.nvidia.com/compute/machine-learning/repos/rhel7/x86_64/7fa2af80.pub"
+- name: "cuda"
+  url: "https://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/7fa2af80.pub"
+- name: "docker-ce-stable"
+  url: "https://download.docker.com/linux/centos/gpg"
+- name: "docker-engine"
+  url: "https://yum.dockerproject.org/gpg"
+
+# Configure creation of local yum repos
+deepops_yum_dest_path: "{{ deepops_dest_path }}/yum"
+yum_mirror_port: 8001
+yum_dest_base_url: "http://{{ ansible_default_ipv4.address }}:{{ yum_mirror_port }}"
+
+# Configure download of helm charts
+helm_download_url: "https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz"
+helm_chart_git_repos:
+  base: "https://github.com/helm/charts"
+rook_helm_chart_url: "https://charts.rook.io/master/rook-ceph-v0.9.0-79.g1a1ffdd.tgz"
+
+# Misc download urls
+docker_compose_url: "https://github.com/docker/compose/releases/download/1.23.2/docker-compose-Linux-x86_64"
+ksonnet_url: "https://github.com/ksonnet/ksonnet/releases/download/v0.13.1/ks_0.13.1_linux_amd64.tar.gz"
+kubectl_url: "https://storage.googleapis.com/kubernetes-release/release/v1.14.1/bin/linux/amd64/kubectl"
+nvidia_k8s_device_plugin_url: "https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v1.12/nvidia-device-plugin.yml"
+nvidia_docker_wrapper_url: "https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/nvidia-docker"
+
+# Configure download of docker images
+docker_http_timeout: 180
+docker_image_list:
+- name: "ceph"
+  repo: ""
+  image: "ceph/ceph"
+  version: "v13.2.2-20181023"
+
+- name: "coredns"
+  repo: ""
+  image: "coredns/coredns"
+  version: "1.2.6"
+
+- name: "addon-resizer-amd64"
+  repo: "gcr.io/"
+  image: "google-containers/addon-resizer-amd64"
+  version: "2.1"
+
+- name: "coredns"
+  repo: "gcr.io/"
+  image: "google-containers/coredns"
+  version: "1.2.2"
+
+- name: "kube-apiserver"
+  repo: "gcr.io/"
+  image: "google-containers/kube-apiserver"
+  version: "v1.12.5"
+
+- name: "kube-controller-manager"
+  repo: "gcr.io/"
+  image: "google-containers/kube-controller-manager"
+  version: "v1.12.5"
+
+- name: "kube-proxy"
+  repo: "gcr.io/"
+  image: "google-containers/kube-proxy"
+  version: "v1.12.5"
+
+- name: "kube-scheduler"
+  repo: "gcr.io/"
+  image: "google-containers/kube-scheduler"
+  version: "v1.12.5"
+
+- name: "pause"
+  repo: "gcr.io/"
+  image: "google-containers/pause"
+  version: "3.1"
+
+- name: "cluster-proportional-autoscaler-amd64"
+  repo: "gcr.io/"
+  image: "google_containers/cluster-proportional-autoscaler-amd64"
+  version: "1.3.0"
+
+- name: "kube-state-metrics"
+  repo: "gcr.io/"
+  image: "google_containers/kube-state-metrics"
+  version: "v1.2.0"
+
+- name: "kubernetes-dashboard-amd64"
+  repo: "gcr.io/"
+  image: "google_containers/kubernetes-dashboard-amd64"
+  version: "v1.10.0"
+
+- name: "pause-amd64"
+  repo: "gcr.io/"
+  image: "google_containers/pause-amd64"
+  version: "3.1"
+
+- name: "tiller"
+  repo: "gcr.io/"
+  image: "kubernetes-helm/tiller"
+  version: "v2.11.0"
+
+- name: "grafana"
+  repo: ""
+  image: "grafana/grafana"
+  version: "5.0.0"
+
+- name: "defaultbackend"
+  repo: "k8s.gcr.io/"
+  image: "defaultbackend"
+  version: "1.4"
+
+- name: "k8s-helm"
+  repo: ""
+  image: "lachlanevenson/k8s-helm"
+  version: "v2.11.0"
+
+- name: "controller"
+  repo: ""
+  image: "metallb/controller"
+  version: "v0.7.3"
+
+- name: "speaker"
+  repo: ""
+  image: "metallb/speaker"
+  version: "v0.7.3"
+
+- name: "nginx"
+  repo: ""
+  image: "nginx"
+  version: "1.13"
+
+- name: "dcgm-exporter"
+  repo: "nvcr.io/"
+  image: "nvidia/k8s/dcgm-exporter"
+  version: "1.4.3"
+
+- name: "k8s-device-plugin"
+  repo: ""
+  image: "nvidia/k8s-device-plugin"
+  version: "1.11"
+
+- name: "cni"
+  repo: "quay.io/"
+  image: "calico/cni"
+  version: "v3.1.3"
+
+- name: "ctl"
+  repo: "quay.io/"
+  image: "calico/ctl"
+  version: "v3.1.3"
+
+- name: "kube-controllers"
+  repo: "quay.io/"
+  image: "calico/kube-controllers"
+  version: "v3.1.3"
+
+- name: "node"
+  repo: "quay.io/"
+  image: "calico/node"
+  version: "v3.1.3"
+
+- name: "configmap-reload"
+  repo: "quay.io/"
+  image: "coreos/configmap-reload"
+  version: "v0.0.1"
+
+- name: "etcd"
+  repo: "quay.io/"
+  image: "coreos/etcd"
+  version: "v3.2.24"
+
+- name: "grafana-watcher"
+  repo: "quay.io/"
+  image: "coreos/grafana-watcher"
+  version: "v0.0.8"
+
+- name: "hyperkube"
+  repo: "quay.io/"
+  image: "coreos/hyperkube"
+  version: "v1.7.6_coreos.0"
+
+- name: "prometheus-config-reloader"
+  repo: "quay.io/"
+  image: "coreos/prometheus-config-reloader"
+  version: "v0.20.0"
+
+- name: "prometheus-operator"
+  repo: "quay.io/"
+  image: "coreos/prometheus-operator"
+  version: "v0.20.0"
+
+- name: "nginx-ingress-controller"
+  repo: "quay.io/"
+  image: "kubernetes-ingress-controller/nginx-ingress-controller"
+  version: "0.23.0"
+
+- name: "alertmanager"
+  repo: "quay.io/"
+  image: "prometheus/alertmanager"
+  version: "v0.15.1"
+
+- name: "node-exporter"
+  repo: "quay.io/"
+  image: "prometheus/node-exporter"
+  version: "v0.15.2"
+
+- name: "node-exporter"
+  repo: "quay.io/"
+  image: "prometheus/node-exporter"
+  version: "v0.16.0"
+
+- name: "prometheus"
+  repo: "quay.io/"
+  image: "prometheus/prometheus"
+  version: "v2.2.1"
+
+- name: "ceph"
+  repo: ""
+  image: "rook/ceph"
+  version: "master"
+
+- name: "ceph"
+  repo: ""
+  image: "rook/ceph"
+  version: "v0.9.0-79.g1a1ffdd"
+
+- name: "registry"
+  repo: ""
+  image: "registry"
+  version: "latest"
+
+- name: "chartmuseum"
+  repo: ""
+  image: "chartmuseum/chartmuseum"
+  version: "latest"
+
+- name: "pypiserver"
+  repo: ""
+  image: "pypiserver/pypiserver"
+  version: "latest"
+
+# Specific images we need to reference later
+nginx_image: "{{ docker_image_list | selectattr('name', 'equalto', 'nginx') | list | first }}"
+docker_registry_image: "{{ docker_image_list | selectattr('name', 'equalto', 'registry') | list | first }}"
+helm_repo_image: "{{ docker_image_list | selectattr('name', 'equalto', 'chartmuseum') | list | first }}"
+pypi_image: "{{ docker_image_list | selectattr('name', 'equalto', 'pypiserver') | list | first }}"
+
+
+# Configure what docker registry to upload images to
+docker_dest_registry: "localhost:5000"
+docker_image_source: "{{ extract_path }}/docker-images"
+docker_daemon_json:
+  insecure-registries:
+  - "{{ docker_dest_registry }}"
+  registry-mirrors:
+  - "{{ docker_dest_registry }}"
+
+# Configure launching local docker registry
+docker_local_registry_name: "deepops-registry"
+
+
+# Configure Helm repo
+helm_src_path: "{{ extract_path }}/helm/mirror"
+helm_dest_path: "{{ deepops_dest_path }}/helm"
+helm_port: 8002
+helm_index_generator_name: "helm-chartmuseum-gen-index"
+
+
+# Configure download of required pip packages
+pip_package_list:
+- name: "pyhelm"
+- name: "grpcio"
+- name: "openshift"
+- name: "pip"
+- name: "setuptools"
+
+pip_port: 8003
+pip_src_path: "{{ extract_path }}/pip"
+pip_dest_path: "{{ deepops_dest_path }}/pip"
+
+
+# Configure serving kubespray files over http
+nginx_misc_name: "deepops-misc-files"
+nginx_misc_port: 8004
+nginx_misc_dest_path: "{{ deepops_dest_path }}/misc-files"
+nginx_misc_src_path: "{{ extract_path }}/misc-files"
