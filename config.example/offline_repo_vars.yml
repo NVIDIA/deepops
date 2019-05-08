@@ -52,6 +52,9 @@ nvdocker_repo_base_url: "{{ deepops_yum_mirror }}/nvidia-docker"
 nvdocker_rhel_repo_file_download_url: "{{ deepops_yum_mirror }}/nvidia-docker.repo"
 nvdocker_gpg_path: "{{ deepops_yum_mirror }}/gpgkeys/nvidia-docker.pub"
 
+nvidia_docker_repo_base_url: "{{ nvdocker_repo_base_url }}"
+nvidia_docker_repo_gpg_url: "{{ nvdocker_gpg_path }}"
+
 nvidia_driver_rhel_epel_repo_baseurl: "{{ epel_baseurl }}"
 nvidia_driver_rhel_epel_repo_gpgkey:  "{{ epel_gpgkey }}"
 nvidia_driver_rhel_cuda_repo_baseurl: "{{ rhel_cuda_baseurl }}"
