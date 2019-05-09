@@ -1,4 +1,21 @@
 ---
+- name: purge old slurm packages
+  apt:
+    name: slurm
+    state: absent
+    purge: yes
+    autoremove: yes
+
+- name: purge old slurm package config files
+  file:
+    path: "/etc/systemd/system/{{ item }}"
+    state: absent
+  with_items:
+    - slurmctld.service
+    - slurmd.service
+    - slurmdbd.service
+  notify: daemon reload
+
 - name: add key
   apt_key:
     keyserver: keyserver.ubuntu.com

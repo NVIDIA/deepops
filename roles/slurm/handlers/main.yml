@@ -1,4 +1,8 @@
 ---
+- name: daemon reload
+  service:
+    daemon_reload: true
+
 - name: restart munge
   service:
     name: munge
