@@ -56,6 +56,7 @@
     owner: slurm
     mode: 0755
   with_items:
+    - "{{ _slurm_config_dir }}"
     - /etc/slurm
     - /var/spool/slurm/ctld
     - /var/log/slurm
@@ -67,11 +68,12 @@
   with_items:
     - slurmdbd.service
     - slurmctld.service
+  when: ansible_distribution != 'Ubuntu'  # ubuntu packages have their own service files
 
 - name: copy configuration files
   template:
     src: "{{ item }}"
-    dest: "/etc/slurm/{{ item }}"
+    dest: "{{ _slurm_config_dir }}/{{ item }}"
   with_items:
     - slurm.conf
     - slurmdbd.conf

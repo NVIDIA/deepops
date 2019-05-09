@@ -1,0 +1,6 @@
+---
+# On Ubuntu, we use a patched version of the official packages for slurm.
+# On RHEL, we use a custom build from source, packaged with FPM.
+# Some of the paths are different.
+_slurm_config_dir: "{{ (ansible_distribution == 'Ubuntu') | ternary('/etc/slurm-llnl', '/etc/slurm') }}"
+_pam_slurm_lib: "{{ (ansible_distribution == 'Ubuntu') | ternary('/lib/security/pam_slurm.so', '/usr/lib/pam_slurm.so') }}"

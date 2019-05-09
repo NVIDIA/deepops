@@ -10,25 +10,8 @@
 
 - include: munge.yml
 
-- name: install slurm (xenial)
-  when: ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] == '16'
-  apt:
-    deb: "{{ slurm_xenial_deb_url }}" 
-  notify:
-    - restart slurmd
-    - restart slurmdbd
-    - restart slurmctld
-  register: install_slurm_xenial
-
-- name: install slurm (bionic)
-  when: (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] == '18')
-  apt:
-    deb: "{{ slurm_bionic_deb_url }}"
-  notify:
-    - restart slurmd
-    - restart slurmdbd
-    - restart slurmctld
-  register: install_slurm_bionic
+- include: install-ubuntu.yml
+  when: ansible_distribution == 'Ubuntu'
 
 - name: install slurm (RHEL/CentOS)
   yum:
@@ -37,12 +20,6 @@
   with_items:
     - slurm-18.08.5_2_7-1.x86_64.rpm
   when: ansible_os_family == "RedHat"
-  register: install_slurm_rhel
-
-- name: Check for supported OS
-  fail:
-    msg: OS not supported for slurm packaging
-  when: (install_slurm_xenial|skipped) and (install_slurm_bionic|skipped) and (install_slurm_rhel|skipped)
 
 - name: create slurm user home
   file:

@@ -16,6 +16,15 @@
     line: 'GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX} cgroup_enable=memory swapaccount=1"'
   register: update_grub
 
+- name: configure slurmd for pmix
+  blockinfile:
+    path: /etc/default/slurmd
+    block: |
+      PMIX_MCA_ptl=^usock
+      PMIX_MCA_psec=none
+      PMIX_MCA_gds=hash
+      PMIX_SYSTEM_TMPDIR=/var/empty
+
 - name: update grub
   block:
     - name: update grub
@@ -39,6 +48,7 @@
     owner: slurm
     mode: 0755
   with_items:
+    - "{{ _slurm_config_dir }}"
     - /etc/slurm
     - /etc/slurm/shared
     - /etc/slurm/shared/bin
@@ -54,6 +64,7 @@
     dest: "/etc/systemd/system/{{ item }}"
   with_items:
     - slurmd.service
+  when: ansible_distribution != 'Ubuntu'  # ubuntu packages have their own service files
 
 - name: copy shared scripts
   copy:
@@ -73,7 +84,7 @@
 - name: copy configuration files
   template:
     src: "{{ item }}"
-    dest: "/etc/slurm/{{ item }}"
+    dest: "{{ _slurm_config_dir }}/{{ item }}"
   with_items:
     - slurm.conf
     - cgroup.conf
@@ -111,9 +122,9 @@
     - test
 
 - name: update /etc/pam.d/sshd
-  lineinfile:
+  blockinfile:
     path: /etc/pam.d/sshd
-    line: "account sufficient /usr/lib/pam_slurm.so"
+    block: "account sufficient {{ _pam_slurm_lib }}"
     insertafter: "PAM configuration for the Secure Shell service"
     state: present
   tags:
