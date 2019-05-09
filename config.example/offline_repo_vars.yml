@@ -63,6 +63,7 @@ nvidia_driver_rhel_cuda_repo_gpgkey:  "{{ rhel_cuda_gpgkey }}"
 
 # Configure Galaxy roles to skip adding additional repos
 nvidia_docker_add_repo: false
+docker_add_repo: false
 
 # Convenience format for initial config
 yum_base_repos:
