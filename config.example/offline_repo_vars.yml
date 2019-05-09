@@ -55,10 +55,14 @@ nvdocker_gpg_path: "{{ deepops_yum_mirror }}/gpgkeys/nvidia-docker.pub"
 nvidia_docker_repo_base_url: "{{ nvdocker_repo_base_url }}"
 nvidia_docker_repo_gpg_url: "{{ nvdocker_gpg_path }}"
 
+# NVIDIA driver galaxy role variables
 nvidia_driver_rhel_epel_repo_baseurl: "{{ epel_baseurl }}"
 nvidia_driver_rhel_epel_repo_gpgkey:  "{{ epel_gpgkey }}"
 nvidia_driver_rhel_cuda_repo_baseurl: "{{ rhel_cuda_baseurl }}"
 nvidia_driver_rhel_cuda_repo_gpgkey:  "{{ rhel_cuda_gpgkey }}"
+
+# Configure Galaxy roles to skip adding additional repos
+nvidia_docker_add_repo: false
 
 # Convenience format for initial config
 yum_base_repos:
@@ -78,6 +82,8 @@ yum_base_repos:
   url: "{{ nvcontainer_runtime_baseurl }}"
 - name: "libnvidia-container"
   url: "{{ libnv_container_baseurl }}"
+- name: "nvidia-docker"
+  url: "{{ nvdocker_repo_base_url }}"
 
 # Slurm download directory
 slurm_pkg_url: "{{ deepops_misc_mirror }}"
