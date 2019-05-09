@@ -4,7 +4,7 @@ export KS_VER=0.13.1
 export KS_PKG=ks_${KS_VER}_linux_amd64
 export KS_INSTALL_DIR=/usr/local/bin
 
-export KUBEFLOW_TAG=v0.4.1
+export KUBEFLOW_TAG=v0.5.0
 export KFAPP=kubeflow
 export KUBEFLOW_SRC=/opt/kubeflow
 
@@ -60,22 +60,46 @@ if [ ! -d ${KUBEFLOW_SRC} ] ; then
     sudo mv ${tempd} ${KUBEFLOW_SRC}
 fi
 
+# Get master ip
+master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
+
+# Check for ingress controller
+ingress_name="nginx-ingress"
+ingress_ip_string="$(echo ${master_ip} | tr '.' '-')"
+if kubectl describe service -l "app=${ingress_name},component=controller" | grep 'LoadBalancer Ingress' >/dev/null 2>&1; then
+    lb_ip="$(kubectl describe service -l "app=${ingress_name},component=controller" | grep 'LoadBalancer Ingress' | awk '{print $3}')"
+    ingress_ip_string="$(echo ${lb_ip} | tr '.' '-').nip.io"
+    echo "Using load balancer url: ${ingress_ip_string}"
+fi
+
+# Initialize and generate kubeflow
 pushd ${HOME}
 ${KUBEFLOW_SRC}/scripts/kfctl.sh init ${KFAPP} --platform none
 cd ${KFAPP}
 ${KUBEFLOW_SRC}/scripts/kfctl.sh generate k8s
 pushd ks_app
-ks param set jupyter serviceType NodePort
-popd
-${KUBEFLOW_SRC}/scripts/kfctl.sh apply k8s
-popd
 
-jhip=$(kubectl get nodes --no-headers -o custom-columns=:.status.addresses.*.address -l node-role.kubernetes.io/master= | cut -f1 -d, | head -1)
-jhnp=$(kubectl -n kubeflow get svc jupyter-lb --no-headers -o custom-columns=:.spec.ports.*.nodePort)
+# Use NodePort directly if the IP string uses the master IP, otherwise use Ingress URL
+if echo "${ingress_ip_string}" | grep "${master_ip}" >/dev/null 2>&1; then
+    ks param set ambassador ambassadorServiceType NodePort
+    popd
+    ${KUBEFLOW_SRC}/scripts/kfctl.sh apply k8s
+    popd
+    kf_ip=$master_ip
+    kf_port=$(kubectl -n kubeflow get svc ambassador --no-headers -o custom-columns=:.spec.ports.*.nodePort)
+    kf_url="http://${kf_ip}:${kf_port}"
+else
+    ks param set ambassador ambassadorServiceType LoadBalancer
+    popd
+    ${KUBEFLOW_SRC}/scripts/kfctl.sh apply k8s
+    popd
+    kf_ip=$(kubectl -n kubeflow get svc ambassador --no-headers -o custom-columns=:.status.loadBalancer.ingress[0].ip)
+    kf_url="http://${kf_ip}"
+fi
 
 echo
 echo "Kubeflow app installed to: ${HOME}/${KFAPP}"
 echo "To remove, run: cd ${HOME}/${KFAPP} && ${KUBEFLOW_SRC}/scripts/kfctl.sh delete k8s"
 echo
-echo "JupyterHub: http://${jhip}:${jhnp}"
+echo "Kubeflow Dashboard: ${kf_url}"
 echo
