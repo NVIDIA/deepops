@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 
 gpu_count="$(nvidia-smi -L | wc -l)"

@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 set -ex
 
-if commmand -v docker >/dev/null 2>&1 ; then
-    exit 0  # docker not installed
-fi
+command -v docker || exit 0  # docker not installed
 
 for id in $(docker ps -aq)
 do

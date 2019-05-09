@@ -13,6 +13,29 @@
     - kernel-tools # for cpupower, used in prolog+epilog
   when: ansible_os_family == "RedHat"
 
+- name: delete old prolog files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /etc/slurm/prolog.d
+    - /etc/slurm/prolog-parts.d
+    - /etc/slurm/prolog-exclusive.d
+  tags: prolog
+  when: slurm_clear_old_prolog_epilog
+
+- name: delete old epilog files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /etc/slurm/epilog.d
+    - /etc/slurm/epilog-parts.d
+    - /etc/slurm/epilog-exclusive.d
+    - /etc/slurm/epilog-last-user.d
+  tags: epilog
+  when: slurm_clear_old_prolog_epilog
+
 - name: create prolog directories
   file:
     path: "{{ item }}"
@@ -22,7 +45,7 @@
     mode: 0755
   with_items:
     - /etc/slurm/prolog.d/
-    - /etc/slurm/prolog-exclusive.d/
+    - /etc/slurm/prolog-parts.d/
   tags:
     - prolog
 
@@ -35,8 +58,7 @@
     mode: 0755
   with_items:
     - /etc/slurm/epilog.d/
-    - /etc/slurm/epilog-exclusive.d/
-    - /etc/slurm/epilog-last-user.d/
+    - /etc/slurm/epilog-parts.d/
   tags:
     - epilog
 
@@ -55,12 +77,12 @@
 - name: copy prologs
   copy:
     src: "{{ item }}"
-    dest: /etc/slurm/prolog-exclusive.d/
+    dest: /etc/slurm/prolog-parts.d/
     owner: slurm
     group: slurm
     mode: 0755
   with_fileglob:
-    - prolog-exclusive.d/*
+    - prolog-parts.d/*
   tags:
     - prolog
 
@@ -79,24 +101,11 @@
 - name: copy epilogs
   copy:
     src: "{{ item }}"
-    dest: /etc/slurm/epilog-exclusive.d/
+    dest: /etc/slurm/epilog-parts.d/
     owner: slurm
     group: slurm
     mode: 0755
   with_fileglob:
-    - epilog-exclusive.d/*
+    - epilog-parts.d/*
   tags:
     - epilog
-
-- name: copy epilogs
-  copy:
-    src: "{{ item }}"
-    dest: /etc/slurm/epilog-last-user.d/
-    owner: slurm
-    group: slurm
-    mode: 0755
-  with_fileglob:
-    - epilog-last-user.d/*
-  tags:
-    - epilog
-
