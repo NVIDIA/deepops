@@ -6,8 +6,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
 
 # Install Software
-case "$ID_LIKE" in
-    rhel*)
+case "$ID" in
+    rhel*|centos*)
         # Install Ansible
         type ansible >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
@@ -57,7 +57,7 @@ case "$ID_LIKE" in
         fi
         wget --version
         ;;
-    debian*)
+    ubuntu*)
         # Update apt cache
         echo "Updating apt cache..."
         sudo apt-get update >/dev/null
