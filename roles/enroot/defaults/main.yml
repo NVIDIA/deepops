@@ -1,0 +1,4 @@
+---
+enroot_package_version: ''
+enroot_package_state: present
+enroot_caps_package_state: present
