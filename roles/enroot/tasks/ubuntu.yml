@@ -1,12 +1,7 @@
 ---
-- name: add key for ppa
-  apt_key:
-    keyserver: keyserver.ubuntu.com
-    id: C1F8C45E6399D9A94E55ECE17883B3001AB80A5C
-
-- name: add repo ppa:luke-yeager/enroot
+- name: add repo ppa:nvidia-deepops/enroot
   apt_repository:
-    repo: ppa:luke-yeager/enroot
+    repo: ppa:nvidia-deepops/enroot
 
 - name: enroot state={{ enroot_package_state }}
   apt:
