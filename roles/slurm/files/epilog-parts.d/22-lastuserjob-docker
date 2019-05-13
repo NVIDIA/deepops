@@ -3,4 +3,4 @@ set -ex
 
 getent group docker || exit 0  # docker not installed
 
-gpasswd -d "$SLURM_JOB_USER" docker
+gpasswd -d "$SLURM_JOB_USER" docker || true
