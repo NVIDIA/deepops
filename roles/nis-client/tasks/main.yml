@@ -70,3 +70,25 @@
   file:
     path: /usr/sbin/policy-rc.d
     state: absent
+
+#
+# ncsd
+#
+
+- name: nscd service use_nscd={{ nis_client_use_nscd }}
+  service: name=nscd state=stopped
+  failed_when: False
+  when: not nis_client_use_nscd
+  tags: nscd
+
+- name: nscd packages use_nscd={{ nis_client_use_nscd }}
+  apt:
+    name: nscd
+    state: "{{ nis_client_use_nscd | ternary('present', 'absent') }}"
+    purge: "{{ not nis_client_use_nscd }}"
+  tags: nscd
+
+- name: nscd service use_nscd={{ nis_client_use_nscd }}
+  service: name=nscd state=started enabled=yes
+  when: nis_client_use_nscd
+  tags: nscd
