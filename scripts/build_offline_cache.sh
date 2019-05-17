@@ -39,13 +39,13 @@ fi
 get_all_helm_tgzs() {
     local repo_url="$1"
     rm -f index.yaml
-    wget $repo_url/index.yaml
+    wget "$repo_url/index.yaml"
     tgzs="$(ruby -ryaml -e \
         "YAML.load_file('index.yaml')['entries'].each do |k,e|;for c in e;puts c['urls'][0];end;end")"
     pushd mirror/
     for tgz in $tgzs; do
         if [ ! -f "${tgz##*/}" ]; then
-            wget $tgz >/dev/null 2>&1 || echo "Couldn't download ${tgz}, skipping..."
+            wget "$tgz" >/dev/null 2>&1 || echo "Couldn't download ${tgz}, skipping..."
         fi
     done
     popd
@@ -92,7 +92,6 @@ ansible-playbook -b \
 echo "Downloading other DeepOps dependencies"
 cd "${ROOT_DIR}" || exit 1
 ansible-playbook \
-	-i "${DEEPOPS_CONFIG_DIR}/inventory" \
 	-e offline_cache_dir="${DEST_DIR}" \
 	playbooks/build-offline-cache.yml
 
