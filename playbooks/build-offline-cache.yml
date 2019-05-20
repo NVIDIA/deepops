@@ -6,7 +6,8 @@
 # to be run on an admin's laptop or some other non-DeepOps host, and there
 # are many ways to install Docker that a user may otherwise prefer on their
 # own system. So let's just make sure it's present.
-- hosts: cache_builder
+- hosts: 127.0.0.1
+  connection: local
   become: no
   tasks:
   - name: check for docker
@@ -15,7 +16,8 @@
     - skip_ansible_lint
 
 # Install prerequisite tools
-- hosts: cache_builder
+- hosts: 127.0.0.1
+  connection: local
   become: yes
   tasks:
   - name: install necessary system packages
@@ -46,7 +48,8 @@
     - "docker-py"
 
 # Download everything
-- hosts: cache_builder
+- hosts: 127.0.0.1
+  connection: local
   become: no
   tasks:
   - name: build an online cache
