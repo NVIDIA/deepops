@@ -1,4 +1,3 @@
-prometheus_port: 9090
 prometheus_config_dir: /etc/prometheus
 prometheus_container: "prom/prometheus"
 prometheus_svc_name: "docker.prometheus.service"
