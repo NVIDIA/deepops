@@ -1,0 +1,13 @@
+---
+- include: docker.yml
+
+- hosts: all
+  become: yes
+  tasks:
+    - name: install custom facts module
+      include_role:
+        name: facts
+    - name: configure node exporter
+      include_role:
+        name: prometheus-node-exporter
+      when: ansible_local['gpus']['count'] and (ansible_distribution == "Ubuntu" or ansible_os_family == "RedHat")

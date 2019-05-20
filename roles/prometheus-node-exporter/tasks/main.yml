@@ -1,0 +1,16 @@
+---
+- name: install systemd unit file
+  template:
+    src: templates/docker.node-exporter.service.j2
+    dest: "/etc/systemd/system/{{ node_exporter_svc_name }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: configure service
+  systemd:
+    name: "{{ node_exporter_svc_name }}"
+    state: "{{ node_exporter_state }}"
+    enabled: "{{ node_exporter_enabled }}"
+    daemon_reload: yes
+  notify: restart node-exporter

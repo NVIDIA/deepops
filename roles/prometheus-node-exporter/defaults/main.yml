@@ -1,0 +1,7 @@
+node_exporter_container: "quay.io/prometheus/node-exporter"
+node_exporter_prom_dir: "/run/prometheus"
+node_exporter_svc_name: "docker.node-exporter.service"
+node_exporter_state: started
+node_exporter_enabled: yes
+
+nvidia_dcgm_svc_name: "docker.dcgm-exporter.service"
