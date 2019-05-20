@@ -1,0 +1,3 @@
+nvidia_dcgm_container: "nvidia/dcgm-exporter"
+nvidia_dcgm_prom_dir: "/run/prometheus"
+nvidia_dcgm_svc_name: "docker.dcgm-exporter.service"
