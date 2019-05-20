@@ -2,8 +2,6 @@
 Description=Prometheus Node Exporter
 After=docker.service
 Requires=docker.service
-#After={{ nvidia_dcgm_svc_name }}
-#Requires={{ nvidia_dcgm_svc_name }}
 
 [Service]
 TimeoutStartSec=0
@@ -11,7 +9,6 @@ Restart=always
 ExecStartPre=-/usr/bin/docker stop %n
 ExecStartPre=-/usr/bin/docker rm %n
 ExecStartPre=/usr/bin/docker pull {{ node_exporter_container }}
-#ExecStart=/usr/bin/docker run --rm --net="host" --pid="host" --volumes-from={{ nvidia_dcgm_svc_name }}:ro --name %n -v {{ node_exporter_prom_dir }}:/run/prometheus {{ node_exporter_container }} --collector.textfile.directory="{{ node_exporter_prom_dir }}
 ExecStart=/usr/bin/docker run --rm --net="host" --pid="host" --name %n -v {{ node_exporter_prom_dir }}:/run/prometheus {{ node_exporter_container }} --collector.textfile.directory="{{ node_exporter_prom_dir }}"
 
 [Install]
