@@ -1,7 +1,7 @@
 ---
 - include: docker.yml
 
-- hosts: slurm-master
+- hosts: all
   become: yes
   tasks:
     - name: configure prometheus
