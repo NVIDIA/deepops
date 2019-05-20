@@ -1,5 +1,7 @@
 ---
 - include: docker.yml
+- include: nvidia-driver.yml
+- include: nvidia-docker.yml
 
 - hosts: all
   become: yes
