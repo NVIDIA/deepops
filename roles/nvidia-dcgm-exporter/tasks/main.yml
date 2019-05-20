@@ -10,7 +10,7 @@
 - name: configure service
   systemd:
     name: "{{ nvidia_dcgm_svc_name }}"
-    state: started
-    enabled: yes
+    state: "{{ nvidia_dcgm_state }}"
+    enabled: "{{ nvidia_dcgm_enabled }}"
     daemon_reload: yes
   notify: restart dcgm

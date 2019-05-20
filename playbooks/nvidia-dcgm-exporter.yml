@@ -7,7 +7,7 @@
     - name: install custom facts module
       include_role:
         name: facts
-    - name: install dcgm
+    - name: configure dcgm exporter
       include_role:
         name: nvidia-dcgm-exporter
       when: ansible_local['gpus']['count'] and (ansible_distribution == "Ubuntu" or ansible_os_family == "RedHat")
