@@ -1,0 +1,9 @@
+---
+- include: docker.yml
+
+- hosts: slurm-master
+  become: yes
+  tasks:
+    - name: configure prometheus
+      include_role:
+        name: prometheus
