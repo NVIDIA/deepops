@@ -1,0 +1,17 @@
+---
+- name: install systemd unit file
+  template:
+    src: templates/docker.slurm-exporter.service.j2
+    dest: "/etc/systemd/system/{{ slurm_exporter_svc_name }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart slurm-exporter
+
+- name: configure service
+  systemd:
+    name: "{{ slurm_exporter_svc_name }}"
+    state: "{{ slurm_exporter_state }}"
+    enabled: "{{ slurm_exporter_enabled }}"
+    daemon_reload: yes
+  notify: restart slurm-exporter

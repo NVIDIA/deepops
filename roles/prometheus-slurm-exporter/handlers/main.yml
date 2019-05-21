@@ -1,0 +1,5 @@
+---
+- name: restart slurm-exporter
+  service:
+    name: "{{ slurm_exporter_svc_name }}"
+    state: restarted
