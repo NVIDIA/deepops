@@ -10,6 +10,7 @@ The DeepOps project encapsulates best practices in the deployment of GPU server 
 * An on-prem, air-gapped data center of NVIDIA DGX servers where DeepOps provides end-to-end capabilities to set up the entire cluster management stack
 * An existing cluster running Kubernetes where DeepOps scripts are used to deploy Kubeflow and connect NFS storage
 * An existing cluster that needs a resource manager / batch scheduler, where DeepOps is used to install Slurm, Kubernetes, or a hybrid of both
+* A single machine where no scheduler is desired, only NVIDIA drivers, Docker, and the NVIDIA Container Runtime
 
 ## Releases
 
