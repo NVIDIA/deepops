@@ -2,13 +2,10 @@ global:
   scrape_interval: {{ prometheus_cfg_scrape_interval }}
 
 scrape_configs:
-  - job_name: 'load endpoints'
+  - job_name: 'cluster'
     file_sd_configs:
       - files:
         - {{ prometheus_cfg_endpoint_dir }}/*.yml
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
-  - job_name: 'node'
-    static_configs:
-      - targets: [{{ groups['slurm-node'] | zip_longest([], fillvalue=':9100') | map('join') | join(',') }}]
