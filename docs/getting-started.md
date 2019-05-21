@@ -4,17 +4,17 @@ Getting Started
 ## Requirements
 
 * A pre-existing "provisioning" node which can be used to run Ansible and the install scripts
-* A cluster to deploy to (potentially a cluster of one server or a [virtual one](/virtual/README.md))
+* A cluster to deploy to (potentially a cluster or single server - or a [virtual one](/virtual/README.md))
 
 ## Steps
 
-1. Pick a provisioning node to deploy from. This is where you will run the Ansible scripts from and is often a development laptop that has a connection to your target cluster. On this provisioning node, clone the DeepOps repository...
+1. Pick a provisioning node to deploy from. This is where the Ansible scripts should be run from and is often a development laptop that has a connection to the target cluster. On this provisioning node, clone the DeepOps repository...
 
 ```
 git clone git@github.com:NVIDIA/deepops.git
 ```
 
-2. Checkout a recent release tag. This is an optional step, but if not done, you’ll be using the latest development code, not an official release.
+2. Checkout a recent release tag. This is an optional step, but if not done, the latest development code will be used, not an official release.
 
 ```
 cd deepops
