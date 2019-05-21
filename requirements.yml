@@ -19,8 +19,10 @@
 - src: andrewrothstein.miniconda
   version: "v5.2.3"
 
+# https://github.com/NVIDIA/ansible-role-nvidia-driver
 - src: nvidia.nvidia_driver
   version: "v1.0.0"
 
+# https://github.com/NVIDIA/ansible-role-nvidia-docker
 - src: nvidia.nvidia_docker
   version: "v1.0.0"
