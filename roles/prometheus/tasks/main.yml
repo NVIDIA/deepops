@@ -4,6 +4,11 @@
     path: "{{ prometheus_config_dir }}"
     state: directory
 
+- name: create endpoints config dir
+  file:
+    path: "{{ prometheus_cfg_endpoint_dir }}"
+    state: directory
+
 - name: install config file
   template:
     src: templates/prometheus.yml.j2
