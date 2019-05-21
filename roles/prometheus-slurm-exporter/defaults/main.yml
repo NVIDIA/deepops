@@ -2,3 +2,11 @@ slurm_exporter_container: "dholt/prometheus-slurm-exporter"
 slurm_exporter_svc_name: "docker.slurm-exporter.service"
 slurm_exporter_state: started
 slurm_exporter_enabled: yes
+
+prometheus_config_dir: /etc/prometheus
+prometheus_cfg_endpoint_dir: "{{ prometheus_config_dir }}/endpoints"
+
+grafana_svc_name: "docker.grafana.service"
+grafana_data_dir: /var/lib/grafana
+grafana_cfg_dashboard_path: "{{ grafana_data_dir }}/dashboards"
+grafana_user_id: 472

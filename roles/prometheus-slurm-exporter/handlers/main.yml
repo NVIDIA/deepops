@@ -3,3 +3,9 @@
   service:
     name: "{{ slurm_exporter_svc_name }}"
     state: restarted
+
+- name: restart grafana
+  service:
+    name: "{{ grafana_svc_name }}"
+    state: restarted
+  ignore_errors: true
