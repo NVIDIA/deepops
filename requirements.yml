@@ -26,3 +26,9 @@
 # https://github.com/NVIDIA/ansible-role-nvidia-docker
 - src: nvidia.nvidia_docker
   version: "v1.0.0"
+
+- src: geerlingguy.filebeat
+- src: geerlingguy.logstash
+- src: geerlingguy.elasticsearch
+- src: geerlingguy.java
+- src: geerlingguy.kibana
