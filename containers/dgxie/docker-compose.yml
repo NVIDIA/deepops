@@ -7,7 +7,8 @@ services:
         network_mode: "host"
         privileged: true
         volumes:
-            - /mnt/3.1.2:/iso:ro
+            - /mnt/4.1.0:/iso:ro
+            - /mnt/machines:/etc/machines:ro
         environment:
             - HOST_INT_PUB=eno1
             - HOST_INT_PRV=enxa0cec820063a
