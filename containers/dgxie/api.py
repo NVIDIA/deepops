@@ -2,19 +2,21 @@
 from flask import Flask, abort, request
 import json
 import datetime
+import re
 
 app = Flask(__name__)
 
 @app.route('/v1/boot/<mac>')
 def pxe(mac):
     # load machine profiles for each call so we can re-load changes from disk
-    jf = open('/etc/machines/machines.json', 'r')
+    jf = open('/home/atetelman/adam/tmp/deepops/containers/dgxie/machines.json', 'r')
     machines = json.load(jf)
     jf.close()
 
     # return profile in json for matching machine
     for machine in machines:
-        if 'mac' in machines[machine] and machines[machine]['mac'] == mac:
+        if 'mac' in machines[machine] and re.match(machines[machine]['mac'], mac):
+            machines[machine]['mac'] = mac
             return json.dumps(machines[machine])
     abort(404)
 
