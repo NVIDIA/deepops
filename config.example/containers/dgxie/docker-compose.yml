@@ -8,10 +8,10 @@ services:
         privileged: true
         volumes:
             - /mnt/4.1.0:/iso:ro
-            - /mnt/machines:/etc/machines:ro
+            - ./config/containers/dgxie/machines:/etc/machines:ro
         environment:
-            - HOST_INT_PUB=eno1
-            - HOST_INT_PRV=enxa0cec820063a
+            - HOST_INT_PUB=eth0
+            - HOST_INT_PRV=eth1
             - DEFAULT=DGX
             #- IP=192.168.1.1
             #- NETWORK=192.168.1.0
