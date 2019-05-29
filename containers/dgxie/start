@@ -44,9 +44,10 @@ if [ $? -eq 0 ] ; then
 	ln -sf ${ISO} /www/iso
 
     # Modify preseed
+    sed -i "s/<FTP_IP_ADDR>/${IP}/g" ${PRESEED}
     sed -i "s/^d-i live-installer.*/d-i live-installer\/net-image string ftp:\/\/${IP}\/install\/filesystem.squashfs/g" ${PRESEED}
     sed -i "s/^d-i mirror\/ftp\/hostname.*/d-i mirror\/ftp\/hostname string ${IP}/g" ${PRESEED}
-    sed -i "s/^d-i apt-setup\/local0\/repository.*/d-i apt-setup\/local0\/repository string deb ftp:\/\/${IP}\/ xenial main multiverse/g" ${PRESEED}
+    sed -i "s/^d-i apt-setup\/local0\/repository.*/d-i apt-setup\/local0\/repository string deb ftp:\/\/${IP}\/ bionic main multiverse restricted universe/g" ${PRESEED}
     sed -i "s/^d-i mirror\/ftp\/directory.*/d-i mirror\/ftp\/directory string \//g" ${PRESEED}
     sed -i "s/^d-i apt-setup\/security_host.*/d-i apt-setup\/security_host string ${IP}/g" ${PRESEED}
 
