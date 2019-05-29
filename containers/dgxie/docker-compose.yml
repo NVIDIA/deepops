@@ -21,11 +21,3 @@ services:
             #- DNS2=8.8.4.4
             #- DHCP_START=192.168.1.2
             #- DHCP_END=192.168.254
-    nfs-server:
-        build: ~/nfs-server
-        network_mode: "host"
-        privileged: true
-        volumes:
-            - ~:/shared
-        environment:
-            - SHARED_DIRECTORY=/shared
