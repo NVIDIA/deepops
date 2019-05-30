@@ -3,11 +3,13 @@
 version: '3'
 services:
     dgxie:
-        build: .
+        build:
+            context: .
+            dockerfile: containers/dgxie/Dockerfile
         network_mode: "host"
         privileged: true
         volumes:
-            - /mnt/4.1.0:/iso:ro
+            - /mnt/4.1.0:/data:ro
             - ./config/containers/dgxie/machines:/etc/machines:ro
         environment:
             - HOST_INT_PUB=eth0
