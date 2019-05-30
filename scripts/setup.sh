@@ -28,7 +28,7 @@ case "$ID" in
 	    current_version=$(ansible --version | head -n1 | awk '{print $2}')
 	    if ! echo "${current_version}" | grep "${ANSIBLE_OK}" >/dev/null 2>&1; then
 	        echo "Unsupported version of Ansible: ${current_version}"
-		echo "Version must match ${ANSIBLE_OK}"
+		echo "Version must match ${ANSIBLE_OK}.x"
 		exit 1
 	    fi
 	fi
@@ -90,7 +90,7 @@ case "$ID" in
 	    current_version=$(ansible --version | head -n1 | awk '{print $2}')
 	    if ! echo "${current_version}" | grep "${ANSIBLE_OK}" >/dev/null 2>&1; then
 	        echo "Unsupported version of Ansible: ${current_version}"
-		echo "Version must match ${ANSIBLE_OK}"
+		echo "Version must match ${ANSIBLE_OK}.x"
 		exit 1
 	    fi
 	fi
