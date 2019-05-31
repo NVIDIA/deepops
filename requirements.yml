@@ -6,9 +6,6 @@
 - src: unxnn.users
   version: '56f9436e0d1e92a743e9f960d0b978ac8b72e070'
 
-- src: geerlingguy.docker
-  version: "2.5.2"
-
 - src: https://github.com/lukeyeager/ansible-role-hosts.git
   version: '711ba98571f068a8bc6739fa1055ac38fc931010'
   name: lukeyeager.hosts
