@@ -1,0 +1,12 @@
+# sudo docker run --rm -ti --net=host --privileged -v /mnt/:/iso:ro -e HOST_INT_PUB=ens160 -e HOST_INT_PRV=ens192 -e DEFAULT=DGX --name dgxie dgxie
+# sudo docker run -d --name nfs --privileged --net=host -v /home/ubuntu/:/master -e SHARED_DIRECTORY=/master nfs-server:latest
+version: '3'
+services:
+    nfs-server:
+        build: .
+        network_mode: "host"
+        privileged: true
+        volumes:
+            - ~:/shared
+        environment:
+            - SHARED_DIRECTORY=/shared

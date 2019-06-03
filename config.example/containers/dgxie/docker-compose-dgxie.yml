@@ -3,14 +3,17 @@
 version: '3'
 services:
     dgxie:
-        build: ~/dgxie
+        build:
+            context: .
+            dockerfile: containers/dgxie/Dockerfile
         network_mode: "host"
         privileged: true
         volumes:
-            - /mnt/3.1.2:/iso:ro
+            - /mnt/4.1.0:/data:ro
+            - ./config/containers/dgxie/machines:/etc/machines:ro
         environment:
-            - HOST_INT_PUB=eno1
-            - HOST_INT_PRV=enxa0cec820063a
+            - HOST_INT_PUB=eth0
+            - HOST_INT_PRV=eth1
             - DEFAULT=DGX
             #- IP=192.168.1.1
             #- NETWORK=192.168.1.0
@@ -20,11 +23,3 @@ services:
             #- DNS2=8.8.4.4
             #- DHCP_START=192.168.1.2
             #- DHCP_END=192.168.254
-    nfs-server:
-        build: ~/nfs-server
-        network_mode: "host"
-        privileged: true
-        volumes:
-            - ~:/shared
-        environment:
-            - SHARED_DIRECTORY=/shared

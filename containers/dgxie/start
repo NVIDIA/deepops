@@ -7,7 +7,7 @@ PRESEED=${ISO}/preseed/pxe.template.seed
 INT=${INT:-enp1s0f0}
 DISK=${DISK:-sda}
 DEFAULT=${DEFAULT:-local}
-HTTP_PORT=${HTTP_PORT:-13370}
+export HTTP_PORT=${HTTP_PORT:-13370}
 KBD=${KBD:-us}
 KERN_EXTRA=${KERN_EXTRA:-}
 HOST_INT_PUB=${HOST_INT_PUB:-eth0}
@@ -44,9 +44,10 @@ if [ $? -eq 0 ] ; then
 	ln -sf ${ISO} /www/iso
 
     # Modify preseed
+    sed -i "s/<FTP_IP_ADDR>/${IP}/g" ${PRESEED}
     sed -i "s/^d-i live-installer.*/d-i live-installer\/net-image string ftp:\/\/${IP}\/install\/filesystem.squashfs/g" ${PRESEED}
     sed -i "s/^d-i mirror\/ftp\/hostname.*/d-i mirror\/ftp\/hostname string ${IP}/g" ${PRESEED}
-    sed -i "s/^d-i apt-setup\/local0\/repository.*/d-i apt-setup\/local0\/repository string deb ftp:\/\/${IP}\/ xenial main multiverse/g" ${PRESEED}
+    sed -i "s/^d-i apt-setup\/local0\/repository.*/d-i apt-setup\/local0\/repository string deb ftp:\/\/${IP}\/ bionic main multiverse restricted universe/g" ${PRESEED}
     sed -i "s/^d-i mirror\/ftp\/directory.*/d-i mirror\/ftp\/directory string \//g" ${PRESEED}
     sed -i "s/^d-i apt-setup\/security_host.*/d-i apt-setup\/security_host string ${IP}/g" ${PRESEED}
 
