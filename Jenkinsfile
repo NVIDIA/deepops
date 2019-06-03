@@ -73,14 +73,14 @@ pipeline {
             chmod 755 $K8S_CONFIG_DIR/artifacts/kubectl
             cat config/helm/metallb.yml
             cat config/helm/ingress.yml
-            kubectl describe service nginx-ingress-controller
-            kubectl describe pod -l app=metallb,component=controller
+            kubectl -n deepops describe service nginx-ingress-controller
+            kubectl -n deepops describe pod -l app=metallb,component=controller
             kubectl get pods
             kubectl get services --all-namespaces
             sleep 30
             kubectl get pods
             kubectl get services
-            nginx_external_ip=$(kubectl get services -l app=nginx-ingress,component=controller --no-headers | awk '{print $4}')
+            nginx_external_ip=$(kubectl -n deepops get services -l app=nginx-ingress,component=controller --no-headers | awk '{print $4}')
             curl "http://${nginx_external_ip}/" 
           '''
 
