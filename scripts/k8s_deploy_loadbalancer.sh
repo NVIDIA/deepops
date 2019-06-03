@@ -21,7 +21,7 @@ fi
 
 # Set up the MetalLB load balancer
 if ! helm status metallb >/dev/null 2>&1; then
-	helm install --values "${config_dir}/helm/metallb.yml" --name metallb stable/metallb
+	helm install --values "${config_dir}/helm/metallb.yml" --name metallb --namespace deepops stable/metallb
 fi
 
-kubectl wait --for=condition=Ready -l app=metallb,component=controller pod
+kubectl -n deepops wait --for=condition=Ready -l app=metallb,component=controller pod

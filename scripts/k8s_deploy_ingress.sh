@@ -25,7 +25,7 @@ fi
 
 # Set up the ingress controller
 if ! helm status "${app_name}" >/dev/null 2>&1; then
-	helm install --name "${app_name}" --values "${config_dir}/helm/ingress.yml" stable/nginx-ingress
+	helm install --name "${app_name}" --namespace deepops --values "${config_dir}/helm/ingress.yml" stable/nginx-ingress
 fi
 
-kubectl wait --for=condition=Ready -l "app=${app_name},component=controller" --timeout=90s pod
+kubectl -n deepops wait --for=condition=Ready -l "app=${app_name},component=controller" --timeout=90s pod
