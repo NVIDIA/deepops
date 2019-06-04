@@ -51,6 +51,7 @@ if [ "z${vmware_iso}" != "z" ] ; then
     sed -i "s~^modules=~modules=http://${IP}:${HTTP_PORT}/viso~g" /www/vmware/boot.cfg
     sed -i "s~--- /~--- http://${IP}:${HTTP_PORT}/viso/~g" /www/vmware/boot.cfg
     sed -i "s/\#VMW_NFS_IP\#/${VMW_NFS_IP}/g" /www/vmware/kickstart.cfg
+    sed -i "s/\#VMW_GPU_VIB\#/${VMW_GPU_VIB}/g" /www/vmware/kickstart.cfg
 fi
 
 

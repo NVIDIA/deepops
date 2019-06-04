@@ -10,7 +10,7 @@ services:
         privileged: true
         volumes:
             - ${DATA_DIR}:/data:ro     # path to ISO files
-            - ./config/containers/dgxie/machines:/etc/machines:ro
+            - ../../config/containers/dgxie/machines:/etc/machines:ro
         environment:
             - HOST_INT_PUB=${HOST_INT_PUB}
             - HOST_INT_PRV=${HOST_INT_PRV}

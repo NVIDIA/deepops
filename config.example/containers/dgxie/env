@@ -1,3 +1,4 @@
+COMPOSE_PROJECT_NAME=deepops
 COMPOSE_FILE=containers/dgxie/docker-compose.yml
 
 HOST_INT_PUB=ens160
