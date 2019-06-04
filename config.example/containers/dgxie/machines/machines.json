@@ -1,4 +1,10 @@
 {
+    "esxi-example": {
+        "mac": "54:ab:3a.*",
+        "kernel": "http://localhost:13370/vmware/mboot.efi",
+        "cmdline": "-c {{ URL \"http://localhost:13370/vmware/boot.cfg\" }} rdblacklist=nouveau ip=dhcp nomodeset rw console=tty0 console=ttyS0,115200n8",
+        "message": "VMware ESXi"
+    },
     "dgx-station-example": {
         "mac": "2c:56:dc.*",
         "kernel": "http://localhost:13370/iso/install/netboot/ubuntu-installer/amd64/linux",
