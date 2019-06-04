@@ -1,7 +1,0 @@
-# Cluster login node example
-# Change the value of netcfg/choose_interface to the network interface
-# on the login node which will be used during OS install
-DEFAULT login01
-LABEL login01
-    KERNEL http://#IP#/iso/install/netboot/ubuntu-installer/amd64/linux
-    APPEND initrd=http://#IP#/iso/install/netboot/ubuntu-installer/amd64/initrd.gz quiet url=http://#IP#/dgx.seed ramdisk_size=100000 locale=en_US.UTF-8 auto=true priority=critical kbd-chooser/method=us netcfg/choose_interface=eno1 netcfg/get_hostname=login01 netcfg/dhcp_timeout=120

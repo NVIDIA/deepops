@@ -3,6 +3,7 @@
 ## CONFIG
 MNT=${MNT:-/data}
 ISO=${ISO:-/iso}
+VISO=${VISO:-/vmware_iso}
 PRESEED=${ISO}/preseed/pxe.template.seed
 INT=${INT:-enp1s0f0}
 DISK=${DISK:-sda}
@@ -25,9 +26,12 @@ DOMAIN=${DOMAIN:-local}
 HTTPS_PROXY=${HTTPS_PROXY:-}
 EXTRA_PACKAGES=${EXTRA_PACKAGES:-}
 NTP=${NTP:-}
+VMW_NFS_IP=${VMW_NFS_IP:-192.168.1.1}
+VMW_GPU_VIB=${VMW_GPU_VIB:-NVIDIA-VMware_ESXi_6.7_Host_Driver-418.66-1OEM.670.0.0.8169922.x86_64.vib}
 ###
 
 mkdir -p "${ISO}"
+mkdir -p "${VISO}"
 
 # Check for mounted DGX Server ISO
 find ${PRESEED} >/dev/null 2>&1
@@ -35,6 +39,20 @@ if [ $? -ne 0 ] ; then
     dgx_iso="$(find ${MNT} -name DGXServer\*.iso)"
     mount -o loop -t iso9660 "$dgx_iso" "${ISO}"
 fi
+
+# VMware ESXi installer
+vmware_iso="$(find ${MNT} -name VMware-VMvisor-Installer\*.iso)"
+if [ "z${vmware_iso}" != "z" ] ; then
+    mount -o loop -t iso9660 "$vmware_iso" "${VISO}"
+    ln -sf ${VISO} /www/viso
+    cp "${VISO}/boot.cfg" /www/vmware/boot.cfg
+    sed -i "s~^kernel=~kernel=http://${IP}:${HTTP_PORT}/viso~g" /www/vmware/boot.cfg
+    sed -i "s~^kernelopt=.*~kernelopt=ks=http://${IP}:${HTTP_PORT}/vmware/kickstart.cfg~g" /www/vmware/boot.cfg
+    sed -i "s~^modules=~modules=http://${IP}:${HTTP_PORT}/viso~g" /www/vmware/boot.cfg
+    sed -i "s~--- /~--- http://${IP}:${HTTP_PORT}/viso/~g" /www/vmware/boot.cfg
+    sed -i "s/\#VMW_NFS_IP\#/${VMW_NFS_IP}/g" /www/vmware/kickstart.cfg
+fi
+
 
 # Check for mounted DGX Server ISO
 find ${PRESEED} >/dev/null 2>&1

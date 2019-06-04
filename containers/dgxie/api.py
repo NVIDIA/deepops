@@ -24,10 +24,10 @@ def pxe(mac):
     for machine in machines:
         if 'mac' in machines[machine] and re.match(machines[machine]['mac'], mac):
             machines[machine]['mac'] = mac
-            machines[machine]['kernel'] = machines[machine]['kernel'].replace("$HTTP_PORT", http_port)
-            machines[machine]['cmdline'] = machines[machine]['cmdline'].replace("$HTTP_PORT", http_port)
-            for i in range(len(machines[machine]['initrd'])):
-                machines[machine]['initrd'][i] = machines[machine]['initrd'][i].replace("$HTTP_PORT", http_port)
+            #machines[machine]['kernel'] = machines[machine]['kernel'].replace("$HTTP_PORT", http_port)
+            #machines[machine]['cmdline'] = machines[machine]['cmdline'].replace("$HTTP_PORT", http_port)
+            #for i in range(len(machines[machine]['initrd'])):
+            #    machines[machine]['initrd'][i] = machines[machine]['initrd'][i].replace("$HTTP_PORT", http_port)
             return json.dumps(machines[machine])
     abort(404)
 

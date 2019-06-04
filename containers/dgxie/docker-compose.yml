@@ -1,0 +1,45 @@
+# sudo docker run --rm -ti --net=host --privileged -v /mnt/:/iso:ro -e HOST_INT_PUB=ens160 -e HOST_INT_PRV=ens192 -e DEFAULT=DGX --name dgxie dgxie
+# sudo docker run -d --name nfs --privileged --net=host -v /home/ubuntu/:/master -e SHARED_DIRECTORY=/master nfs-server:latest
+version: '3'
+services:
+    dgxie:
+        build:
+            context: .
+            #dockerfile: containers/dgxie/Dockerfile
+        network_mode: "host"
+        privileged: true
+        volumes:
+            - ${DATA_DIR}:/data:ro     # path to ISO files
+            - ./config/containers/dgxie/machines:/etc/machines:ro
+        environment:
+            - HOST_INT_PUB=${HOST_INT_PUB}
+            - HOST_INT_PRV=${HOST_INT_PRV}
+            - DEFAULT=${DEFAULT}
+            - IP=${IP}
+            - NETWORK=${NETWORK}
+            - NETMASK=${NETMASK}
+            - GATEWAY=${GATEWAY}
+            - DNS1=${DNS1}
+            - DNS2=${DNS2}
+            - DHCP_START=${DHCP_START}
+            - DHCP_END=${DHCP_END}
+            - INT=${INT}
+            - DISK=${DISK}
+            - HTTP_PORT=${HTTP_PORT}
+            - KBD=${KBD}
+            - KERN_EXTRA=${KERN_EXTRA}
+            - LEASETIME=${LEASETIME}
+            - DOMAIN=${DOMAIN}
+            - HTTPS_PROXY=${HTTPS_PROXY}
+            - EXTRA_PACKAGES=${EXTRA_PACKAGES}
+            - NTP=${NTP}
+            - VMW_NFS_IP=${VMW_NFS_IP}
+            - VMW_GPU_VIB=${VMW_GPU_VIB}
+    nfs-server:
+        image: itsthenetwork/nfs-server-alpine:latest
+        network_mode: "host"
+        privileged: true
+        volumes:
+            - ${DATA_DIR}:/shared
+        environment:
+            - SHARED_DIRECTORY=/shared

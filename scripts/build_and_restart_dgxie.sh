@@ -2,7 +2,7 @@
 set -xe
 
 
-compose_file=config/containers/dgxie/docker-compose-dgxie.yml
+compose_file=containers/dgxie/docker-compose.yml
 compose_directory="."
 compose_cmd="docker-compose --project-directory ${compose_directory} -f ${compose_file}"
 
