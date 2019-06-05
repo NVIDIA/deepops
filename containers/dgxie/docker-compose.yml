@@ -5,12 +5,12 @@ services:
     dgxie:
         build:
             context: .
-            #dockerfile: containers/dgxie/Dockerfile
         network_mode: "host"
         privileged: true
         volumes:
             - ${DATA_DIR}:/data:ro     # path to ISO files
-            - ../../config/containers/dgxie/machines:/etc/machines:ro
+            - ../../config/pxe/machines:/etc/machines:ro
+            - ../../config/pxe/dnsmasq.extra.conf:/etc/dnsmasq.d/dnsmasq.extra.conf:ro
         environment:
             - HOST_INT_PUB=${HOST_INT_PUB}
             - HOST_INT_PRV=${HOST_INT_PRV}
