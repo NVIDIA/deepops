@@ -28,6 +28,7 @@ DOMAIN=${DOMAIN:-local}
 NTP=${NTP:-pool.ntp.org}
 VMW_NFS_IP=${VMW_NFS_IP:-192.168.1.1}
 VMW_GPU_VIB=${VMW_GPU_VIB:-NVIDIA-VMware_ESXi_6.7_Host_Driver-418.66-1OEM.670.0.0.8169922.x86_64.vib}
+VMW_VM_SIZE=${VMW_VM_SIZE:-100g}
 ###
 
 HTTP_IP=$(ip -4 addr show ${HTTP_INT} | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
@@ -81,6 +82,7 @@ if [ "z${vmware_iso}" != "z" ] ; then
     sed -i "s~--- /~--- http://${HTTP_IP}:${HTTP_PORT}/viso/~g" /www/vmware/boot.cfg
     sed -i "s/\#VMW_NFS_IP\#/${VMW_NFS_IP}/g" /www/vmware/kickstart.cfg
     sed -i "s/\#VMW_GPU_VIB\#/${VMW_GPU_VIB}/g" /www/vmware/kickstart.cfg
+    sed -i "s/\#VMW_VM_SIZE\#/${VMW_VM_SIZE}/g" /www/vmware/kickstart.cfg
 fi
 
 # DHCP Server

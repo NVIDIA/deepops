@@ -37,6 +37,7 @@ services:
             - DGX_HTTPS_PROXY=${DGX_HTTPS_PROXY}
             - VMW_NFS_IP=${VMW_NFS_IP}
             - VMW_GPU_VIB=${VMW_GPU_VIB}
+            - VMW_VM_SIZE=${VMW_VM_SIZE}
     nfs-server:
         image: itsthenetwork/nfs-server-alpine:latest
         network_mode: "host"
