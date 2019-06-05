@@ -3,7 +3,6 @@ COMPOSE_PROJECT_NAME=deepops
 COMPOSE_FILE=containers/dgxie/docker-compose.yml
 
 ## DHCP/PXE server settings
-# listen interface
 DHCP_ENABLE=1
 DHCP_INT=eth1
 NETWORK=192.168.1.0

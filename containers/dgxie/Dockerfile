@@ -10,13 +10,6 @@ RUN apt-get update && \
     apt-get -y install pixiecore nginx vsftpd iptables dnsmasq python-flask
 
 RUN mkdir -p /www /var/run/vsftpd/empty /www/vmware
-    # && \
-    #echo "local_enable=YES" >> /etc/vsftpd.conf && \
-    #echo "passwd_chroot_enable=yes" >> /etc/vsftpd.conf && \
-    #echo 'seccomp_sandbox=NO' >> /etc/vsftpd.conf && \
-    #echo 'pasv_enable=Yes' >> /etc/vsftpd.conf && \
-    #echo 'pasv_max_port=10100' >> /etc/vsftpd.conf && \
-    #echo 'pasv_min_port=10090' >> /etc/vsftpd.conf
 
 COPY get_hosts.py /usr/local/bin
 COPY rest_api.py /usr/local/bin
