@@ -1,0 +1,46 @@
+## Docker Compose settings
+COMPOSE_PROJECT_NAME=deepops
+COMPOSE_FILE=containers/dgxie/docker-compose.yml
+
+## DHCP/PXE server settings
+# Primary (public) network interface 
+HOST_INT_PUB=ens160
+# Private network interface
+#   If not using NAT, set to value of public network interface
+HOST_INT_PRV=ens192
+IP=192.168.1.1
+NETWORK=192.168.1.0
+NETMASK=255.255.255.0
+GATEWAY=192.168.1.1
+DNS1=8.8.8.8
+DNS2=8.8.4.4
+DHCP_START=192.168.1.2
+DHCP_END=192.168.1.254
+LEASETIME=7200
+DOMAIN=local
+NTP=""
+
+## HTTP server settings
+HTTP_PORT=13370
+
+## NFS server settings
+#    Directory on host containing ISOs, drivers, etc.
+DATA_DIR=/home/ubuntu
+
+## VMware install settings
+VMW_NFS_IP=192.168.1.1
+VMW_GPU_VIB=NVIDIA-VMware_ESXi_6.7_Host_Driver-418.66-1OEM.670.0.0.8169922.x86_64.vib
+
+## DGX OS install settings
+# DGX boot interface
+INT=enp1s0f0
+# DGX boot disk
+DISK=sda
+# DGX keyboard
+KBD=us
+# DGX extra kernel params
+KERN_EXTRA=""
+# DGX extra packages to install
+EXTRA_PACKAGES=""
+# DGX install proxy
+HTTPS_PROXY=""

@@ -1,14 +1,13 @@
 #!/bin/sh
 
-## CONFIG
+### CONFIG
 MNT=${MNT:-/data}
 ISO=${ISO:-/iso}
 VISO=${VISO:-/vmware_iso}
 PRESEED=${ISO}/preseed/pxe.template.seed
 INT=${INT:-enp1s0f0}
 DISK=${DISK:-sda}
-DEFAULT=${DEFAULT:-local}
-export HTTP_PORT=${HTTP_PORT:-13370}
+HTTP_PORT=${HTTP_PORT:-13370}
 KBD=${KBD:-us}
 KERN_EXTRA=${KERN_EXTRA:-}
 HOST_INT_PUB=${HOST_INT_PUB:-eth0}
