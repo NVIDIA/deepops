@@ -12,9 +12,8 @@ services:
             - ../../config/pxe/machines:/etc/machines:ro
             - ../../config/pxe/dnsmasq.extra.conf:/etc/dnsmasq.d/dnsmasq.extra.conf:ro
         environment:
-            - HOST_INT_PUB=${HOST_INT_PUB}
-            - HOST_INT_PRV=${HOST_INT_PRV}
-            - IP=${IP}
+            - DHCP_ENABLE=${DHCP_ENABLE}
+            - DHCP_INT=${DHCP_INT}
             - NETWORK=${NETWORK}
             - NETMASK=${NETMASK}
             - GATEWAY=${GATEWAY}
@@ -22,16 +21,20 @@ services:
             - DNS2=${DNS2}
             - DHCP_START=${DHCP_START}
             - DHCP_END=${DHCP_END}
-            - INT=${INT}
-            - DISK=${DISK}
-            - HTTP_PORT=${HTTP_PORT}
-            - KBD=${KBD}
-            - KERN_EXTRA=${KERN_EXTRA}
             - LEASETIME=${LEASETIME}
             - DOMAIN=${DOMAIN}
-            - HTTPS_PROXY=${HTTPS_PROXY}
-            - EXTRA_PACKAGES=${EXTRA_PACKAGES}
             - NTP=${NTP}
+            - NAT_ENABLE=${NAT_ENABLE}
+            - NAT_INT_PUB=${NAT_INT_PUB}
+            - NAT_INT_PRV=${NAT_INT_PRV}
+            - HTTP_INT=${HTTP_INT}
+            - HTTP_PORT=${HTTP_PORT}
+            - DGX_INT=${DGX_INT}
+            - DGX_DISK=${DGX_DISK}
+            - DGX_KBD=${DGX_KBD}
+            - DGX_KERN_EXTRA=${DGX_KERN_EXTRA}
+            - DGX_EXTRA_PACKAGES=${DGX_EXTRA_PACKAGES}
+            - DGX_HTTPS_PROXY=${DGX_HTTPS_PROXY}
             - VMW_NFS_IP=${VMW_NFS_IP}
             - VMW_GPU_VIB=${VMW_GPU_VIB}
     nfs-server:
