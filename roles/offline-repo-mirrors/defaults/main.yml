@@ -309,6 +309,56 @@ docker_image_list:
   image: "nvidia/cuda"
   version: "9.2-base-centos7"
 
+- name: "pytorch"
+  repo: "nvcr.io/"
+  image: "nvidia/pytorch"
+  version: "19.02-py3"
+
+- name: "cuda-sample"
+  repo: "nvcr.io/"
+  image: "nvidia/k8s/cuda-sample"
+  version: "nbody"
+
+- name: "cuda-10.0-devel"
+  repo: "nvcr.io/"
+  image: "nvidia/cuda"
+  version: "10.0-devel"
+
+- name: "tensorflow"
+  repo: ""
+  image: "tensorflow/tensorflow"
+  version: "latest"
+
+- name: "ubuntu"
+  repo: ""
+  image: "ubuntu"
+  version: "18.04"
+
+- name: "ubuntu"
+  repo: ""
+  image: "ubuntu"
+  version: "16.04"
+
+- name: "golang"
+  repo: ""
+  image: "golang"
+  version: "1.10.2"
+
+- name: "alpine"
+  repo: ""
+  image: "alpine"
+  version: "3.6"
+
+- name: "danderson-pixiecore"
+  repo: ""
+  image: "danderson/pixiecore"
+  version: "latest"
+
+- name: "deepops-pixiecore"
+  repo: ""
+  image: "deepops/pixiecore"
+  version: "latest"
+
 # Specific images we need to reference later
 nginx_image: "{{ docker_image_list | selectattr('name', 'equalto', 'nginx') | list | first }}"
 docker_registry_image: "{{ docker_image_list | selectattr('name', 'equalto', 'registry') | list | first }}"
