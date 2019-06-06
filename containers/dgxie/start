@@ -118,10 +118,10 @@ nginx &
 /usr/sbin/vsftpd /etc/vsftpd.conf &
 /usr/local/bin/rest_api.py >/dev/null 2>&1 &
 python /api.py &
-/usr/bin/pixiecore api http://127.0.0.1:${HTTP_PORT} --dhcp-no-bind -p 81 &
+/usr/bin/pixiecore api http://127.0.0.1:${HTTP_PORT} --dhcp-no-bind --debug --port 81 |& tee -a /var/log/pixiecore.log &
 if [ ${DHCP_ENABLE} -ne 0 ] ; then
     dnsmasq
-    tail -f /var/log/dnsmasq.log
+    tail -f /var/log/dnsmasq.log /var/log/pixiecore.log
 else
-    tail -f /var/log/nginx/*
+    tail -f /var/log/nginx/* /var/log/pixiecore.log
 fi
