@@ -1,0 +1,20 @@
+---
+# playbook for install SR-IOV CNI plugin for Kubernetes in SRIOV mode
+#
+# Author: Vitaliy Razinkov <vitaliyra@mellanox.com>
+#
+# Requirements: Kubernetes v1.10.x
+ 
+- hosts: kube-master
+  become: true
+  become_method: sudo
+# SR-IOV mode configuration
+  tasks:
+    - name: Install SR-IOV CNI 
+      k8s:
+        state: present
+        definition: "{{ lookup('url', 'https://raw.githubusercontent.com/intel/sriov-cni/master/images/sriov-cni-daemonset.yaml', split_lines=False) }}"
+      run_once: true
+  tags:
+    - k8s_sriov_cni_ds
+

@@ -1,0 +1,38 @@
+---
+# playbook for create NetworkAttachmentDefinition for Kubernetes Mellanox RDMA Device plugin in SRIOV mode
+# #
+# # Author: Vitaliy Razinkov <vitaliyra@mellanox.com>
+# #
+# # Requirements: Kubernetes v1.10.x and later
+# # vars:
+# #   network_name: "sriov111" 
+# #   res_name: "sriov_111"
+# #   vlan_id: "111"
+
+
+- hosts: kube-master
+  become: true
+  become_method: sudo
+  tasks:
+   - name: Create netattdef
+     k8s:
+       state: present
+       definition:
+         apiVersion: "k8s.cni.cncf.io/v1"
+         kind: NetworkAttachmentDefinition
+         metadata:
+           name: "{{ network_name }}"
+           namespace: default
+           annotations:
+             k8s.v1.cni.cncf.io/resourceName: "intel.com/{{ res_name }}"
+         spec:
+           config:
+             type: "sriov"
+             name: "{{ network_name }}"
+             vlan: "{{ vlan_id }}"
+             ipam:
+               type: "dhcp"
+     run_once: true
+  tags:
+     - k8s_mlnx_network_definition
+

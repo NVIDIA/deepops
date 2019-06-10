@@ -1,0 +1,35 @@
+---
+# playbook for install MLNX_OFED
+#
+# Author: Vitaliy Razinkov <vitaliyra@mellanox.com>
+#
+#
+# Usage:
+# - include: mofed-install.yaml
+#   vars:
+#     mofed_site_place: "MLNX_OFED-4.6-1.0.1.1"
+#     mofed_file_name: "MLNX_OFED_LINUX-4.6-1.0.1.1-ubuntu16.04-x86_64.iso"
+#
+- hosts: all
+  tasks:
+    - name: Check MLNX NIC's
+      shell: lspci | grep Mellanox | awk '{print $1}' | wc -l
+      register: check_mlnx_adapter
+    - name: MOFED install
+      block:
+        - shell: |
+            cd /tmp
+            wget http://content.mellanox.com/ofed/{{ mofed_site_place }}/{{ mofed_file_name }}
+            mkdir -p /mnt/iso
+            mount -o loop /tmp/{{ mofed_file_name }} /mnt/iso
+            /mnt/iso/mlnxofedinstall --all -q
+          args:
+            executable: /bin/bash
+            warn: no
+          register: install_mofed
+        - reboot:
+          when: install_mofed.changed
+      when: "{{ (check_mlnx_adapter.stdout|int) != 0 }}"
+  tags:
+    - mellanox_ofed
+

@@ -1,0 +1,32 @@
+---
+# playbook for install Mellanox Device plugin for Kubernetes in SRIOV mode
+#
+# Author: Vitaliy Razinkov <vitaliyra@mellanox.com>
+#
+# Requirements: Kubernetes v1.10.x
+ 
+- hosts: kube-master
+  become: true
+  become_method: sudo
+# SR-IOV mode configuration
+  tasks:
+    - name: Create configmap
+      k8s:
+        state: present
+        definition:
+          kind: ConfigMap
+          apiVersion: v1
+          metadata:
+            name: sriovdp-config
+            namespace: kube-system
+          data:
+            config.json: "{{ config_json | to_nice_json }}"
+      run_once: true
+    - name: Install HCA device plugin
+      k8s:
+        state: present
+        definition: "{{ lookup('url', 'https://raw.githubusercontent.com/intel/sriov-network-device-plugin/master/images/sriovdp-daemonset.yaml', split_lines=False) }}"
+      run_once: true
+  tags:
+    - k8s_sriov_device_plugin
+
