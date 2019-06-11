@@ -79,6 +79,9 @@ cd ${KFAPP}
 ${KUBEFLOW_SRC}/scripts/kfctl.sh generate k8s
 pushd ks_app
 
+# NOTE: temporarily using a custom image, to add custom command functionality
+ks param set jupyter-web-app image deepops/kubeflow:v0.5-custom-command
+
 # Use NodePort directly if the IP string uses the master IP, otherwise use Ingress URL
 if echo "${ingress_ip_string}" | grep "${master_ip}" >/dev/null 2>&1; then
     ks param set ambassador ambassadorServiceType NodePort
