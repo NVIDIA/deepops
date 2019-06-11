@@ -4,7 +4,7 @@ export KS_VER=0.13.1
 export KS_PKG=ks_${KS_VER}_linux_amd64
 export KS_INSTALL_DIR=/usr/local/bin
 
-export KUBEFLOW_TAG=v0.5.0
+export KUBEFLOW_TAG=v0.5-branch
 export KFAPP=kubeflow
 export KUBEFLOW_SRC=/opt/kubeflow
 
@@ -80,7 +80,7 @@ ${KUBEFLOW_SRC}/scripts/kfctl.sh generate k8s
 pushd ks_app
 
 # NOTE: temporarily using a custom image, to add custom command functionality
-ks param set jupyter-web-app image deepops/kubeflow:v0.5-custom-command
+ks param set jupyter-web-app image deepops/kubeflow-jupyter-web-app:v0.5-custom-command
 
 # Use NodePort directly if the IP string uses the master IP, otherwise use Ingress URL
 if echo "${ingress_ip_string}" | grep "${master_ip}" >/dev/null 2>&1; then
