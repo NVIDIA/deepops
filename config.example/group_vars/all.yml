@@ -67,3 +67,8 @@
 
 #software_remove_packages:
 #  - popularity-contest
+
+#Uncomment next three lines to user Mellanox RoCE high speed back-end
+#kube_network_plugin: flannel
+#kube_network_plugin_multus: true
+#roce_backend: true

@@ -11,6 +11,8 @@
 #     mofed_file_name: "MLNX_OFED_LINUX-4.6-1.0.1.1-ubuntu16.04-x86_64.iso"
 #
 - hosts: all
+  become: true
+  become_method: sudo
   tasks:
     - name: Check MLNX NIC's
       shell: lspci | grep Mellanox | awk '{print $1}' | wc -l
@@ -29,7 +31,7 @@
           register: install_mofed
         - reboot:
           when: install_mofed.changed
-      when: "{{ (check_mlnx_adapter.stdout|int) != 0 }}"
+      when: check_mlnx_adapter.stdout|int > 0
   tags:
     - mellanox_ofed
 
