@@ -1,0 +1,18 @@
+---
+# playbook for install DHCP CNI plugin for Kubernetes for SRIOV mode
+#
+# Author: Vitaliy Razinkov <vitaliyra@mellanox.com>
+#
+ 
+- hosts: kube-master
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Install DHCP CNI 
+      k8s:
+        state: present
+        definition: "{{ lookup('url', 'https://raw.githubusercontent.com/Mellanox/dhcp-cni/master/dhcp-cni-ds.yaml', split_lines=False) }}"
+      run_once: true
+  tags:
+    - k8s_dhcp_cni_ds
+
