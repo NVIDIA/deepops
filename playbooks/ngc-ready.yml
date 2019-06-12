@@ -84,6 +84,7 @@
         image: "nvcr.io/nvidia/pytorch:{{ ngc_container_tag }}"
         working_dir: /opt/pytorch/examples/upstream/mnist
         detach: no
+        network_mode: host
         command: "python main.py"
       register: pytorch
       tags:
@@ -117,6 +118,7 @@
         image: "nvcr.io/nvidia/tensorflow:{{ ngc_container_tag }}"
         working_dir: /opt/tensorflow/tensorflow/examples/tutorials/mnist
         detach: no
+        network_mode: host
         command: "python mnist_with_summaries.py"
       register: tensorflow
       tags:
