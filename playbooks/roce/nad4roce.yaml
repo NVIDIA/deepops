@@ -4,6 +4,13 @@
 # # Author: Vitaliy Razinkov <vitaliyra@mellanox.com>
 # #
 - name: Create netattdef
+  vars:
+    config_json: |
+      type: "sriov"
+      name: "{{ item.network_name }}"
+      vlan: {{ item.vlan_id |int }}
+      ipam:
+        type: "dhcp"
   k8s:
     state: present
     definition:
@@ -15,13 +22,5 @@
         annotations:
           k8s.v1.cni.cncf.io/resourceName: "{{ item.res_name }}"
       spec:
-        config:
-          '{
-          type: "sriov",
-          name: "{{ item.network_name }}",
-          vlan: {{ item.vlan_id|int }},
-          ipam: {
-            type: "dhcp"
-            }
-          }'
+        config: "{{ config_json | from_yaml | to_nice_json }}"
   run_once: true

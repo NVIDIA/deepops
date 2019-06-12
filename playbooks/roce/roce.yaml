@@ -7,8 +7,6 @@
   tags:
     - mellanox_ofed
 
-#Install Mellanox GPUDirect - WIP
-
 # Activate VF for relevant PF
 - hosts: all
   become: true
@@ -28,6 +26,8 @@
   tags:
     - vf_activation
 
+#Install Mellanox GPUDirect - WIP
+
 #Install python dependencies
 - hosts: kube-master
   tasks:
@@ -39,7 +39,6 @@
           - openshift
   tags:
     - dep_openshift
-
 
 #Download K8s SRIOV DP image
 - hosts: kube-node

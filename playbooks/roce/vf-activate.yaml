@@ -8,7 +8,4 @@
   shell: |
     echo 8 > /sys/class/net/{{ item }}/device/sriov_numvfs
     sed -i '/^exit 0*/i echo 8 > /sys/class/net/{{ item }}/device/sriov_numvfs' /etc/rc.local
-#  args:
-#    executable: /bin/bash
-#    warn: no    
 
