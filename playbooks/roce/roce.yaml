@@ -64,7 +64,7 @@
           vendors:
           - 15b3
           devices:
-          - 101c
+          - "{{ dev_id}}"
           pfNames:
           - "{{ pf1 }}"
       - resourceName: sriov_112
@@ -73,7 +73,7 @@
           vendors:
           - 15b3
           devices:
-          - 101c
+          - "{{ dev_id}}"
           pfNames:
           - "{{ pf2 }}"
       - resourceName: sriov_113
@@ -82,7 +82,7 @@
           vendors:
           - 15b3
           devices:
-          - 101c
+          - "{{ dev_id}}"
           pfNames:
           - "{{ pf3 }}"
       - resourceName: sriov_114
@@ -91,7 +91,7 @@
           vendors:
           - 15b3
           devices:
-          - 101c
+          - "{{ dev_id}}"
           pfNames:
           - "{{ pf4 }}"
   tags:
