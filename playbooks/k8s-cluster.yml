@@ -195,6 +195,7 @@
     pf2: ens10f0
     pf3: ens11f0
     pf4: ens12f0
+    dev_id: 101c
   when: roce_backend
   tags:
     - roce
