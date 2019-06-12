@@ -50,6 +50,11 @@
         name: "nfvpe/sriov-device-plugin"
         state: present
         pull: yes
+    - name: Pull docker image nfvpe/sriov-cni
+      docker_image: 
+        name: "nfvpe/sriov-cni"
+        state: present
+        pull: yes
   tags:
     - pull_k8s_dp_docker
 
