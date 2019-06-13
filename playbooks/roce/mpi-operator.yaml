@@ -8,11 +8,10 @@
   become: true
   become_method: sudo
   tasks:
-    - name: Install Kubeflow MPI-Operatop version v1alpha2
+    - name: Install Kubeflow MPI-Operator version v1alpha2
       k8s:
         state: present
         definition: "{{ lookup('url', 'https://raw.githubusercontent.com/Mellanox/mpi-operator/Mellanox/deploy/one-click-deploy.yaml', split_lines=False) }}"
       run_once: true
   tags:
     - kubeflow_mpi_operator
-
