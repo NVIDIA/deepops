@@ -18,7 +18,7 @@ def pxe(mac):
     if "HTTP_PORT" in os.environ.keys():
         http_port = os.environ['HTTP_PORT']
     else:
-        http_port = "80"
+        http_port = "13370"
 
     # return profile in json for matching machine
     for machine in machines:

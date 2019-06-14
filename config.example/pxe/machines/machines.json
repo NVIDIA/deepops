@@ -1,29 +1,29 @@
 {
     "esxi-example": {
         "mac": "54:ab:3a.*",
-        "kernel": "http://localhost:13370/vmware/mboot.efi",
-        "cmdline": "-c {{ URL \"http://localhost:13370/vmware/boot.cfg\" }} rdblacklist=nouveau ip=dhcp nomodeset rw console=tty0 console=ttyS0,115200n8",
+        "kernel": "http://localhost:$HTTP_PORT/vmware/mboot.efi",
+        "cmdline": "-c {{ URL \"http://localhost:$HTTP_PORT/vmware/boot.cfg\" }} rdblacklist=nouveau ip=dhcp nomodeset rw console=tty0 console=ttyS0,115200n8",
         "message": "VMware ESXi"
     },
     "dgx-station-example": {
         "mac": "2c:56:dc.*",
-        "kernel": "http://localhost:13370/iso/install/netboot/ubuntu-installer/amd64/linux",
-        "initrd": ["http://localhost:13370/iso/install/netboot/ubuntu-installer/amd64/initrd.gz"],
-        "cmdline": "quiet url={{ URL \"http://localhost:13370/dgx.seed\" }} ramdisk_size=100000 locale=en_US.UTF-8 auto=true priority=critical kbd-chooser/method=us netcfg/choose_interface=enp1s0f0 netcfg/get_hostname=dgx-server netcfg/dhcp_timeout=120",
+        "kernel": "http://localhost:$HTTP_PORT/iso/install/netboot/ubuntu-installer/amd64/linux",
+        "initrd": ["http://localhost:$HTTP_PORT/iso/install/netboot/ubuntu-installer/amd64/initrd.gz"],
+        "cmdline": "quiet url={{ URL \"http://localhost:$HTTP_PORT/dgx.seed\" }} ramdisk_size=100000 locale=en_US.UTF-8 auto=true priority=critical kbd-chooser/method=us netcfg/choose_interface=enp1s0f0 netcfg/get_hostname=dgx-server netcfg/dhcp_timeout=120",
         "message": "DGX Station 4.1.0"
     },
     "dgx-1-example": {
         "mac": "d8:c4:97.*",
-        "kernel": "http://localhost:13370/iso/install/netboot/ubuntu-installer/amd64/linux",
-        "initrd": ["http://localhost:13370/iso/install/netboot/ubuntu-installer/amd64/initrd.gz"],
-        "cmdline": "quiet url={{ URL \"http://localhost:13370/dgx.seed\" }} ramdisk_size=100000 locale=en_US.UTF-8 auto=true priority=critical kbd-chooser/method=us netcfg/choose_interface=enp1s0f0 netcfg/get_hostname=dgx-server netcfg/dhcp_timeout=120",
+        "kernel": "http://localhost:$HTTP_PORT/iso/install/netboot/ubuntu-installer/amd64/linux",
+        "initrd": ["http://localhost:$HTTP_PORT/iso/install/netboot/ubuntu-installer/amd64/initrd.gz"],
+        "cmdline": "quiet url={{ URL \"http://localhost:$HTTP_PORT/dgx.seed\" }} ramdisk_size=100000 locale=en_US.UTF-8 auto=true priority=critical kbd-chooser/method=us netcfg/choose_interface=enp1s0f0 netcfg/get_hostname=dgx-server netcfg/dhcp_timeout=120",
         "message": "DGX-1 Server 4.1.0"
     },
     "dgx-2-example": {
         "mac": "5c:ff:35.*",
-        "kernel": "http://localhost:13370/iso/install/netboot/ubuntu-installer/amd64/linux",
-        "initrd": ["http://localhost:13370/iso/install/netboot/ubuntu-installer/amd64/initrd.gz"],
-        "cmdline": "quiet url={{ URL \"http://localhost:13370/dgx.seed\" }} ramdisk_size=100000 locale=en_US.UTF-8 auto=true priority=critical kbd-chooser/method=us netcfg/choose_interface=enp1s0f0 netcfg/get_hostname=dgx-server netcfg/dhcp_timeout=120",
+        "kernel": "http://localhost:$HTTP_PORT/iso/install/netboot/ubuntu-installer/amd64/linux",
+        "initrd": ["http://localhost:$HTTP_PORT/iso/install/netboot/ubuntu-installer/amd64/initrd.gz"],
+        "cmdline": "quiet url={{ URL \"http://localhost:$HTTP_PORT/dgx.seed\" }} ramdisk_size=100000 locale=en_US.UTF-8 auto=true priority=critical kbd-chooser/method=us netcfg/choose_interface=enp1s0f0 netcfg/get_hostname=dgx-server netcfg/dhcp_timeout=120",
         "message": "DGX-2 Server 4.1.0"
     },
     "64-bit-ubuntu-example": {
