@@ -4,6 +4,7 @@ set -x
 # Get absolute path for script and root
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/.."
+CHART_VERSION="1.4.0"
 
 # Allow overriding the app name with an env var
 app_name="${NGINX_INGRESS_APP_NAME:-nginx-ingress}"
@@ -36,6 +37,7 @@ fi
 if ! helm status "${app_name}" >/dev/null 2>&1; then
 	helm install \
 		--name "${app_name}" \
+		--version "${CHART_VERSION}" \
 		--values "${config_dir}/helm/ingress.yml" ${helm_extra_args} \
 		stable/nginx-ingress
 fi
