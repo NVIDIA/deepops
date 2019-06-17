@@ -1,6 +1,7 @@
 ---
 # Install Mellanox OFED
 - import_playbook: mofed-install.yaml
+  run_once: true
   vars:
     mofed_site_place: "MLNX_OFED-4.6-1.0.1.1"
     mofed_file_name: "MLNX_OFED_LINUX-4.6-1.0.1.1-ubuntu16.04-x86_64.iso"
@@ -22,6 +23,7 @@
         - "{{ pf2 }}"
         - "{{ pf3 }}"
         - "{{ pf4 }}"
+      run_once: true
       when: ofed_present.stat.exists
   tags:
     - vf_activation
@@ -125,3 +127,18 @@
 
 #Install Kubeflow MPI-Operator:v1alpha2
 - import_playbook: mpi-operator.yaml
+
+# Mulus update
+- hosts: kube-master
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Multus update
+      k8s:
+        state: present
+        definition: "{{ lookup('url', 'https://raw.githubusercontent.com/Mellanox/deepops/roce_backend/playbooks/roce/multus-ds-update.yaml', split_lines=False) }}"
+      run_once: true
+    - pause:
+        minutes: 5
+  tags:
+    - k8s_multus_update
