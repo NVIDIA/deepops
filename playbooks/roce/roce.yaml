@@ -23,7 +23,6 @@
         - "{{ pf2 }}"
         - "{{ pf3 }}"
         - "{{ pf4 }}"
-      run_once: true
       when: ofed_present.stat.exists
   tags:
     - vf_activation
