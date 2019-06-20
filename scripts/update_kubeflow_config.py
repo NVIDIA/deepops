@@ -66,9 +66,6 @@ def update_yaml(images, yaml_file, str1):
     # TODO: "fix for": This isn't rendering the rest of the page properly
     if True:
         config.replace('\'{{}}\'', '"{{}}"')
-
-    if True:
-        config.replace('{{}, "{{}}")
     with open(yaml_file, 'w') as fname:
         fname.write(config)
 
