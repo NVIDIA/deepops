@@ -86,7 +86,6 @@ cd ${KFAPP}
 ${KUBEFLOW_SRC}/scripts/kfctl.sh generate k8s
 pushd ks_app
 
-
 # NOTE: temporarily using a custom image, to add custom command functionality
 ks param set jupyter-web-app image deepops/kubeflow-jupyter-web-app:v0.5-custom-command
 

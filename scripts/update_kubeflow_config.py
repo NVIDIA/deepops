@@ -47,7 +47,7 @@ def get_images(url='https://api.ngc.nvidia.com/v2/repos'):
 
 def update_yaml(images, yaml_file, str1):
     # Update file to be valide YAML before parsing it
-    str2 = 'REPLACE_ME'
+    str2 = 'value: RREPLACE_ME'
     with open(yaml_file, 'r') as fname:
         config = yaml.load(fname.read().replace(str1, str2))
 
@@ -65,7 +65,8 @@ def update_yaml(images, yaml_file, str1):
     config = yaml.dump(config, default_flow_style=False).replace(str2, str1)
     # TODO: "fix for": This isn't rendering the rest of the page properly
     if True:
-        config.replace('\'{{}}\'', '"{{}}"')
+        config = config.replace('\'{{}}\'', '"{{}}"')
+
     with open(yaml_file, 'w') as fname:
         fname.write(config)
 
@@ -73,25 +74,28 @@ def update_yaml(images, yaml_file, str1):
 if __name__ == '__main__':
     images = get_images()
     # TODO: Allow user to change file name based on OS ENVIRON
-    str1 = 'value: {username}{servername}-workspace'
-    update_yaml(images,
+    try:
+        update_yaml(images,
             '/opt/kubeflow/kubeflow/jupyter/config.yaml',
             'value: {username}-workspace')
-    update_yaml(images,
+        update_yaml(images,
             '/opt/kubeflow/kubeflow/jupyter/ui/rok/config.yaml',
             'value: {username}{servername}-workspace')
-    update_yaml(images,
+        update_yaml(images,
             '/opt/kubeflow/kubeflow/jupyter/ui/default/config.yaml',
             'value: {username}{servername}-workspace')
+    except IOError: # the ks_app files may not exist at time of running this
+        pass
 
-
-    update_yaml(images,
+        update_yaml(images,
             '~/kubeflow/ks_app/vendor/kubeflow/jupyter',
             'value: {username}-workspace')
-    update_yaml(images,
+        update_yaml(images,
             '~/kubeflow/ks_app/vendor/jupyter/ui/rok/config.yaml',
             'value: {username}{servername}-workspace')
-    update_yaml(images,
+        update_yaml(images,
             '~/kubeflow/ks_app/vendor/jupyter/ui/default/config.yaml',
             'value: {username}{servername}-workspace')
+    except IOError: # the ks_app files may not exist at time of running this
+        pass
 
