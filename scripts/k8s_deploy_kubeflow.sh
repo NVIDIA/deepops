@@ -79,8 +79,13 @@ fi
 pushd ${HOME}
 ${KUBEFLOW_SRC}/scripts/kfctl.sh init ${KFAPP} --platform none
 cd ${KFAPP}
+
+# Update the Kubeflow Jupyter UI
+./scripts/update_kubeflow_config.py
+
 ${KUBEFLOW_SRC}/scripts/kfctl.sh generate k8s
 pushd ks_app
+
 
 # NOTE: temporarily using a custom image, to add custom command functionality
 ks param set jupyter-web-app image deepops/kubeflow-jupyter-web-app:v0.5-custom-command

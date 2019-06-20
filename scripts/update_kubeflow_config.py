@@ -3,6 +3,8 @@
 
 The purpose of this script is to dynamically update Kubeflow to point at the latest NGC containers.
 In addition to that it changes default resource requests to optimize for GPUs
+
+TODO: Do this with Ansible
 '''
 
 
@@ -43,16 +45,16 @@ def get_images(url='https://api.ngc.nvidia.com/v2/repos'):
     return map(lambda x : "nvcr.io/nvidia/{}:{}".format(x[0], x[1]), images) #  TODO: Remove url hardcoding
 
 
-def update_yaml(images, yaml_file='/opt/kubeflow/kubeflow/jupyter/ui/default/config.yaml'):
+def update_yaml(images, yaml_file, str1):
     # Update file to be valide YAML before parsing it
-    str1 = 'value: {username}{servername}-workspace'
     str2 = 'REPLACE_ME'
     with open(yaml_file, 'r') as fname:
         config = yaml.load(fname.read().replace(str1, str2))
 
     # Update YAML file
     try:
-        config['spawnerFormDefaults']['extraResources']['value'] = '"{{\\\"nvidia.com/gpu\\\": 1}}"'
+        # TODO: This isn't rendering the rest of the page properly
+        # config['spawnerFormDefaults']['extraResources']['value'] = '"{{\\\"nvidia.com/gpu\\\": 1}}"'
         config['spawnerFormDefaults']['image']['value'] = images[0]
         config['spawnerFormDefaults']['image']['options'] = images # TODO: Potentially only show 1-3 tags for each image
     except KeyError:
@@ -61,10 +63,38 @@ def update_yaml(images, yaml_file='/opt/kubeflow/kubeflow/jupyter/ui/default/con
 
     # Write out YAML file back to how Kubeflow expects
     config = yaml.dump(config, default_flow_style=False).replace(str2, str1)
+    # TODO: "fix for": This isn't rendering the rest of the page properly
+    if True:
+        config.replace('\'{{}}\'', '"{{}}"')
+
+    if True:
+        config.replace('{{}, "{{}}")
     with open(yaml_file, 'w') as fname:
         fname.write(config)
 
 
 if __name__ == '__main__':
     images = get_images()
-    update_yaml(images) # TODO: Allow user to change file name
+    # TODO: Allow user to change file name based on OS ENVIRON
+    str1 = 'value: {username}{servername}-workspace'
+    update_yaml(images,
+            '/opt/kubeflow/kubeflow/jupyter/config.yaml',
+            'value: {username}-workspace')
+    update_yaml(images,
+            '/opt/kubeflow/kubeflow/jupyter/ui/rok/config.yaml',
+            'value: {username}{servername}-workspace')
+    update_yaml(images,
+            '/opt/kubeflow/kubeflow/jupyter/ui/default/config.yaml',
+            'value: {username}{servername}-workspace')
+
+
+    update_yaml(images,
+            '~/kubeflow/ks_app/vendor/kubeflow/jupyter',
+            'value: {username}-workspace')
+    update_yaml(images,
+            '~/kubeflow/ks_app/vendor/jupyter/ui/rok/config.yaml',
+            'value: {username}{servername}-workspace')
+    update_yaml(images,
+            '~/kubeflow/ks_app/vendor/jupyter/ui/default/config.yaml',
+            'value: {username}{servername}-workspace')
+
