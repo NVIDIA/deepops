@@ -60,6 +60,9 @@ if [ ! -d ${KUBEFLOW_SRC} ] ; then
     sudo mv ${tempd} ${KUBEFLOW_SRC}
 fi
 
+# Update the Kubeflow Jupyter UI
+./scripts/update_kubeflow_config.py
+
 # Get master ip
 master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
 
