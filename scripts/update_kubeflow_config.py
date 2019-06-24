@@ -74,6 +74,7 @@ def update_yaml(images, yaml_file, str1):
 if __name__ == '__main__':
     images = get_images()
     # TODO: Allow user to change file name based on OS ENVIRON
+    # This block of code updates the source files used for new ks apps
     try:
         update_yaml(images,
             '/opt/kubeflow/kubeflow/jupyter/config.yaml',
@@ -87,6 +88,8 @@ if __name__ == '__main__':
     except IOError: # the ks_app files may not exist at time of running this
         pass
 
+    # This updates KS apps
+    try:
         update_yaml(images,
             '~/kubeflow/ks_app/vendor/kubeflow/jupyter',
             'value: {username}-workspace')
