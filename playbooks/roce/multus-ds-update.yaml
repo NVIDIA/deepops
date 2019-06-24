@@ -135,7 +135,7 @@ spec:
         image: nfvpe/multus
         command: ["/entrypoint.sh"]
         args:
-        - "--multus-conf-file=/tmp/multus-conf/00-multus.conf"
+        - "--multus-conf-file=auto"
         resources:
           requests:
             cpu: "100m"
