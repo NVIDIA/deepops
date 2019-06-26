@@ -4,7 +4,7 @@ export KS_VER=0.13.1
 export KS_PKG=ks_${KS_VER}_linux_amd64
 export KS_INSTALL_DIR=/usr/local/bin
 
-export KUBEFLOW_TAG=v0.5-branch
+export KUBEFLOW_TAG=v0.5.1
 export KFAPP=kubeflow
 export KUBEFLOW_SRC=/opt/kubeflow
 
