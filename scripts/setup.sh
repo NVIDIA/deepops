@@ -6,39 +6,42 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
 
 # Pinned Ansible version
-ANSIBLE_OK="2.7"
-ANSIBLE_VERSION="2.7.11"
+ANSIBLE_OK="2.7.8"
+ANSIBLE_VERSION="2.8.1"
 
 # Install Software
 case "$ID" in
     rhel*|centos*)
-	# Install pip and ensure Jinja2 is updated
-	if ! which pip >/dev/null 2>&1; then
-	    echo "Installing pip..."
-	    sudo yum -y install python-pip >/dev/null
-	fi
-	pip --version
+        # Install pip
+        if ! which pip >/dev/null 2>&1; then
+            echo "Installing pip..."
+            sudo yum -y install python-pip >/dev/null
+        fi
+        pip --version
+
+        # Ensure Jinja2 is updated
         echo "Upgrading jinja2"
         sudo pip install --upgrade Jinja2
 
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
-	    sudo pip install ansible=="${ANSIBLE_VERSION}"
-	else
-	    current_version=$(ansible --version | head -n1 | awk '{print $2}')
-	    if ! echo "${current_version}" | grep "${ANSIBLE_OK}" >/dev/null 2>&1; then
-	        echo "Unsupported version of Ansible: ${current_version}"
-		echo "Version must match ${ANSIBLE_OK}.x"
-		exit 1
-	    fi
-	fi
+            sudo pip install ansible=="${ANSIBLE_VERSION}"
+        else
+            current_version=$(ansible --version | head -n1 | awk '{print $2}')
+            if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') < LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
+                echo "Unsupported version of Ansible: ${current_version}"
+                echo "Version must match ${ANSIBLE_OK}"
+                exit 1
+            fi
+        fi
+        ansible --version | head -1
 
         # Install python-netaddr
         python -c 'import netaddr' >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
             echo "Installing Python dependencies..."
             sudo yum -y install python36 python-netaddr >/dev/null
-	    sudo ln -s /usr/bin/python36 /usr/bin/python3
+            sudo ln -s /usr/bin/python36 /usr/bin/python3
         fi
 
         # Install git
@@ -58,12 +61,12 @@ case "$ID" in
         ipmitool -V
 
 
-	# Install wget
-	if ! which wget >/dev/null 2>&1; then
-	    echo "Installing wget..."
+        # Install wget
+        if ! which wget >/dev/null 2>&1; then
+            echo "Installing wget..."
             sudo yum -y install wget >/dev/null
         fi
-        wget --version
+        wget --version | head -1
         ;;
     ubuntu*)
         # Update apt cache
@@ -76,24 +79,25 @@ case "$ID" in
             sudo apt-get -y install software-properties-common >/dev/null
         fi
 
-	# Install pip
-	if ! which pip >/dev/null 2>&1; then
-	    echo "Installing pip..."
-	    sudo apt-get -y install python-pip >/dev/null
-	fi
-	pip --version
+        # Install pip
+        if ! which pip >/dev/null 2>&1; then
+            echo "Installing pip..."
+            sudo apt-get -y install python-pip >/dev/null
+        fi
+        pip --version
 
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
-	    sudo pip install ansible=="${ANSIBLE_VERSION}"
-	else
-	    current_version=$(ansible --version | head -n1 | awk '{print $2}')
-	    if ! echo "${current_version}" | grep "${ANSIBLE_OK}" >/dev/null 2>&1; then
-	        echo "Unsupported version of Ansible: ${current_version}"
-		echo "Version must match ${ANSIBLE_OK}.x"
-		exit 1
-	    fi
-	fi
+            sudo pip install ansible=="${ANSIBLE_VERSION}"
+        else
+            current_version=$(ansible --version | head -n1 | awk '{print $2}')
+            if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') < LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
+                echo "Unsupported version of Ansible: ${current_version}"
+                echo "Version must match ${ANSIBLE_OK}.x"
+                exit 1
+            fi
+        fi
+        ansible --version | head -1
 
         # Install python-netaddr
         python -c 'import netaddr' >/dev/null 2>&1
@@ -118,12 +122,12 @@ case "$ID" in
         fi
         ipmitool -V
 
-	# Install wget
-	if ! which wget >/dev/null 2>&1; then
-	    echo "Installing wget..."
+        # Install wget
+        if ! which wget >/dev/null 2>&1; then
+        echo "Installing wget..."
             sudo apt -y install wget >/dev/null
         fi
-        wget --version
+        wget --version | head -1
         ;;
     *)
         echo "Unsupported Operating System $ID_LIKE"
