@@ -24,7 +24,8 @@ except OSError as e:
     exit()
 
 
-def get_images(url='https://api.ngc.nvidia.com/v2/repos'):
+
+def get_images(url='https://api.ngc.nvidia.com/v2/repos', number_tags=5):
     images = []
 
     # Get response from Registry
@@ -49,8 +50,13 @@ def get_images(url='https://api.ngc.nvidia.com/v2/repos'):
     for repo in repos['repositories']:
         if 'tags' not in repo or 'name' not in repo:
             continue
+        count = 0
         for tag in repo['tags']:
             images.append((repo['name'],tag))
+            count += 1
+            print(tag)
+            if count >= number_tags:
+                break
     return map(lambda x : "nvcr.io/nvidia/{}:{}".format(x[0], x[1]), images) #  TODO: Remove url hardcoding
 
 
