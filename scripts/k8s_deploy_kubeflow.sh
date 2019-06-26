@@ -8,6 +8,8 @@ export KUBEFLOW_TAG=v0.5-branch
 export KFAPP=kubeflow
 export KUBEFLOW_SRC=/opt/kubeflow
 
+export DEEPOPS_DIR=$(dirname $(dirname  $(readlink -f $0)))
+
 KSONNET_URL="${KSONNET_URL:-https://github.com/ksonnet/ksonnet/releases/download/v${KS_VER}/${KS_PKG}.tar.gz}"
 KUBEFLOW_URL="${KUBEFLOW_URL:-https://raw.githubusercontent.com/kubeflow/kubeflow/${KUBEFLOW_TAG}/scripts/download.sh}"
 
@@ -78,10 +80,12 @@ ${KUBEFLOW_SRC}/scripts/kfctl.sh init ${KFAPP} --platform none
 cd ${KFAPP}
 
 # Update the Kubeflow Jupyter UI
-./scripts/update_kubeflow_config.py
+export KSAPP_DIR="$(pwd)/ks_app"
+export KUBEFLOW_SRC
+${DEEPOPS_DIR}/scripts/update_kubeflow_config.py
 
 ${KUBEFLOW_SRC}/scripts/kfctl.sh generate k8s
-pushd ks_app
+pushd ${KSAPP_DIR}
 
 # NOTE: temporarily using a custom image, to add custom command functionality
 ks param set jupyter-web-app image deepops/kubeflow-jupyter-web-app:v0.5-custom-command
@@ -107,6 +111,7 @@ fi
 echo
 echo "Kubeflow app installed to: ${HOME}/${KFAPP}"
 echo "To remove, run: cd ${HOME}/${KFAPP} && ${KUBEFLOW_SRC}/scripts/kfctl.sh delete k8s"
+echo "To fully remove all source and application code run: cd ${HOME} && rm -rf ${KFAPP_DIR} && rm -rf ${KUBEFLOW_SRC}"
 echo
 echo "Kubeflow Dashboard: ${kf_url}"
 echo

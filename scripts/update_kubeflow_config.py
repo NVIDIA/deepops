@@ -13,6 +13,15 @@ import json
 import urllib2
 import logging
 import yaml
+import os
+
+
+try:
+    KUBEFLOW_SRC = os.environ['KUBEFLOW_SRC']
+    KSAPP_DIR = os.environ['KSAPP_DIR']
+except OSError as e:
+    logging.error("Could not locate KSAPP_DIR or KUBEFLOW_SRC: {}".format(e))
+    exit()
 
 
 def get_images(url='https://api.ngc.nvidia.com/v2/repos'):
@@ -73,32 +82,32 @@ def update_yaml(images, yaml_file, str1):
 
 if __name__ == '__main__':
     images = get_images()
-    # TODO: Allow user to change file name based on OS ENVIRON
     # This block of code updates the source files used for new ks apps
     try:
         update_yaml(images,
-            '/opt/kubeflow/kubeflow/jupyter/config.yaml',
+            '{}/kubeflow/jupyter/config.yaml'.format(KUBEFLOW_SRC),
             'value: {username}-workspace')
         update_yaml(images,
-            '/opt/kubeflow/kubeflow/jupyter/ui/rok/config.yaml',
+            '{}/kubeflow/jupyter/ui/rok/config.yaml'.format(KUBEFLOW_SRC),
             'value: {username}{servername}-workspace')
         update_yaml(images,
-            '/opt/kubeflow/kubeflow/jupyter/ui/default/config.yaml',
+            '{}/kubeflow/jupyter/ui/default/config.yaml'.format(KUBEFLOW_SRC),
             'value: {username}{servername}-workspace')
-    except IOError: # the ks_app files may not exist at time of running this
-        pass
+    except IOError as e: # the ks_app files may not exist at time of running this
+        logging.error("Failed to update KS source code configurations: {}".format(e))
 
     # This updates KS apps
     try:
+        print("test")
         update_yaml(images,
-            '~/kubeflow/ks_app/vendor/kubeflow/jupyter',
+            '{}/vendor/kubeflow/jupyter/config.yaml'.format(KSAPP_DIR),
             'value: {username}-workspace')
         update_yaml(images,
-            '~/kubeflow/ks_app/vendor/jupyter/ui/rok/config.yaml',
-            'value: {username}{servername}-workspace')
+            '{}/vendor/jupyter/ui/rok/config.yaml',
+            'value: {username}{servername}-workspace'.format(KSAPP_DIR))
         update_yaml(images,
-            '~/kubeflow/ks_app/vendor/jupyter/ui/default/config.yaml',
+            '{}/vendor/jupyter/ui/default/config.yaml'.format(KSAPP_DIR),
             'value: {username}{servername}-workspace')
-    except IOError: # the ks_app files may not exist at time of running this
-        pass
+    except IOError as e: # the ks_app files may not exist at time of running this
+        logging.error("Failed to update KS app configurations: {}".format(e))
 
