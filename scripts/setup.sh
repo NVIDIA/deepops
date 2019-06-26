@@ -7,7 +7,7 @@ cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
 
 # Pinned Ansible version
 ANSIBLE_OK="2.7.8"
-ANSIBLE_VERSION="2.8.1"
+ANSIBLE_VERSION="2.7.11"
 
 # Install Software
 case "$ID" in
