@@ -75,6 +75,7 @@ if kubectl describe service -l "app=${ingress_name},component=controller" | grep
 fi
 
 # Initialize and generate kubeflow
+set -e # XXX: Fail if anything in the initialization or configuration fail
 pushd ${HOME}
 ${KUBEFLOW_SRC}/scripts/kfctl.sh init ${KFAPP} --platform none
 cd ${KFAPP}
@@ -86,6 +87,7 @@ ${DEEPOPS_DIR}/scripts/update_kubeflow_config.py
 
 ${KUBEFLOW_SRC}/scripts/kfctl.sh generate k8s
 pushd ${KSAPP_DIR}
+set +e
 
 # NOTE: temporarily using a custom image, to add custom command functionality
 ks param set jupyter-web-app image deepops/kubeflow-jupyter-web-app:v0.5-custom-command
