@@ -1,3 +1,5 @@
+<img alt="DeepOps" src="docs/deep-ops.svg" width="200">
+
 DeepOps
 ===
 
