@@ -47,7 +47,8 @@ Run:
 ./scripts/dgxctl.sh -i
 ```
 
-	> Note: This tool assumes all DGX systems are configured with the same username and password.
+   > Note: This tool assumes all DGX systems are configured with the same username and password.
+
 
 ## Making updates
 
