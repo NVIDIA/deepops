@@ -10,7 +10,11 @@ Update the `DATA_DIR` specified in `config/pxe/env` and copy the DGX Base OS ISO
 
 ## Configure
 
-Configuration information for DGXie is located in `config/pxe`.
+Configuration information for DGXie is located in `config/pxe`. If you have not run the `./scripts/setup.sh` script you must manually install docker, docker-compose, and run the below:
+
+```sh
+cp -r config.example config
+```
 
 Update the `config/pxe/dnsmasq.extra.conf` with additional options, such as assigning static IPs by MAC address.
 
@@ -27,7 +31,7 @@ DGXie uses docker-compose to build and run. The `containers/dgxie/docker-compose
 If the default HTTP_PORT or machines.json file have not been changed, the below curl call should verify that the PXE API is responding:
 
 ```sh
-curl localhost
+curl localhost:13360/v1/boot/d8:c4:97:00:00:00
 ```
 
 ## PXE booting the DGX
