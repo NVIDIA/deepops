@@ -109,8 +109,8 @@ if __name__ == '__main__':
             '{}/vendor/kubeflow/jupyter/config.yaml'.format(KSAPP_DIR),
             'value: {username}-workspace')
         update_yaml(images,
-            '{}/vendor/jupyter/ui/rok/config.yaml',
-            'value: {username}{servername}-workspace'.format(KSAPP_DIR))
+            '{}/vendor/jupyter/ui/rok/config.yaml'.format(KSAPP_DIR),
+            'value: {username}{servername}-workspace')
         update_yaml(images,
             '{}/vendor/jupyter/ui/default/config.yaml'.format(KSAPP_DIR),
             'value: {username}{servername}-workspace')
