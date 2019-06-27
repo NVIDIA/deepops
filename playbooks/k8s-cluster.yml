@@ -29,8 +29,8 @@
   tags:
     - bootstrap
 
-# Make sure misc. software and libraries are installed
-- include: bootstrap-software.yml
+# Make sure Rook/Ceph dependencies are installed
+- include: bootstrap-rook.yml
   tags:
     - bootstrap
 
