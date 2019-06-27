@@ -28,9 +28,9 @@ case "$ID" in
             sudo pip install ansible=="${ANSIBLE_VERSION}"
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
-            if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') < LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
+            if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
                 echo "Unsupported version of Ansible: ${current_version}"
-                echo "Version must match ${ANSIBLE_OK}"
+                echo "Version must be ${ANSIBLE_OK} or greater"
                 exit 1
             fi
         fi
@@ -91,9 +91,9 @@ case "$ID" in
             sudo pip install ansible=="${ANSIBLE_VERSION}"
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
-            if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') < LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
+            if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
                 echo "Unsupported version of Ansible: ${current_version}"
-                echo "Version must match ${ANSIBLE_OK}.x"
+                echo "Version must be ${ANSIBLE_OK} or greater"
                 exit 1
             fi
         fi
