@@ -1,10 +1,10 @@
 #!/bin/bash
 set -xe
 
+source config/pxe/env
 
-compose_file=containers/dgxie/docker-compose.yml
-compose_directory="."
-compose_cmd="docker-compose --project-directory ${compose_directory} -f ${compose_file}"
+compose_directory_cmd="" #"--project-directory ."
+compose_cmd="docker-compose ${compose_directory} -f ${COMPOSE_FILE}"
 
 
 function tear_down() {
