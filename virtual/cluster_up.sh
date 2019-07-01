@@ -19,7 +19,6 @@ cd "${ROOT_DIR}"
 DEEPOPS_VIRT_CLEAN_CONFIG="${DEEPOPS_VIRT_CLEAN_CONFIG:-1}"
 if [ "${DEEPOPS_VIRT_CLEAN_CONFIG}" -ne 0 ]; then
 	rm -rf "${VIRT_DIR}/config"
-	rm -rf "${VIRT_DIR}/k8s-config"
 fi
 
 # Create the config for deepops servers (and use the virtual inventory)
