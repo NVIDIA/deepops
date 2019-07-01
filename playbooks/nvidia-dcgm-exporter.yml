@@ -1,0 +1,15 @@
+---
+- include: docker.yml
+- include: nvidia-driver.yml
+- include: nvidia-docker.yml
+
+- hosts: all
+  become: yes
+  tasks:
+    - name: install custom facts module
+      include_role:
+        name: facts
+    - name: configure dcgm exporter
+      include_role:
+        name: nvidia-dcgm-exporter
+      when: ansible_local['gpus']['count'] and (ansible_distribution == "Ubuntu" or ansible_os_family == "RedHat")
