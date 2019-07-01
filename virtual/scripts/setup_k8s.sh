@@ -16,8 +16,14 @@ cd "${ROOT_DIR}" || exit 1
 # Set the K8s Ansible config directory (same as for Slurm)
 K8S_CONFIG_DIR="${VIRT_DIR}/config"
 
+DEEPOPS_OFFLINE="${DEEPOPS_OFFLINE:-0}"
+ansible_extra_args=""
+if [ "${DEEPOPS_OFFLINE}" -ne 0 ]; then
+	ansible_extra_args="-e "@${VIRT_DIR}/config/offline_repo_vars.yml""
+fi
+
 # Deploy the K8s cluster
-ansible-playbook -i "${VIRT_DIR}/config/inventory" -b "${ROOT_DIR}/playbooks/k8s-cluster.yml"
+ansible-playbook -b -i "${VIRT_DIR}/config/inventory" ${ansible_extra_args} "${ROOT_DIR}/playbooks/k8s-cluster.yml"
 
 # Source K8s environment for interacting with the cluster
 # shellcheck disable=SC1091 disable=SC1090

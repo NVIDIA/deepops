@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: configure hosts to use offline yum mirrors
+    include_role:
+      name: offline-repo-mirrors
+      tasks_from: use-offline-mirrors
