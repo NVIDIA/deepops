@@ -1,0 +1,8 @@
+prometheus_config_dir: /etc/prometheus
+prometheus_container: "prom/prometheus"
+prometheus_svc_name: "docker.prometheus.service"
+prometheus_state: started
+prometheus_enabled: yes
+
+prometheus_cfg_scrape_interval: 15s
+prometheus_cfg_endpoint_dir: "{{ prometheus_config_dir }}/endpoints"

@@ -1,0 +1,15 @@
+[Unit]
+Description=Prometheus
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=/usr/bin/docker pull {{ prometheus_container }}
+ExecStart=/usr/bin/docker run --rm --net="host" --name %n -v {{ prometheus_config_dir }}:/etc/prometheus {{ prometheus_container }}
+
+[Install]
+WantedBy=multi-user.target
