@@ -20,6 +20,7 @@
     - MySQL-python
     - mailx
     - ssmtp
+    - policycoreutils-python
   when: ansible_os_family == "RedHat"
 
 - name: Allow mysql to read libaio.so.1

@@ -1,0 +1,130 @@
+---
+
+# By default, we assume that all our software mirrors are on the same host,
+# docker_mirror_host
+
+deepops_mirror_host: "specify-ip-here"
+
+# If your software mirrors are present at different locations, you can also
+# adjust the locations of particular repository types.
+# Port numbers below assume that the mirrors are configured using the defaults
+# in the offline-repo-mirrors Ansible role.
+
+deepops_docker_mirror: "{{ deepops_mirror_host }}:5000"
+deepops_yum_mirror: "http://{{ deepops_mirror_host }}:8001"
+deepops_charts_mirror: "http://{{ deepops_mirror_host }}:8002"
+deepops_pypi_mirror: "http://{{ deepops_mirror_host }}:8003"
+deepops_misc_mirror: "http://{{ deepops_mirror_host }}:8004"
+
+# Individual software sources are specified below. If there are particular
+# objects which are not present at one of the mirrors defined above, or if
+# you have additional site-specific changes to make, you can override
+# particular locations below.
+
+###############################################################################
+# DeepOps-specific variables
+# - These variables appear in DeepOps Ansible playbooks
+###############################################################################
+
+# Helm
+helm_chart_location: "{{ deepops_charts_mirror }}"
+
+# Yum 
+
+# Base repos
+base_baseurl: "{{ deepops_yum_mirror }}/base"
+updates_baseurl: "{{ deepops_yum_mirror }}/updates"
+extras_baseurl: "{{ deepops_yum_mirror }}/extras"
+docker_ce_baseurl: "{{ deepops_yum_mirror }}/docker-ce-stable"
+docker_engine_baseurl: "{{ deepops_yum_mirror }}/docker-engine"
+epel_baseurl: "{{ deepops_yum_mirror }}/epel"
+epel_gpgkey: "{{ deepops_yum_mirror }}/gpgkeys/epel.pub"
+
+# NVIDIA repos
+rhel_cuda_baseurl: "{{ deepops_yum_mirror }}/cuda"
+rhel_cuda_gpgkey: "{{ deepops_yum_mirror }}/gpgkeys/cuda.pub"
+rhel_nvidiaml_baseurl: "{{ deepops_yum_mirror }}/nvidia-ml"
+rhel_nvidiaml_gpgkey: "{{ deepops_yum_mirror }}/gpgkeys/nvidia-ml.pub"
+nvcontainer_runtime_baseurl: "{{ deepops_yum_mirror }}/nvidia-container-runtime"
+libnv_container_baseurl: "{{ deepops_yum_mirror }}/libnvidia-container"
+
+nvdocker_repo_base_url: "{{ deepops_yum_mirror }}/nvidia-docker"
+nvdocker_rhel_repo_file_download_url: "{{ deepops_yum_mirror }}/nvidia-docker.repo"
+nvdocker_gpg_path: "{{ deepops_yum_mirror }}/gpgkeys/nvidia-docker.pub"
+
+nvidia_docker_repo_base_url: "{{ nvdocker_repo_base_url }}"
+nvidia_docker_repo_gpg_url: "{{ nvdocker_gpg_path }}"
+
+# NVIDIA driver galaxy role variables
+nvidia_driver_rhel_epel_repo_baseurl: "{{ epel_baseurl }}"
+nvidia_driver_rhel_epel_repo_gpgkey:  "{{ epel_gpgkey }}"
+nvidia_driver_rhel_cuda_repo_baseurl: "{{ rhel_cuda_baseurl }}"
+nvidia_driver_rhel_cuda_repo_gpgkey:  "{{ rhel_cuda_gpgkey }}"
+
+# Configure Galaxy roles to skip adding additional repos
+nvidia_docker_add_repo: false
+docker_add_repo: false
+
+# Convenience format for initial config
+yum_base_repos:
+- name: "base"
+  url: "{{ base_baseurl }}"
+- name: "updates"
+  url: "{{ updates_baseurl }}"
+- name: "extras"
+  url: "{{ extras_baseurl }}"
+- name: "docker-ce"
+  url: "{{ docker_ce_baseurl }}"
+- name: "docker-engine"
+  url: "{{ docker_engine_baseurl }}"
+- name: "epel"
+  url: "{{ epel_baseurl }}"
+- name: "nvidia-container-runtime"
+  url: "{{ nvcontainer_runtime_baseurl }}"
+- name: "libnvidia-container"
+  url: "{{ libnv_container_baseurl }}"
+- name: "nvidia-docker"
+  url: "{{ nvdocker_repo_base_url }}"
+
+# Slurm download directory
+slurm_pkg_url: "{{ deepops_misc_mirror }}"
+slurm_pkg_tag: ""
+
+# Docker compose download
+docker_compose_download_url: "{{ deepops_misc_mirror }}/docker-compose"
+
+# NVIDIA k8s device plugin definition
+nvidia_k8s_device_plugin_def: "{{ deepops_misc_mirror }}/nvidia-device-plugin.yml"
+
+# NVIDIA Docker wrapper script
+nvidia_docker_wrapper_url: "{{ deepops_misc_mirror }}/nvidia-docker"
+
+###############################################################################
+# Kubespray-related variables
+# - These variables appear in Ansible playbooks from Kubespray
+###############################################################################
+
+cni_download_url: "{{ deepops_misc_mirror }}/cni-plugins-amd64-v0.6.0.tgz"
+hyperkube_download_url: "{{ deepops_misc_mirror }}/hyperkube"
+kubeadm_download_url: "{{ deepops_misc_mirror }}/kubeadm"
+
+kube_image_repo: "{{ deepops_docker_mirror }}/google-containers"
+
+calico_cni_image_repo: "{{ deepops_docker_mirror }}/calico/cni"
+calico_policy_image_repo: "{{ deepops_docker_mirror }}/calico/kube-controllers"
+calico_node_image_repo: "{{ deepops_docker_mirror }}/calico/node"
+calicoctl_image_repo: "{{ deepops_docker_mirror }}/calico/ctl"
+coredns_image_repo: "{{ deepops_docker_mirror }}/coredns/coredns"
+dashboard_image_repo: "{{ deepops_docker_mirror }}/google_containers/kubernetes-dashboard-amd64"
+dnsautoscaler_image_repo: "{{ deepops_docker_mirror }}/google_containers/cluster-proportional-autoscaler-amd64"
+dnsmasqautoscaler_image_repo: "{{ deepops_docker_mirror }}/google_containers/cluster-proportional-autoscaler-amd64"
+etcd_image_repo: "{{ deepops_docker_mirror }}/coreos/etcd"
+helm_image_repo: "{{ deepops_docker_mirror }}/lachlanevenson/k8s-helm"
+nginx_image_repo: "{{ deepops_docker_mirror }}/nginx"
+pod_infra_image_repo: "{{ deepops_docker_mirror }}/google_containers/pause-amd64"
+tiller_image_repo: "{{ deepops_docker_mirror }}/kubernetes-helm/tiller"
+local_volume_provisioner_image_repo: "{{ deepops_docker_mirror }}/external_storage/local-volume-provisioner"
+
+docker_insecure_registries:
+- "{{ deepops_docker_mirror }}"
+helm_stable_repo_url: "{{ deepops_charts_mirror }}"
