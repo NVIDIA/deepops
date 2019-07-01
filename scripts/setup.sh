@@ -12,6 +12,9 @@ ANSIBLE_VERSION="2.7.11"
 # Install Software
 case "$ID" in
     rhel*|centos*)
+        # Enable EPEL (required for Pip)
+        sudo yum -y install epel-release
+
         # Install pip
         if ! which pip >/dev/null 2>&1; then
             echo "Installing pip..."
