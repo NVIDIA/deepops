@@ -21,7 +21,6 @@ export DEEPOPS_CONFIG_DIR="${VIRT_DIR}/config"
 DEEPOPS_VIRT_CLEAN_CONFIG="${DEEPOPS_VIRT_CLEAN_CONFIG:-1}"
 if [ "${DEEPOPS_VIRT_CLEAN_CONFIG}" -ne 0 ]; then
 	rm -rf "${VIRT_DIR}/config"
-	rm -rf "${VIRT_DIR}/k8s-config"
 	cp -r "${ROOT_DIR}/config.example/" "${DEEPOPS_CONFIG_DIR}/"
 	cp "${VIRT_DIR}/virtual_inventory" "${DEEPOPS_CONFIG_DIR}/inventory"
 fi

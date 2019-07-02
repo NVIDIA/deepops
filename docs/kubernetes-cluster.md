@@ -51,7 +51,7 @@ Instructions for deploying a GPU cluster with Kubernetes
 5. Verify that the Kubernetes cluster is running. 
 
    ```sh
-   # You may need to manually run: `sudo cp ./k8s-config/artifacts/kubectl /usr/local/bin`
+   # You may need to manually run: `sudo cp ./config/artifacts/kubectl /usr/local/bin`
    kubectl get nodes
    ``` 
 

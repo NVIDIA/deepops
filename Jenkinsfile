@@ -56,7 +56,7 @@ pipeline {
           echo "Verify we can run a GPU job"
           sh '''
             cd virtual
-            export K8S_CONFIG_DIR=$(pwd)/k8s-config
+            export K8S_CONFIG_DIR=$(pwd)/config
             export KUBECONFIG="${K8S_CONFIG_DIR}/artifacts/admin.conf"
             export PATH="${K8S_CONFIG_DIR}/artifacts:${PATH}"
             chmod 755 $K8S_CONFIG_DIR/artifacts/kubectl
@@ -67,7 +67,7 @@ pipeline {
           echo "Verify ingress config"
           sh '''
             cd virtual
-            export K8S_CONFIG_DIR="$(pwd)/k8s-config"
+            export K8S_CONFIG_DIR="$(pwd)/config"
             export KUBECONFIG="${K8S_CONFIG_DIR}/artifacts/admin.conf"
             export PATH="${K8S_CONFIG_DIR}/artifacts:${PATH}"
             chmod 755 $K8S_CONFIG_DIR/artifacts/kubectl
