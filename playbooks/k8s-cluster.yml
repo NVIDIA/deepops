@@ -29,11 +29,6 @@
   tags:
     - bootstrap
 
-# Make sure Rook/Ceph dependencies are installed
-- include: bootstrap-rook.yml
-  tags:
-    - bootstrap
-
 # Install Kubernetes
 - include: ../kubespray/cluster.yml
   vars:
