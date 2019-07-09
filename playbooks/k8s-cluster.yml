@@ -30,17 +30,8 @@
     - bootstrap
 
 # Install Kubernetes
+# for configuration, see: config/group_vars/k8s-cluster.yml
 - include: ../kubespray/cluster.yml
-  vars:
-    ansible_become: true
-    kubeadm_enabled: true
-    kube_api_anonymous_auth: true
-    kubectl_localhost: true
-    kubeconfig_localhost: true
-    helm_enabled: true
-    tiller_node_selectors: "node-role.kubernetes.io/master=''"
-    docker_dns_servers_strict: no
-    docker_storage_options: -s overlay2
 
 # Disable swap (required for k8s), kubespray method doesn't quite cut it
 - hosts: all
@@ -52,16 +43,6 @@
       command: swapoff -a
   tags:
     - swap
-
-# Create artifact of kube config
-- hosts: kube-master
-  become: true
-  tasks:
-    - name: set kube config artifact
-      set_stats:
-        data:
-          kube_config: "{{ lookup('file', inventory_dir + '/artifacts/admin.conf') }}"
-      run_once: true
  
 # Manage Kubernetes cluster access config file
 - hosts: all
@@ -70,25 +51,29 @@
     ansible_become: no
     config_dir: "../config"
   tasks:
-    - name: register config path
+    - name: register alternate config path
       stat:
         path: "../k8s-config"
       register: k8s_config_dir
       delegate_to: localhost
+      run_once: true
     - set_fact:
         config_dir: "../k8s-config"
       when: k8s_config_dir.stat.exists
       delegate_to: localhost
+      run_once: true
     - name: create kube config directory for current user
       file:
         path: "{{ lookup('env','HOME') + '/.kube/' }}"
         state: directory
       delegate_to: localhost
+      run_once: true
     - name: check for kube config file
       stat:
         path: "{{ config_dir }}/artifacts/admin.conf"
       register: kubeconf
       delegate_to: localhost
+      run_once: true
     - name: copy kube config file for current user
       copy:
         src: "{{ config_dir }}/artifacts/admin.conf"
@@ -96,6 +81,7 @@
         backup: yes
       when: kubeconf.stat.exists
       delegate_to: localhost
+      run_once: true
   tags:
     - local
 
@@ -104,26 +90,6 @@
   tags:
     - nvidia
 - include: nvidia-docker.yml
-  vars:
-    # Docker Configuration
-    # Setting reference: https://docs.nvidia.com/deeplearning/dgx/user-guide/index.html
-    docker_daemon_json:
-      bip: 192.168.99.1/24
-      default-shm-size: 1G
-      default-ulimits:
-        memlock:
-          name: memlock
-          hard: -1
-          soft: -1
-        stack:
-          name: stack
-          hard: 67108864
-          soft: 67108864
-      default-runtime: nvidia
-      runtimes:
-        nvidia:
-          path: /usr/bin/nvidia-container-runtime
-          runtimeArgs: []
   tags:
     - nvidia
 
@@ -137,26 +103,30 @@
     ansible_become: no
     config_dir: "../config"
   tasks:
-    - name: register config path
+    - name: register alternate config path
       stat:
         path: "../k8s-config"
       register: k8s_config_dir
       delegate_to: localhost
+      run_once: true
     - set_fact:
         config_dir: "../k8s-config"
       when: k8s_config_dir.stat.exists
       delegate_to: localhost
+      run_once: true
     - name: check for kubectl
       stat:
         path: "{{ config_dir }}/artifacts/kubectl"
       register: kubectl_local
       delegate_to: localhost
+      run_once: true
     - name: modify kubectl permissions
       file:
         path: "{{ config_dir }}/artifacts/kubectl"
         mode: '0755'
       when: kubectl_local.stat.exists
       delegate_to: localhost
+      run_once: true
     - name: copy kubectl 
       copy:
         src: "{{ config_dir }}/artifacts/kubectl"
@@ -166,11 +136,13 @@
       ignore_errors: yes
       register: kubectl_copied
       delegate_to: localhost
+      run_once: true
     - name: check for copied kubectl
       stat:
         path: "/usr/local/bin/kubectl"
       register: kubectl_system
       delegate_to: localhost
+      run_once: true
     - name: modify kubectl permissions
       file:
         path: "/usr/local/bin/kubectl"
@@ -180,10 +152,12 @@
       ignore_errors: yes
       when: kubectl_system.stat.exists
       delegate_to: localhost
+      run_once: true
     - name: manually move kubectl binary
       debug:
         msg: "Unable to move kubectl, run: sudo cp {{ config_dir | realpath }}/artifacts/kubectl /usr/local/bin"
       when: kubectl_copied is failed
       delegate_to: localhost
+      run_once: true
   tags:
     - local
