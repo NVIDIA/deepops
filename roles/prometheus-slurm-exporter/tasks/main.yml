@@ -1,0 +1,56 @@
+---
+- name: create config dir
+  file:
+    path: "{{ prometheus_config_dir }}"
+    state: directory
+
+- name: create endpoints config dir
+  file:
+    path: "{{ prometheus_cfg_endpoint_dir }}"
+    state: directory
+
+- name: install config file
+  template:
+    src: templates/slurm-exporter.yml.j2
+    dest: "{{ prometheus_cfg_endpoint_dir }}/slurm-exporter.yml"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: create data dir
+  file:
+    path: "{{ grafana_data_dir }}"
+    state: directory
+    owner: "{{ grafana_user_id }}"
+
+- name: create dashboard dir
+  file:
+    path: "{{ grafana_cfg_dashboard_path }}"
+    state: directory
+    owner: "{{ grafana_user_id }}"
+
+- name: copy dashboards
+  copy:
+    src: "{{ item }}"
+    dest: "{{ grafana_cfg_dashboard_path }}"
+    owner: "{{ grafana_user_id }}"
+  with_items:
+    - slurm-dashboard.json
+  notify: restart grafana
+
+- name: install systemd unit file
+  template:
+    src: templates/docker.slurm-exporter.service.j2
+    dest: "/etc/systemd/system/{{ slurm_exporter_svc_name }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart slurm-exporter
+
+- name: configure service
+  systemd:
+    name: "{{ slurm_exporter_svc_name }}"
+    state: "{{ slurm_exporter_state }}"
+    enabled: "{{ slurm_exporter_enabled }}"
+    daemon_reload: yes
+  notify: restart slurm-exporter
