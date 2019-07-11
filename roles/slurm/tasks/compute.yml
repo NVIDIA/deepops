@@ -7,6 +7,7 @@
   with_items:
     - hwloc
     - hwloc-devel
+    - psmisc
   when: ansible_os_family == "RedHat"
 
 - name: add cgroups to grub options

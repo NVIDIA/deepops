@@ -5,6 +5,7 @@
     state: present
   with_items:
     - "virtualenv"
+    - "python-setuptools"
   when: ansible_distribution == 'Ubuntu'
 
 - name: create location for python virtual env

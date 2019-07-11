@@ -3,18 +3,15 @@
 # Upgrading:
 # `helm update`
 # `helm search rook` # get latest version number
-# `helm upgrade --namespace rook-ceph-system rook-ceph rook-master/rook-ceph --version v0.9.0-174.g3b14e51`
+# `helm upgrade --namespace rook-ceph rook-ceph rook-release/rook-ceph --version v0.9.0-174.g3b14e51`
 
-set -x
-
-HELM_ROOK_CHART_REPO="${HELM_ROOK_CHART_REPO:-https://charts.rook.io/master}"
+HELM_ROOK_CHART_REPO="${HELM_ROOK_CHART_REPO:-https://charts.rook.io/release}"
+HELM_ROOK_CHART_VERSION="${HELM_ROOK_CHART_VERSION:-v1.0.2}"
 
 ./scripts/install_helm.sh
 
-helm repo list | grep rook-master >/dev/null 2>&1
-if [ $? -ne 0 ] ; then
-    helm repo add rook-master "${HELM_ROOK_CHART_REPO}"
-fi
+# https://github.com/rook/rook/blob/master/Documentation/helm-operator.md
+helm repo add rook-release "${HELM_ROOK_CHART_REPO}"
 
 # Use an alternate image if set
 helm_install_extra_flags=""
@@ -25,13 +22,8 @@ fi
 # Install rook-ceph
 helm status rook-ceph >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
-    helm install \
-	    --namespace rook-ceph-system \
-	    --name rook-ceph \
-	    rook-master/rook-ceph \
-	    --version v0.9.0-79.g1a1ffdd ${helm_install_extra_flags}
+    helm install --namespace rook-ceph --name rook-ceph rook-release/rook-ceph --version "${HELM_ROOK_CHART_VERSION}" ${helm_install_extra_flags}
 fi
-
 
 if kubectl -n rook-ceph get pod -l app=rook-ceph-tools 2>&1 | grep "No resources found." >/dev/null 2>&1; then
     sleep 5
