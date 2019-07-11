@@ -28,7 +28,7 @@ slurm_return_to_service: 1
 
 # Sets: GresTypes=gpu
 # Sets: Gres=gpu:{{ gpu_topology|count }}
-slurm_manage_gpus: yes
+slurm_manage_gpus: true
 
 # Controls the ability of the partition to execute more than one job at a time on each resource (node, socket or core depending upon the value of SelectTypeParameters). If resources are to be over-subscribed, avoiding memory over-subscription is very important. SelectTypeParameters should be configured to treat memory as a consumable resource and the --mem option should be used for job allocations. Sharing of resources is typically useful only when using gang scheduling (PreemptMode=suspend,gang). Possible values for OverSubscribe are "EXCLUSIVE", "FORCE", "YES", and "NO". Note that a value of "YES" or "FORCE" can negatively impact performance for systems with many thousands of running jobs. The default value is "NO". For more information see the following web pages: 
 # Sets partition OverSubscribe

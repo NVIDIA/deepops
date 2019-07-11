@@ -21,7 +21,7 @@
 
 # Slurm job scheduler configuration
 #slurm_user_home: /local/slurm
-#slurm_manage_gpus: yes
+#slurm_manage_gpus: true
 #slurm_cluster_name: deepops
 #slurm_username: slurm
 #slurm_password: ReplaceWithASecurePasswordInTheVault
