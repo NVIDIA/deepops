@@ -39,15 +39,13 @@
     name: "{{ slurm_pkg_url }}/{{ slurm_pkg_tag }}/{{ item }}"
     state: present
   with_items:
-    - "{{ slurm_rhel_deb }}"
+    - "{{ slurm_rhel_rpm }}"
   notify:
     - restart slurmd
     - restart slurmdbd
     - restart slurmctld
   when: ansible_os_family == "RedHat"
   register: install_slurm_rhel
-
-- meta: flush_handlers
 
 - name: Check for supported OS
   fail:
