@@ -66,3 +66,8 @@
 
 #software_remove_packages:
 #  - popularity-contest
+
+# Set /etc/rc.local contents. Use playbooks/rc-local.yml
+# rc_local_contents: |
+#   echo foo
+#   echo bar
