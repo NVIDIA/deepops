@@ -1,0 +1,50 @@
+---
+- name: grab enroot check script
+  get_url:
+    url: "{{ enroot_baseurl }}/{{ enroot_tag }}/{{ enroot_check_script }}"
+    dest: "/tmp/{{ enroot_check_script }}"
+    mode: '0755'
+
+- name: run enroot check script
+  command: "/tmp/{{ enroot_check_script|quote }} --verify"
+  register: enroot_check_verify
+
+- name: print enroot check output
+  debug:
+    msg: "{{ enroot_check_verify.stdout }}"
+
+- name: run enroot check script
+  command: "/tmp/{{ enroot_check_script|quote }}"
+  register: enroot_check_result
+  ignore_errors: true
+
+- name: check for enroot compatibility
+  fail:
+    msg: "enroot requirements not satisfied, see: https://github.com/NVIDIA/enroot/blob/master/doc/requirements.md"
+  when: enroot_check_result.rc != 0
+
+- name: remove enroot check script
+  file:
+    name: "/tmp/{{ enroot_check_script }}"
+    state: absent
+
+- name: install enroot packages - ubuntu
+  apt:
+    deb: "{{ item }}"
+  with_items:
+    - "{{ enroot_baseurl }}/{{ enroot_tag }}/{{ enroot_deb }}"
+    - "{{ enroot_baseurl }}/{{ enroot_tag }}/{{ enroot_caps_deb }}"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Add epel repo - rhel
+  yum:
+    name: epel-release
+  when: ansible_os_family == 'RedHat'
+
+- name: install enroot packages - rhel
+  yum:
+    name: "{{ item }}"
+  with_items:
+    - "{{ enroot_baseurl }}/{{ enroot_tag }}/{{ enroot_rpm }}"
+    - "{{ enroot_baseurl }}/{{ enroot_tag }}/{{ enroot_caps_rpm }}"
+  when: ansible_os_family == 'RedHat'

@@ -1,0 +1,12 @@
+
+enroot_baseurl: "https://github.com/NVIDIA/enroot/releases/download/"
+enroot_tag: "v1.1.0"
+enroot_pkg_version: "1.1.0-1"
+
+enroot_deb: "enroot_{{ enroot_pkg_version }}_amd64.deb"
+enroot_caps_deb: "enroot+caps_{{ enroot_pkg_version }}_amd64.deb"
+enroot_rpm: "enroot-{{ enroot_pkg_version }}.el7.x86_64.rpm"
+enroot_caps_rpm: "enroot+caps-{{ enroot_pkg_version }}.el7.x86_64.rpm"
+
+enroot_check_version: "1.1.0"
+enroot_check_script: "enroot-check_{{ enroot_check_version }}.run"

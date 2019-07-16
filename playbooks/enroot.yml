@@ -1,0 +1,9 @@
+---
+- import_playbook: nvidia-docker.yml
+
+- hosts: all
+  become: yes
+  tasks:
+    - name: install enroot
+      include_role:
+        name: enroot
