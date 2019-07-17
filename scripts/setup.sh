@@ -147,8 +147,12 @@ case "$ID" in
 esac
 
 if ! grep -i deepops README.md >/dev/null 2>&1 ; then
-    git clone https://github.com/NVIDIA/deepops.git
-    cd deepops
+    if test -d deepops ; then
+        cd deepops
+    else
+        git clone https://github.com/NVIDIA/deepops.git
+        cd deepops
+    fi
 fi
 
 # Install Ansible Galaxy roles
