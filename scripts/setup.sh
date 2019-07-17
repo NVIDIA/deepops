@@ -147,6 +147,7 @@ case "$ID" in
 esac
 
 if ! grep -i deepops README.md >/dev/null 2>&1 ; then
+    cd "${SCRIPT_DIR}"
     if ! test -d deepops ; then
         git clone https://github.com/NVIDIA/deepops.git
     fi
