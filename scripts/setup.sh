@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# can be run standalone with: curl -sL git.io/deepops | bash
+
 . /etc/os-release
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -82,6 +84,12 @@ case "$ID" in
             sudo apt-get -y install software-properties-common >/dev/null
         fi
 
+        # Install sshpass
+        type sshpass >/dev/null 2>&1
+        if [ $? -ne 0 ] ; then
+            sudo apt-get -y install sshpass >/dev/null
+        fi
+
         # Install pip
         if ! which pip >/dev/null 2>&1; then
             echo "Installing pip..."
@@ -137,6 +145,11 @@ case "$ID" in
         echo "Please install Ansible, Git, and python-netaddr manually"
         ;;
 esac
+
+if ! grep -i deepops README.md >/dev/null 2>&1 ; then
+    git clone https://github.com/NVIDIA/deepops.git
+    cd deepops
+fi
 
 # Install Ansible Galaxy roles
 ansible-galaxy --version >/dev/null 2>&1
