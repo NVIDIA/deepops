@@ -29,3 +29,5 @@
 - src: geerlingguy.elasticsearch
 - src: geerlingguy.java
 - src: geerlingguy.kibana
+
+- src: mrlesmithjr.maas
