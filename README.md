@@ -14,7 +14,7 @@ The DeepOps project encapsulates best practices in the deployment of GPU server 
 
 ## Releases
 
-Latest release: [DeepOps 19.03 Release](https://github.com/NVIDIA/deepops/releases/tag/19.03)
+Latest release: [DeepOps 19.07 Release](https://github.com/NVIDIA/deepops/releases/tag/19.07)
 
 It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally functional but may change significantly between releases.
 
