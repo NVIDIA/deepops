@@ -6,19 +6,17 @@
 
 set -e
 
-ANSIBLE_VERSION="2.7.12"
-
 mounts() {
     echo "$0 /etc/rc bind,noexec"
 }
 
 environ() {
-    env
     echo "LANG=C.UTF-8"
     echo "LC_ALL=C.UTF-8"
 }
 
-if [ "$0" = "/etc/rc" ]; then
+rc() {
+    ANSIBLE_VERSION="2.7.12"
     apt-get -y update && apt-get -y install --no-install-recommends \
         python-pip \
         python-netaddr \
@@ -29,19 +27,20 @@ if [ "$0" = "/etc/rc" ]; then
     rm -rf /var/lib/apt/lists/*
     pip install setuptools
     pip install ansible=="${ANSIBLE_VERSION}"
-else
-    cat <<EOF >${ENROOT_ROOTFS}/etc/fstab
+}
+
+cat <<EOF >${ENROOT_ROOTFS}/etc/fstab
 "${PWD} /mnt"
 "${HOME} ${HOME}"
 EOF
 
-    cat <<EOF >${ENROOT_ROOTFS}/etc/environment
+cat <<EOF >${ENROOT_ROOTFS}/etc/environment
 env
 "LANG=C.UTF-8"
 "LC_ALL=C.UTF-8"
 EOF
 
-    cat <<EOF >${ENROOT_ROOTFS}/etc/rc
+cat <<EOF >${ENROOT_ROOTFS}/etc/rc
 cd /mnt
 if ! test -d deepops ; then
     git clone https://github.com/NVIDIA/deepops.git
@@ -72,4 +71,3 @@ fi
 
 PROMPT_COMMAND='PS1="[deepops] \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ ";unset PROMPT_COMMAND' bash
 EOF
-fi
