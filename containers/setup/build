@@ -10,7 +10,6 @@ ANSIBLE_VERSION="2.7.12"
 
 mounts() {
     echo "$0 /etc/rc bind,noexec"
-    echo "$(dirname $0) /mnt/build"
 }
 
 environ() {
@@ -18,41 +17,6 @@ environ() {
     echo "LANG=C.UTF-8"
     echo "LC_ALL=C.UTF-8"
 }
-
-cat <<EOF >${ENROOT_ROOTFS}/etc/fstab
-"\$0 /etc/rc bind,noexec"
-"${PWD} /deepops"
-"${HOME} ${HOME}"
-EOF
-
-cat <<EOF >${ENROOT_ROOTFS}/etc/environment
-env
-"LANG=C.UTF-8"
-"LC_ALL=C.UTF-8"
-EOF
-
-cat <<EOF >${ENROOT_ROOTFS}/etc/rc
-cd /deepops
-if [ ! -f .setup_done ] ; then
-    echo "Setting up for first use..."
-    echo "Downloading Ansible Galaxy roles..." && ansible-galaxy install -r requirements.yml >/dev/null 2>&1
-
-    echo "Updating submodules..." && git submodule update --init
-
-    # Copy default configuration
-    CONFIG_DIR=\${CONFIG_DIR:-./config}
-    if [ ! -d "\${CONFIG_DIR}" ] ; then
-        cp -rfp ./config.example "\${CONFIG_DIR}"
-        echo "Copied default configuration to \${CONFIG_DIR}"
-    else
-        echo "Configuration directory '\${CONFIG_DIR}' exists, not overwriting"
-    fi
-
-    touch .setup_done
-fi
-
-PROMPT_COMMAND='PS1="[deepops] \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ ";unset PROMPT_COMMAND' bash
-EOF
 
 if [ "$0" = "/etc/rc" ]; then
     apt-get -y update && apt-get -y install --no-install-recommends \
@@ -65,4 +29,47 @@ if [ "$0" = "/etc/rc" ]; then
     rm -rf /var/lib/apt/lists/*
     pip install setuptools
     pip install ansible=="${ANSIBLE_VERSION}"
+else
+	cat <<EOF >${ENROOT_ROOTFS}/etc/fstab
+"${PWD} /mnt"
+"${HOME} ${HOME}"
+EOF
+
+	cat <<EOF >${ENROOT_ROOTFS}/etc/environment
+env
+"LANG=C.UTF-8"
+"LC_ALL=C.UTF-8"
+EOF
+
+	cat <<EOF >${ENROOT_ROOTFS}/etc/rc
+cd /mnt
+if ! test -d deepops ; then
+	git clone https://github.com/NVIDIA/deepops.git
+else
+	grep -Ri deepops deepops/.git/config >/dev/null 2>&1
+	if [ $? -ne 0 ] ; then
+		echo "deepops dir exists but does not appear to be a git repo"
+		exit 1
+	fi
+fi
+cd /mnt/deepops
+if [ ! -f .setup_done ] ; then
+	echo "Setting up for first use..."
+	echo "Downloading Ansible Galaxy roles..." && ansible-galaxy install -r requirements.yml >/dev/null 2>&1
+	echo "Updating submodules..." && git submodule update --init
+
+	# Copy default configuration
+	CONFIG_DIR=\${CONFIG_DIR:-./config}
+	if [ ! -d "\${CONFIG_DIR}" ] ; then
+		cp -rfp ./config.example "\${CONFIG_DIR}"
+		echo "Copied default configuration to \${CONFIG_DIR}"
+	else
+		echo "Configuration directory '\${CONFIG_DIR}' exists, not overwriting"
+	fi
+
+	touch .setup_done
+fi
+
+PROMPT_COMMAND='PS1="[deepops] \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ ";unset PROMPT_COMMAND' bash
+EOF
 fi
