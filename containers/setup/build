@@ -30,44 +30,44 @@ if [ "$0" = "/etc/rc" ]; then
     pip install setuptools
     pip install ansible=="${ANSIBLE_VERSION}"
 else
-	cat <<EOF >${ENROOT_ROOTFS}/etc/fstab
+    cat <<EOF >${ENROOT_ROOTFS}/etc/fstab
 "${PWD} /mnt"
 "${HOME} ${HOME}"
 EOF
 
-	cat <<EOF >${ENROOT_ROOTFS}/etc/environment
+    cat <<EOF >${ENROOT_ROOTFS}/etc/environment
 env
 "LANG=C.UTF-8"
 "LC_ALL=C.UTF-8"
 EOF
 
-	cat <<EOF >${ENROOT_ROOTFS}/etc/rc
+    cat <<EOF >${ENROOT_ROOTFS}/etc/rc
 cd /mnt
 if ! test -d deepops ; then
-	git clone https://github.com/NVIDIA/deepops.git
+    git clone https://github.com/NVIDIA/deepops.git
 else
-	grep -Ri deepops deepops/.git/config >/dev/null 2>&1
-	if [ $? -ne 0 ] ; then
-		echo "deepops dir exists but does not appear to be a git repo"
-		exit 1
-	fi
+    grep -Ri deepops deepops/.git/config >/dev/null 2>&1
+    if [ $? -ne 0 ] ; then
+        echo "deepops dir exists but does not appear to be a git repo"
+        exit 1
+    fi
 fi
 cd /mnt/deepops
 if [ ! -f .setup_done ] ; then
-	echo "Setting up for first use..."
-	echo "Downloading Ansible Galaxy roles..." && ansible-galaxy install -r requirements.yml >/dev/null 2>&1
-	echo "Updating submodules..." && git submodule update --init
+    echo "Setting up for first use..."
+    echo "Downloading Ansible Galaxy roles..." && ansible-galaxy install -r requirements.yml >/dev/null 2>&1
+    echo "Updating submodules..." && git submodule update --init
 
-	# Copy default configuration
-	CONFIG_DIR=\${CONFIG_DIR:-./config}
-	if [ ! -d "\${CONFIG_DIR}" ] ; then
-		cp -rfp ./config.example "\${CONFIG_DIR}"
-		echo "Copied default configuration to \${CONFIG_DIR}"
-	else
-		echo "Configuration directory '\${CONFIG_DIR}' exists, not overwriting"
-	fi
+    # Copy default configuration
+    CONFIG_DIR=\${CONFIG_DIR:-./config}
+    if [ ! -d "\${CONFIG_DIR}" ] ; then
+        cp -rfp ./config.example "\${CONFIG_DIR}"
+        echo "Copied default configuration to \${CONFIG_DIR}"
+    else
+        echo "Configuration directory '\${CONFIG_DIR}' exists, not overwriting"
+    fi
 
-	touch .setup_done
+    touch .setup_done
 fi
 
 PROMPT_COMMAND='PS1="[deepops] \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ ";unset PROMPT_COMMAND' bash
