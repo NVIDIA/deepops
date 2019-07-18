@@ -6,10 +6,6 @@
 
 set -e
 
-mounts() {
-    echo "$0 /etc/rc bind,noexec"
-}
-
 environ() {
     echo "LANG=C.UTF-8"
     echo "LC_ALL=C.UTF-8"
@@ -29,9 +25,10 @@ rc() {
     pip install ansible=="${ANSIBLE_VERSION}"
 }
 
+hooks() {
 cat <<EOF >${ENROOT_ROOTFS}/etc/fstab
-"${PWD} /mnt"
-"${HOME} ${HOME}"
+"\${PWD} /mnt x-create=dir,bind"
+"\${HOME} \${HOME} x-create=dir,bind"
 EOF
 
 cat <<EOF >${ENROOT_ROOTFS}/etc/environment
@@ -71,3 +68,4 @@ fi
 
 PROMPT_COMMAND='PS1="[deepops] \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ ";unset PROMPT_COMMAND' bash
 EOF
+}
