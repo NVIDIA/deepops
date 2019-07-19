@@ -19,7 +19,8 @@ rc() {
         git \
         sshpass \
         vim-tiny \
-        less
+        less \
+        openssh-client
     rm -rf /var/lib/apt/lists/*
     pip install setuptools
     pip install ansible=="${ANSIBLE_VERSION}"
