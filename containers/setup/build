@@ -27,17 +27,18 @@ rc() {
 
 hooks() {
 cat <<EOF >${ENROOT_ROOTFS}/etc/fstab
-"\${PWD} /mnt none x-create=dir,bind"
-"\${HOME} \${HOME} none x-create=dir,bind"
+\${PWD} /mnt none x-create=dir,bind,nofail
+\${HOME} \${HOME} none x-create=dir,bind,nofail
 EOF
 
 cat <<EOF >${ENROOT_ROOTFS}/etc/environment
 env
-"LANG=C.UTF-8"
-"LC_ALL=C.UTF-8"
+LANG=C.UTF-8
+LC_ALL=C.UTF-8
 EOF
 
 cat <<EOF >${ENROOT_ROOTFS}/etc/rc
+#ENROOT_LOGIN_SHELL=/bin/bash
 cd /mnt
 if ! test -d deepops ; then
     git clone https://github.com/NVIDIA/deepops.git
