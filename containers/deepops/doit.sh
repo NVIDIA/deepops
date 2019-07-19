@@ -25,4 +25,4 @@ ${ENROOT_BIN} batch ./build
 ${ENROOT_BIN} export -o deepops.sqsh ubuntu
 
 # bundle image as standalone binary
-${ENROOT_BIN} bundle deepops.sqsh
+${ENROOT_BIN} bundle --target "\$PWD/deepops.bundle" deepops.sqsh

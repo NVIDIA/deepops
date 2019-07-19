@@ -35,9 +35,14 @@ cat <<EOF >${ENROOT_ROOTFS}/etc/environment
 env
 LANG=C.UTF-8
 LC_ALL=C.UTF-8
+ENROOT_REMAP_ROOT=y
+ENROOT_ROOTFS_WRITABLE=y
+ENROOT_LOGIN_SHELL=/bin/bash
 EOF
 
 cat <<EOF >${ENROOT_ROOTFS}/etc/rc
+#ENROOT_REMAP_ROOT=y
+#ENROOT_ROOTFS_WRITABLE=y
 #ENROOT_LOGIN_SHELL=/bin/bash
 cd /mnt
 if ! test -d deepops ; then
