@@ -27,8 +27,8 @@ rc() {
 
 hooks() {
 cat <<EOF >${ENROOT_ROOTFS}/etc/fstab
-"\${PWD} /mnt x-create=dir,bind"
-"\${HOME} \${HOME} x-create=dir,bind"
+"\${PWD} /mnt none x-create=dir,bind"
+"\${HOME} \${HOME} none x-create=dir,bind"
 EOF
 
 cat <<EOF >${ENROOT_ROOTFS}/etc/environment
