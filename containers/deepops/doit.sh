@@ -7,6 +7,12 @@ export ENROOT_CACHE_PATH=${ENROOT_CACHE_PATH:-/tmp/enroot/cache}
 export ENROOT_DATA_PATH=${ENROOT_DATA_PATH:-/tmp/enroot/data}
 export ENROOT_TEMP_PATH=${ENROOT_TEMP_PATH:-/tmp/enroot/tmp}
 
+# default mksquashfs options
+#export ENROOT_SQUASH_OPTIONS="-comp lzo -noD"
+# use compression; default "lzo" requires `lzop` on target
+# does make launching the .run file a little slower
+export ENROOT_SQUASH_OPTIONS="-comp gzip"
+
 rm -rf ${ENROOT_RUNTIME_PATH} ${ENROOT_CACHE_PATH} ${ENROOT_DATA_PATH} ${ENROOT_TEMP_PATH}
 mkdir -p ${ENROOT_RUNTIME_PATH} ${ENROOT_CACHE_PATH} ${ENROOT_DATA_PATH} ${ENROOT_TEMP_PATH}
 
