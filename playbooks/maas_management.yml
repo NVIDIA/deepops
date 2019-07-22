@@ -46,8 +46,8 @@
 
     - name: Generating KVM VMs List
       template:
-        src: "templates/kvm_vms_list.yml.j2"
-        dest: "./vars/kvm_vms_list.yml"
+        #src: "templates/kvm_vms_list.yml.j2"
+        #dest: "./vars/kvm_vms_list.yml"
       become: false
       delegate_to: "localhost"
       run_once: true
@@ -59,7 +59,7 @@
   remote_user: remote
   become: true
   vars:
-    inventory_directory: '../inventory'
+    inventory_directory: '../config'
     maas_boot_images:
       arches:
         - 'amd64'
@@ -83,18 +83,19 @@
     maas_ntp_servers:
       - 'ntp.ubuntu.com'
     maas_ntp_use_external_only: false
-    maas_release_machines: []
+    maas_release_machines:
       # - 'heroic-guinea'
       # - 'square-gar'
       # - 'sure-toucan'
       # - 'worthy-sponge'
+      - 'humane-orca'
     # Defines upstream DNS servers to configure
     maas_upstream_dns_servers:
-      - '10.10.10.1'
+      - '8.8.8.8'
     maas_vars_folder: './vars'
     maas_virsh_user: 'administrator'
   vars_files:
-    - './vars/kvm_vms_list.yml'
+    #- './vars/kvm_vms_list.yml'
   roles:
   tasks:
     - name: Installing JQ
@@ -567,7 +568,7 @@
   vars:
     maas_vars_folder: './vars'
   vars_files:
-    - './vars/kvm_vms_list.yml'
+    #- './vars/kvm_vms_list.yml'
     - '{{ maas_vars_folder }}/maas_management_vars.yml'
   roles:
   tasks:
@@ -970,18 +971,64 @@
     email_notifications_enabled: false
     email_server_hostname: 'smtp.charter.net'
     email_server_port: '25'
-  roles:
-    - role: ansible-bootstrap
-      tags:
-        - maas_machines
-        - prep_machines
-    - role: ansible-users
-      tags:
-        - prep_machines
-    - role: ansible-manage-ssh-keys
-      tags:
-        - prep_machines
+    docker_daemon_json: {}
+#  roles:
+#    - role: ansible-bootstrap
+#      tags:
+#        - maas_machines
+#        - prep_machines
+#    - role: ansible-users
+#      tags:
+#        - prep_machines
+#    - role: ansible-manage-ssh-keys
+#      tags:
+#        - prep_machines
   tasks:
+    - name: create docker config directory
+      file:
+        path: /etc/docker
+        state: directory
+    - name: write new docker config
+      copy:
+        content: "{{ docker_daemon_json | to_nice_json }}"
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: 0644
+    - name: install docker
+      include_role:
+        name: docker
+      vars:
+        # matches: kubespray/roles/container-engine/docker/vars/ubuntu-amd64.yml
+        #docker_package: 'docker-ce=18.06.1~ce~3-0~ubuntu'
+        docker_package: 'docker-ce=5:18.09.5~3-0~ubuntu-{{ ansible_distribution_release }}'
+      when: ansible_distribution == "Ubuntu"
+    - name: install docker
+      include_role:
+        name: docker
+      vars:
+        # matches: kubespray/roles/container-engine/docker/vars/redhat.yml
+        #docker_package: 'docker-ce-18.06.2.ce-3.el7'
+        docker_package: 'docker-ce-18.09.5-3.el7'
+      when: ansible_os_family == "RedHat"
+    - name: install custom facts
+      include_role:
+        name: facts
+    - name: install nvidia driver
+      include_role:
+        name: nvidia.nvidia_driver
+      when: ansible_local['gpus']['count']
+    - name: test nvidia-smi
+      command: nvidia-smi
+      changed_when: false
+      when: ansible_local['gpus']['count']
+    - name: install custom facts module
+      include_role:
+        name: facts
+    - name: install nvidia-docker
+      include_role:
+        name: nvidia.nvidia_docker
+      when: ansible_local['gpus']['count'] and (ansible_distribution == "Ubuntu" or ansible_os_family == "RedHat")
     - name: Generate E-Mail Notification Body
       template:
         src: "templates/email_notification.txt.j2"
@@ -990,7 +1037,6 @@
       become: false
       run_once: true
       when: email_notifications_enabled
-
     - name: Send E-Mail Notification
       mail:
         host: "{{ email_server_hostname }}"
