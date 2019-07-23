@@ -1,31 +1,38 @@
 ---
 
 - src: dev-sec.ssh-hardening
-  version: "6.0.0"
+  version: "6.1.3"
 
 - src: unxnn.users
-  version: '56f9436e0d1e92a743e9f960d0b978ac8b72e070'
+  version: '78fd08ca86678d00da376eaac909d22e1022a020'
 
 - src: https://github.com/lukeyeager/ansible-role-hosts.git
   version: '711ba98571f068a8bc6739fa1055ac38fc931010'
   name: lukeyeager.hosts
 
 - src: geerlingguy.ntp
-  version: "1.6.2"
+  version: "1.6.3"
 
 - src: andrewrothstein.miniconda
-  version: "v5.2.3"
+  version: "v5.2.6"
 
-# https://github.com/NVIDIA/ansible-role-nvidia-driver
 - src: nvidia.nvidia_driver
-  version: "v1.0.0"
+  version: "v1.1.0"
 
-# https://github.com/NVIDIA/ansible-role-nvidia-docker
 - src: nvidia.nvidia_docker
-  version: "v1.0.0"
+  version: "v1.1.0"
 
 - src: geerlingguy.filebeat
+  version: "2.0.1"
+
 - src: geerlingguy.logstash
+  version: "4.0.0"
+
 - src: geerlingguy.elasticsearch
+  version: "3.0.1"
+
 - src: geerlingguy.java
+  version: "1.9.5"
+
 - src: geerlingguy.kibana
+  version: "3.2.1"
