@@ -93,7 +93,7 @@ To use DeepOps this repository will need to be downloaded onto the administrator
 
    > Note: If using Git 2.16.2 or earlier (`git --version`), use  `--recursive` instead of `--recurse-submodules`. If you did a non-recursive clone, you can later run `git submodule update --init --recursive` to pull down submodules
 
-   > With an Ubuntu install you don't get "git" and won't be able to clone the DeepOps repository. You can either install git  `apt -y install.git` or run `setup.sh`  from DeepOps with the following command:   `curl -sL git.io/deepops | bash` 
+   > With an Ubuntu install you don't get "git" and won't be able to clone the DeepOps repository. You can either install git (`apt -y install.git`) or run `setup.sh`  from DeepOps with the following command:   `curl -sL git.io/deepops | bash` 
 
    > All subsequent commands are run out of the 'deepops' directory
 
@@ -102,30 +102,27 @@ To use DeepOps this repository will need to be downloaded onto the administrator
    This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](ANSIBLE.md). 
 
    ```sh
-   # Install software prerequisites and copy default configuration.  See the script for components installed.  The `setup.sh` script will install the following software packages: Ansible, Docker, Git, ipmitool, python-netaddr (required by kubespray), pip, wget.
+   # Install software prerequisites and copy default configuration.  See the script for components installed.  
 
    ./scripts/setup.sh
-
    ```
-
 
 3. Edit the Ansible inventory file.
 
-Ansible uses an inventory which outlines the servers in your cluster. The setup script from the previous step will copy an example inventory configuration to the `config` directory. 
-
-The cluster should ideally use DNS, but you can also explicitly set server IP addresses in the inventory file.
+   Ansible uses an inventory which outlines the servers in your cluster. The setup script from the previous step will copy an example inventory configuration to the `config` directory. 
+   
+   The cluster should ideally use DNS, but you can also explicitly set server IP addresses in the inventory file.
 
 ```sh
-# Edit inventory and add nodes to the "ALL NODES and "KUBERNETES" sections
+   # Edit inventory and add nodes to the "ALL NODES and "KUBERNETES" sections
    # Note: Etcd requires an odd number of servers (https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/#prerequisites)
 
    vi config/inventory
    
    # (optional) Modify `config/group_vars/*.yml` to set configuration parameters.  The cluster-wide global config resides in the `all.yml`
-
 ```
 
-     Optional inventory settings:
+   Optional inventory settings:
 
    * Use the `ansible_host` variable to set alternate IP addresses for servers or for servers which do not have resolvable hostnames (i.e. 'mgmt01     ansible_host=10.0.0.1')
    * Use the `ib_bond_addr` variable to configure the infiniband network adapters with IPoIB in a single bonded interface
@@ -135,7 +132,7 @@ The cluster should ideally use DNS, but you can also explicitly set server IP ad
 
 The configuration assumes a single cpu-only management server, but multiple management servers can be used for high-availability. Ensure that the inventory file is edited accordingly if using more than one management server.
 
-Install the latest version of Ubuntu Server 18.04 LTS on each management server. Be sure to enable SSH `apt install openssh-server` and record the user and password used during install.
+Install the latest version of Ubuntu Server 18.04 LTS on each management server. Be sure to enable SSH (`apt install openssh-server`) and record the user and password used during install.
 
 
 ### 3. Deploy Kubernetes to the management node(s) using Ansible and Kubespray
@@ -145,20 +142,18 @@ Deploy Kubernetes to just the management node(s) using the k8s-cluster playbook:
 ```sh
 #NOTE:  If all the systems you are connecting to share the same username/password DeepOps will generate an ssh key and set up key auth on each node
 
-ansible-playbook -l kube-master playbooks/k8s-cluster.yml
-
-
 # NOTE: If SSH requires a password, add: `-k`
 # NOTE: If sudo on remote machine requires a password, add: `-K`
 # NOTE: If SSH user is different than current user, add: `-u ubuntu`
-
-ansible-playbook -l kube-master -k -u dgxuser -K playbooks/k8s-cluster.yml
-
+# NOTE: i.e. ansible-playbook -l kube-master -k -u dgxuser -K playbooks/k8s-cluster.yml
+    
+ansible-playbook -l kube-master playbooks/k8s-cluster.yml
 ```
 
 Verify the Kubernetes cluster is running and you can access:
 
 ```sh
+
 # You may need to manually run: `sudo cp ./config/artifacts/kubectl /usr/local/bin`
 
 kubectl get nodes
@@ -170,27 +165,29 @@ k8-mgmt03        Ready    master   21m   v1.12.5
 
 ```
 
-
 ### 4. Deploy basic cluster services
 
+1. Install an ingress controller for the cluster.
 
-1. (Optional) Use DGXie for OS management of DGX servers.
+   See the [Ingress Guide](ingress.md) for details on how to install and configure ingress.
+
+2. (Optional) Use DGXie for OS management of DGX servers.
 
    If you already have DHCP, DNS, or PXE servers you can skip this step.
 
    Follow the setup, configure, and deploy instructions in the [DGXie Guide](dgxie.md).
- 
 
-#### Offline air-gabbed components
 
-2. (Optional) Deploy Internal Container Registry
+note: The following K8s services are especially helpful for air-gapped environemnts
 
-The default container registry hostname is `registry.local`. To set another hostname (for example,
-one that is resolvable outside the cluster), add `-e container_registry_hostname=registry.example.com`.
+3. (Optional) Deploy Internal Container Registry
 
-```sh
-ansible-playbook --tags container-registry playbooks/k8s-services.yml
-```
+   The default container registry hostname is `registry.local`. To set another hostname (for example,
+   one that is resolvable outside the cluster), add `-e container_registry_hostname=registry.example.com`.
+
+   ```sh
+   ansible-playbook --tags container-registry playbooks/k8s-services.yml
+   ```
 
 3. (Optional) Deploy Internal Repositories
 
@@ -265,35 +262,28 @@ ansible dgx-servers -k -a 'hostname'
 
 1. Run the same `k8s-cluster` ansible-playbook, but this time, we run against both the managment nodes (kube-master) and GPU nodes GPU nodes (kube-node).
 
+   ```sh
+   # NOTE: If SSH requires a password, add: `-k`
+   # NOTE: If sudo on remote machine requires a password, add: `-K`
+   # NOTE: If SSH user is different than current user, add: `-u ubuntu`
+   # NOTE: i.e. ansible-playbook -l k8s-cluster -k -u dgxuser -K playbooks/k8s-cluster.yml
 
-```sh
-
-ansible-playbook -l k8s-cluster playbooks/k8s-cluster.yml
-
-
-# NOTE: If SSH requires a password, add: `-k`
-# NOTE: If sudo on remote machine requires a password, add: `-K`
-# NOTE: If SSH user is different than current user, add: `-u ubuntu`
-
-ansible-playbook -l k8s-cluster -k -u dgxuser -K playbooks/k8s-cluster.yml
-
-```
+   ansible-playbook -l k8s-cluster playbooks/k8s-cluster.yml
+   ```
 
 
 2. Verify that the Kubernetes cluster is running. 
 
    ```sh
-# You may need to manually run: `sudo cp ./k8s-config/artifacts/kubectl /usr/local/bin`
+   # You may need to manually run: `sudo cp ./k8s-config/artifacts/kubectl /usr/local/bin`
 
-kubectl get nodes
+   kubectl get nodes
 
-
-NAME             STATUS   ROLES    AGE   VERSION
-k8-mgmt01        Ready    master   23m   v1.12.5
-k8-mgmt02        Ready    master   21m   v1.12.5
-k8-mgmt03        Ready    master   21m   v1.12.5
-dgx01            Ready    node     20m   v1.12.5
-
+   NAME             STATUS   ROLES    AGE   VERSION
+   k8-mgmt01        Ready    master   23m   v1.12.5
+   k8-mgmt02        Ready    master   21m   v1.12.5
+   k8-mgmt03        Ready    master   21m   v1.12.5
+   dgx01            Ready    node     20m   v1.12.5
    ``` 
 
    Test a GPU job to ensure that your Kubernetes setup can use the GPUs. 
@@ -310,12 +300,12 @@ Edit the Inventory:
    
 ```sh
    
-   # Add Slurm controller/login host to `slurm-master` group
-   # Add Slurm worker/compute hosts to the `slurm-node` groups
+# Add Slurm controller/login host to `slurm-master` group
+# Add Slurm worker/compute hosts to the `slurm-node` groups
 
-   vi config/inventory
+vi config/inventory
    
-   # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
+# (optional) Modify `config/group_vars/*.yml` to set configuration parameters
 
 ```
 
@@ -323,14 +313,13 @@ Deploy Slurm:
 
 ```sh
 
-ansible-playbook -l slurm-cluster playbooks/slurm-cluster.yml
-
-
 # NOTE: If SSH requires a password, add: `-k`
 # NOTE: If sudo on remote machine requires a password, add: `-K`
 # NOTE: If SSH user is different than current user, add: `-u ubuntu`
+# NOTE: i.e. ansible-playbook -l slurm-cluster -k -u dgxuser -K playbooks/slurm-cluster.yml
 
-ansible-playbook -l slurm-cluster -k -u dgxuser -K playbooks/slurm-cluster.yml
+
+ansible-playbook -l slurm-cluster playbooks/slurm-cluster.yml
 
 ```
 
@@ -356,7 +345,7 @@ Once the DGX compute nodes have been added to Kubernetes and Slurm, you can use 
 The following components are completely optional and can be installed on an existing Kubernetes cluster.  They are recommended.
 
 
-### Kubernetes Dashboard
+#### Kubernetes Dashboard
 
 Run the following script to create an administrative user and print out the dashboard URL and access token:
 
@@ -364,7 +353,7 @@ Run the following script to create an administrative user and print out the dash
 ./scripts/k8s_deploy_dashboard_user.sh
 ```
 
-### Persistent Storage
+#### Persistent Storage
 
 Deploy a Ceph cluster running on Kubernetes for services that require persistent storage (such as Kubeflow):
 
@@ -378,12 +367,7 @@ Poll the Ceph status by running:
 ./scripts/ceph_poll.sh
 ```
 
-### Install an ingress controller for the cluster.
-
-   See the [Ingress Guide](ingress.md) for details on how to install and configure ingress.
-
-
-### Monitoring
+#### Monitoring
 
 Deploy Prometheus and Grafana to monitor Kubernetes and cluster nodes:
 
@@ -396,7 +380,7 @@ The services can be reached from the following addresses:
 * Prometheus: http://mgmt:30500
 * Alertmanager: http://mgmt:30400
 
-### Logging
+#### Logging
 
 Follow the [ELK Guide](elk.md) to setup logging in the cluster.
 
@@ -404,7 +388,7 @@ The service can be reached from the following address:
 * Kibana: http://mgmt:30700
 
 
-### Kubeflow
+#### Kubeflow
 
 Kubeflow is a popular way for multiple users to run ML workloads. It exposes a Jupyter Notebook interface where users can request access to GPUs via the browser GUI. Deploy Kubeflow with a convenient script:
 
