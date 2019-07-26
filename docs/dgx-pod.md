@@ -140,8 +140,7 @@ Install the latest version of Ubuntu Server 18.04 LTS on each management server.
 Deploy Kubernetes to just the management node(s) using the k8s-cluster playbook:
 
 ```sh
-#NOTE:  If all the systems you are connecting to share the same username/password DeepOps will generate an ssh key and set up key auth on each node
-
+# NOTE:  If all the systems you are connecting to share the same username/password DeepOps will generate an ssh key and set up key auth on each node
 # NOTE: If SSH requires a password, add: `-k`
 # NOTE: If sudo on remote machine requires a password, add: `-K`
 # NOTE: If SSH user is different than current user, add: `-u ubuntu`
