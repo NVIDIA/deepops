@@ -5,5 +5,6 @@ ssh -v \
 	-o "StrictHostKeyChecking no" \
 	-o "UserKnownHostsFile /dev/null" \
 	-l vagrant \
-	-i "${HOME}/.ssh/id_rsa 10.0.0.4${GPU}" \
+	-i "${HOME}/.ssh/id_rsa" \
+	"10.0.0.4${GPU}" \
 	srun -n1 hostname
