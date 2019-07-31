@@ -1,0 +1,36 @@
+---
+- name: create config dir
+  file:
+    path: "{{ prometheus_config_dir }}"
+    state: directory
+
+- name: create endpoints config dir
+  file:
+    path: "{{ prometheus_cfg_endpoint_dir }}"
+    state: directory
+
+- name: install config file
+  template:
+    src: templates/prometheus.yml.j2
+    dest: "{{ prometheus_config_dir }}/prometheus.yml"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart prometheus
+
+- name: install systemd unit file
+  template:
+    src: templates/docker.prometheus.service.j2
+    dest: "/etc/systemd/system/{{ prometheus_svc_name }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart prometheus
+
+- name: configure service
+  systemd:
+    name: "{{ prometheus_svc_name }}"
+    state: "{{ prometheus_state }}"
+    enabled: "{{ prometheus_enabled }}"
+    daemon_reload: yes
+  notify: restart prometheus

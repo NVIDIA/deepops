@@ -13,3 +13,7 @@
   reboot:
   when: install_driver.changed and not nvidia_driver_skip_reboot
 
+- name: restart docker
+  service:
+    name: docker
+    state: restarted

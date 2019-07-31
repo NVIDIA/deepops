@@ -51,7 +51,7 @@ Instructions for deploying a GPU cluster with Kubernetes
 5. Verify that the Kubernetes cluster is running. 
 
    ```sh
-   # You may need to manually run: `sudo cp ./k8s-config/artifacts/kubectl /usr/local/bin`
+   # You may need to manually run: `sudo cp ./config/artifacts/kubectl /usr/local/bin`
    kubectl get nodes
    ``` 
 
@@ -113,7 +113,7 @@ The default container registry hostname is `registry.local`. To set another host
 one that is resolvable outside the cluster), add `-e container_registry_hostname=registry.example.com`.
 
 ```sh
-ansible-playbook -i k8s-config/hosts.ini -b --tags container-registry playbooks/k8s-services.yml
+ansible-playbook --tags container-registry playbooks/k8s-services.yml
 ```
 
 ### Kubeflow

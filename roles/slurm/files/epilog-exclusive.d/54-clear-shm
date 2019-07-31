@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-set -ex
-
-# Clean up /dev/shm
-rm -rf /dev/shm/*

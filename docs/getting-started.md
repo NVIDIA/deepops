@@ -1,22 +1,40 @@
 Getting Started
 ===
 
-## What is DeepOps?
+## Requirements
 
-The DeepOps project is a reference approach for provisioning and deploying GPU servers and multi-node GPU clusters. It is intended to be adapted to unique environments and requirements while helping you go faster by sharing the experience we have with GPU servers and NVIDIA SW stacks applied to our HPC and DL needs.
+* A pre-existing "provisioning" node which can be used to run Ansible and the install scripts
+* A cluster to deploy to (potentially a cluster or single server - or a [virtual one](/virtual/README.md))
 
-## How to use DeepOps
+## Steps
 
-The structure of this DeepOps repository will evolve over time to improve usefulness and keep up with industry innovation.  The current baseline is heavy on flexibility and light on OOB easeof-use, but delivers speed of deployment and optimal GPU performance. To help on ease-of-use, here’s an outline to follow in using DeepOps.
+1. Pick a provisioning node to deploy from. This is where the Ansible scripts should be run from and is often a development laptop that has a connection to the target cluster. On this provisioning node, clone the DeepOps repository...
 
-The simplistic view of steps you follow with DeepOps are listed below. Any of these steps might be omitted, modified, and additional steps added as you see fit. There’s no one approach to DeepOps so expect to make it your own:
+```
+git clone git@github.com:NVIDIA/deepops.git
+```
 
-1. Bootstrap an environment to customize and launch DeepOps assisted GPU cluster provisioning, configuration, and operation. Think of this as gathering the materials and tools to build your house. DeepOps assumes that you will have a provisioning node for running Ansible, management/login nodes for running Kubernetes and/or Slurm, and compute nodes for performing training and/or inference.
+2. Checkout a recent release tag. This is an optional step, but if not done, the latest development code will be used, not an official release.
 
-2. Design and define the GPU cluster you want to build. These steps are an exercise left to you. There are more options in DeepOps that you will likely need.  We will help you by asking some of the important questions we found helpful to quickly narrowing down the parts, configurations, and actions needed to use DeepOps effectively.
+```
+cd deepops
+git checkout tags/19.03
+```
 
-3. Deploy and test your baseline GPU cluster. We say baseline because our GPU clusters have always been a living thing that will grow and adapt over time. DeepOps is intended to help you scale and adapt quickly, deterministically to taking advantage of NVIDIA software innovations.
+3. Pick one of the [Deployment Options](/README.md#deployment-options) mentioned in the main [README](/README.md), following the installation instructions. For example, if deploying a hybrid cluster, all features of DeepOps may be deployed by following the [DGX POD Hybrid Cluster](dgx-pod.md) guide.
 
-> Included with DeepOps is a reference way to virtually deploy on a single machine. It’s  a quick way to test a conceptual GPU cluster design with minimal resource requirements and risk of disrupting your physical infrastructure. It is also a great tool for debugging your customizing of DeepOps scripts before you touch real metal.
+## Modularity
 
-4. Operate and monitor your GPU cluster so your users solve the hard problems we all want solved. Things will break, new challenges will come, we use DeepOps as our tool for adapting infrastructure fast so users can keep working fast.
+Each of the deployment options in DeepOps is highly modular and does not need to be deployed as-is. It’s strongly encouraged to read through the installation scripts and examine the playbooks to see which components should be disabled or replaced with custom components. Otherwise, the defaults are an opinionated approach to deploying the cluster for that deployment option.
+
+## Scripts
+
+Optional components are included as scripts in the [/scripts](/scripts) directory. They can also be used on an existing cluster that did not use DeepOps. For example, on an existing Kubernetes cluster, the [/scripts/k8s_deploy_kubeflow.sh](/scripts/k8s_deploy_kubeflow.sh) script can be launched to deploy Kubeflow.
+
+## Examples
+
+Examples are included in the [/examples](/examples) directory. Each example starts with the cluster type, so [/examples/k8s-dask-rapids](/examples/k8s-dask-rapids) requires a Kubernetes cluster.
+
+## Docs
+
+The rest of the docs are in the [/docs](/docs) directory.

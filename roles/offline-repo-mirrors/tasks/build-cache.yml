@@ -1,0 +1,117 @@
+---
+- name: ensure offline cache directories exist
+  file:
+    name: "{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+  - "{{ offline_cache_dir }}"
+  - "{{ offline_cache_dir }}/misc-files"
+  - "{{ offline_cache_dir }}/helm"
+  - "{{ offline_cache_dir }}/docker-images"
+  - "{{ offline_cache_dir }}/yum"
+  - "{{ offline_cache_dir }}/yum/gpgkeys"
+  - "{{ offline_cache_dir }}/pip"
+
+- name: clone fresh deepops repo
+  git:
+    repo: "https://github.com/NVIDIA/deepops"
+    dest: "{{ offline_cache_dir }}/deepops"
+    recursive: yes
+    update: yes
+    version: "master"
+  when: download_deepops_repo
+
+- name: install Ansible Galaxy dependencies in repo
+  command: ansible-galaxy install -p "{{ offline_cache_dir }}/deepops/galaxy-roles" -r "{{ offline_cache_dir }}/deepops/requirements.yml"
+  tags:
+  - skip_ansible_lint
+
+- name: download helm
+  get_url:
+    url: "{{ helm_download_url }}"
+    dest: "{{ offline_cache_dir }}/misc-files/"
+
+- name: download docker compose
+  get_url:
+    url: "{{ docker_compose_url }}"
+    dest: "{{ offline_cache_dir }}/misc-files/docker-compose"
+
+- name: download ksonnet
+  get_url:
+    url: "{{ ksonnet_url }}"
+    dest: "{{ offline_cache_dir }}/misc-files/"
+
+- name: download kubectl
+  get_url:
+    url: "{{ kubectl_url }}"
+    dest: "{{ offline_cache_dir }}/misc-files/kubectl"
+
+- name: download nv k8s device plugin definition
+  get_url:
+    url: "{{ nvidia_k8s_device_plugin_url }}"
+    dest: "{{ offline_cache_dir }}/misc-files/"
+
+- name: download nvidia-docker wrapper script
+  get_url:
+    url: "{{ nvidia_docker_wrapper_url }}"
+    dest: "{{ offline_cache_dir }}/misc-files/nvidia-docker"
+
+- name: archive docker images
+  docker_image:
+    name: "{{ item.repo }}{{ item.image }}"
+    tag: "{{ item.version }}"
+    archive_path: "{{ offline_cache_dir }}/docker-images/{{ item.name }}-{{ item.version }}.tar"
+    http_timeout: "{{ docker_http_timeout }}"
+    timeout: "{{ docker_http_timeout }}"
+    state: present
+  with_items: "{{ docker_image_list }}"
+  when: download_docker_images
+
+- name: force up to date pip packages for downloads
+  pip:
+    name: "{{ item }}"
+    state: "latest"
+  with_items:
+  - "setuptools"
+  - "pip"
+  when: download_pip_packages
+
+- name: download python packages
+  command: "pip download --dest {{ offline_cache_dir }}/pip {{ item.name }}"
+  with_items: "{{ pip_package_list }}"
+  when: download_pip_packages
+
+- name: download slurm package
+  get_url:
+    url: "{{ deepops_centos_slurm_url }}"
+    dest: "{{ offline_cache_dir }}/misc-files/"
+    mode: 0644
+  when: download_yum_repos
+
+- name: download CentOS ISO
+  get_url:
+    url: "{{ centos_iso_mirror }}/{{ centos_iso }}"
+    dest: "{{ offline_cache_dir }}/yum/{{ centos_iso }}"
+    mode: 0644
+  when: download_yum_repos
+
+- name: copy yum.conf to cache dir
+  copy:
+    src: "yum.conf"
+    dest: "{{ offline_cache_dir }}/yum.conf"
+    mode: 0644
+  when: download_yum_repos
+
+- name: copy gpg keys to cache dir
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ offline_cache_dir }}/yum/gpgkeys/{{ item.name }}.pub"
+    mode: "0644"
+  with_items: "{{ yum_repo_gpg_keys }}"
+  when: download_yum_repos
+
+- name: sync yum repositories
+  command: reposync -c "{{ offline_cache_dir }}/yum.conf" -r "{{ item }}" -p "{{ offline_cache_dir }}/yum/"
+  when: download_yum_repos
+  with_items: "{{ yum_repos_to_sync }}"

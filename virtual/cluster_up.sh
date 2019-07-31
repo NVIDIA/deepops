@@ -15,17 +15,15 @@ cd "${ROOT_DIR}"
 # Ensure Ansible Galaxy dependencies are present
 ./scripts/setup.sh
 
+export DEEPOPS_CONFIG_DIR="${VIRT_DIR}/config"
+
 # Ensure clean config dirs for a new turnup
 DEEPOPS_VIRT_CLEAN_CONFIG="${DEEPOPS_VIRT_CLEAN_CONFIG:-1}"
 if [ "${DEEPOPS_VIRT_CLEAN_CONFIG}" -ne 0 ]; then
 	rm -rf "${VIRT_DIR}/config"
-	rm -rf "${VIRT_DIR}/k8s-config"
+	cp -r "${ROOT_DIR}/config.example/" "${DEEPOPS_CONFIG_DIR}/"
+	cp "${VIRT_DIR}/virtual_inventory" "${DEEPOPS_CONFIG_DIR}/inventory"
 fi
-
-# Create the config for deepops servers (and use the virtual inventory)
-export DEEPOPS_CONFIG_DIR="${VIRT_DIR}/config"
-cp -r "${ROOT_DIR}/config.example/" "${DEEPOPS_CONFIG_DIR}/"
-cp "${VIRT_DIR}/virtual_inventory" "${DEEPOPS_CONFIG_DIR}/inventory"
 
 # Clear any stale fact cache in Ansible
 ansible -m meta -a "clear_facts" -i "${DEEPOPS_CONFIG_DIR}/inventory" all

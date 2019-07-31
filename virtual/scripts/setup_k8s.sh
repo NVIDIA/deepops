@@ -13,12 +13,17 @@ ROOT_DIR="${SCRIPT_DIR}/../.."
 # Move working directory to root of DeepOps repo
 cd "${ROOT_DIR}" || exit 1
 
-# Create the K8s config (for mgmt=10.0.0.2, gpu01=10.0.0.11 nodes)
-K8S_CONFIG_DIR="${VIRT_DIR}/k8s-config" "${ROOT_DIR}/scripts/k8s_inventory.sh" 10.0.0.2 10.0.0.11
-cp "${VIRT_DIR}/k8s_hosts.ini" "${VIRT_DIR}/k8s-config/hosts.ini"
+# Set the K8s Ansible config directory (same as for Slurm)
+K8S_CONFIG_DIR="${VIRT_DIR}/config"
+
+DEEPOPS_OFFLINE="${DEEPOPS_OFFLINE:-0}"
+ansible_extra_args=""
+if [ "${DEEPOPS_OFFLINE}" -ne 0 ]; then
+	ansible_extra_args="-e "@${VIRT_DIR}/config/offline_repo_vars.yml""
+fi
 
 # Deploy the K8s cluster
-ansible-playbook -i "${VIRT_DIR}/k8s-config/hosts.ini" -b "${ROOT_DIR}/playbooks/k8s-cluster.yml"
+ansible-playbook -b -i "${VIRT_DIR}/config/inventory" ${ansible_extra_args} "${ROOT_DIR}/playbooks/k8s-cluster.yml"
 
 # Source K8s environment for interacting with the cluster
 # shellcheck disable=SC1091 disable=SC1090
@@ -38,8 +43,9 @@ kubectl get nodes
 # Deploy rook (optional, but highly recommended)
 "${ROOT_DIR}/scripts/k8s_deploy_rook.sh"
 
+# Deploy load balancer and ingress (optional but recommended)
+"${ROOT_DIR}/scripts/k8s_deploy_loadbalancer.sh"
+"${ROOT_DIR}/scripts/k8s_deploy_ingress.sh"
+
 # Deploy monitoring (optional)
 "${ROOT_DIR}/scripts/k8s_deploy_monitoring.sh"
-
-# Deploy load balancer and ingress (optional but recommended)
-"${ROOT_DIR}/scripts/k8s_deploy_ingress_metallb.sh"

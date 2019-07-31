@@ -6,81 +6,110 @@ Set up a virtual cluster with DeepOps. Useful for...
 2. Testing new features in DeepOps
 3. Tailoring DeepOps in a local environment before deploying it to the production cluster
 
-## Prerequisites
+## Requirements
 
-Running DeepOps virtually assumes that the host machine's OS is Ubuntu 16.04 or greater. If this is
-not the case, the `bootstrap_virtual.sh` and `cluster_up.sh` scripts may be modified to work with
-a different OS.
+### Hardware Requirements
 
-Also, using VMs and optionally GPU passthrough assumes that the host machine has been configured to
-enable virtualization in the BIOS. For instructions on how to accomplish this, refer to the sections
-at the bottom of this README: `Enabling virtualization and GPU passthrough`.
+The host machine should have enough resources to fufill the minimum VM needs...
 
-## Bootstrap dependencies
+Total: 6 vCPU, 20 GB RAM, 96 GB Storage
+* virtual-login: 2 vCPU, 2GB RAM and 32GB Storage
+* virtual-mgmt: 2 vCPU, 2GB RAM and 32GB Storage
+* virtual-gpu01: 2 vCPU, 16GB RAM and 32GB Storage
 
-To install basic dependencies for running Ansible and managing a DeepOps cluster,
-run the `setup.sh` found in the `scripts` directory of the repository root.
+### Operating System Requirements
 
+* Ubuntu 16.04 (or greater)
+* CentOS 7.6 (or greater)
+
+Running DeepOps virtually assumes that the host machine's OS is an approved OS. If this is not the case, the scripts used in the steps below may be modified to work with a different OS.
+
+Also, using VMs and optionally GPU passthrough assumes that the host machine has been configured to enable virtualization in the BIOS. For instructions on how to accomplish this, refer to the sections at the bottom of this README: [Enabling virtualization and GPU passthrough](#enabling-virtualization-and-gpu-passthrough).
+
+## Start the Virtual Cluster
+
+1. From the main deepops directory, run the setup script.
+
+   This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](/docs/ANSIBLE.md).
+
+   ```sh
+   ./scripts/setup.sh
+   ```
+
+2. In the virtual directory, startup vagrant. This will start 3 VMs by default.
+
+   ```sh
+   # NOTE: The default VM OS is Ubuntu. If you wish the VMs to spawn CentOS,
+   #       configure the DEEPOPS_VAGRANT_FILE variable accordingly...
+   #       export DEEPOPS_VAGRANT_FILE=$(pwd)/Vagrantfile-centos
+   # NOTE: virtual-gpu01 requires GPU passthrough, by default it is not enabled
+   # NOTE: 3 VMs are started by default: virtual-mgmt, virtual-login, virtual-gpu01
+   
+   cd virtual
+   ./vagrant_startup.sh
+   ```
+
+3. Start the cluster.
+
+   ```sh
+   # NOTE: Only Kubernetes is deployed by default. To also deploy Slurm,
+   #       configure the DEEPOPS_ENABLE_SLURM variable accordingly...
+   #       export DEEPOPS_ENABLE_SLURM=1
+   
+   ./cluster_up.sh
+   ```
+   
+   This script will run the ansible playbooks to deploy DeepOps to the Vagrant VMs and should complete without errors.
+   
+4. Set up the Kubernetes environment.
+
+   As part of `cluster_up.sh`, a fresh `kubectl` executable and the Kubernetes cluster's `admin.conf` are downloaded. To use these so commands may be run locally, a convenient script may be sourced...
+   
+   ```sh
+   source k8s_environment.sh
+   ```
+   
+   Optionally, `kubectl` can permanently be added to the PATH and `admin.conf` can be copied to `~/.kube/config`, which results in a more permanent solution.
+
+## Using the Virtual Cluster
+
+### Kubernetes
+
+Consult the [Kubernetes Usage Guide](/docs/kubernetes-usage.md) for examples of how to use Kubernetes.
+
+### Connecting to the VMs
+
+Connect to any of the VM nodes directly via vagrant ssh...
+
+```sh
+# NOTE: Must be in the `deepops/virtual` directory
+
+vagrant ssh virtual-gpu01
 ```
-$ <deepops repo>/scripts/setup.sh
-```
 
-Virtualization-related dependencies will be installed if needed by the `vagrant_startup.sh` script.
-
-## Select the Vagrant file for your Linux distro
-
-If you want to run your virtual cluster on CentOS, set the `DEEPOPS_VAGRANT_FILE` variable to point to the CentOS Vagrant file:
-
-```
-$ export DEEPOPS_VAGRANT_FILE=$(pwd)/Vagrantfile-centos
-```
-
-If you want to use Ubuntu, you can set this variable to point to the Ubuntu Vagrant file, or just leave it unset (Ubuntu is the default).
-
-## Start vagrant
-
-Boot up the VMs by starting vagrant. Vagrant will spin up three VMs:
-* virtual-login
-* virtual-mgmt
-* virtual-gpu01
-
-```
-$ ./vagrant_startup.sh
-```
-
-Afterwards, connect to any of the nodes via vagrant ssh...
-
-```
-$ vagrant ssh virtual-gpu01
-```
-
-## Start the cluster
-
-To start the cluster, run the `cluster_up.sh` script, which will run the ansible playbooks to deploy DeepOps...
-
-```
-$ ./cluster_up.sh
-```
-
-The script should complete without errors.
-
-## Shutdown vagrant
+## Destroy the Virtual Cluster
 
 To destroy the cluster and shutdown the VMs, run the `vagrant_shutdown.sh` script...
 
-```
-$ ./vagrant_shutdown.sh
+```sh
+./vagrant_shutdown.sh
 ```
 
-Check that there are no running VMs using `virsh list`.
+Check that there are no running VMs using `virsh list`...
+
+```sh
+$ virsh list --all
+ Id    Name                           State
+----------------------------------------------------
+```
 
 ## Configure GPU passthrough
 
-If your host machine has a GPU, it is possible to enable GPU passthrough to the gpu01 VM.
+If the host machine has a GPU and is configured for GPU passthrough, it is possible to configure the `virtual-gpu01` VM to use the GPU.
 
 Run `lspci` to discover the appropriate bus...
 
-```
+```sh
 $ lspci -nnk | grep NVIDIA
 07:00.0 VGA compatible controller [0300]: NVIDIA Corporation Device [10de:15fc] (rev a1)
 	Subsystem: NVIDIA Corporation Device [10de:1195]
@@ -100,28 +129,44 @@ $ lspci -nnk | grep NVIDIA
 	Subsystem: NVIDIA Corporation Device [10de:1195]
 ```
 
-In this example, we've chosen the GPU at `08:00.0`.
+In this example, the GPU at `08:00.0` is chosen.
 
-In the `Vagrantfile`, uncomment the `v.pci` configuration and update it with a mapping to the bus
-discovered with `lspci`...
+In the `Vagrantfile`, uncomment the `v.pci` configuration and update it with a mapping to the bus discovered with `lspci`...
 
 ```
 v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
-
 ```
 
-Shutdown the virtual cluster (if it is running) and startup vagrant + run cluster up again.
+Note that more than one GPU may be passed through by adding additional `v.pci` lines.
+
+Next, shutdown the virtual cluster (if it is running) and startup vagrant + run cluster up again...
+
+```sh
+./vagrant_shutdown.sh
+./vagrant_startup.sh
+./cluster_up.sh
+```
+
+## Other Customization
+
+The default Vagrantfiles create VMs that are very minimal in terms of resources to maximize where a virtual DeepOps cluster can be run. To run resource-intensive Kubernetes applications such as Kubeflow, it's necessary to increase some of the settings.
+
+In the Vagrantfile of choice (Vagrantfile-<os_type>), make the following modifications...
+
+1. Increase the memory and cpus for the `virtual-mgmt` VM. Suggested - v.memory = 16384, v.cpus = 8.
+2. Comment out the `virtual-login` VM. Unless you are running slurm, this is not necessary and just takes up resources.
+3. Increase the cpus for the `virtual-gpu01` VM. Suggested - v.cpus = 8.
+4. If more GPUs are available, pass all of them through using the instructions in the section above.
+
+NOTE: The amount of CPUs and memory on the host system will vary. Change the amounts above accordingly to values that make sense.
 
 # Enabling virtualization and GPU passthrough
 
-On many machines, virtualization and GPU passthrough are not enabled by
-default. Follow these directions so that a virtual DeepOps cluster can start on your host machine
-with GPU access on the VMs.
+On many machines, virtualization and GPU passthrough are not enabled by default. Follow these directions so that a virtual DeepOps cluster can start on your host machine with GPU access on the VMs.
 
 ## BIOS and bootloader changes
 
-To support KVM, we need GPU pass through. To enable GPU pass through, we need to enable VFIO support
-in BIOS and Bootloader.
+To support KVM, we need GPU pass through. To enable GPU pass through, we need to enable VFIO support in BIOS and Bootloader.
 
 ### BIOS changes
 
@@ -142,8 +187,7 @@ in BIOS and Bootloader.
 **DGX Station SBIOS**
 * VT-x: 
 * VT-d: 
-* MMIO above 4G: verify virtualization support is enabled in the BIOS, by looking for vmx for Intel or svm for AMD
-processors...
+* MMIO above 4G: verify virtualization support is enabled in the BIOS, by looking for vmx for Intel or svm for AMD processors...
 
 ```
 $ grep -oE 'svm|vmx' /proc/cpuinfo | uniq
@@ -152,9 +196,7 @@ vmx
 
 ### Bootloader changes
 
-1. Add components necessary to load VFIO (Virtual Function I/O). VFIO is required to pass full
-devices through to a virtual machine, so that Ubuntu loads everything it needs. Edit and add the
-following to `/etc/modules` file:
+1. Add components necessary to load VFIO (Virtual Function I/O). VFIO is required to pass full devices through to a virtual machine, so that Ubuntu loads everything it needs. Edit and add the following to `/etc/modules` file:
 ```
 pci_stub
 vfio
@@ -164,10 +206,7 @@ kvm
 kvm_intel
 ```
 
-2. Next, need Ubuntu to load IOMMU properly. Edit `/etc/default/grub` and modify
-"GRUB_CMDLINE_LINUX_DEFAULT", by adding "intel_iommu=on" to enable IOMMU. May also need to add
-"vfio_iommu_type1.allow_unsafe_interrupts=1" if interrupt remapping should be enabled. Post these
-changes, the GRUB command line should look like this:
+2. Next, need Ubuntu to load IOMMU properly. Edit `/etc/default/grub` and modify "GRUB_CMDLINE_LINUX_DEFAULT", by adding "intel_iommu=on" to enable IOMMU. May also need to add "vfio_iommu_type1.allow_unsafe_interrupts=1" if interrupt remapping should be enabled. Post these changes, the GRUB command line should look like this:
 ```
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash intel_iommu=on vfio_iommu_type1.allow_unsafe_interrupts=1
 iommu=pt"
@@ -182,9 +221,7 @@ $ echo vfio-pci | sudo tee /etc/modules-load.d/vfio-pci.conf
 
 ### Blacklist the GPU devices
 
-We do not want the host running DGX Base OS to use the GPU Devices. Instead we want Guest VMs to get
-full access to the NVIDIA GPU devices. Hence, in the DGX Base OS on the host,  blacklist them by
-adding their IDs to the initramfs.
+We do not want the host running DGX Base OS to use the GPU Devices. Instead we want Guest VMs to get full access to the NVIDIA GPU devices. Hence, in the DGX Base OS on the host,  blacklist them by adding their IDs to the initramfs.
 
 1. Run the command `lspci -nn | grep NVIDIA` to get the list of PCI-IDs
 ```
@@ -210,8 +247,7 @@ NOTE: First entry is for Volta and the latter for NVSwitch
 
 3. Rebuild the initramfs by running `sudo update-initramfs -u` and reboot the system.
 
-4. After the system reboots, verify GPU devices and NVSwitches are claimed by vfio_pci driver by
-running `dmesg | grep vfio_pci`...
+4. After the system reboots, verify GPU devices and NVSwitches are claimed by vfio_pci driver by running `dmesg | grep vfio_pci`...
 ```
 [   15.668150] vfio_pci: add [10de:1db1[ffff:ffff]] class 0x000000/00000000
 [   15.736099] vfio_pci: add [10de:1ac1[ffff:ffff]] class 0x000000/00000000
@@ -227,8 +263,7 @@ $ lspci -nnk -d 10de:1ac1
 	Kernel driver in use: vfio-pci
 ```
 
-If the `Kernel driver in use` is not `vfio-pci` and instead the nvidia driver, it may be necessary
-to blacklist the nvidia driver or instruct it to load vfio-pci beforehand...
+If the `Kernel driver in use` is not `vfio-pci` and instead the nvidia driver, it may be necessary to blacklist the nvidia driver or instruct it to load vfio-pci beforehand...
 
 ```
 $ cat /etc/modprobe.d/nvidia.conf
