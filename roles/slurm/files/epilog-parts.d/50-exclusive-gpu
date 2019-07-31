@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -ex
+
+command -v nvidia-smi || exit 0
+
+# Clean up processes still running.  If processes don't exit node is drained.
+if nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}' | grep -v - > /dev/null
+then
+    for i in $(nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}' | grep -v -)
+    do
+        logger -s -t slurm-epilog "Killing residual GPU process $i ..."
+        kill -9 "$i"
+    done
+fi
+sleep 5
+if nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}' | grep -v - > /dev/null
+then
+    logger -s -t slurm-epilog 'Failed to kill residual GPU processes. Draining node ...'
+    scontrol update nodename="$HOSTNAME" state=drain reason='Residual GPU processes found'
+fi
+
+/etc/slurm/shared/bin/set_gpu_power_levels.sh default
+/etc/slurm/shared/bin/set_gpu_clocks.sh default

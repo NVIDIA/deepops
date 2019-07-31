@@ -21,8 +21,16 @@
 # Configure hostnames, /etc/hosts
 - include: hosts.yml
 
-- include: docker.yml
-
+# Install NVIDIA driver
 - include: nvidia-driver.yml
+
+# Install Docker and configure for NVIDIA
+- include: docker.yml
+  tags:
+  - install_docker
 - include: nvidia-docker.yml
+  tags:
+  - install_docker
+
+# Install Slurm
 - include: slurm.yml

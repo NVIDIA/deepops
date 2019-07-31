@@ -1,22 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
-
-case "$1" in
-    max) ;;
-    default) ;;
-    min) ;;
-    *)
-        echo "Usage: $0 [max,default,min]"
-        exit 1
-        ;;
-esac
-mode=$1
 
 gpu_count="$(nvidia-smi -L | wc -l)"
 
 for i in $(seq 0 "$(( gpu_count - 1 ))" )
 do
-    case "$mode" in
+    case "$1" in
         max)
             next="$(nvidia-smi -i "$i" --query-gpu=power.max_limit --format=csv,noheader,nounits)"
             ;;
@@ -27,6 +16,7 @@ do
             next="$(nvidia-smi -i "$i" --query-gpu=power.min_limit --format=csv,noheader,nounits)"
             ;;
         *)
+            echo "Usage: $0 [max,default,min]"
             exit 1
             ;;
     esac

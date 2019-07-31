@@ -8,10 +8,10 @@
 
 # Define K8s/helm params
 BINDERHUB_NAMESPACE=binderhub
-BINDERHUB_VERSION=0.2.0-3b53fce
+BINDERHUB_VERSION=0.2.0-1eac3a0
 JUPYTERHUB_CHART_REPO=https://jupyterhub.github.io/helm-chart
 BINDERHUB_CHART_NAME=jupyterhub/binderhub
-pod_count=4 # Currently we need 4 pods to be running for BinderHub, this may change in the future
+pod_count=5 # Currently we need 5 pods to be running for BinderHub, this may change in the future
 
 
 # Define the configuration files
@@ -130,7 +130,7 @@ function stand_up() {
 
   # Install Binderhub
   helm install ${BINDERHUB_CHART_NAME} --version=${BINDERHUB_VERSION}  --name=${BINDERHUB_NAMESPACE} --namespace=${BINDERHUB_NAMESPACE} -f ${secret_file} -f ${config_file}
-  while [ `kubectl -n ${BINDERHUB_NAMESPACE} get pods | grep Running | wc -l` != ${pod_count} ]; do
+  while [ `kubectl -n ${BINDERHUB_NAMESPACE} get pods | grep Running | wc -l` -lt ${pod_count} ]; do
     sleep 1
   done
   sleep 1 # Give services time to start after pods are created
@@ -150,11 +150,11 @@ function get_url() {
   binderhub_ip=`kubectl -n ${BINDERHUB_NAMESPACE} get svc binder -ocustom-columns=:.status.loadBalancer.ingress[0].ip | tail -n1`
   binderhub_port=`kubectl -n ${BINDERHUB_NAMESPACE} get svc binder -ocustom-columns=:.spec.ports[0].nodePort | tail -n1`
 
-  aws_ip=`curl --max-time .1 --connect-timeout .1 http://169.254.169.254/latest/meta-data/public-hostname`
-  gcp_ip=`curl --max-time .1 --connect-timeout .1 -H "Metadata-Flavor: Google" http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip`
+  aws_ip=`curl --max-time 1 --connect-timeout 1 http://169.254.169.254/latest/meta-data/public-hostname`
+  gcp_ip=`curl --max-time 1 --connect-timeout 1 -H "Metadata-Flavor: Google" http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip`
 
   for local_ip in `ip -br addr  | awk '{print $3}' | awk -F/ '{print $1}'`; do
-    curl --max-time .1 --connect-timeout .1 -L ${local_ip}:${binderhub_port} && break
+    curl --max-time 1 --connect-timeout 1 -L ${local_ip}:${binderhub_port} && break
   done
   if [ "${?}" != "0" ]; then
     echo "WARNING: Could not determine local IP"

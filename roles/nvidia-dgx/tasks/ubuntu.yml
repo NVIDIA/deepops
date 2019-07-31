@@ -25,6 +25,8 @@
   with_items:
     - "{{ PKGS_DGX1_ALL }}"
   when: ansible_product_name == "DGX-1"
+  notify:
+    - name: restart docker
 
 - name: install dgx packages
   apt:
@@ -34,3 +36,5 @@
   with_items:
     - "{{ PKGS_DGX2_ALL }}"
   when: ansible_product_name == "DGX-2"
+  notify:
+    - name: restart docker

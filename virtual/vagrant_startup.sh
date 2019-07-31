@@ -9,18 +9,20 @@ VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Install Vagrant and Dependencies
 #####################################
 
-case "$ID_LIKE" in
-  rhel*)
+case "$ID" in
+  rhel*|centos*)
     # Install Vagrant & Dependencies for RHEL Systems
 
     export YUM_DEPENDENCIES="centos-release-qemu-ev qem-kvm-ev qemu-kvm libvirt virt-install \
       bridge-utils libvirt-devel libxslt-devel libxml2-devel libguestfs-tools-c sshpass qemu-kvm libvirt-bin \
       libvirt-dev bridge-utils libguestfs-tools qemu virt-manager firewalld OVMF"
 
+    # shellcheck disable=SC2086
     if ! (yum grouplist installed | grep "Development Tools" && rpm -q $YUM_DEPENDENCIES) >/dev/null 2>&1; then
       echo "Installing yum dependencies..."
 
       sudo yum group install -y "Development Tools"
+      # shellcheck disable=SC2086
       sudo yum install -y $YUM_DEPENDENCIES
     fi
 
@@ -52,7 +54,7 @@ case "$ID_LIKE" in
       popd
 
       # install vagrant plugins
-      vagrant plugin install vagrant-hostmanager vagrant-libvirt
+      vagrant plugin install vagrant-libvirt
       vagrant plugin install vagrant-host-shell vagrant-scp vagrant-mutate
     fi
     vagrant --version
@@ -63,12 +65,13 @@ case "$ID_LIKE" in
     # End Install Vagrant & Dependencies for RHEL Systems
     ;;
 
-  debian*)
+  ubuntu*)
     # Install Vagrant & Dependencies for Debian Systems
 
     export APT_DEPENDENCIES="build-essential sshpass qemu-kvm libvirt-bin libvirt-dev bridge-utils \
       libguestfs-tools qemu ovmf virt-manager firewalld"
 
+    # shellcheck disable=SC2086
     if ! (dpkg -s $APT_DEPENDENCIES) >/dev/null 2>&1; then
       echo "Installing apt dependencies..."
 
@@ -76,6 +79,7 @@ case "$ID_LIKE" in
       sudo apt update -y
 
       # Install build-essential tools
+      # shellcheck disable=SC2086
       sudo apt install -y $APT_DEPENDENCIES
     fi
 
@@ -103,7 +107,7 @@ case "$ID_LIKE" in
       popd
   
       # install vagrant plugins
-      vagrant plugin install vagrant-hostmanager vagrant-libvirt
+      vagrant plugin install vagrant-libvirt
       vagrant plugin install vagrant-host-shell vagrant-scp vagrant-mutate
     fi
     vagrant --version

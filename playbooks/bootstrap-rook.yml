@@ -1,0 +1,12 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: install xfsprogs for ceph/rook
+      package:
+        name: xfsprogs
+        state: present
+    - name: install python-setuptools for ceph/rook
+      package:
+        name: python-setuptools
+        state: present

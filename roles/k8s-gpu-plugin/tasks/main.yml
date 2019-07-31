@@ -13,6 +13,4 @@
     state: present
     definition: "{{ lookup('url', nvidia_k8s_device_plugin_def, split_lines=False) }}"
   run_once: true
-  environment:
-    PYTHONHOME: '{{ deepops_venv }}'
   when: ansible_os_family == 'RedHat'

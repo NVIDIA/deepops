@@ -1,0 +1,9 @@
+---
+- include: docker.yml
+
+- hosts: all
+  become: yes
+  tasks:
+    - name: configure prometheus
+      include_role:
+        name: prometheus

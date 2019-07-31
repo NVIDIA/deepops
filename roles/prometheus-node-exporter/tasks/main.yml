@@ -1,0 +1,34 @@
+---
+- name: create config dir
+  file:
+    path: "{{ prometheus_config_dir }}"
+    state: directory
+
+- name: create endpoints config dir
+  file:
+    path: "{{ prometheus_cfg_endpoint_dir }}"
+    state: directory
+
+- name: install config file
+  template:
+    src: templates/node-exporter.yml.j2
+    dest: "{{ prometheus_cfg_endpoint_dir }}/node-exporter.yml"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: install systemd unit file
+  template:
+    src: templates/docker.node-exporter.service.j2
+    dest: "/etc/systemd/system/{{ node_exporter_svc_name }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: configure service
+  systemd:
+    name: "{{ node_exporter_svc_name }}"
+    state: "{{ node_exporter_state }}"
+    enabled: "{{ node_exporter_enabled }}"
+    daemon_reload: yes
+  notify: restart node-exporter

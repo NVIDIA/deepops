@@ -5,24 +5,38 @@ GPU infrastructure and automation tools
 
 ## Overview
 
-The DeepOps project facilitates deployment of GPU servers and multi-node GPU clusters for Deep Learning and HPC environments, in an on-prem, optionally air-gapped datacenter or in the cloud.
+The DeepOps project encapsulates best practices in the deployment of GPU server clusters and sharing single powerful nodes (such as [NVIDIA DGX Systems](https://www.nvidia.com/en-us/data-center/dgx-systems/)). DeepOps can also be adapted or used in a modular fashion to match site-specific cluster needs. For example:
 
-Use the provided Ansible playbooks and scripts to deploy Kubernetes, Slurm, or a hybrid of both. This repository encapsulates best practices to make your life easier, but can also be adapted or used in a modular fashion to suite your specific cluster needs. For example: if your organization already has Kubernetes deployed to a cluster, you can still use the optional services and scripts provided to install Kubeflow, enable authentication, or connect NFS storage.
+* An on-prem, air-gapped data center of NVIDIA DGX servers where DeepOps provides end-to-end capabilities to set up the entire cluster management stack
+* An existing cluster running Kubernetes where DeepOps scripts are used to deploy Kubeflow and connect NFS storage
+* An existing cluster that needs a resource manager / batch scheduler, where DeepOps is used to install Slurm, Kubernetes, or a hybrid of both
+* A single machine where no scheduler is desired, only NVIDIA drivers, Docker, and the NVIDIA Container Runtime
 
-> NOTE: we recommend using the most recent release branch for stable code.
-> The `master` branch is used for development and as such may be unstable or even broken at any point in time.
+## Releases
+
+Latest release: [DeepOps 19.07 Release](https://github.com/NVIDIA/deepops/releases/tag/19.07)
+
+It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally functional but may change significantly between releases.
 
 ## Getting Started
 
-Pick one of the deployment options below if you know what kind of cluster you want. If you feel lost, read through our [Getting Started Guide](docs/getting-started.md).
+For detailed help or guidance, read through our [Getting Started Guide](docs/getting-started.md) or pick one of the deployment options documented below.
 
 ## Deployment Options
+
+### Supported distributions
+
+DeepOps currently supports the following Linux distributions:
+
+* NVIDIA DGX OS 4
+* Ubuntu 18.04 LTS
+* CentOS 7
 
 ### Kubernetes
 
 Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications.
 
-Consult our [Kubernetes Guide](docs/kubernetes-cluster.md) to build a GPU-enabled Kubernetes cluster.
+Consult the [Kubernetes Guide](docs/kubernetes-cluster.md) for instructions on building a GPU-enabled Kubernetes cluster using DeepOps.
 
 For more information on Kubernetes in general, refer to the [official Kubernetes docs](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/).
 
@@ -30,36 +44,38 @@ For more information on Kubernetes in general, refer to the [official Kubernetes
 
 Slurm is an open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters.
 
-Consult our [Slurm Guide](docs/slurm-cluster.md) to build a GPU-enabled Slurm cluster.
+Consult the [Slurm Guide](docs/slurm-cluster.md) for instructions on building a GPU-enabled Slurm cluster using DeepOps.
 
 For more information on Slurm in general, refer to the [official Slurm docs](https://slurm.schedmd.com/overview.html).
 
 ### DGX POD Hybrid Cluster
 
-A hybrid cluster with both Kubernetes and Slurm can also be deployed. This is recommended for DGX Pod and other setups that wish to make maximal use of the cluster.
+A hybrid cluster with both Kubernetes and Slurm can also be deployed. This is recommended for [DGX POD](https://nvidia-gpugenius.highspot.com/viewer/5b33fecf1279587c07d8ac86) and other setups that wish to make maximal use of the cluster.
 
-Consult our [DGX Pod Guide](docs/dgx-pod.md) for step-by-step instructionson setting up a hybrid cluster.
-
-For more information on deploying DGX in the datacenter, consult the
-[DGX Data Center Reference Design Whitepaper](https://nvidia-gpugenius.highspot.com/viewer/5b33fecf1279587c07d8ac86)
+Consult the [DGX POD Guide](docs/dgx-pod.md) for step-by-step instructions on building a GPU-enabled hybrid cluster using DeepOps.
 
 ### Virtual
 
-We often don't have a full cluster at our disposal, or wish to try DeepOps before we deploy it on the actual cluster. For this purpose, a virtualized version of DeepOps may be deployed on a single node. Very useful for testing, adding new features, or configuring DeepOps to meet your specific needs.
+To try DeepOps before deploying it on an actual cluster, a virtualized version of DeepOps may be deployed on a single node using Vagrant. This can be used for testing, adding new features, or configuring DeepOps to meet deployment-specific needs.
 
-Consult our [Virtual Guide](virtual/README.md) to deploy a virtual cluster with DeepOps.
+Consult the [Virtual Guide](virtual/README.md) to build a GPU-enabled virtual cluster with DeepOps.
 
 ## Updating DeepOps
 
-To update your cluster from a previous version of DeepOps to a newer release, please consult the [Update Guide](docs/update-deepops.md).
+To update from a previous version of DeepOps to a newer release, please consult the [Update Guide](docs/update-deepops.md).
 
 ## Copyright and License
 
 This project is released under the [BSD 3-clause license](https://github.com/NVIDIA/deepops/blob/master/LICENSE).
 
-## Issues and Contributing
+## Issues
+
+NVIDIA DGX customers should file an NVES ticket via [NVIDIA Enterprise Services](https://nvid.nvidia.com/enterpriselogin/).
+
+Otherwise, bugs and feature requests can be made by [filing a GitHub Issue](issues/new).
+
+## Contributing
+
+To contribute, please issue a [pull request](https://help.github.com/articles/using-pull-requests/) against the master branch from a local fork.
 
 A signed copy of the [Contributor License Agreement](https://raw.githubusercontent.com/NVIDIA/deepops/master/CLA) needs to be provided to <a href="mailto:deepops@nvidia.com">deepops@nvidia.com</a> before any change can be accepted.
-
-* Please let us know by [filing a new issue](https://github.com/NVIDIA/deepops/issues/new)
-* You can contribute by opening a [pull request](https://help.github.com/articles/using-pull-requests/)

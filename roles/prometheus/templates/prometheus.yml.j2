@@ -1,0 +1,11 @@
+global:
+  scrape_interval: {{ prometheus_cfg_scrape_interval }}
+
+scrape_configs:
+  - job_name: 'cluster'
+    file_sd_configs:
+      - files:
+        - {{ prometheus_cfg_endpoint_dir }}/*.yml
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

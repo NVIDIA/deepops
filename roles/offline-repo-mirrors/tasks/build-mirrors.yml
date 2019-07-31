@@ -1,0 +1,215 @@
+---
+- name: ensure selinux disabled
+  selinux:
+    policy: "targeted"
+    state: "permissive"
+
+- name: ensure necessary packages are present
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - "yum-utils"
+  - "rsync"
+  - "createrepo"
+
+- name: create deepops destination dir
+  file:
+    path: "{{ deepops_dest_path }}"
+    owner: "{{ deepops_dest_owner }}"
+    group: "{{ deepops_dest_group }}"
+    mode: "0755"
+    state: "directory"
+
+- name: ensure extraction directory exists
+  file:
+    path: "{{ extract_path }}"
+    owner: "{{ deepops_dest_owner }}"
+    group: "{{ deepops_dest_group }}"
+    mode: "0755"
+    state: "directory"
+
+- name: extract deepops archive
+  unarchive:
+    src: "{{ tar_file_path }}"
+    dest: "{{ extract_path }}"
+    copy: "{{ tar_file_copy }}"
+  tags:
+  - extract_archive
+
+- name: configure docker to use insecure registry
+  copy:
+    content: "{{ docker_daemon_json | to_nice_json }}"
+    dest: "/etc/docker/daemon.json"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  register: daemon_json
+  tags:
+  - configure_local_docker
+
+- name: reload docker if config changed
+  service:
+    name: "docker"
+    state: "reloaded"
+  when: "daemon_json.changed"
+  tags:
+  - configure_local_docker
+
+- name: import the registry container locally
+  docker_image:
+    name: "{{ docker_registry_image.image }}"
+    load_path: "{{ docker_image_source }}/{{ docker_registry_image.name }}-{{ docker_registry_image.version }}.tar"
+  when: build_docker_registry
+  tags:
+  - local_docker_registry
+
+- name: launch a local registry on this machine
+  docker_container:
+    name: "{{ docker_local_registry_name }}"
+    image: "{{ docker_registry_image.image }}:{{ docker_registry_image.version }}"
+    state: started
+    ports:
+    - "5000:5000"
+  when: build_docker_registry
+  tags:
+  - local_docker_registry
+
+- name: load all docker images locally
+  docker_image:
+    name: "{{ item.image }}:{{ item.version }}"
+    load_path: "{{ docker_image_source }}/{{ item.name }}-{{ item.version }}.tar"
+    timeout: "{{ docker_http_timeout }}"
+    http_timeout: "{{ docker_http_timeout }}"
+  with_items: "{{ docker_image_list }}"
+  when: upload_docker_images
+  tags:
+  - docker_mirror
+
+- name: push all docker images to registry
+  docker_image:
+    name: "{{ item.repo }}{{ item.image }}:{{ item.version }}"
+    repository: "{{ docker_dest_registry }}/{{ item.image }}:{{ item.version }}"
+    push: yes
+    timeout: "{{ docker_http_timeout }}"
+    http_timeout: "{{ docker_http_timeout }}"
+  with_items: "{{ docker_image_list }}"
+  when: upload_docker_images
+  tags:
+  - docker_mirror
+
+- name: ensure yum destination path exists
+  file:
+    path: "{{ deepops_yum_dest_path }}"
+    owner: "{{ deepops_dest_owner }}"
+    group: "{{ deepops_dest_group }}"
+    mode: "0755"
+    state: "directory"
+  when: build_yum_mirror
+  tags:
+  - yum_mirror
+
+- name: copy yum content to destination path
+  command: rsync -a "{{ extract_path }}/yum/" "{{ deepops_yum_dest_path }}/"
+  when: build_yum_mirror
+  tags:
+  - yum_mirror
+
+- name: run createrepo for each yum repo
+  command: createrepo "{{ deepops_yum_dest_path }}/{{ item }}"
+  with_items: "{{ yum_repos_to_sync }}"
+  when: build_yum_mirror
+  tags:
+  - yum_mirror
+
+- name: write out a repo file for each 
+  template:
+    src: "dest-file.repo.j2"
+    dest: "{{ deepops_yum_dest_path }}/{{ item }}.repo"
+  vars:
+    repo_name: "{{ item }}"
+    repo_baseurl: "{{ yum_dest_base_url }}/{{ item }}"
+    repo_enabled: "1"
+    repo_gpgcheck: "0"
+  with_items: "{{ yum_repos_to_sync }}"
+
+- name: start nginx container to serve yum repo
+  docker_container:
+    name: "nginx-yum-repos"
+    image: "{{ docker_dest_registry }}/{{ nginx_image.image }}:{{ nginx_image.version }}"
+    volumes:
+    - "{{ deepops_yum_dest_path }}:/usr/share/nginx/html:ro"
+    ports:
+    - "{{ yum_mirror_port }}:80"
+  when: build_yum_mirror
+  tags:
+  - yum_mirror
+
+- name: sync helm charts to dest directory
+  command: rsync -a "{{ helm_src_path }}/" "{{ helm_dest_path }}/"
+  when: build_helm_mirror
+  tags:
+  - helm_mirror
+
+- name: use chartmuseum container to generate index
+  docker_container:
+    name: "{{ helm_index_generator_name }}"
+    image: "{{ docker_dest_registry }}/{{ helm_repo_image.image }}:{{ helm_repo_image.version }}"
+    volumes:
+    - "{{ helm_dest_path }}:/charts"
+    entrypoint: "/chartmuseum --storage='local' --storage-local-rootdir='/charts' --debug --gen-index > /charts/index.yaml"
+    state: "started"
+  when: build_helm_mirror
+  tags:
+  - helm_mirror
+
+- name: use chartmuseum container to serve mirror
+  docker_container:
+    name: "helm-chartmuseum-mirror"
+    image: "{{ docker_dest_registry }}/{{ helm_repo_image.image }}:{{ helm_repo_image.version }}"
+    volumes:
+    - "{{ helm_dest_path }}:/charts:rw"
+    entrypoint: "/chartmuseum --port={{ helm_port }} --storage='local' --storage-local-rootdir='/charts' --debug"
+    ports:
+    - "{{ helm_port }}:{{ helm_port }}"
+    state: "started"
+  when: build_helm_mirror
+  tags:
+  - helm_mirror
+
+- name: copy python packages to destination
+  command: "rsync -a {{ pip_src_path }}/ {{ pip_dest_path }}/"
+  when: build_pip_mirror
+  tags:
+  - pip_mirror
+
+- name: launch pypi mirror
+  docker_container:
+    name: "pypi-mirror"
+    image: "{{ docker_dest_registry }}/{{ pypi_image.image }}:{{ pypi_image.version }}"
+    volumes:
+    - "{{ pip_dest_path }}:/data/packages"
+    entrypoint: "/usr/bin/pypi-server -p {{ pip_port }} -v /data/packages"
+    ports:
+    - "{{ pip_port }}:{{ pip_port }}"
+  when: build_pip_mirror
+  tags:
+  - pip_mirror
+
+- name: sync misc files
+  command: "rsync -a {{ nginx_misc_src_path }}/ {{ nginx_misc_dest_path }}/"
+  when: build_misc_mirror
+  tags:
+  - misc_mirror
+
+- name: launch nginx container to serve misc files
+  docker_container:
+    name: "{{ nginx_misc_name }}"
+    image: "{{ docker_dest_registry }}/{{ nginx_image.image }}:{{ nginx_image.version }}"
+    volumes:
+    - "{{ nginx_misc_dest_path }}:/usr/share/nginx/html:ro"
+    ports:
+    - "{{ nginx_misc_port }}:80"
+  when: build_misc_mirror
+  tags:
+  - misc_mirror
