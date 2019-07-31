@@ -24,6 +24,14 @@ For detailed help or guidance, read through our [Getting Started Guide](docs/get
 
 ## Deployment Options
 
+### Supported distributions
+
+DeepOps currently supports the following Linux distributions:
+
+* NVIDIA DGX OS 4
+* Ubuntu 18.04 LTS
+* CentOS 7
+
 ### Kubernetes
 
 Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications.
