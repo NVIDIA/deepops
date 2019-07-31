@@ -45,7 +45,6 @@
     - name: Install required OpenShift packages to support Docker registry
       include_role:
         name: openshift
-      run_once: true
     - name: Install helm chart for container registry
       include_role:
         name: container-registry
