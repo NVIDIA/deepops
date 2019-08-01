@@ -2,10 +2,10 @@
 - name: install virtualenv and setuptools
   apt:
     name: "{{ item }}"
-    with_items:
-      - "virtualenv"
-      - "python-setuptools"
     state: present
+  with_items:
+    - "virtualenv"
+    - "python-setuptools"
   when: ansible_distribution == 'Ubuntu'
 
 - name: create location for python virtual env
