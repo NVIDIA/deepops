@@ -113,8 +113,8 @@ fi
 echo
 echo "Kubeflow app installed to: ${HOME}/${KFAPP}"
 echo "To remove, run: cd ${HOME}/${KFAPP} && ${KUBEFLOW_SRC}/scripts/kfctl.sh delete k8s"
-echo "To fully remove all source and application code run: cd ${HOME} && rm -rf ${KFAPP_DIR}; rm -rf ${KUBEFLOW_SRC}"
-echo "To fully remove everything: cd ${HOME}/${KFAPP} && ${KUBEFLOW_SRC}/scripts/kfctl.sh delete k8s; cd ${HOME} && sudo rm -rf ${KFAPP_DIR}; sudo rm -rf ${KUBEFLOW_SRC}"
+echo "To fully remove all source and application code run: cd ${HOME} && rm -rf ${KFAPP}; rm -rf ${KUBEFLOW_SRC}"
+echo "To fully remove everything: cd ${HOME}/${KFAPP} && ${KUBEFLOW_SRC}/scripts/kfctl.sh delete k8s; cd ${DEEPOPS_DIR} && sudo rm -rf ${KFAPP}; sudo rm -rf ${KUBEFLOW_SRC}"
 echo
 echo "Kubeflow Dashboard: ${kf_url}"
 echo
