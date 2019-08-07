@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 # Set configuration
-. configuration
+. config/pxe/ipmi.conf
 
 
 OPTIND=1
-IPMI_HOST_LIST="ipmi_host_list"
+IPMI_HOST_LIST="config/pxe/ipmi_host_list"
 install=0
 progress=0
 upgrade=0
