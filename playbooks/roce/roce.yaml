@@ -1,6 +1,7 @@
 ---
 # Install Mellanox OFED
 - import_playbook: mofed-install.yaml
+  run_once: true
   vars:
     mofed_site_place: "MLNX_OFED-4.6-1.0.1.1"
     mofed_file_name: "MLNX_OFED_LINUX-4.6-1.0.1.1-ubuntu16.04-x86_64.iso"
@@ -65,6 +66,11 @@
         name: "nfvpe/sriov-device-plugin"
         state: present
         pull: yes
+    - name: Pull docker image nfvpe/sriov-cni
+      docker_image: 
+        name: "nfvpe/sriov-cni"
+        state: present
+        pull: yes
   tags:
     - pull_k8s_dp_docker
 
@@ -79,7 +85,7 @@
           vendors:
           - 15b3
           devices:
-          - 101c
+          - "{{ dev_id }}"
           pfNames:
           - "{{ pf1 }}"
       - resourceName: sriov_112
@@ -88,7 +94,7 @@
           vendors:
           - 15b3
           devices:
-          - 101c
+          - "{{ dev_id }}"
           pfNames:
           - "{{ pf2 }}"
       - resourceName: sriov_113
@@ -97,7 +103,7 @@
           vendors:
           - 15b3
           devices:
-          - 101c
+          - "{{ dev_id }}"
           pfNames:
           - "{{ pf3 }}"
       - resourceName: sriov_114
@@ -106,7 +112,7 @@
           vendors:
           - 15b3
           devices:
-          - 101c
+          - "{{ dev_id }}"
           pfNames:
           - "{{ pf4 }}"
   tags:
@@ -136,3 +142,17 @@
 #Install Kubeflow MPI-Operator:v1alpha2
 - import_playbook: mpi-operator.yaml
 
+# Mulus update
+- hosts: kube-master
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Multus update
+      k8s:
+        state: present
+        definition: "{{ lookup('url', 'https://raw.githubusercontent.com/Mellanox/deepops/roce_backend/playbooks/roce/multus-ds-update.yaml', split_lines=False) }}"
+      run_once: true
+    - pause:
+        minutes: 5
+  tags:
+    - k8s_multus_update
