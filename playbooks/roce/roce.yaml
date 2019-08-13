@@ -16,6 +16,17 @@
       stat:
         path: /usr/bin/ofed_info
       register: ofed_present
+    - name: Check that rc.local exist
+      stat:
+        path: /etc/rc.local      
+      when: ofed_present.stat.exists 
+      register: stat_result
+    - name: Create the file, if it does not present
+      file:
+        path: /etc/rc.local
+        state: touch
+        mode: 0755
+      when: stat_result.stat.exists == False 
     - include_tasks: vf-activate.yaml
       with_items:
         - "{{ pf1 }}"
@@ -30,6 +41,8 @@
 
 #Install python dependencies
 - hosts: kube-master
+  become: true
+  become_method: sudo
   tasks:
     - pip:
         name: openshift
@@ -42,6 +55,8 @@
 
 #Download K8s SRIOV DP image
 - hosts: kube-node
+  become: true
+  become_method: sudo
   tasks:
     - pip:
         name: docker-py
