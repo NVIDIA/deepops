@@ -97,6 +97,12 @@ case "$ID" in
         fi
         pip --version
 
+        # Install setuptools
+        if ! dpkg -l python-setuptools >/dev/null 2>&1; then
+            echo "Installing setuptools..."
+            sudo apt-get -y install python-setuptools >/dev/null
+        fi
+
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
             sudo pip install ansible=="${ANSIBLE_VERSION}"
