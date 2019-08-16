@@ -10,7 +10,7 @@
 - name: Update firmware if required
   block:
     - name: Update firmware if required
-      command: "docker run --rm --privileged  -v /:/hostfs -t -e auto=1 {{ firmware_update_container }} update_fw {{ force_parameter }} {{ target_fw }}"
+      command: "docker run --rm --privileged -v /:/hostfs -t -e auto=1 -e COLUMNS=200 -e LINES=300 {{ firmware_update_container }} update_fw {{ force_parameter }} {{ target_fw }}"
       register: update_output
       when:
         - "'no' in firmware_versions.stdout"
