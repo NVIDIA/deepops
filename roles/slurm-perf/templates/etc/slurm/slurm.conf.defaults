@@ -1,6 +1,6 @@
 # SLURMCTLD
 SlurmUser={{ slurm_username }}
-{% for host in groups["slurm_controller"] %}
+{% for host in groups["slurm-master"] %}
 SlurmctldHost={{ host }}
 {% endfor %}
 SlurmctldPort=6817
@@ -13,7 +13,7 @@ ReturnToService=1
 
 # ACCOUNTING
 AccountingStorageType=accounting_storage/slurmdbd
-AccountingStorageHost={{ groups["slurm_controller"][0] }}
+AccountingStorageHost={{ groups["slurm-master"][0] }}
 AccountingStorageUser={{ slurm_db_username }}
 AccountingStoragePass=/var/run/munge/munge.socket.2
 {% if slurm_accounting_mode == 'strict' %}
@@ -52,7 +52,7 @@ RebootProgram=/sbin/reboot
 PartitionName=batch Nodes=ALL Default=YES DefMemPerCPU=0 State=UP OverSubscribe=EXCLUSIVE
 
 # NODES
-{% for node_name in groups['slurm_nodes'] %}
+{% for node_name in groups['slurm-node'] %}
 {% set memory =  hostvars[node_name]["ansible_local"]["memory"] -%}
 {% set cpu_topology =  hostvars[node_name]["ansible_local"]["topology"]["cpu_topology"] -%}
 {% set gpu_topology =  hostvars[node_name]["ansible_local"]["topology"]["gpu_topology"] -%}
