@@ -33,3 +33,6 @@
 
 # Install Slurm optimizations
 - include: slurm-perf.yml
+
+# Validate NCCL connectivity between all nodes in the cluster via enroot/pxysis/slurm
+- include: slurm-validation.yml
