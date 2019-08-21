@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -ex
+
+command -v nvidia-smi >/dev/null || exit 0
+
+error() {
+    logger -s -t slurm "Draining node -- $1"
+    scontrol update nodename="$HOSTNAME" state=drain reason="$1"
+    exit 1
+}
+
+if ! {{ _sysconf_dir }}/shared/bin/set_gpu_power_levels.sh default >/dev/null ; then
+    error 'Failed to reset GPU power levels'
+fi
+if ! {{ _sysconf_dir }}/shared/bin/set_gpu_clocks.sh default >/dev/null ; then
+    error 'Failed to reset GPU clocks'
+fi
+
+# Clean up processes still running.  If processes don't exit node is drained.
+if nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}' | grep -v - > /dev/null
+then
+    for pid in $(nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}' | grep -v -)
+    do
+        logger -s -t slurm "Killing residual GPU process $pid ..."
+        kill -9 "$pid"
+    done
+    sleep 5
+    if nvidia-smi pmon -c 1 | tail -n+3 | awk '{print $2}' | grep -v - > /dev/null
+    then
+        error 'Residual GPU processes found'
+    fi
+fi
+
+# Check for XID errors in dmesg
+XIDLIST="$(dmesg | grep 'NVRM: Xid' | sed 's/^.*\] \(.*\)/\1/' | awk '{print $4}' | sed 's/,//' | sort -n | uniq | paste -s -d,)"
+if [ -n "$XIDLIST" ]; then
+  # FIXME: maybe reboot instead?
+  error "Found XID errors in dmesg: $XIDLIST. Reboot the node to clear dmesg after addressing."
+fi
+
+# Check for retired pages
+if nvidia-smi --query-gpu=retired_pages.pending --format=csv | grep -i yes >/dev/null; then
+  # FIXME: maybe reboot instead?
+  error 'Found retired GPU pages'
+fi

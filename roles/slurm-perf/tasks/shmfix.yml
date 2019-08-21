@@ -1,0 +1,7 @@
+---
+- name: Fix RemoveIPC
+  blockinfile:
+    path: /etc/systemd/logind.conf
+    block: |
+      RemoveIPC=no
+  notify: "restart logind"

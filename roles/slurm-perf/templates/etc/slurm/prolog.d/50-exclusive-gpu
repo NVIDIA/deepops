@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -ex
+
+command -v nvidia-smi >/dev/null || exit 0
+
+error() {
+    logger -s -t slurm "Draining node -- $1"
+    scontrol update nodename="$HOSTNAME" state=drain reason="$1"
+    exit 1
+}
+
+if ! {{ _sysconf_dir }}/shared/bin/set_gpu_power_levels.sh max >/dev/null ; then
+    error 'Failed to set GPU power levels'
+fi
+if ! {{ _sysconf_dir }}/shared/bin/set_gpu_clocks.sh max >/dev/null ; then
+    error 'Failed to set GPU clocks'
+fi
+if ! lsmod | grep ^nv_peer_mem >/dev/null ; then
+    error 'nv_peer_mem not loaded'
+fi
+if ! systemctl is-active nvidia-persistenced.service >/dev/null ; then
+    error 'nvidia-persistenced is not active'
+fi
+if nvidia-smi -q -x | grep -i memory_util | grep -v '<memory_util>0 %</memory_util>' ; then
+    error 'GPU memory utilization non-zero'
+fi
+
+# ECC should always be on. Turning it on would require a reboot.
+ecc_states="$(nvidia-smi -q -x | grep current_ecc | cut -d'>' -f2 | cut -d'<' -f1)"
+for ecc_state in $ecc_states ; do
+    case $ecc_state in
+        Enabled|'N/A')
+            ;;  # valid state
+        Disabled)
+            error 'ECC not enabled on all GPUs'
+            ;;
+        *)
+            error 'ECC is in an unknown state'
+            ;;
+    esac
+done

@@ -1,0 +1,42 @@
+---
+# packages
+slurm_ubuntu_repo_key_url: none
+slurm_ubuntu_repo_key_id: none
+slurm_ubuntu_repo: none
+
+slurm_cluster_name: deepops
+slurm_username: slurm
+slurm_password: ReplaceWithASecurePasswordInTheVault
+slurm_user_uid: 22078
+slurm_user_home: /local/slurm
+
+slurm_allow_ssh_user: []
+
+slurm_db_username: slurm
+slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
+
+is_controller: no
+is_client: no
+is_compute: no
+
+# Useful to delete old files (e.g. from previous versions of deepops)
+slurm_clear_old_prolog_epilog: false
+
+# Disable clearing of shared memory when user login shell exits
+slurm_fix_shm: true
+
+slurm_install_pyxis: no
+slurm_pyxis_tarball_url: none
+
+# open:   any user can submit jobs
+# strict: admin must supply list of users+accounts with access
+slurm_accounting_mode: open
+
+# This variable is only used when slurm_accounting_mode=strict.
+# See scripts at etc/slurm/shared/bin/sacctmgr_wrapper*.py for details.
+slurm_accounts_data:
+  cluster:
+    cluster: "{{ slurm_cluster_name }}"
+  accounts:
+    - account: root
+      description: default root account

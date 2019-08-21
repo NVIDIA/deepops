@@ -1,0 +1,55 @@
+---
+- name: yum repos
+  yum:
+    name:
+      - centos-release-scl
+      - epel-release
+    state: present
+
+- name: slurm repo
+  get_url:
+    url: http://sqrl.nvidia.com/data/share/lyeager/repos/el7.x86_64/slurm/slurm.repo
+    dest: /etc/yum.repos.d/sqrl-lyeager-slurm.repo
+    force: yes
+    mode: 0644
+
+- name: shared packages
+  yum:
+    name: munge
+  notify:
+    - restart munge
+
+- name: packages for client nodes
+  yum:
+    name: slurm
+    state: present
+  when: is_client
+
+- name: packages for the control node
+  yum:
+    name:
+      - mariadb-server
+      - MySQL-python
+      - mailx
+      - slurm-slurmctld
+      - slurm-slurmdbd
+      - ssmtp
+  when: is_controller
+
+- name: packages for compute nodes
+  yum:
+    name:
+      - hwloc
+      - hwloc-devel
+      - kernel-tools # for cpupower, used in prolog+epilog
+      - slurm-slurmd
+      - slurm-pam_slurm
+  when: is_compute
+
+- name: packages for compute nodes with pyxis
+  yum:
+    name:
+      - '@Development tools'
+      - slurm-devel
+  when: (is_controller or is_compute) and slurm_install_pyxis
+  tags: pyxis
