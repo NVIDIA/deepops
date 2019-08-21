@@ -1,0 +1,23 @@
+---
+# Playbook designed to run a NCCL test across all nodes in a cluster of DGX-1s
+- hosts: slurm-master
+  vars:
+    nccl_test_repo: "nvidia/nccl-tests" # Public repository for nccl performance/validation tests
+    num_gpus: 8 # A DGX-1 Server has 8 GPUs
+  tasks:
+    - name: Get node count from sinfo
+      shell: >
+                sinfo |
+                tail -n +2  |
+                awk '{sum += $4} END {print sum}'
+      register: num_nodes
+    - name: Print node/gpu counts
+      debug:
+        msg: "Detected {{ num_nodes.stdout }} nodes with {{ num_gpus }} gpus each."
+    - name: Execute NCCL test across all nodes and GPUs
+      shell: >
+              srun -N {{ num_nodes.stdout }} --container-image={{ nccl_test_repo }} all_reduce_perf -b 1M -e 512M -f 2 -g {{ num_gpus }}
+      register: out
+    - name: Print results
+      debug: 
+        msg: "{{ out.stdout }}"
