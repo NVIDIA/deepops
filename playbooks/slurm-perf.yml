@@ -1,0 +1,22 @@
+---
+- hosts: all
+  become: yes
+  roles:
+    - name: facts
+
+- hosts: slurm-master
+  become: yes
+  roles:
+    - name: slurm-perf
+      vars:
+        user: "{{ ansible_env.USER | default(ansible_env.SUDO_USER) }}"
+        is_controller: yes
+
+- hosts: slurm-node
+  become: yes
+  roles:
+    - name: nvidia.enroot
+    - name: slurm-perf
+      vars:
+        user: "{{ ansible_env.USER | default(ansible_env.SUDO_USER) }}"
+        is_compute: yes

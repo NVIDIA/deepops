@@ -1,0 +1,35 @@
+---
+# Deploy an optimized Slurm cluster
+#  # Install python required for Ansible
+- include: bootstrap-python.yml
+
+# Set up passwordless sudo and SSH keys if needed
+- include: bootstrap-ssh.yml
+- include: bootstrap-sudo.yml
+
+# Set root SSH key to allow SSH/ansible when no slurm job running for ansible user
+- hosts: all
+  become: true
+  tasks:
+    - name: Add SSH public key to root user authorized keys
+      authorized_key:
+        user: root
+        state: present
+        key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+
+# Configure hostnames, /etc/hosts
+- include: hosts.yml
+
+# Install NVIDIA driver
+- include: nvidia-driver.yml
+
+# Install Docker and configure for NVIDIA
+- include: docker.yml
+  tags:
+  - install_docker
+- include: nvidia-docker.yml
+  tags:
+  - install_docker
+
+# Install Slurm optimizations
+- include: slurm-perf.yml
