@@ -34,7 +34,6 @@
   apt:
     name:
       - nvslurm-utils
-  when: is_client
 
 - name: packages for control node
   apt:

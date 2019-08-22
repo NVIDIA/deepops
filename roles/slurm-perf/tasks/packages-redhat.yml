@@ -23,7 +23,6 @@
   yum:
     name: slurm
     state: present
-  when: is_client
 
 - name: packages for the control node
   yum:
