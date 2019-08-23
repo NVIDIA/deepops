@@ -4,10 +4,10 @@ set -ex
 for fs in /tmp /dev/shm; do
     # only remount if it is currently mounted, AND if we know how to mount it again
     do_unmount=0
-    do_mount=1
+    do_mount=0
     if findmnt "$fs" >/dev/null && grep -q "$fs " /etc/fstab; then
         do_unmount=1
-        do_mount=0
+        do_mount=1
     fi
 
     # unmount
