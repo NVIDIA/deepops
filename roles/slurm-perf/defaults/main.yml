@@ -16,7 +16,6 @@ slurm_db_username: slurm
 slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 
 is_controller: no
-is_client: no
 is_compute: no
 
 # Useful to delete old files (e.g. from previous versions of deepops)
@@ -25,7 +24,7 @@ slurm_clear_old_prolog_epilog: false
 # Disable clearing of shared memory when user login shell exits
 slurm_fix_shm: true
 
-slurm_install_pyxis: no
+slurm_install_pyxis: yes
 slurm_pyxis_tarball_url: none
 
 # open:   any user can submit jobs
