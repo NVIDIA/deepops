@@ -1,22 +1,26 @@
 ---
-- hosts: all
+- hosts: slurm-master
+  tasks:
+    - set_fact: host_is_slurm_controller=yes
+      tags: always
+- hosts: slurm-client
+  tasks:
+    - set_fact: host_is_slurm_client=yes
+      tags: always
+- hosts: slurm-node
+  tasks:
+    - set_fact: host_is_slurm_node=yes
+      tags: always
+
+- hosts: slurm-cluster
   become: yes
   roles:
     - name: facts
-
-- hosts: slurm-master
-  become: yes
-  roles:
-    - name: slurm-perf
-      vars:
-        user: "{{ ansible_env.USER | default(ansible_env.SUDO_USER) }}"
-        is_controller: yes
-
-- hosts: slurm-node
-  become: yes
-  roles:
     - name: nvidia.enroot
     - name: slurm-perf
       vars:
         user: "{{ ansible_env.USER | default(ansible_env.SUDO_USER) }}"
-        is_compute: yes
+        is_controller: (host_is_slurm_controller | default(False))
+        is_client: (host_is_slurm_client | default(False))
+        is_compute: (host_is_slurm_node | default(False))
+
