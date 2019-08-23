@@ -7,7 +7,7 @@ for fs in /tmp /dev/shm; do
     do_mount=1
     if findmnt "$fs" >/dev/null && grep -q "$fs " /etc/fstab; then
         do_unmount=1
-        do_mount=1
+        do_mount=0
     fi
 
     # unmount
