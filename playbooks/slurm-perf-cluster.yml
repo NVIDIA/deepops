@@ -31,6 +31,13 @@
   tags:
   - install_docker
 
+# Ensure that DKMS modules are installed and running
+- hosts: slurm-node
+  become: true
+  tasks:
+    - name: Autoinstall DKMS modules
+      command: dkms autoinstall
+
 # Install Slurm optimizations
 - include: slurm-perf.yml
 
