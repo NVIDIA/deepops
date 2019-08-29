@@ -12,6 +12,8 @@ The DeepOps project encapsulates best practices in the deployment of GPU server 
 * An existing cluster that needs a resource manager / batch scheduler, where DeepOps is used to install Slurm, Kubernetes, or a hybrid of both
 * A single machine where no scheduler is desired, only NVIDIA drivers, Docker, and the NVIDIA Container Runtime
 
+Check out the [video tutorial](https://drive.google.com/file/d/1RNLQYlgJqE8JMv0np8SdEDqeCN2piavF/view) for how to use DeepOps to deploy Kubernetes and Kubeflow on a single DGX Station. This provides a good base test ground for larger deployments.
+
 ## Releases
 
 Latest release: [DeepOps 19.07 Release](https://github.com/NVIDIA/deepops/releases/tag/19.07)
