@@ -50,7 +50,7 @@ For more information on Slurm in general, refer to the [official Slurm docs](htt
 
 ### DGX POD Hybrid Cluster
 
-A hybrid cluster with both Kubernetes and Slurm can also be deployed. This is recommended for [DGX POD](https://nvidia-gpugenius.highspot.com/viewer/5b33fecf1279587c07d8ac86) and other setups that wish to make maximal use of the cluster.
+A hybrid cluster with both Kubernetes and Slurm can also be deployed. This is recommended for [DGX POD](https://www.nvidia.com/en-us/data-center/dgx-pod-reference-architecture/) and other setups that wish to make maximal use of the cluster.
 
 Consult the [DGX POD Guide](docs/dgx-pod.md) for step-by-step instructions on building a GPU-enabled hybrid cluster using DeepOps.
 
