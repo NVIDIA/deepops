@@ -1,7 +1,7 @@
 ---
 - name: delete old prolog files
   file:
-    path: "{{ _sysconf_dir }}/{{ item }}"
+    path: "{{ slurm_sysconf_dir }}/{{ item }}"
     state: absent
   with_items:
     - prolog.sh
@@ -16,7 +16,7 @@
 
 - name: delete old epilog files
   file:
-    path: "{{ _sysconf_dir }}/{{ item }}"
+    path: "{{ slurm_sysconf_dir }}/{{ item }}"
     state: absent
   with_items:
     - epilog.sh
@@ -30,7 +30,7 @@
 - name: copy prolog scripts
   template:
     src: etc/slurm/prolog.sh
-    dest: "{{ _sysconf_dir }}/"
+    dest: "{{ slurm_sysconf_dir }}/"
     mode: 0755
   tags:
     - prolog
@@ -38,7 +38,7 @@
 - name: copy prolog parts
   template:
     src: "{{ item }}"
-    dest: "{{ _sysconf_dir }}/prolog.d/"
+    dest: "{{ slurm_sysconf_dir }}/prolog.d/"
     mode: 0755
   with_fileglob:
     - templates/etc/slurm/prolog.d/*
@@ -48,7 +48,7 @@
 - name: copy epilog script
   template:
     src: etc/slurm/epilog.sh
-    dest: "{{ _sysconf_dir }}/"
+    dest: "{{ slurm_sysconf_dir }}/"
     mode: 0755
   tags:
     - epilog
@@ -56,7 +56,7 @@
 - name: copy epilog parts
   template:
     src: "{{ item }}"
-    dest: "{{ _sysconf_dir }}/epilog.d/"
+    dest: "{{ slurm_sysconf_dir }}/epilog.d/"
     mode: 0755
   with_fileglob:
     - templates/etc/slurm/epilog.d/*
@@ -66,7 +66,7 @@
 - name: copy shared scripts
   template:
     src: "etc/slurm/shared/bin/{{ item }}"
-    dest: "{{ _sysconf_dir }}/shared/bin/"
+    dest: "{{ slurm_sysconf_dir }}/shared/bin/"
     mode: 0755
   with_items:
     - run-parts.sh

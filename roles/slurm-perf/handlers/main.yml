@@ -1,4 +1,8 @@
 ---
+- name: regather local facts
+  setup:
+    filter: ansible_local
+
 - name: daemon reload
   service:
     daemon_reload: true
@@ -12,23 +16,23 @@
   service:
     name: slurmd
     state: restarted
-  when: is_compute
+  when: slurm_node_is_compute
 
 - name: restart slurmdbd
   service:
     name: slurmdbd
     state: restarted
-  when: is_controller
+  when: slurm_node_is_controller
 
 - name: restart slurmctld
   service:
     name: slurmctld
     state: restarted
-  when: is_controller
+  when: slurm_node_is_controller
 
 - name: restart logind
   service:
     name: systemd-logind.service
     state: restarted
     enabled: yes
-  when: is_compute
+  when: slurm_node_is_compute

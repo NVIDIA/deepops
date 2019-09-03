@@ -47,7 +47,7 @@ for script in "$parts_dir"/*; do
     fi
 
     # setup logfiles
-    logfile={{ _log_dir }}/prolog-epilog
+    logfile={{ slurm_log_dir }}/prolog-epilog
     stdoutlog="$(mktemp)"
     stderrlog="$(mktemp)"
 

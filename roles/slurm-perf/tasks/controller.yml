@@ -1,23 +1,4 @@
 ---
-- name: Allow mysql to read libaio.so.1
-  sefcontext:
-    target: '/lib64(/.*)?'
-    setype: mysqld_db_t
-    state: present
-  when: ansible_os_family == "RedHat"
-
-- name: Apply new SELinux file context to filesystem
-  command: restorecon -irv /lib64
-  when: ansible_os_family == "RedHat"
-
-- name: start mariadb
-  systemd:
-    name: mariadb
-    state: started
-    enabled: yes
-    daemon-reload: yes
-  when: ansible_os_family == "RedHat"
-
 - name: setup slurm db user
   mysql_user:
     name: "{{ slurm_db_username }}"
@@ -33,13 +14,13 @@
     owner: slurm
     mode: 0755
   with_items:
-    - "{{ _log_dir }}"
-    - "{{ _spool_dir }}/slurmctld"
+    - "{{ slurm_log_dir }}"
+    - "{{ slurm_spool_dir }}/slurmctld"
 
 - name: copy slurmdbd.conf
   template:
     src: etc/slurm/slurmdbd.conf
-    dest: "{{ _sysconf_dir }}/"
+    dest: "{{ slurm_sysconf_dir }}/"
     owner: root
     mode: 0600
   notify:
@@ -60,55 +41,11 @@
     port: 6819
     delay: 5
 
-- name: open accounting tasks
-  when: slurm_accounting_mode == 'open'
-  tags: accounts
-  block:
-    - name: create cluster
-      command: sacctmgr -i add cluster {{ slurm_cluster_name }}
-      register: result
-      failed_when: "result.rc != 0 and 'already exists' not in result.stdout"
-      changed_when: "'already exists' not in result.stdout"
-
-- name: strict accounting tasks
-  when: slurm_accounting_mode == 'strict'
-  tags: accounts
-  block:
-  - name: copy sacctmgr wrapper scripts
-    template:
-      src: "etc/slurm/shared/bin/{{ item }}"
-      dest: "{{ _sysconf_dir }}/shared/bin/"
-      mode: 0755
-    with_items:
-      - sacctmgr_wrapper_expand_data.py
-      - sacctmgr_wrapper_migrate_data.py
-
-  - name: copy sacctmgr data (concise yaml)
-    copy:
-      content: "{{ slurm_accounts_data | to_nice_yaml }}"
-      dest: "{{ _sysconf_dir }}/sacctmgr_data_concise.yml"
-
-  - name: expand sacctmgr data
-    command: "{{ _sysconf_dir }}/shared/bin/sacctmgr_wrapper_expand_data.py {{ _sysconf_dir }}/sacctmgr_data_concise.yml {{ _sysconf_dir }}/sacctmgr_data.json"
-
-  - name: decide whether account changes will be applied or not
-    set_fact:
-      accounts_apply: "{{ slurm_accounts_apply | default(false) | bool }}"
-      accounts_dry_run: "{{ slurm_accounts_dry_run | default(false) | bool | ternary('--dry-run', '') }}"
-      accounts_delete: "{{ slurm_accounts_delete | default(false) | bool | ternary('--delete', '') }}"
-
-  - name: run sacctmgr_wrapper_migrate_data.py {{ accounts_dry_run }} {{ accounts_delete }}
-    command: "{{ _sysconf_dir }}/shared/bin/sacctmgr_wrapper_migrate_data.py {{ _sysconf_dir }}/sacctmgr_data.json {{ accounts_dry_run }} {{ accounts_delete }}"
-    when: accounts_apply
-    register: result
-    changed_when: result.stderr != ''
-
-  - name: print account changes output
-    debug:
-      var: result.stderr_lines
-    when: accounts_apply
-
-### (end strict accounting tasks)
+- name: create cluster
+  command: sacctmgr -i add cluster {{ slurm_cluster_name }}
+  register: result
+  failed_when: "result.rc != 0 and 'already exists' not in result.stdout"
+  changed_when: "'already exists' not in result.stdout"
 
 - name: start slurmctld
   systemd:

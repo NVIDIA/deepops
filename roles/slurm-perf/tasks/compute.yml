@@ -6,21 +6,13 @@
     line: 'GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX} cgroup_enable=memory swapaccount=1"'
   register: update_grub
 
-- name: update grub (debian)
+- name: update grub
   block:
     - name: update grub
       command: update-grub
     - name: reboot after updating grub config
       reboot:
-  when: update_grub.changed and ansible_os_family == "Debian"
-
-- name: update grub (redhat)
-  block:
-    - name: update grub
-      command: grub2-mkconfig -o /boot/grub2/grub.cfg
-    - name: reboot after updating grub config
-      reboot:
-  when: update_grub.changed and ansible_os_family == "RedHat"
+  when: update_grub.changed
 
 - name: configure slurmd for pmix
   blockinfile:
@@ -40,16 +32,14 @@
     owner: slurm
     mode: 0755
   with_items:
-    - "{{ _spool_dir }}/d"
-    - "{{ _log_dir }}"
+    - "{{ slurm_log_dir }}"
 
-- name: copy files to {{ _sysconf_dir }}
+- name: copy files to {{ slurm_sysconf_dir }}
   template:
     src: "{{ item }}"
-    dest: "{{ _sysconf_dir }}/"
+    dest: "{{ slurm_sysconf_dir }}/"
   with_items:
     - etc/slurm/cgroup.conf
-    - etc/slurm/gres.conf
   notify:
     - restart slurmd
   tags:
@@ -75,7 +65,7 @@
     path: /etc/pam.d/sshd
     block: |
       account sufficient pam_listfile.so item=user sense=allow file=/etc/localusers
-      account required pam_slurm_adopt.so
+      account required {{ slurm_pam_lib }}
     insertafter: "PAM configuration for the Secure Shell service"
     marker: "# {mark} ANSIBLE MANAGED BLOCK (ansible-role-slurm)"
   tags:

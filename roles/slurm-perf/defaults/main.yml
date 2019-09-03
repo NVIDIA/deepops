@@ -1,41 +1,54 @@
 ---
-# packages
-slurm_ubuntu_repo_key_url: none
-slurm_ubuntu_repo_key_id: none
-slurm_ubuntu_repo: none
+# package repo (optional)
+slurm_ubuntu_repo_key_url: ''
+slurm_ubuntu_repo_key_id: ''
+slurm_ubuntu_repo: ''
 
-slurm_cluster_name: deepops
-slurm_username: slurm
-slurm_password: ReplaceWithASecurePasswordInTheVault
-slurm_user_uid: 22078
-slurm_user_home: /local/slurm
+# package names
+slurm_client_package_name: slurm-client
+slurmctld_package_name: slurmctld
+slurmdbd_package_name: slurmdbd
+slurmd_package_name: slurmd
 
+# package paths
+slurm_log_dir: /var/log/slurm-llnl
+slurm_spool_dir: /var/lib/slurm-llnl
+slurm_sysconf_dir: /etc/slurm-llnl
+
+# pam
+slurm_pam_package_name: libpam-slurm
+slurm_pam_lib: pam_slurm.so
+
+# pyxis
+slurm_install_pyxis: no
+slurm_pyxis_tarball_url: https://github.com/NVIDIA/pyxis/archive/v0.1.0.tar.gz
+
+# these variables will probably match up with inventory groups
+slurm_node_is_controller: no  # install slurmctld
+slurm_node_is_compute: no     # install slurmd
+slurm_node_is_client: no      # install slurm CLI utilities
+
+# could have an entry like this in group_vars/all.yml, depending on your inventory group names:
+#     slurm_controller_host: "{{ groups['slurm_controllers'][0] }}"
+#slurm_controller_host: none
+
+# if set, the role can setup NodeName entries in slurm.conf for you automatically
+# could have an entry like this in group_vars/all.yml, depending on your inventory group names:
+#     slurm_compute_hosts: "{{ groups['slurm_compute_nodes'] }}"
+slurm_compute_hosts: none
+
+# list of users who can always ssh into compute nodes
 slurm_allow_ssh_user: []
 
-slurm_db_username: slurm
-slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
-
-is_controller: no
-is_compute: no
-
-# Useful to delete old files (e.g. from previous versions of deepops)
+# useful to delete old files
 slurm_clear_old_prolog_epilog: false
 
 # Disable clearing of shared memory when user login shell exits
 slurm_fix_shm: true
 
-slurm_install_pyxis: yes
-slurm_pyxis_tarball_url: none
-
-# open:   any user can submit jobs
-# strict: admin must supply list of users+accounts with access
-slurm_accounting_mode: open
-
-# This variable is only used when slurm_accounting_mode=strict.
-# See scripts at etc/slurm/shared/bin/sacctmgr_wrapper*.py for details.
-slurm_accounts_data:
-  cluster:
-    cluster: "{{ slurm_cluster_name }}"
-  accounts:
-    - account: root
-      description: default root account
+# misc config
+slurm_cluster_name: deepops
+slurm_username: slurm
+slurm_user_uid: 22078
+slurm_user_home: /home/slurm
+slurm_db_username: slurm

@@ -1,23 +1,19 @@
 ---
-- name: ubuntu vars
-  include_vars:
-    file: ubuntu.yml
-  when: ansible_distribution == 'Ubuntu'
-  tags: always
-
-- name: rhel vars
-  include_vars:
-    file: rhel.yml
-  when: ansible_os_family == 'RedHat'
-  tags: always
+- name: assert that variables are defined
+  fail:
+    msg: "Variable '{{ item }}' is not defined"
+  when: item not in vars
+  loop:
+    - slurm_password
+    - slurm_db_password
+    - slurm_controller_host
 
 - name: ubuntu tasks
   include: packages-ubuntu.yml
   when: ansible_distribution == 'Ubuntu'
 
-- name: redhat tasks
-  include: packages-redhat.yml
-  when: ansible_os_family == 'RedHat'
+- name: facts tasks
+  include: facts.yml
 
 - name: munge tasks
   include: munge.yml
@@ -39,7 +35,7 @@
 - name: copy slurm.conf
   template:
     src: etc/slurm/slurm.conf.j2
-    dest: "{{ _sysconf_dir }}/slurm.conf"
+    dest: "{{ slurm_sysconf_dir }}/slurm.conf"
   vars:
     default_config: "{{ lookup('template', 'etc/slurm/slurm.conf.defaults') }}"
     user_config: "{{ slurm_config | default('') }}"
@@ -50,15 +46,15 @@
   tags: config
 
 - include: controller.yml
-  when: is_controller
+  when: slurm_node_is_controller
 
 - include: compute.yml
-  when: is_compute
+  when: slurm_node_is_compute
 
 - include: shmfix.yml
-  when: is_compute and slurm_fix_shm
+  when: slurm_node_is_compute and slurm_fix_shm
 
 - name: pyxis tasks
   include_tasks: pyxis.yml
-  when: (is_controller or is_compute) and slurm_install_pyxis
+  when: (slurm_node_is_controller or slurm_node_is_compute) and slurm_install_pyxis
   tags: pyxis
