@@ -1,15 +1,15 @@
 ---
 - hosts: slurm-master
   tasks:
-    - set_fact: host_is_slurm_controller=yes
+    - set_fact: slurm_node_is_controller=yes
       tags: always
 - hosts: slurm-client
   tasks:
-    - set_fact: host_is_slurm_client=yes
+    - set_fact: slurm_node_is_client=yes
       tags: always
 - hosts: slurm-node
   tasks:
-    - set_fact: host_is_slurm_node=yes
+    - set_fact: slurm_node_is_compute=yes
       tags: always
 
 - hosts: slurm-cluster
