@@ -66,38 +66,3 @@
 
 #software_remove_packages:
 #  - popularity-contest
-
-_cluster_repo_key_url: 'TODO'
-_cluster_repo_key_id: 'TODO'
-_cluster_repo: 'deb TODO /'
-
-enroot_ubuntu_repo_key_url: "{{ _cluster_repo_key_url }}"
-enroot_ubuntu_repo_key_id: "{{ _cluster_repo_key_id }}"
-enroot_ubuntu_repo: "{{ _cluster_repo }}"
-
-fuse_ubuntu_repo_key_url: "{{ _cluster_repo_key_url }}"
-fuse_ubuntu_repo_key_id: "{{ _cluster_repo_key_id }}"
-fuse_ubuntu_repo: "{{ _cluster_repo }}"
-
-slurm_ubuntu_repo_key_url: "{{ _cluster_repo_key_url }}"
-slurm_ubuntu_repo_key_id: "{{ _cluster_repo_key_id }}"
-slurm_ubuntu_repo: "{{ _cluster_repo }}"
-
-# software_packages_to_install:
-#  - linux-headers-4.15.0-54-generic
-#  - linux-image-4.15.0-54-generic
-#  - linux-tools-4.15.0-54-generic
-
-#software_packages_to_remove:
-#  - 'linux-*-4.15.0-47-generic'
-#  - 'linux-*-4.15.0-51-generic'
-#  - 'linux-*-4.15.0-52-generic'
-#  - 'linux-*-4.15.0-55-generic'
-#  - 'linux-*-4.15.0-58-generic'
-#  - linux-headers-generic
-#  - linux-image-generic
-#  - linux-tools-generic
-
-enroot_runtime_path: '/tmp/enroot-runtime-$(id -u)'
-enroot_cache_path: '/tmp/enroot-cache-$(id -u)'
-enroot_data_path: '/tmp/enroot-data-$(id -u)'
