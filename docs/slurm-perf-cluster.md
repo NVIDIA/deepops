@@ -64,7 +64,7 @@ SlurmPerf Deployment Guide
    # NOTE: If sudo on remote machine requires a password, add: `-K`
    # NOTE: If SSH user is different than current user, add: `-u <user>`
    # NOTE:  Save the flags used here for the next several playbooks
-   ansible all -a “uptime; hostname”
+   ansible all -a "hostname"
    ```
 
 4. Add or modify user(s) across cluster
