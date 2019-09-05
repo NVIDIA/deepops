@@ -21,7 +21,7 @@ slurm_pam_lib: pam_slurm.so
 
 # pyxis
 slurm_install_pyxis: yes
-slurm_pyxis_tarball_url: https://github.com/NVIDIA/pyxis/archive/v0.1.0.tar.gz
+slurm_pyxis_tarball_url: https://github.com/NVIDIA/pyxis/archive/v0.2.0.tar.gz
 
 # these variables will probably match up with inventory groups
 slurm_node_is_controller: no  # install slurmctld
