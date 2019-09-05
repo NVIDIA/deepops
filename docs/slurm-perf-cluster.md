@@ -5,7 +5,7 @@ SlurmPerf Deployment Guide
 
    This guide utilizes a collection of playbooks to configure a cluster, deploy a workload manager, and verify performance.
 
-   It leverages open source tools such as Pyxis and Enroot to optimize Slurm for multi-node Deep Learning jobs beyond the cluster configuration described in the [Slurm Deployment Guide](https://github.com/NVIDIA/deepops/blob/master/docs/slurm-cluster.md). Additional details can be found [here](Link to main docs).
+   It leverages open source tools such as Pyxis and Enroot to optimize Slurm for multi-node Deep Learning jobs beyond the cluster configuration described in the [Slurm Deployment Guide](https://github.com/NVIDIA/deepops/blob/master/docs/slurm-cluster.md). Additional details can be found [here](https://docs.nvidia.com/ngc/multi-node-bert-user-guide).
 
 ## Supported Distributions
 
@@ -175,9 +175,8 @@ SlurmPerf Deployment Guide
 
 ## Using Slurm
 
-   The Slurm cluster is now configured to run high-performance multi-node Deep Learning training jobs.
+  The Slurm cluster is now configured to run high-performance multi-node Deep Learning training jobs.
 
-   For cluster usage review the official [Slurm documentation](https://slurm.schedmd.com/overview.html) for cluster usage.
+  For cluster usage review the official [Slurm documentation](https://slurm.schedmd.com/overview.html).
 
-   For examples on training Deep Learning models using single-node, multi-node, or interactive jobs refer to the [example scripts](examples/slurm-perf/).
-
+  For examples of how to run BERT multi-node training jobs using this configuration, consult the [Multi-Node BERT User Guide](https://docs.nvidia.com/ngc/multi-node-bert-user-guide/).
