@@ -17,7 +17,7 @@
         num_nodes: "{{ node_out.stdout }}"
     - name: Set cmd variable
       set_fact:
-        cmd: "srun -N {{ num_nodes }} --container-image={{ nccl_test_repo }} all_reduce_perf -b 1M -e 512M -f 2 -g {{ num_gpus }}"
+        cmd: "srun -N {{ num_nodes }} --mpi=pmi2 --container-image={{ nccl_test_repo }} all_reduce_perf -b 1M -e 512M -f 2 -g {{ num_gpus }}"
     - name: Print node/gpu counts
       debug:
               msg:
@@ -26,7 +26,7 @@
 
     - name: Execute NCCL test across all nodes and GPUs
       shell: >
-              OMPI_MCA_btl_tcp_if_exclude=lo,docker0 srun -N {{ num_nodes }} --mpi=pmi2 --container-image={{ nccl_test_repo }} all_reduce_perf -b 1M -e 512M -f 2 -g {{ num_gpus }}
+              srun -N {{ num_nodes }} --mpi=pmi2 --container-image={{ nccl_test_repo }} all_reduce_perf -b 1M -e 512M -f 2 -g {{ num_gpus }}
       register: out
     - name: Print results
       debug: 

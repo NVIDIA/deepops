@@ -104,6 +104,10 @@ enroot_config: |
   ENROOT_CACHE_PATH {{ enroot_cache_path }}
   ENROOT_DATA_PATH {{ enroot_data_path }}
 
+enroot_environ_config_files: 
+  - filename: '10-mpi.env'
+    content: 'OMPI_MCA_btl_tcp_if_exclude=lo,docker0,ib0,ib1,ib2,ib3'
+
 # create user `nvidia` with password `deepops` on all nodes
 # run with user-password.yml playbook
 #users:
