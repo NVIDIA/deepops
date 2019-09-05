@@ -54,6 +54,12 @@
 - include: shmfix.yml
   when: slurm_node_is_compute and slurm_fix_shm
 
+- name: install slurm-pytorch hook
+  file:
+    path: /etc/enroot/hooks.d/50-slurm-pytorch.sh
+    state: link
+    src: /usr/share/enroot/hooks.d/50-slurm-pytorch.sh
+
 - name: pyxis tasks
   include_tasks: pyxis.yml
   when: (slurm_node_is_controller or slurm_node_is_compute) and slurm_install_pyxis
