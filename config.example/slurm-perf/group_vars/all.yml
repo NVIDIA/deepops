@@ -20,25 +20,28 @@
 #autofs_map: "auto.home_linux"
 
 # Slurm job scheduler configuration
-#slurm_user_home: /local/slurm
-#slurm_manage_gpus: true
-#slurm_cluster_name: deepops
-#slurm_username: slurm
-#slurm_password: ReplaceWithASecurePasswordInTheVault
-#slurm_db_username: slurm
-#slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
+slurm_user_home: /local/slurm
+slurm_manage_gpus: true
+slurm_cluster_name: deepops
+slurm_username: slurm
+slurm_password: ReplaceWithASecurePasswordInTheVault
+slurm_db_username: slurm
+slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 #slurm_max_job_timelimit: INFINITE
 #slurm_default_job_timelimit:
+slurm_install_pyxis: yes
+slurm_controller_host: "{{ groups['slurm-master'][0] }}"
+slurm_compute_hosts: "{{ groups['slurm-node'] }}"
 
-#nfs_exports:
-#  - path: /export/shared
-#    options: "*(rw,sync,no_root_squash)"
+nfs_exports:
+  - path: /export/shared
+    options: "*(rw,sync,no_root_squash)"
 
-#nfs_mounts:
-#  - mountpoint: /mnt/shared
-#    server: '{{ groups["nfs-server"][0] }}'
-#    path: /export/shared
-#    options: async,vers=3
+nfs_mounts:
+  - mountpoint: /mnt/shared
+    server: '{{ groups["nfs-server"][0] }}'
+    path: /export/shared
+    options: async,vers=3
 
 # Collectd
 #collectd_network_server: "deepops-mgmt.example.com"
@@ -76,17 +79,17 @@ software_packages_to_install:
 #_cluster_repo_key_id: 'TODO'
 #_cluster_repo: 'deb TODO /'
 
-enroot_ubuntu_repo_key_url: "{{ _cluster_repo_key_url }}"
-enroot_ubuntu_repo_key_id: "{{ _cluster_repo_key_id }}"
-enroot_ubuntu_repo: "{{ _cluster_repo }}"
+#enroot_ubuntu_repo_key_url: "{{ _cluster_repo_key_url }}"
+#enroot_ubuntu_repo_key_id: "{{ _cluster_repo_key_id }}"
+#enroot_ubuntu_repo: "{{ _cluster_repo }}"
 
-fuse_ubuntu_repo_key_url: "{{ _cluster_repo_key_url }}"
-fuse_ubuntu_repo_key_id: "{{ _cluster_repo_key_id }}"
-fuse_ubuntu_repo: "{{ _cluster_repo }}"
+#fuse_ubuntu_repo_key_url: "{{ _cluster_repo_key_url }}"
+#fuse_ubuntu_repo_key_id: "{{ _cluster_repo_key_id }}"
+#fuse_ubuntu_repo: "{{ _cluster_repo }}"
 
-slurm_ubuntu_repo_key_url: "{{ _cluster_repo_key_url }}"
-slurm_ubuntu_repo_key_id: "{{ _cluster_repo_key_id }}"
-slurm_ubuntu_repo: "{{ _cluster_repo }}"
+#slurm_ubuntu_repo_key_url: "{{ _cluster_repo_key_url }}"
+#slurm_ubuntu_repo_key_id: "{{ _cluster_repo_key_id }}"
+#slurm_ubuntu_repo: "{{ _cluster_repo }}"
 
 enroot_runtime_path: '/tmp/enroot-runtime-$(id -u)'
 enroot_cache_path: '/tmp/enroot-cache-$(id -u)'
@@ -100,8 +103,6 @@ enroot_config: |
   ENROOT_RUNTIME_PATH {{ enroot_runtime_path }}
   ENROOT_CACHE_PATH {{ enroot_cache_path }}
   ENROOT_DATA_PATH {{ enroot_data_path }}
-
-#slurm_pyxis_tarball_url: TODO
 
 # create user `nvidia` with password `deepops` on all nodes
 # run with user-password.yml playbook
