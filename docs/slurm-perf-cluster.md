@@ -1,11 +1,11 @@
-SlurmPerf Deployment Guide
+High-Performance Multi-Node Cluster Deployment Guide
 ===
 
-## High-Performance Multi-Node Cluster Deployment Guide
+## Overview
 
    This guide utilizes a collection of playbooks to configure a cluster, deploy a workload manager, and verify performance.
 
-   It leverages open source tools such as Pyxis and Enroot to optimize Slurm for multi-node Deep Learning jobs beyond the cluster configuration described in the [Slurm Deployment Guide](https://github.com/NVIDIA/deepops/blob/master/docs/slurm-cluster.md). Additional details can be found [here](https://docs.nvidia.com/ngc/multi-node-bert-user-guide).
+   It leverages open source tools such as Pyxis and Enroot to optimize Slurm for multi-node Deep Learning jobs beyond the cluster configuration described in the [Slurm Deployment Guide](/docs/slurm-cluster.md). Additional details can be found [here](https://docs.nvidia.com/ngc/multi-node-bert-user-guide).
 
 ## Supported Distributions
 
@@ -30,7 +30,7 @@ SlurmPerf Deployment Guide
 
 1. Install a supported operating system on all nodes.
 
-   Install a supported operating system on all servers utilizing the [DGXie](https://github.com/NVIDIA/deepops/blob/master/docs/dgxie-container.md) provisioning container, via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)), or server BMC/console.
+   Install a supported operating system on all servers utilizing the [DGXie](/docs/dgxie-container.md) provisioning container, via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)), or server BMC/console.
 
 2. Set up your provisioning machine.
 
@@ -112,7 +112,7 @@ SlurmPerf Deployment Guide
 
    Run the cluster playbook.
 
-   The `slurm-perf-cluster.yml` playbook bootstraps the cluster, configures NFS, installs/optimizes Slurm, and runs a quick system [validation test](##validation).
+   The `slurm-perf-cluster.yml` playbook bootstraps the cluster, configures NFS, installs/optimizes Slurm, and runs a quick system [validation test](#performance-validation).
 
    ```sh
    ansible-playbook playbooks/slurm-perf-cluster.yml
@@ -129,7 +129,8 @@ SlurmPerf Deployment Guide
    ansible-playbook playbooks/slurm-validation.yml
    ```
 
-   If the test is successful you should expect to see output similar tobelow:
+   If the test is successful you should expect to see output similar to that below:
+
    ```
    #
    #                                                     out-of-place                       in-place
