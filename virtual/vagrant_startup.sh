@@ -66,6 +66,8 @@ case "$ID" in
     ;;
 
   ubuntu*)
+    # No interactive prompts from apt during this process
+    export DEBIAN_FRONTEND=noninteractive
     # Install Vagrant & Dependencies for Debian Systems
 
     export APT_DEPENDENCIES="build-essential sshpass qemu-kvm libvirt-bin libvirt-dev bridge-utils \
