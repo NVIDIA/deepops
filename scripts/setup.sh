@@ -127,7 +127,7 @@ case "$ID" in
         type git >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
             echo "Installing git..."
-            sudo apt -y install git >/dev/null
+            sudo apt-get -y install git >/dev/null
         fi
         git --version
 
@@ -135,14 +135,14 @@ case "$ID" in
         type ipmitool >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
             echo "Installing IPMITool..."
-            sudo apt -y install ipmitool >/dev/null
+            sudo apt-get -y install ipmitool >/dev/null
         fi
         ipmitool -V
 
         # Install wget
         if ! which wget >/dev/null 2>&1; then
         echo "Installing wget..."
-            sudo apt -y install wget >/dev/null
+            sudo apt-get -y install wget >/dev/null
         fi
         wget --version | head -1
         ;;

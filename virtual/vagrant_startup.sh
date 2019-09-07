@@ -76,11 +76,11 @@ case "$ID" in
       echo "Installing apt dependencies..."
 
       # Update apt
-      sudo apt update -y
+      sudo apt-get update -y
 
       # Install build-essential tools
       # shellcheck disable=SC2086
-      sudo apt install -y $APT_DEPENDENCIES
+      sudo apt-get install -y $APT_DEPENDENCIES
     fi
 
     # Ensure we have permissions to manage VMs
