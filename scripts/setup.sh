@@ -74,6 +74,8 @@ case "$ID" in
         wget --version | head -1
         ;;
     ubuntu*)
+	# No interactive prompts from apt during this process
+	export DEBIAN_FRONTEND=noninteractive
         # Update apt cache
         echo "Updating apt cache..."
         sudo apt-get update >/dev/null
