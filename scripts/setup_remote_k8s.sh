@@ -14,7 +14,7 @@ case "$ID_LIKE" in
     debian*)
         type curl >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
-            sudo apt -y install curl
+            sudo apt-get -y install curl
         fi
         ;;
     *)
