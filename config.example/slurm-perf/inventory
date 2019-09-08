@@ -1,15 +1,15 @@
 [all]
-slurm-login ansible_host=nvidia@10.0.0.100
-dgx01 ansible_host=nvidia@172.1.1.101
-dgx02 ansible_host=nvidia@172.1.1.102
-dgx03 ansible_host=nvidia@172.1.1.103
-dgx04 ansible_host=nvidia@172.1.1.104
-dgx05 ansible_host=nvidia@172.1.1.105
-dgx06 ansible_host=nvidia@172.1.1.106
-dgx07 ansible_host=nvidia@172.1.1.107
-dgx08 ansible_host=nvidia@172.1.1.108
-dgx09 ansible_host=nvidia@172.1.1.109
-dgx10 ansible_host=nvidia@172.1.1.110
+slurm-login ansible_host=10.0.0.100
+dgx01 ansible_host=172.1.1.101
+dgx02 ansible_host=172.1.1.102
+dgx03 ansible_host=172.1.1.103
+dgx04 ansible_host=172.1.1.104
+dgx05 ansible_host=172.1.1.105
+dgx06 ansible_host=172.1.1.106
+dgx07 ansible_host=172.1.1.107
+dgx08 ansible_host=172.1.1.108
+dgx09 ansible_host=172.1.1.109
+dgx10 ansible_host=172.1.1.110
 
 [slurm-master]
 slurm-login

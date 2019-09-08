@@ -19,7 +19,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 ## Requirements
 
    * 1 or more DGX servers (Worker nodes)
-   * 1 Server or laptop (Ephemeral configuration/management machine)
+   * 1 Server or laptop (Ansible provisioning machine)
    * 1 Server or VM (Login node & Slurm controller)
    * 1 or more NFS Servers
    * Optional, 1 Server or VM (PXE provisioning machine)
@@ -40,6 +40,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    ```sh
    # Install software prerequisites and copy default configuration
+   # Copies ./config.example to ./config, if none exists
    ./scripts/setup.sh
    ```
 
@@ -47,31 +48,21 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    Edit the Ansible inventory file and verify connectivity to all nodes.
 
-   Ansible uses an inventory which outlines the servers in the cluster and a set of group variables which playbooks use to customize deployment. The previous step created the `config` directory. It is also advised to copy over the slurm-perf example configuration.
+   Ansible uses an inventory which outlines the servers in the cluster and a set of group variables which playbooks use to customize deployment. The previous step created the `config` directory. It is also advised to copy over the slurm-perf example configuration (as shown below).
       
    ```sh
-   # Copy the slurm-perf config
-   cp -rfp ./config/slurm-perf/ ./config
+   # Copy the slurm-perf config...
+   cp -rfp ./config/slurm-perf/* ./config
 
    # Modify the Ansible inventory file
    vi config/inventory
-   ```
-
-   Verify the configuration.
-
-   ```sh
-   # NOTE: If SSH requires a password, add: `-k`
-   # NOTE: If sudo on remote machine requires a password, add: `-K`
-   # NOTE: If SSH user is different than current user, add: `-u <user>`
-   # NOTE:  Save the flags used here for the next several playbooks
-   ansible all -a "hostname"
    ```
 
 4. Add or modify user(s) across cluster
 
    The ansible scripts assume a consistent user which has access to all nodes in the cluster.
 
-   > Note: If a user with the same username, uid, and password exists on each node, skip this step.
+   > Note: If a user with the same username, uid, and password exists on each node, skip this step. It is critical for the user to exist with the same uid across all nodes.
 
    ```sh
    # Comment in the `users` section at the end of `config/group_vars/all.yml`
@@ -83,10 +74,19 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    ```sh
    # NOTE: To create the user, comment out the `users` var in the playbook
-   ansible-playbook playbooks/user-password.yml
+   # NOTE: If SSH requires a password, add: `-k`
+   # NOTE: If sudo on remote machine requires a password, add: `-K`
+   # NOTE: If SSH user is different than current user, add: `-u <user>`
+   ansible-playbook -b playbooks/user-password.yml
    ```
 
-5. Edit the NFS configuration
+5. Verify the configuration
+
+   ```sh
+   ansible all -a "hostname"
+   ```
+
+6. Edit the NFS configuration
 
    Update the NFS configuration.
 
@@ -98,23 +98,25 @@ High-Performance Multi-Node Cluster Deployment Guide
     vi config/group_vars/all.yml
    ```
 
-6. Configure NFS across your cluster
+7. Configure NFS across your cluster
 
    Run the nfs playbook.
 
    > Note: This step can be skipped if NFS is already configured
 
    ```sh
+   # NOTE: If SSH user is different than current user, add: `-u <user>`
    ansible-playbook playbooks/nfs.yml
    ```
 
-7. Deploy optimized Slurm software using Ansible
+8. Deploy optimized Slurm software using Ansible
 
    Run the cluster playbook.
 
    The `slurm-perf-cluster.yml` playbook bootstraps the cluster, configures NFS, installs/optimizes Slurm, and runs a quick system [validation test](#performance-validation).
 
    ```sh
+   NOTE: If SSH user is different than current user, add: `-u <user>`
    ansible-playbook playbooks/slurm-perf-cluster.yml
    ```
 
