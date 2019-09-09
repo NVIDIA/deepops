@@ -21,7 +21,7 @@ High-Performance Multi-Node Cluster Deployment Guide
    * 1 or more DGX servers (Worker nodes)
    * 1 Server or laptop (Ansible provisioning machine)
    * 1 Server or VM (Login node & Slurm controller)
-   * 1 or more NFS Servers
+   * 1 or more NFS Servers (Could be the login node or one of the workers)
    * Optional, 1 Server or VM (PXE provisioning machine)
    * Internet access
    * An ssh user that can be used to execute Slurm jobs, has sudo access, and can login to all hosts
@@ -31,6 +31,8 @@ High-Performance Multi-Node Cluster Deployment Guide
 1. Install a supported operating system on all nodes.
 
    Install a supported operating system on all servers utilizing the [DGXie](/docs/dgxie-container.md) provisioning container, via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)), or server BMC/console.
+
+   NOTE: During OS installation, it is ideal if the identical user/password is configured. Otherwise, follow step 4 below to create an idential user across all nodes in the cluster.
 
 2. Set up your provisioning machine.
 
@@ -122,7 +124,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 
 ## Performance Validation
 
-   The `slurm-performance.yml` playbook connects to the login node and executes the NCCL tests against all nodes and GPUs. This checks both the correctness and the performance of the cluster. For a full explanation of what these tests do and what the [results mean](https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md) see the official [NCCL Tests documentation](https://github.com/NVIDIA/nccl-tests).
+   The `slurm-validation.yml` playbook connects to the login node and executes the NCCL tests against all nodes and GPUs. This checks both the correctness and the performance of the cluster. For a full explanation of what these tests do and what the [results mean](https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md) see the official [NCCL Tests documentation](https://github.com/NVIDIA/nccl-tests).
 
    This playbook can be run standalone, but is run as the last step in the `slurm-perf-cluster.yml`.
 
@@ -178,8 +180,67 @@ High-Performance Multi-Node Cluster Deployment Guide
 
 ## Using Slurm
 
-  The Slurm cluster is now configured to run high-performance multi-node Deep Learning training jobs.
+   The Slurm cluster is now configured to run high-performance multi-node Deep Learning training jobs.
 
-  For cluster usage review the official [Slurm documentation](https://slurm.schedmd.com/overview.html).
+   For cluster usage review the official [Slurm documentation](https://slurm.schedmd.com/overview.html).
 
-  For examples of how to run BERT multi-node training jobs using this configuration, consult the [Multi-Node BERT User Guide](https://docs.nvidia.com/ngc/multi-node-bert-user-guide/).
+   For examples of how to run BERT multi-node training jobs using this configuration, consult the [Multi-Node BERT User Guide](https://docs.nvidia.com/ngc/multi-node-bert-user-guide/).
+
+## Troubleshooting
+
+### Setup.sh fails due to unsupported ansible version
+
+   DeepOps requires Ansible v2.7.8 or greater. If the setup.sh script fails to achieve this, the latest version of ansible can be installed via pip...
+
+   ```sh
+   # on the provisioning node
+   pip install ansible
+   ```
+
+### Connection to hosts via ansible refused/blocked
+
+   By default, fail2ban is running on NVIDIA DGX-1 and DGX-2 servers. Stopping fail2ban during deployment can facilitate setup...
+
+   ```sh
+   # on each dgx node
+   sudo systemctl stop fail2ban
+   ```
+
+### NCCL test hangs / timeouts
+
+   The last step of the deployment runs a validation test across all nodes and GPUs in the cluster. If this test appears to hang for longer than a few minutes or timeouts completely, it is helpful to diagnose issues that might be occurring directly from the slurm login node...
+
+   ```sh
+   # on the slurm login node
+
+   # show running processes
+   sinfo
+
+   # show potential issues
+   sinfo -R
+   ```
+
+   If errors are noticed when running `sinfo -R`, it's also helpful to search the logs for errors on the offending worker node(s)...
+
+   ```sh
+   # on the offending worker node(s)
+   sudo journalctl -e | grep slurm
+   ```
+
+   To re-run the test manually, from the slurm login node...
+
+   ```sh
+   # on the slurm login node
+
+   # look up the running job
+   squeue
+
+   # cancel it
+   scancel <job_id>
+
+   # reset the node states
+   sudo scontrol update nodename=<node_names> state=idle
+
+   # run the test again
+   srun -N <num_nodes> --mpi=pmi2 --container-image=deepops/nccl-tests all_reduce_perf -b 1M -e 512M -f 2 -g <num_gpus_per_node>
+   ```
