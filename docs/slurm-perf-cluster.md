@@ -96,19 +96,18 @@ High-Performance Multi-Node Cluster Deployment Guide
    > Note: If a user with the same username, uid, and password exists on each node, skip this step. It is critical for the user to exist with the same uid across all nodes.
 
    ```sh
-   # Comment in the `users` section at the end of `config/group_vars/all.yml`
    # The default user is `nvidia` with password `deepops`
+   # Modify this user/password as desired
    vi config/group_vars/all.yml
    ```
 
-   Run the user-password playbook to create/modify the user across all nodes.
+   Run the users playbook to create/modify the user across all nodes.
 
    ```sh
-   # NOTE: To create the user, comment out the `users` var in the playbook
    # NOTE: If SSH requires a password, add: `-k`
    # NOTE: If sudo on remote machine requires a password, add: `-K`
    # NOTE: If SSH user is different than current user, add: `-u <user>`
-   ansible-playbook -b playbooks/user-password.yml
+   ansible-playbook -b playbooks/users.yml
    ```
 
 5. Verify the configuration
