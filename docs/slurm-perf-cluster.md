@@ -32,7 +32,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    Install a supported operating system on all servers utilizing the [DGXie](/docs/dgxie-container.md) provisioning container, via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)), or server BMC/console.
 
-   NOTE: During OS installation, it is ideal if the identical user/password is configured. Otherwise, follow step 4 below to create an idential user across all nodes in the cluster.
+   > NOTE: During OS installation, it is ideal if the identical user/password is configured. Otherwise, follow step 4 below to create an idential user across all nodes in the cluster.
 
 2. Set up your provisioning machine.
 
@@ -46,19 +46,48 @@ High-Performance Multi-Node Cluster Deployment Guide
    ./scripts/setup.sh
    ```
 
-3. Edit the Ansible inventory and group_vars
+3. Edit the Ansible inventory
 
    Edit the Ansible inventory file and verify connectivity to all nodes.
 
-   Ansible uses an inventory which outlines the servers in the cluster and a set of group variables which playbooks use to customize deployment. The previous step created the `config` directory. It is also advised to copy over the slurm-perf example configuration (as shown below).
+   Ansible uses an inventory which outlines the servers in the cluster and a set of group variables which playbooks use to customize deployment. Running `./scripts/setup.sh` in the previous step should have created the `config` directory.
       
    ```sh
-   # Copy the slurm-perf config...
-   cp -rfp ./config/slurm-perf/* ./config
-
    # Modify the Ansible inventory file
+   # Especially the `all`, `slurm`, and `nfs` sections
    vi config/inventory
    ```
+
+   When modifying the inventory, if the hosts are not accessible from the provisioning node by their hostname, supply an an `ansible_host`. For example:
+
+   ```yml
+   # in config/inventory...
+
+   [all]
+   login-node ansible_host_192.168.2.100
+   worker-node-01 ansible_host=192.168.2.1
+   worker-node-02 ansible_host=192.168.2.2
+
+   ...
+
+   [slurm-master]
+   login-node
+
+   [slurm-node]
+   worker-node-01
+   worker-node-02
+
+   ...
+
+   [nfs-server]
+   login-node
+
+   [nfs-clients]
+   worker-node-01
+   worker-node-02
+   ```
+
+   > NOTE: Be warned that `/etc/hostname` and `/etc/hosts` on each host will be modified to the name(s) specified in the inventory file, so it is best to use the actual names of the hosts.
 
 4. Add or modify user(s) across cluster
 
@@ -97,7 +126,7 @@ High-Performance Multi-Node Cluster Deployment Guide
    ```sh
    # Comment in the `nfs_exports` and `nfs_mounts` sections of `config/group_vars/all.yml`
    # Modify configuration as necessary to fit the environment, or just use the defaults
-    vi config/group_vars/all.yml
+   vi config/group_vars/all.yml
    ```
 
 7. Configure NFS across your cluster
@@ -118,7 +147,7 @@ High-Performance Multi-Node Cluster Deployment Guide
    The `slurm-perf-cluster.yml` playbook bootstraps the cluster, configures NFS, installs/optimizes Slurm, and runs a quick system [validation test](#performance-validation).
 
    ```sh
-   NOTE: If SSH user is different than current user, add: `-u <user>`
+   # NOTE: If SSH user is different than current user, add: `-u <user>`
    ansible-playbook playbooks/slurm-perf-cluster.yml
    ```
 
