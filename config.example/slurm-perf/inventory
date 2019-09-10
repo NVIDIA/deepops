@@ -30,12 +30,6 @@ dgx10
 slurm-master
 slurm-node
 
-[slurm-client]
-
-[slurm-client:children]
-slurm-master
-slurm-node
-
 [nfs-server]
 slurm-login
 

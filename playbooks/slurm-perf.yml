@@ -3,7 +3,7 @@
   tasks:
     - set_fact: slurm_node_is_controller=yes
       tags: always
-- hosts: slurm-client
+- hosts: slurm-cluster
   tasks:
     - set_fact: slurm_node_is_client=yes
       tags: always
