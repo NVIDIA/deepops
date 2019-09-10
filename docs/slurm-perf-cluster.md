@@ -120,7 +120,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    Update the NFS configuration.
 
-   DeepOps configures NFS for sharing data and models across the cluster of nodes.
+   DeepOps configures NFS for sharing data and models across the cluster of nodes. NFS, or some sort of shared storage is important for multi-node deployments so that training data is accessible from all nodes.
 
    ```sh
    # Comment in the `nfs_exports` and `nfs_mounts` sections of `config/group_vars/all.yml`
