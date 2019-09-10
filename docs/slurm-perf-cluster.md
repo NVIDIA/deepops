@@ -222,7 +222,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    ```sh
    # on the provisioning node
-   pip install ansible
+   sudo pip install ansible=="2.7.11"
    ```
 
 ### Connection to hosts via ansible refused/blocked
