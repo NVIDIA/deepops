@@ -22,6 +22,9 @@
 - src: nvidia.nvidia_docker
   version: "v1.1.0"
 
+- src: https://github.com/NVIDIA/ansible-role-enroot.git
+  verions: "v0.1.2"
+
 - src: geerlingguy.filebeat
   version: "2.0.1"
 

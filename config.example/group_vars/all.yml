@@ -66,3 +66,14 @@
 
 #software_remove_packages:
 #  - popularity-contest
+
+# users configuration
+# create user `nvidia` with password `deepops` on all nodes
+# run with users.yml playbook
+users:
+  - username: nvidia
+    name: nvidia
+    password: $6$IrxI27V4ogJFfgTV$RvNskQFvXZzE9AFsIokuXKwDAyqs9Jd03Trfi7DsHoCyllK79/zhAciZPENt4.2uRNMR0gE6.mRD/o9jP7WcZ.
+    groups: ['sudo']
+    uid: 10007
+    home: /home/nvidia
