@@ -24,7 +24,7 @@
     update_cache: yes
   with_items:
     - "{{ PKGS_DGX1_ALL }}"
-  when: ansible_product_name == "DGX-1"
+  when: ansible_product_name is search("DGX-1")
   notify:
     - name: restart docker
 
@@ -35,6 +35,6 @@
     update_cache: yes
   with_items:
     - "{{ PKGS_DGX2_ALL }}"
-  when: ansible_product_name == "DGX-2"
+  when: ansible_product_name is search("DGX-2")
   notify:
     - name: restart docker
