@@ -38,6 +38,13 @@
     - name: Autoinstall DKMS modules
       command: dkms autoinstall
 
+# Ensure that nv_peer_mem is loaded
+- hosts: slurm-node
+  become: true
+  tasks:
+    - name: Modprobe nv_peer_mem
+      command: modprobe nv_peer_mem
+
 # Install Slurm optimizations
 - include: slurm-perf.yml
 
