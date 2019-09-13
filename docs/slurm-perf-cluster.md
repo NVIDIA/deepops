@@ -204,7 +204,7 @@ High-Performance Multi-Node Cluster Deployment Guide
    #
    ```
 
-   > Note: These results validate connectivity and do not necessarily indicate optimal performance. The avg bus bandwidth does not matter much - pay attention to the `out-of-place busbw`. DGX1 and DGX2 machines respectively possess 4 and 8 InfiniBand cards to maintain consistency with internal NVLink bandwidth. Transfer rates can therefore achieve 42 and 82 GB/s. The example above has an out-of-place busbw of 81.53 GB/s, which is in line with what we would expect for DGX-2 nodes networked with InfiniBand. For more background, see the following [blog pos](https://devblogs.nvidia.com/scaling-deep-learning-training-nccl/). 
+   > Note: These results validate connectivity and do not necessarily indicate optimal performance. The avg bus bandwidth does not matter much - pay attention to the `out-of-place busbw`. DGX1 and DGX2 machines respectively possess 4 and 8 InfiniBand cards to maintain consistency with internal NVLink bandwidth. Transfer rates can therefore achieve 42 and 82 GB/s. The example above has an out-of-place busbw of 81.53 GB/s, which is in line with what we would expect for DGX-2 nodes networked with InfiniBand. For more background, see the following [blog post](https://devblogs.nvidia.com/scaling-deep-learning-training-nccl/). 
 
 ## Using Slurm
 
