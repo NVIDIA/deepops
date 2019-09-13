@@ -43,7 +43,11 @@
   become: true
   tasks:
     - name: Modprobe nv_peer_mem
-      command: modprobe nv_peer_mem
+      modprobe:
+        name: nv_peer_mem
+        state: present
+  tags:
+    - modprobe_nv_peer_mem
 
 # Install Slurm optimizations
 - include: slurm-perf.yml
