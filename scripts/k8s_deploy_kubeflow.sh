@@ -5,7 +5,7 @@ export KFCTL=~/kfctl
 export KUBEFLOW_TAG=v0.6.2
 export KFCTL_URL=https://github.com/kubeflow/kubeflow/releases/download/${KUBEFLOW_TAG}/kfctl_${KUBEFLOW_TAG}_linux.tar.gz
 export CONFIG="https://raw.githubusercontent.com/kubeflow/kubeflow/v0.6-branch/bootstrap/config/kfctl_existing_arrikto.0.6.2.yaml"
-export CONFIG="https://raw.githubusercontent.com/kubeflow/kubeflow/v0.6-branch/bootstrap/config/kfctl_k8s_istio.0.6.2.yaml"
+# export CONFIG="https://raw.githubusercontent.com/kubeflow/kubeflow/v0.6-branch/bootstrap/config/kfctl_k8s_istio.0.6.2.yaml"
 
 
 # Specify credentials for the default user.
@@ -39,6 +39,14 @@ if [ $? -eq 0 ] ; then
     echo "No storageclass found"
     echo "To provision Ceph storage, run: ./scripts/k8s_deploy_rook.sh"
     exit 1
+fi
+
+helm list  | grep metallb >/dev/null 2>&1
+if [ $? -ne 0 ]l then
+    echo "LoadBalancer not found (MetalLB)"
+    echo "To support Kubeflow on-prem with multi-user-auth please install a load balancer by running"
+    echo "./scripts/k8s_deploy_loadbalancer.sh"
+    exit 2
 fi
 
 # Download the kfctl binary and move it to the default location
