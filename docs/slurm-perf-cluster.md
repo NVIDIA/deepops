@@ -58,6 +58,8 @@ High-Performance Multi-Node Cluster Deployment Guide
    vi config/inventory
    ```
 
+   > NOTE: Be warned that `/etc/hostname` and `/etc/hosts` on each host will be modified to the name(s) specified in the inventory file, so it is best to use the actual names of the hosts.
+
    When modifying the inventory, if the hosts are not accessible from the provisioning node by their hostname, supply an an `ansible_host`. For example:
 
    ```yml
@@ -86,8 +88,6 @@ High-Performance Multi-Node Cluster Deployment Guide
    worker-node-01
    worker-node-02
    ```
-
-   > NOTE: Be warned that `/etc/hostname` and `/etc/hosts` on each host will be modified to the name(s) specified in the inventory file, so it is best to use the actual names of the hosts.
 
 4. Add or modify user(s) across cluster
 
@@ -154,14 +154,14 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    The `slurm-validation.yml` playbook connects to the login node and executes the NCCL tests against all nodes and GPUs. This checks both the correctness and the performance of the cluster. For a full explanation of what these tests do and what the [results mean](https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md) see the official [NCCL Tests documentation](https://github.com/NVIDIA/nccl-tests).
 
-   This playbook can be run standalone, but is run as the last step in the `slurm-perf-cluster.yml`.
+   This playbook can be run standalone, but is also run as the last step in the `slurm-perf-cluster.yml`. To run standalone...
 
    ```sh
    # Verify Slurm connectivity across all nodes
    ansible-playbook playbooks/slurm-validation.yml
    ```
 
-   If the test is successful you should expect to see output similar to that below:
+   If the test is successful you should expect to see output similar to that below (run on a SuperPOD of DGX-2H nodes):
 
    ```
    #
@@ -204,7 +204,7 @@ High-Performance Multi-Node Cluster Deployment Guide
    #
    ```
 
-   > Note: These results validate connectivity and do not necessarily indicate optimal performance. The avg bus bandwidth does not matter much - pay attention to the busbw.
+   > Note: These results validate connectivity and do not necessarily indicate optimal performance. The avg bus bandwidth does not matter much - pay attention to the `out-of-place busbw`. DGX1 and DGX2 machines respectively possess 4 and 8 InfiniBand cards to maintain consistency with internal NVLink bandwidth. Transfer rates can therefore achieve 42 and 82 GB/s. The example above has an out-of-place busbw of 81.53 GB/s, which is in line with what we would expect for DGX-2 nodes networked with InfiniBand. For more background, see the following [blog post](https://devblogs.nvidia.com/scaling-deep-learning-training-nccl/). 
 
 ## Using Slurm
 
@@ -234,7 +234,7 @@ High-Performance Multi-Node Cluster Deployment Guide
    sudo systemctl stop fail2ban
    ```
 
-### NCCL test hangs / timeouts
+### Performance validation test hangs / timeouts
 
    The last step of the deployment runs a validation test across all nodes and GPUs in the cluster. If this test appears to hang for longer than a few minutes or timeouts completely, it is helpful to diagnose issues that might be occurring directly from the slurm login node...
 
@@ -271,4 +271,29 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    # run the test again
    srun -N <num_nodes> --mpi=pmi2 --container-image=deepops/nccl-tests all_reduce_perf -b 1M -e 512M -f 2 -g <num_gpus_per_node>
+   ```
+
+### Performance validation test results are suboptimal
+
+   If the validation test runs, but results are suboptimal, there are many factors that could affect this. Besides hardware and cabling issues, ensure the following...
+
+   ```sh
+   # nv_peer_mem should be running
+   $ lsmod | grep nv
+   nv_peer_mem            16384  0
+
+   # if it isn't, run the following command on each node
+   $ sudo modprobe nv_peer_mem
+   ```
+
+   Try running the test from the slurm login node, but with debug output enabled...
+
+   ```sh
+   # from the slurm login node
+   $ NCCL_DEBUG=INFO srun -N <num_nodes> --mpi=pmi2 --container-image=deepops/nccl-tests all_reduce_perf -b 1M -e 512M -f 2 -g <num_gpus_per_node>
+
+   # examine the output, looking for any mention of `GDRDMA`
+   # for example: `NET/IB/0/GDRDMA`
+   # if this is not in the output, it is likely that something is misconfigured in the software
+   # if this is in the output, and performance is still low, it is likely that this is a hardware issue
    ```
