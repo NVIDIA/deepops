@@ -42,7 +42,7 @@ if [ $? -eq 0 ] ; then
 fi
 
 helm list  | grep metallb >/dev/null 2>&1
-if [ $? -ne 0 ]l then
+if [ $? -ne 0 ]; then
     echo "LoadBalancer not found (MetalLB)"
     echo "To support Kubeflow on-prem with multi-user-auth please install a load balancer by running"
     echo "./scripts/k8s_deploy_loadbalancer.sh"
