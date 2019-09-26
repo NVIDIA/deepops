@@ -10,6 +10,7 @@
       include_role:
         name: nvidia.nvidia_driver
       when: ansible_local['gpus']['count']
+      environment: "{{proxy_env if proxy_env is defined else{}}}"
 
     - name: test nvidia-smi
       command: nvidia-smi

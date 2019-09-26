@@ -7,5 +7,8 @@
     - name: install k8s GPU plugin
       include_role:
         name: k8s-gpu-plugin
+      environment: "{{proxy_env if proxy_env is defined else {}}}"
   tags:
     - k8s_gpu_device_plugin
+      ## MUST USE ENV Variable for the proxy - the below is not valid for this playbook.
+      ## environment: "{{proxy_env if proxy_env is defined else {}}}"

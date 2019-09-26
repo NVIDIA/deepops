@@ -1,6 +1,16 @@
 # Configuration common to all hosts
 # Define per-group or per-host values in the other configuration files
 
+# Proxy Variables needed for ansible etc.
+#HTTP_PROXY
+#HTTPS_PROXY
+#NO_PROXY
+
+#PROXY_ENV
+    #HTTP_PROXY
+    #HTTPS_PROXY
+    #NO_PROXY
+
 # dns-config
 #dns_config_servers: [8.8.8.8]
 #dns_config_search: [example.com]

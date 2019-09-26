@@ -31,6 +31,8 @@
 
 # Install Kubernetes
 # for configuration, see: config/group_vars/k8s-cluster.yml
+## 
+## PHogan
 - include: ../kubespray/cluster.yml
 
 # Disable swap (required for k8s), kubespray method doesn't quite cut it
