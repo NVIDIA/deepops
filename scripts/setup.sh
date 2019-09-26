@@ -82,6 +82,8 @@ case "$ID" in
         wget --version | head -1
         ;;
     ubuntu*)
+	# No interactive prompts from apt during this process
+	export DEBIAN_FRONTEND=noninteractive
         # Update apt cache
         echo "Updating apt cache..."
         as_sudo 'apt-get update' >/dev/null
@@ -150,7 +152,7 @@ case "$ID" in
 
         # Install wget
         if ! which wget >/dev/null 2>&1; then
-        echo "Installing wget..."
+            echo "Installing wget..."
             as_sudo 'apt -y install wget' >/dev/null
         fi
         wget --version | head -1

@@ -13,7 +13,7 @@ deepops_dest_group: "root"
 # DeepOps repository
 deepops_repo_url: "https://github.com/NVIDIA/deepops"
 deepops_repo_dest_path: "{{ deepops_dest_path }}/deepops-repo"
-deepops_centos_slurm_url: "https://github.com/DeepOps/slurm/releases/download/docker-1.4/slurm-18.08.5_2_7-1.x86_64.rpm"
+deepops_centos_slurm_url: "https://github.com/DeepOps/slurm/releases/download/1.4/slurm-18.08.5_2_7-1.x86_64.rpm"
 
 # Flags for downloading content
 download_yum_repos: yes

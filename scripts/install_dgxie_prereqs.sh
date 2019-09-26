@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # install required software
-sudo apt update
-sudo apt install -y git ipmitool vim software-properties-common sshpass
+sudo apt-get update
+sudo apt-get install -y git ipmitool vim software-properties-common sshpass
 
 # install docker
 type docker >/dev/null 2>&1
@@ -10,8 +10,8 @@ if [ $? -ne 0 ] ; then
     sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-    sudo apt update
-    sudo apt install -y docker-ce
+    sudo apt-get update
+    sudo apt-get install -y docker-ce
     docker --version
 fi
 
