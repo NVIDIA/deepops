@@ -174,7 +174,7 @@ fi
 # Install Ansible Galaxy roles
 ansible-galaxy --version >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
-    ansible-galaxy install -r requirements.yml
+    . ${SCRIPT_DIR}/proxy.sh && ansible-galaxy install -r requirements.yml
 else
     echo "ERROR: Unable to install Ansible Galaxy roles"
 fi
@@ -183,7 +183,7 @@ fi
 git status >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
 	## . ${SCRIPT_DIR/proxy.sh && git submodule update --init
-	git submodule update --init
+	. ${SCRIPT_DIR}/proxy.sh && git submodule update --init
 else
     echo "ERROR: Unable to update Git submodules"
 fi
