@@ -4,7 +4,7 @@ set -x
 # Get absolute path for script and root
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/.."
-CHART_VERSION="1.4.0"
+CHART_VERSION="1.22.1"
 
 # Allow overriding the app name with an env var
 app_name="${NGINX_INGRESS_APP_NAME:-nginx-ingress}"
@@ -18,8 +18,7 @@ if [ ! -d "${config_dir}" ]; then
 	exit 1
 fi
 
-kubectl version
-if [ $? -ne 0 ] ; then
+if kubectl version ; then
     echo "Unable to talk to Kubernetes API"
     exit 1
 fi
@@ -27,10 +26,10 @@ fi
 # Check for environment vars overriding image names
 helm_extra_args=""
 if [ "${NGINX_INGRESS_CONTROLLER_REPO}" ]; then
-	helm_extra_args="${helm_extra_args} --set-string controller.image.repository="${NGINX_INGRESS_CONTROLLER_REPO}""
+	helm_extra_args="${helm_extra_args} --set-string controller.image.repository=${NGINX_INGRESS_CONTROLLER_REPO}"
 fi
 if [ "${NGINX_INGRESS_BACKEND_REPO}" ]; then
-	helm_extra_args="${helm_extra_args} --set-string defaultBackend.image.repository="${NGINX_INGRESS_BACKEND_REPO}""
+	helm_extra_args="${helm_extra_args} --set-string defaultBackend.image.repository=${NGINX_INGRESS_BACKEND_REPO}"
 fi
 
 # Set up the ingress controller
@@ -38,7 +37,7 @@ if ! helm status "${app_name}" >/dev/null 2>&1; then
 	helm install \
 		--name "${app_name}" \
 		--version "${CHART_VERSION}" \
-		--values "${config_dir}/helm/ingress.yml" ${helm_extra_args} \
+		--values "${config_dir}/helm/ingress.yml" "${helm_extra_args}" \
 		stable/nginx-ingress
 fi
 
