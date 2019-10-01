@@ -61,6 +61,10 @@ Instructions for deploying a GPU cluster with Kubernetes
    kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
    ```
 
+## Using Kubernetes
+
+Now that Kubernetes is installed, consult the [Kubernetes Usage Guide](kubernetes-usage.md) for examples of how to use Kubernetes.
+
 ## Optional Components
 
 The following components are completely optional and can be installed on an existing Kubernetes cluster.
@@ -125,8 +129,4 @@ Kubeflow is a popular way for multiple users to run ML workloads. It exposes a J
 ```
 
 For more on Kubeflow, please refer to the [official documentation](https://www.kubeflow.org/docs/about/kubeflow/).
-
-## Using Kubernetes
-
-Now that Kubernetes is installed, consult the [Kubernetes Usage Guide](kubernetes-usage.md) for examples of how to use Kubernetes.
 
