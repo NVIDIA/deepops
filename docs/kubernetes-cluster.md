@@ -134,3 +134,53 @@ Kubeflow is a popular way for multiple users to run ML workloads. It exposes a J
 
 For more on Kubeflow, please refer to the [official documentation](https://www.kubeflow.org/docs/about/kubeflow/).
 
+## Cluster Maintenance
+
+DeepOps uses [Kubespray](https://github.com/kubernetes-sigs/kubespray) to deploy Kubernetes and therefore common cluster actions (such as adding nodes, removing them, draining and upgrading the cluster) should be performed with it. Kubespray is included as a submodule in the deepops/kubespray directory.
+
+### Adding Nodes
+
+To add K8s nodes, modify the `config/inventory` file to include the new nodes under `[all]`. Then list the nodes as relevant under the `[kube-master]`, `[etcd]`, and `[kube-node]` sections. For example, if adding a new master node, list it under kube-master and etcd. A new worker node would go under kube-node.
+
+Then run the Kubespray `scale.yml` playbook...
+
+```sh
+# NOTE: If SSH requires a password, add: `-k`
+# NOTE: If sudo on remote machine requires a password, add: `-K`
+# NOTE: If SSH user is different than current user, add: `-u ubuntu`
+ansible-playbook -l k8s-cluster kubespray/scale.yml
+```
+
+More information on this topic may be found in the [Kubespray docs](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md#adding-nodes).
+
+### Removing Nodes
+
+Removing nodes can be performed with Kubespray's `remove-node.yml` playbook and supplying the node names as extra vars...
+
+```sh
+# NOTE: If SSH requires a password, add: `-k`
+# NOTE: If sudo on remote machine requires a password, add: `-K`
+# NOTE: If SSH user is different than current user, add: `-u ubuntu`
+ansible-playbook kubespray/remove-node.yml --extra-vars "node=nodename0,nodename1"
+```
+
+This will drain `nodename0` & `nodename1`, stop Kubernetes services, delete certificates, and finally execute the kubectl command to delete the nodes.
+
+More information on this topic may be found in the [Kubespray docs](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md#remove-nodes).
+
+### Reset the Cluster
+
+Sometimes a cluster will get into a bad state - perhaps one where certs are misconfigured or different across nodes. When this occurs it's often helpful to completely reset the cluster. To accomplish this, run the `remove-node.yml` playbook for all k8s nodes...
+
+```sh
+# NOTE: If SSH requires a password, add: `-k`
+# NOTE: If sudo on remote machine requires a password, add: `-K`
+# NOTE: If SSH user is different than current user, add: `-u ubuntu`
+ansible-playbook kubespray/remove-node.yml --extra-vars "node=k8s-cluster"
+```
+
+> NOTE: There is also a Kubespray `reset.yml` playbook, but this does not do a complete tear-down of the cluster.
+
+### Upgrading the Cluster
+
+Refer to the [Kubespray Upgrade docs](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/upgrades.md) for instructions on how to upgrade the cluster.
