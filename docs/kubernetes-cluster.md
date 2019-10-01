@@ -120,6 +120,10 @@ one that is resolvable outside the cluster), add `-e container_registry_hostname
 ansible-playbook --tags container-registry playbooks/k8s-services.yml
 ```
 
+### Load Balancer and Ingress
+
+Many K8s applications require the deployment of a Load Balancer and Ingress. To deploy one, or both, of these services, refer to the [Load Balancer and Ingress Guide](ingress.md).
+
 ### Kubeflow
 
 Kubeflow is a popular way for multiple users to run ML workloads. It exposes a Jupyter Notebook interface where users can request access to GPUs via the browser GUI. Deploy Kubeflow with a convenient script:
