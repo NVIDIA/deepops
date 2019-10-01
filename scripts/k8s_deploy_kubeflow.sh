@@ -146,8 +146,8 @@ function tear_down() {
 function get_url() {
   # Get LoadBalancer and NodePorts
   master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
-  nodePort="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=PORT:.spec.ports[2].nodePort)
-  lb_ip="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o -o custom-columns=:.status.loadBalancer.ingress[0].ip)
+  nodePort="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=PORT:.spec.ports[2].nodePort)"
+  lb_ip="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=:.status.loadBalancer.ingress[0].ip)"
   kf_url="http://${master_ip}:${nodePort}"
 }
 
@@ -160,8 +160,8 @@ function print_info() {
   echo "To fully remove everything:"
   echo "bash ${KUBEFLOW_DEL_SCRIPT}"
   echo 
-  echo "Kubeflow Dashboard: ${kf_url}"
-  echo ${lb_ip}
+  echo "Kubeflow Dashboard (NodePort): ${kf_url}"
+  echo "Kubeflow Dashboard (LoadBalancer): ${lb_ip}"
   echo
 }
 
