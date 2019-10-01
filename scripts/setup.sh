@@ -14,7 +14,7 @@ ANSIBLE_REPO_VER="2.7"
 
 as_sudo(){
    cmd="sudo bash -c '. ${SCRIPT_DIR}/proxy.sh && $1'"
-   echo $cmd
+   ## echo $cmd
    eval $cmd
 }
 
