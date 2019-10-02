@@ -9,7 +9,7 @@
   roles:
     - name: slurm
       vars:
-        user: "{{ ansible_user | default(ansible_env.SUDO_USER) }}"
+        user: "{{ ansible_env.USER | default(ansible_env.SUDO_USER) }}"
         is_controller: yes
 
 - hosts: slurm-node
@@ -17,5 +17,5 @@
   roles:
     - name: slurm
       vars:
-        user: "{{ ansible_user | default(ansible_env.SUDO_USER) }}"
+        user: "{{ ansible_env.USER | default(ansible_env.SUDO_USER) }}"
         is_compute: yes

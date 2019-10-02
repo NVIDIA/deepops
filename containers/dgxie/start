@@ -1,82 +1,94 @@
 #!/bin/sh
 
-## CONFIG
+### CONFIG
 MNT=${MNT:-/data}
 ISO=${ISO:-/iso}
+VISO=${VISO:-/vmware_iso}
 PRESEED=${ISO}/preseed/pxe.template.seed
-INT=${INT:-enp1s0f0}
-DISK=${DISK:-sda}
-DEFAULT=${DEFAULT:-local}
+DGX_INT=${DGX_INT:-enp1s0f0}
+DGX_DISK=${DGX_DISK:-sda}
+DGX_KBD=${DGX_KBD:-us}
+DGX_KERN_EXTRA=${DGX_KERN_EXTRA:-}
+DGX_EXTRA_PACKAGES=${DGX_EXTRA_PACKAGES:-}
+DGX_HTTPS_PROXY=${DGX_HTTPS_PROXY:-}
+HTTP_INT=${HTTP_INT:-eth1}
 HTTP_PORT=${HTTP_PORT:-13370}
-KBD=${KBD:-us}
-KERN_EXTRA=${KERN_EXTRA:-}
-HOST_INT_PUB=${HOST_INT_PUB:-eth0}
-HOST_INT_PRV=${HOST_INT_PRV:-eth1}
+DHCP_INT=${DHCP_INT:-eth1}
+NAT_INT_PUB=${NAT_INT_PUB:-eth0}
+NAT_INT_PRV=${NAT_INT_PRV:-eth1}
 NETWORK=${NETWORK:-192.168.1.0}
 NETMASK=${NETMASK:-255.255.255.0}
-IP=${IP:-192.168.1.1}
-GATEWAY=${GATEWAY:-${IP}}
+GATEWAY=${GATEWAY:-192.168.1.1}
 DNS1=${DNS1:-8.8.8.8}
 DNS2=${DNS2:-8.8.4.4}
 DHCP_START=${DHCP_START:-192.168.1.100}
 DHCP_END=${DHCP_END:-192.168.1.199}
 LEASETIME=${LEASETIME:-7200}
 DOMAIN=${DOMAIN:-local}
-HTTPS_PROXY=${HTTPS_PROXY:-}
-EXTRA_PACKAGES=${EXTRA_PACKAGES:-}
-NTP=${NTP:-}
+NTP=${NTP:-pool.ntp.org}
+VMW_NFS_IP=${VMW_NFS_IP:-192.168.1.1}
+VMW_GPU_VIB=${VMW_GPU_VIB:-NVIDIA-VMware_ESXi_6.7_Host_Driver-418.66-1OEM.670.0.0.8169922.x86_64.vib}
+VMW_VM_SIZE=${VMW_VM_SIZE:-100g}
 ###
 
+HTTP_IP=$(ip -4 addr show ${HTTP_INT} | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+
 mkdir -p "${ISO}"
+mkdir -p "${VISO}"
 
-# Check for mounted DGX Server ISO
-find ${PRESEED} >/dev/null 2>&1
-if [ $? -ne 0 ] ; then
-    dgx_iso="$(find ${MNT} -name DGXServer\*.iso)"
+# DGX installer ISO
+dgx_iso="$(find ${MNT} -name DGXServer\*.iso)"
+if [ "z${dgx_iso}" != "z" ] ; then
     mount -o loop -t iso9660 "$dgx_iso" "${ISO}"
-fi
-
-# Check for mounted DGX Server ISO
-find ${PRESEED} >/dev/null 2>&1
-if [ $? -eq 0 ] ; then
-	cp ${PRESEED} /www/dgx.seed
-	PRESEED=/www/dgx.seed
-	ln -sf ${ISO} /www/iso
+    cp ${PRESEED} /www/dgx.seed
+    PRESEED=/www/dgx.seed
+    ln -sf ${ISO} /www/iso
 
     # Modify preseed
-    sed -i "s/^d-i live-installer.*/d-i live-installer\/net-image string ftp:\/\/${IP}\/install\/filesystem.squashfs/g" ${PRESEED}
-    sed -i "s/^d-i mirror\/ftp\/hostname.*/d-i mirror\/ftp\/hostname string ${IP}/g" ${PRESEED}
-    sed -i "s/^d-i apt-setup\/local0\/repository.*/d-i apt-setup\/local0\/repository string deb ftp:\/\/${IP}\/ xenial main multiverse/g" ${PRESEED}
+    sed -i "s/<FTP_IP_ADDR>/${HTTP_IP}/g" ${PRESEED}
+    sed -i "s/^d-i live-installer.*/d-i live-installer\/net-image string ftp:\/\/${HTTP_IP}\/install\/filesystem.squashfs/g" ${PRESEED}
+    sed -i "s/^d-i mirror\/ftp\/hostname.*/d-i mirror\/ftp\/hostname string ${HTTP_IP}/g" ${PRESEED}
+    sed -i "s/^d-i apt-setup\/local0\/repository.*/d-i apt-setup\/local0\/repository string deb ftp:\/\/${HTTP_IP}\/ bionic main multiverse restricted universe/g" ${PRESEED}
     sed -i "s/^d-i mirror\/ftp\/directory.*/d-i mirror\/ftp\/directory string \//g" ${PRESEED}
-    sed -i "s/^d-i apt-setup\/security_host.*/d-i apt-setup\/security_host string ${IP}/g" ${PRESEED}
+    sed -i "s/^d-i apt-setup\/security_host.*/d-i apt-setup\/security_host string ${HTTP_IP}/g" ${PRESEED}
 
     # Try to get install process to fix BIOS boot order on pre-3.18 BMC firmwares; sets DGX to boot from first disk
     # Turn off chassis identify light
-    sed -i "s/in-target sh -c \"logger preseed\/late_command: end\"\;/modprobe -v ipmi_devintf\; \\\\\n\\t in-target sh -c \"sudo ipmitool raw 0x00 0x08 0x05 0xe0 0x08 0x00 0x00 0x00\"\; \\\\\n\\t in-target sh -c \"sudo ipmitool chassis identify 0\"\; \\\\\n\\t in-target sh -c \"curl -X POST -d action=end ${IP}:${HTTP_PORT}\/install\"\; \\\\\n\\tin-target sh -c \"logger preseed\/late_command: end\"\;/g" ${PRESEED}
-    sed -i "s~^d-i mirror/https/proxy.*~d-i mirror/https/proxy string ${HTTPS_PROXY}~g" ${PRESEED}
-    sed -i "s~^d-i pkgsel/include string ~d-i pkgsel/include string ${EXTRA_PACKAGES} ~g" ${PRESEED}
+    sed -i "s/in-target sh -c \"logger preseed\/late_command: end\"\;/modprobe -v ipmi_devintf\; \\\\\n\\t in-target sh -c \"sudo ipmitool raw 0x00 0x08 0x05 0xe0 0x08 0x00 0x00 0x00\"\; \\\\\n\\t in-target sh -c \"sudo ipmitool chassis identify 0\"\; \\\\\n\\t in-target sh -c \"curl -X POST -d action=end ${HTTP_IP}:${HTTP_PORT}\/install\"\; \\\\\n\\tin-target sh -c \"logger preseed\/late_command: end\"\;/g" ${PRESEED}
+    sed -i "s~^d-i mirror/https/proxy.*~d-i mirror/https/proxy string ${DGX_HTTPS_PROXY}~g" ${PRESEED}
+    sed -i "s~^d-i pkgsel/include string ~d-i pkgsel/include string ${DGX_EXTRA_PACKAGES} ~g" ${PRESEED}
 
     # Add early command to log install start
-    #sed -i "s/^# Use default/d-i preseed\/early_command string wget --post-data action=start ${IP}\/install\\n\\n# Use default/g" ${PRESEED}
+    #sed -i "s/^# Use default/d-i preseed\/early_command string wget --post-data action=start ${HTTP_IP}\/install\\n\\n# Use default/g" ${PRESEED}
     #sed -i "s/early_command string/early_command string wget --post-data action=start 192.168.1.1\/install \;/g" ${PRESEED}
 
     # Useful for Xen VM
-    sed -i "s/\/dev\/sda/\/dev\/${DISK}/g" ${PRESEED}
-    sed -i "s/enp1s0f0/${INT}/g" ${PRESEED}
+    sed -i "s/\/dev\/sda/\/dev\/${DGX_DISK}/g" ${PRESEED}
+    sed -i "s/enp1s0f0/${DGX_INT}/g" ${PRESEED}
 
     # FTP
     sed -i "s~/srv/ftp~${ISO}~g" /etc/passwd
-
-else
-	echo "DGX ISO must be mounted at ${ISO}"
-	echo "can't find ${PRESEED}"
 fi
 
-# DHCP
-sed -i "s/\#HOST_INT_PRV\#/${HOST_INT_PRV}/g" /etc/dnsmasq.conf
+# Mount VMware ESXi installer
+vmware_iso="$(find ${MNT} -name VMware-VMvisor-Installer\*.iso)"
+if [ "z${vmware_iso}" != "z" ] ; then
+    mount -o loop -t iso9660 "$vmware_iso" "${VISO}"
+    ln -sf ${VISO} /www/viso
+    cp "${VISO}/boot.cfg" /www/vmware/boot.cfg
+    sed -i "s~^kernel=~kernel=http://${HTTP_IP}:${HTTP_PORT}/viso~g" /www/vmware/boot.cfg
+    sed -i "s~^kernelopt=.*~kernelopt=ks=http://${HTTP_IP}:${HTTP_PORT}/vmware/kickstart.cfg~g" /www/vmware/boot.cfg
+    sed -i "s~^modules=~modules=http://${HTTP_IP}:${HTTP_PORT}/viso~g" /www/vmware/boot.cfg
+    sed -i "s~--- /~--- http://${HTTP_IP}:${HTTP_PORT}/viso/~g" /www/vmware/boot.cfg
+    sed -i "s/\#VMW_NFS_IP\#/${VMW_NFS_IP}/g" /www/vmware/kickstart.cfg
+    sed -i "s/\#VMW_GPU_VIB\#/${VMW_GPU_VIB}/g" /www/vmware/kickstart.cfg
+    sed -i "s/\#VMW_VM_SIZE\#/${VMW_VM_SIZE}/g" /www/vmware/kickstart.cfg
+fi
+
+# DHCP Server
+sed -i "s/\#DHCP_INT\#/${DHCP_INT}/g" /etc/dnsmasq.conf
 sed -i "s/\#LEASETIME\#/${LEASETIME}/g" /etc/dnsmasq.conf
 sed -i "s/\#DOMAIN\#/${DOMAIN}/g" /etc/dnsmasq.conf
-sed -i "s/\#IP\#/${IP}/g" /etc/dnsmasq.conf
 sed -i "s/\#NETWORK\#/${NETWORK}/g" /etc/dnsmasq.conf
 sed -i "s/\#NETMASK\#/${NETMASK}/g" /etc/dnsmasq.conf
 sed -i "s/\#GATEWAY\#/${GATEWAY}/g" /etc/dnsmasq.conf
@@ -84,21 +96,21 @@ sed -i "s/\#DNS1\#/${DNS1}/g" /etc/dnsmasq.conf
 sed -i "s/\#DNS2\#/${DNS2}/g" /etc/dnsmasq.conf
 sed -i "s/\#DHCP_START\#/${DHCP_START}/g" /etc/dnsmasq.conf
 sed -i "s/\#DHCP_END\#/${DHCP_END}/g" /etc/dnsmasq.conf
-
-# HTTP
-sed -i "s/\#HTTP_PORT\#/${HTTP_PORT}/g" /etc/nginx/nginx.conf
-
-if [ ! -z "${HOST_INT_PUB}" ]; then
-  # NAT
-  /sbin/iptables -t nat -A POSTROUTING -o ${HOST_INT_PUB} -j MASQUERADE
-  /sbin/iptables -A FORWARD -i ${HOST_INT_PUB} -o ${HOST_INT_PRV} -m state --state RELATED,ESTABLISHED -j ACCEPT
-  /sbin/iptables -A FORWARD -i ${HOST_INT_PRV} -o ${HOST_INT_PUB} -j ACCEPT
-  sysctl -w net.ipv4.ip_forward=1
-fi
-
 if [ ! -z "${NTP}" ]; then
   sed -i "s/\#NTP\#/${NTP}/g" /etc/dnsmasq.conf
   sed -i "s/\#dhcp-option=42,/dhcp-option=42,/g" /etc/dnsmasq.conf
+fi
+
+# HTTP Server
+sed -i "s/\#HTTP_PORT\#/${HTTP_PORT}/g" /etc/nginx/nginx.conf
+
+# Set up NAT
+if [ "${NAT_ENABLE}" -ne 0 ]; then
+  # NAT
+  /sbin/iptables -t nat -A POSTROUTING -o ${NAT_INT_PUB} -j MASQUERADE
+  /sbin/iptables -A FORWARD -i ${NAT_INT_PUB} -o ${NAT_INT_PRV} -m state --state RELATED,ESTABLISHED -j ACCEPT
+  /sbin/iptables -A FORWARD -i ${NAT_INT_PRV} -o ${NAT_INT_PUB} -j ACCEPT
+  sysctl -w net.ipv4.ip_forward=1
 fi
 
 # Run some servers
@@ -106,6 +118,10 @@ nginx &
 /usr/sbin/vsftpd /etc/vsftpd.conf &
 /usr/local/bin/rest_api.py >/dev/null 2>&1 &
 python /api.py &
-/usr/bin/pixiecore api http://127.0.0.1:${HTTP_PORT} --dhcp-no-bind -p 81 &
-dnsmasq
-tail -f /var/log/dnsmasq.log
+/usr/bin/pixiecore api http://127.0.0.1:${HTTP_PORT} --dhcp-no-bind --debug --port 81 |& tee -a /var/log/pixiecore.log &
+if [ ${DHCP_ENABLE} -ne 0 ] ; then
+    dnsmasq
+    tail -f /var/log/dnsmasq.log /var/log/pixiecore.log
+else
+    tail -f /var/log/nginx/* /var/log/pixiecore.log
+fi

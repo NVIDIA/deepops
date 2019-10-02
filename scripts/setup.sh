@@ -74,6 +74,8 @@ case "$ID" in
         wget --version | head -1
         ;;
     ubuntu*)
+	# No interactive prompts from apt during this process
+	export DEBIAN_FRONTEND=noninteractive
         # Update apt cache
         echo "Updating apt cache..."
         sudo apt-get update >/dev/null
@@ -96,6 +98,12 @@ case "$ID" in
             sudo apt-get -y install python-pip >/dev/null
         fi
         pip --version
+
+        # Install setuptools
+        if ! dpkg -l python-setuptools >/dev/null 2>&1; then
+            echo "Installing setuptools..."
+            sudo apt-get -y install python-setuptools >/dev/null
+        fi
 
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
@@ -121,7 +129,7 @@ case "$ID" in
         type git >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
             echo "Installing git..."
-            sudo apt -y install git >/dev/null
+            sudo apt-get -y install git >/dev/null
         fi
         git --version
 
@@ -129,14 +137,14 @@ case "$ID" in
         type ipmitool >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
             echo "Installing IPMITool..."
-            sudo apt -y install ipmitool >/dev/null
+            sudo apt-get -y install ipmitool >/dev/null
         fi
         ipmitool -V
 
         # Install wget
         if ! which wget >/dev/null 2>&1; then
         echo "Installing wget..."
-            sudo apt -y install wget >/dev/null
+            sudo apt-get -y install wget >/dev/null
         fi
         wget --version | head -1
         ;;

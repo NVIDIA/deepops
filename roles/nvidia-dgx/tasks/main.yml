@@ -2,7 +2,7 @@
 - name: Check for DGX
   fail:
     msg: "Role supports DGX-1 and DGX-2 systems only"
-  when: ansible_product_name != "DGX-1" and ansible_product_name != "DGX-2"
+  when: ansible_product_name is not search("DGX-1") and ansible_product_name is not search("DGX-2")
 
 - name: ubuntu tasks
   include_tasks: ubuntu.yml

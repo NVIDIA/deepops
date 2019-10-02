@@ -1,0 +1,33 @@
+# Slurm job scheduler configuration
+slurm_user_home: /local/slurm
+slurm_manage_gpus: true
+slurm_cluster_name: deepops
+slurm_username: slurm
+slurm_password: ReplaceWithASecurePasswordInTheVault
+slurm_db_username: slurm
+slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
+#slurm_max_job_timelimit: INFINITE
+#slurm_default_job_timelimit:
+slurm_install_pyxis: yes
+slurm_controller_host: "{{ groups['slurm-master'][0] }}"
+slurm_compute_hosts: "{{ groups['slurm-node'] }}"
+
+# Enroot configuration
+enroot_runtime_path: '/tmp/enroot-runtime-$(id -u)'
+enroot_cache_path: '/tmp/enroot-cache-$(id -u)'
+enroot_data_path: '/tmp/enroot-data-$(id -u)'
+enroot_config: |
+  ENROOT_CONFIG_PATH ${HOME}/.config/enroot
+  ENROOT_SQUASH_OPTIONS -noI -noD -noF -noX -no-duplicates
+  ENROOT_MOUNT_HOME y
+  ENROOT_RESTRICT_DEV y
+  ENROOT_RUNTIME_PATH {{ enroot_runtime_path }}
+  ENROOT_CACHE_PATH {{ enroot_cache_path }}
+  ENROOT_DATA_PATH {{ enroot_data_path }}
+enroot_environ_config_files:
+  - filename: 50-mellanox.env
+    content: |
+      MELLANOX_VISIBLE_DEVICES=all
+  - filename: 50-mpi.env
+    content: |
+      OMPI_MCA_btl_tcp_if_exclude=lo,docker0,ib0,ib1,ib2,ib3

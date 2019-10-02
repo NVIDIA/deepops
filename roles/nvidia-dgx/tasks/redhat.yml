@@ -21,14 +21,14 @@
     name: "@DGX-1 Configurations"
     state: present
     update_cache: yes
-  when: ansible_product_name == "DGX-1"
+  when: ansible_product_name is search("DGX-1")
 
 - name: Install packages
   yum:
     name: "@DGX-2 Configurations"
     state: present
     update_cache: yes
-  when: ansible_product_name == "DGX-2"
+  when: ansible_product_name is search("DGX-2")
 
 - name: Install extra packages
   yum:
