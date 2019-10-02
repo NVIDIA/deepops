@@ -37,7 +37,7 @@ if ! helm status "${app_name}" >/dev/null 2>&1; then
 	helm install \
 		--name "${app_name}" \
 		--version "${CHART_VERSION}" \
-		--values "${config_dir}/helm/ingress.yml" "${helm_extra_args}" \
+		--values "${config_dir}/helm/ingress.yml" ${helm_extra_args} \
 		stable/nginx-ingress
 fi
 
