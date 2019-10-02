@@ -38,6 +38,7 @@
   version: "1.9.5"
 
 - src: geerlingguy.kibana
+  version: "3.2.1"
 
 - src: https://github.com/DeepOps/ansible-maas.git
   name: ansible-maas
