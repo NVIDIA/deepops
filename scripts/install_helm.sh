@@ -5,7 +5,7 @@ set -x
 HELM_INSTALL_DIR=/usr/local/bin
 HELM_INSTALL_SCRIPT_URL="${HELM_INSTALL_SCRIPT_URL:-https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get}"
 
-if kubectl version ; then
+if ! kubectl version ; then
     echo "Unable to talk to Kubernetes API"
     exit 1
 fi
@@ -49,7 +49,7 @@ if [ "${DEEPOPS_HELM_REPO}" ]; then
 fi
 
 if type helm >/dev/null 2>&1 ; then
-    helm init --client-only "${helm_extra_args}"
+    helm init --client-only ${helm_extra_args}
 else
     echo "Helm client not installed"
     exit 1
