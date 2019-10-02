@@ -18,7 +18,7 @@ if [ ! -d "${config_dir}" ]; then
 	exit 1
 fi
 
-if kubectl version ; then
+if ! kubectl version ; then
     echo "Unable to talk to Kubernetes API"
     exit 1
 fi
