@@ -21,7 +21,7 @@ fi
 
 # Install rook-ceph
 if ! helm status rook-ceph >/dev/null 2>&1 ; then
-    helm install --namespace rook-ceph --name rook-ceph rook-release/rook-ceph --version "${HELM_ROOK_CHART_VERSION}" "${helm_install_extra_flags}"
+    helm install --namespace rook-ceph --name rook-ceph rook-release/rook-ceph --version "${HELM_ROOK_CHART_VERSION}" ${helm_install_extra_flags}
 fi
 
 if kubectl -n rook-ceph get pod -l app=rook-ceph-tools 2>&1 | grep "No resources found." >/dev/null 2>&1; then
