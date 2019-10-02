@@ -2,4 +2,4 @@
 - hosts: maas
   become: yes
   roles:
-    - role: mrlesmithjr.maas
+    - role: ansible-maas

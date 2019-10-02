@@ -30,4 +30,5 @@
 - src: geerlingguy.java
 - src: geerlingguy.kibana
 
-- src: mrlesmithjr.maas
+- src: https://github.com/DeepOps/ansible-maas.git
+  name: ansible-maas

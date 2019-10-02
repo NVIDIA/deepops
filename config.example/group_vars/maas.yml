@@ -11,6 +11,8 @@ maas_repo: 'ppa:maas/stable'
 
 # Defines if maas user should generate ssh keys
 # Usable for remote KVM/libvirt power actions
-maas_setup_user: true
+maas_setup_user: false
 
 maas_single_node_install: true
+
+maas_kvm: false
