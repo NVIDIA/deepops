@@ -122,8 +122,8 @@ function stand_up() {
   ${KFCTL} generate all -V
   ${KFCTL} apply all -V
 
-  echo 'cd ${KFAPP} && ${KFCTL} delete -V k8s; cd && sudo rm -rf ${KFAPP}; sudo rm ${KFCTL}' > ${KUBEFLOW_DEL_SCRIPT}
-  echo 'cd ${KFAPP} && ${KFCTL} delete -V all; cd && sudo rm -rf ${KFAPP}; sudo rm ${KFCTL}' > ${KUBEFLOW_DEL_SCRIPT}_full.sh
+  echo "cd ${KFAPP} && ${KFCTL} delete -V k8s; cd && sudo rm -rf ${KFAPP}; sudo rm ${KFCTL}" > ${KUBEFLOW_DEL_SCRIPT}
+  echo "cd ${KFAPP} && ${KFCTL} delete -V all; cd && sudo rm -rf ${KFAPP}; sudo rm ${KFCTL}" > ${KUBEFLOW_DEL_SCRIPT}_full.sh
   chmod +x ${KUBEFLOW_DEL_SCRIPT}
 }
 
