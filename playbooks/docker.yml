@@ -3,7 +3,7 @@
   become: true
   become_method: sudo
   tasks:
-  
+
     - name: create docker config directory
       file:
         path: /etc/docker
