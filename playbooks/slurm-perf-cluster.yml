@@ -22,14 +22,17 @@
 
 # Install NVIDIA driver
 - include: nvidia-driver.yml
+  when: ansible_product_name is not search("DGX-1") and ansible_product_name is not search("DGX-2")
 
 # Install Docker and configure for NVIDIA
 - include: docker.yml
   tags:
   - install_docker
+  when: ansible_product_name is not search("DGX-1") and ansible_product_name is not search("DGX-2")
 - include: nvidia-docker.yml
   tags:
   - install_docker
+  when: ansible_product_name is not search("DGX-1") and ansible_product_name is not search("DGX-2")
 
 # Ensure that DKMS modules are installed and running
 - hosts: slurm-node
