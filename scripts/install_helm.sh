@@ -50,6 +50,7 @@ fi
 
 if type helm >/dev/null 2>&1 ; then
     helm init --client-only ${helm_extra_args}
+    helm repo update
 else
     echo "Helm client not installed"
     exit 1
