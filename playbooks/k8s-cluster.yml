@@ -89,9 +89,11 @@
 - include: nvidia-driver.yml
   tags:
     - nvidia
+  when: ansible_product_name is not search("DGX-1") and ansible_product_name is not search("DGX-2")
 - include: nvidia-docker.yml
   tags:
     - nvidia
+  when: ansible_product_name is not search("DGX-1") and ansible_product_name is not search("DGX-2")
 
 # Install k8s GPU device plugin
 - include: k8s-gpu-plugin.yml
