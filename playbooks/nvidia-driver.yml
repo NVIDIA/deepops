@@ -9,9 +9,13 @@
     - name: install nvidia driver
       include_role:
         name: nvidia.nvidia_driver
-      when: ansible_local['gpus']['count']
+      when:
+        - ansible_local['gpus']['count']
+        - ansible_product_name is not search("DGX-1") and ansible_product_name is not search("DGX-2")
 
     - name: test nvidia-smi
       command: nvidia-smi
       changed_when: false
-      when: ansible_local['gpus']['count']
+      when:
+        - ansible_local['gpus']['count']
+        - ansible_product_name is not search("DGX-1") and ansible_product_name is not search("DGX-2")

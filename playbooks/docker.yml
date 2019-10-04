@@ -26,7 +26,9 @@
         # matches: kubespray/roles/container-engine/docker/vars/ubuntu-amd64.yml
         #docker_package: 'docker-ce=18.06.1~ce~3-0~ubuntu'
         docker_package: 'docker-ce=5:18.09.5~3-0~ubuntu-{{ ansible_distribution_release }}'
-      when: ansible_distribution == "Ubuntu"
+      when:
+        - ansible_distribution == "Ubuntu"
+        - ansible_product_name is not search("DGX-1") and ansible_product_name is not search("DGX-2")
 
     - name: install docker
       include_role:
@@ -35,4 +37,6 @@
         # matches: kubespray/roles/container-engine/docker/vars/redhat.yml
         #docker_package: 'docker-ce-18.06.2.ce-3.el7'
         docker_package: 'docker-ce-18.09.5-3.el7'
-      when: ansible_os_family == "RedHat"
+      when:
+        - ansible_os_family == "RedHat"
+        - ansible_product_name is not search("DGX-1") and ansible_product_name is not search("DGX-2")
