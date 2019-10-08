@@ -1,4 +1,4 @@
-Using Proxy with DeepOps
+Using Proxy with DeepOps (k8s Cluster Install)
 ======================
 
 Not all environments can freely download and install software for security reasons which is no surprise. However, setting up a proxy for all tasks may not be the best option for all environments. The ansible playbooks and deepops scripts were modified to leverage a proxy if its available but only during setup/provisoning. Its important not only the `HTTP_PROXY` and `HTTPS_PROXY` be configured to gain access to packages, software, and k8s config files, but `NO_PROXY` be also set. Hosts listed in the the `NO_PROXY` varaible are *not* used when a HTTP request is made. Why this is important is because services and commands like `kubectl` use the HTTP protocol to access k8s services. Its out of scope to list those services here, best to refer to k8s documentation.
