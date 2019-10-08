@@ -12,9 +12,11 @@ The DeepOps project encapsulates best practices in the deployment of GPU server 
 * An existing cluster that needs a resource manager / batch scheduler, where DeepOps is used to install Slurm, Kubernetes, or a hybrid of both
 * A single machine where no scheduler is desired, only NVIDIA drivers, Docker, and the NVIDIA Container Runtime
 
+Check out the [video tutorial](https://drive.google.com/file/d/1RNLQYlgJqE8JMv0np8SdEDqeCN2piavF/view) for how to use DeepOps to deploy Kubernetes and Kubeflow on a single DGX Station. This provides a good base test ground for larger deployments.
+
 ## Releases
 
-Latest release: [DeepOps 19.03 Release](https://github.com/NVIDIA/deepops/releases/tag/19.03)
+Latest release: [DeepOps 19.07 Release](https://github.com/NVIDIA/deepops/releases/tag/19.07)
 
 It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally functional but may change significantly between releases.
 
@@ -23,6 +25,15 @@ It is recommended to use the latest release branch for stable code (linked above
 For detailed help or guidance, read through our [Getting Started Guide](docs/getting-started.md) or pick one of the deployment options documented below.
 
 ## Deployment Options
+
+### Supported distributions
+
+DeepOps currently supports the following Linux distributions:
+
+* NVIDIA DGX OS 4
+* Ubuntu 18.04 LTS
+* CentOS 7
+* Red Hat Enterprise Linux 7
 
 ### Kubernetes
 
@@ -42,7 +53,7 @@ For more information on Slurm in general, refer to the [official Slurm docs](htt
 
 ### DGX POD Hybrid Cluster
 
-A hybrid cluster with both Kubernetes and Slurm can also be deployed. This is recommended for [DGX POD](https://nvidia-gpugenius.highspot.com/viewer/5b33fecf1279587c07d8ac86) and other setups that wish to make maximal use of the cluster.
+A hybrid cluster with both Kubernetes and Slurm can also be deployed. This is recommended for [DGX POD](https://www.nvidia.com/en-us/data-center/dgx-pod-reference-architecture/) and other setups that wish to make maximal use of the cluster.
 
 Consult the [DGX POD Guide](docs/dgx-pod.md) for step-by-step instructions on building a GPU-enabled hybrid cluster using DeepOps.
 

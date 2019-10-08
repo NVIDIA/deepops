@@ -69,7 +69,7 @@ ansible-playbook --check -i config/inventory -l slurm-cluster playbooks/slurm-cl
 
 ### Updating Kubernetes (Kubespray)
 
-DeepOps deploys Kubernetes using Kubespray, an Ansible framework for deploying production-ready Kubernetes clusters. The Kubernetes upgrade process will be specific to the release of Kubespray which is pinned in the new release of DeepOps. Please see the [Kubespray upgrade docs](kubespray/docs/upgrades.md) for instructions to upgrade Kubernetes.
+DeepOps deploys Kubernetes using Kubespray, an Ansible framework for deploying production-ready Kubernetes clusters. The Kubernetes upgrade process will be specific to the release of Kubespray which is pinned in the new release of DeepOps. Please see the [Kubespray upgrade docs](https://github.com/kubernetes-sigs/kubespray/blob/7d8da8348e095a5f0b160c1e05c4c399d201d1f0/docs/upgrades.md) for instructions to upgrade Kubernetes.
 
 ### Updating Helm
 

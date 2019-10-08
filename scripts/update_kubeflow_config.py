@@ -16,6 +16,8 @@ import yaml
 import os
 
 
+NVCR = 'nvcr.io'
+
 try:
     KUBEFLOW_SRC = os.environ['KUBEFLOW_SRC']
     KSAPP_DIR = os.environ['KSAPP_DIR']
@@ -48,23 +50,24 @@ def get_images(url='https://api.ngc.nvidia.com/v2/repos', number_tags=5):
 
     # Iterate through registry response
     for repo in repos['repositories']:
-        if 'tags' not in repo or 'name' not in repo:
+        if 'tags' not in repo or \
+            'namespace' not in repo or \
+            'name' not in repo:
             continue
         count = 0
         for tag in repo['tags']:
-            images.append((repo['name'],tag))
+            images.append((repo['namespace'], repo['name'],tag))
             count += 1
-            print(tag)
             if count >= number_tags:
                 break
-    return map(lambda x : "nvcr.io/nvidia/{}:{}".format(x[0], x[1]), images) #  TODO: Remove url hardcoding
+    return map(lambda x : "{}/{}/{}:{}".format(NVCR, x[0], x[1], x[2]), images)
 
 
 def update_yaml(images, yaml_file, str1):
     # Update file to be valide YAML before parsing it
     str2 = 'value: RREPLACE_ME'
     with open(yaml_file, 'r') as fname:
-        config = yaml.load(fname.read().replace(str1, str2))
+        config = yaml.load(fname.read().replace(str1, str2), Loader=yaml.FullLoader)
 
     # Update YAML file
     try:
@@ -73,7 +76,7 @@ def update_yaml(images, yaml_file, str1):
         config['spawnerFormDefaults']['image']['value'] = images[0]
         config['spawnerFormDefaults']['image']['options'] = images # TODO: Potentially only show 1-3 tags for each image
     except KeyError:
-        print("Couldn't parse config for update")
+        logging.error("Couldn't parse config for update")
         return
 
     # Write out YAML file back to how Kubeflow expects
@@ -99,21 +102,22 @@ if __name__ == '__main__':
         update_yaml(images,
             '{}/kubeflow/jupyter/ui/default/config.yaml'.format(KUBEFLOW_SRC),
             'value: {username}{servername}-workspace')
+        logging.info("Updated KS source code configurations.")
     except IOError as e: # the ks_app files may not exist at time of running this
         logging.error("Failed to update KS source code configurations: {}".format(e))
 
     # This updates KS apps
     try:
-        print("test")
         update_yaml(images,
             '{}/vendor/kubeflow/jupyter/config.yaml'.format(KSAPP_DIR),
             'value: {username}-workspace')
         update_yaml(images,
-            '{}/vendor/jupyter/ui/rok/config.yaml'.format(KSAPP_DIR),
+            '{}/vendor/kubeflow/jupyter/ui/rok/config.yaml'.format(KSAPP_DIR),
             'value: {username}{servername}-workspace')
         update_yaml(images,
-            '{}/vendor/jupyter/ui/default/config.yaml'.format(KSAPP_DIR),
+            '{}/vendor/kubeflow/jupyter/ui/default/config.yaml'.format(KSAPP_DIR),
             'value: {username}{servername}-workspace')
+        logging.info("Updated KS app configurations.")
     except IOError as e: # the ks_app files may not exist at time of running this
         logging.error("Failed to update KS app configurations: {}".format(e))
 

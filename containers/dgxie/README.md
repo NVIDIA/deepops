@@ -342,17 +342,6 @@ The `--privileged` and `--net=host` flags are required to manipulate IPTABLES on
 
 ### DGXie configuration options
 
-#### PXE configuration
-
-Default to DGX install after menu timeout vs booting to local disk (default)
-
-**Warning: any machine PXE booting on the network will potentially have its OS re-installed without any prompt!**
-
-```console
-# default: local
--e DEFAULT=DGX
-```
-
 #### Provisioning host configuration
 
 Specify DGXie server public network interface
