@@ -77,6 +77,11 @@
 #software_remove_packages:
 #  - popularity-contest
 
+# Set /etc/rc.local contents. Use playbooks/rc-local.yml
+# rc_local_contents: |
+#   echo foo
+#   echo bar
+
 # users configuration
 # create user `nvidia` with password `deepops` on all nodes
 # run with users.yml playbook
