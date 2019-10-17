@@ -55,9 +55,13 @@ vendor: 15b3
 3. Virtual function device ID - dev_id. Default - "MT28908 Family [ConnectX-6 Virtual Function]". Detailed information about all Mellanox Device ID can be found - https://devicehunt.com/view/type/pci/vendor/15B3.
 Supported values 
     101c - MT28908 Family [ConnectX-6 Virtual Function]
+    
     101a - MT28800 Family [ConnectX-5 Ex Virtual Function]
+    
     1018 - MT27800 Family [ConnectX-5 Virtual Function]   
+    
     1016 - MT27710 Family [ConnectX-4 Lx Virtual Function]
+    
     1014 - MT27700 Family [ConnectX-4 Virtual Function]
 
 dev_id: 101c
