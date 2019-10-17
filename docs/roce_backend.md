@@ -73,6 +73,7 @@ num_vf: 8
 5. Mellanox Ofed place and image name - mofed_site_place, mofed_file_name.
 
 mofed_site_place: "MLNX_OFED-4.6-1.0.1.1"
+
 mofed_file_name: "MLNX_OFED_LINUX-4.6-1.0.1.1-ubuntu18.04-x86_64.iso"
 
 
