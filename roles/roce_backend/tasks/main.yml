@@ -1,0 +1,133 @@
+---
+# tasks file for roce_backend
+# Install Mellanox OFED and VF activation
+- name: MOFED installation
+  include_tasks: mofed-install.yaml
+  when: ansible_distribution == 'Ubuntu'
+  run_once: true
+  tags: 
+    - roce_host
+# Activate VF for relevant PF
+- name: checking the Mellanox OFED is installed
+  stat:
+    path: /usr/bin/ofed_info
+  register: ofed_present
+  tags: 
+    - roce_host
+
+- name: Create the file, if it does not present
+  file:
+    path: /etc/rc.local
+    state: touch
+    mode: 0755
+  when: ofed_present.stat.exists
+  register: f
+  changed_when: f.diff.before.state == "absent"
+  tags: 
+    - roce_host
+
+- include_tasks: vf-activate.yaml
+  with_items: "{{ sriov_resources }}"
+  when: ofed_present.stat.exists
+  tags: 
+    - roce_host
+
+#Install Mellanox GPUDirect - WIP
+
+#Install Python modules
+
+- name: Install PIP
+  apt:
+    name:
+      - python-pip
+      - python-setuptools
+    state: latest
+    update_cache: true
+  tags:
+    - roce_pip
+
+- pip:
+    name: openshift
+  tags: 
+    - roce_k8s
+
+- name: check for module openshift
+  python_requirements_facts:
+    dependencies: 
+      - openshift
+  tags: 
+    - roce_k8s
+    
+#Create configmap for SRIOV device plugin    
+
+- name: create configmap
+  k8s:
+    state: present
+    definition:
+      kind: ConfigMap
+      apiVersion: v1
+      metadata:
+        name: sriovdp-config
+        namespace: kube-system
+      data:
+        config.json: "{{ lookup('template', 'config_dp.j2') | from_yaml | to_nice_json }}"
+  run_once: true
+  tags: 
+    - roce_j2
+
+#Install DP and CNI's
+
+- name: Install Universal SR-IOV device plugin
+  k8s:
+    state: present
+    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/intel/sriov-network-device-plugin/master/images/sriovdp-daemonset.yaml', split_lines=False) }}"
+  run_once: true          
+  tags: 
+    - roce_k8s
+- name: Install SR-IOV CNI 
+  k8s:
+    state: present
+    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/intel/sriov-cni/master/images/sriov-cni-daemonset.yaml', split_lines=False) }}"
+  run_once: true
+  tags: 
+    - roce_k8s
+- name: Install DHCP CNI 
+  k8s:
+    state: present
+    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/Mellanox/dhcp-cni/master/dhcp-cni-ds.yaml', split_lines=False) }}"
+  run_once: true  
+  tags: 
+    - roce_k8s
+
+#Update Multus to latest version
+    
+- name: Multus update
+  k8s:
+    state: present
+    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/intel/multus-cni/master/images/multus-daemonset.yml', split_lines=False) }}"
+  run_once: true
+  tags:
+    - roce_k8s
+- pause:
+    minutes: 1
+  tags:
+    - roce_k8s      
+    
+#Create Network Attach Definitions
+   
+- name: Add NetworkAttachmentDefinition
+  include_tasks: nad4roce.yaml
+  with_items: "{{ sriov_resources }}"  
+  tags: 
+    - roce_k8s
+    
+#Install MPI Operator:latest
+    
+- name: Install Kubeflow MPI-Operator version v1alpha2
+  k8s:
+    state: present
+    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/kubeflow/mpi-operator/master/deploy/mpi-operator.yaml', split_lines=False) }}"
+  run_once: true
+  tags:    
+    - roce_k8s  
+    

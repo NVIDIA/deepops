@@ -1,0 +1,17 @@
+---
+- name: "Check activation"
+  register: result
+  shell: "grep -i {{ item.pf_name }} /etc/rc.local"
+  failed_when: result.rc == 2
+  tags: roce_host
+
+- name: VF activation
+  shell: |
+    echo {{ num_vf|int }} > /sys/class/net/{{ item.pf_name }}/device/sriov_numvfs
+    echo "echo {{ num_vf|int }} > /sys/class/net/{{ item.pf_name }}/device/sriov_numvfs" >> /etc/rc.local
+  args:
+    executable: /bin/bash
+    warn: no  
+  when: result.rc > 0
+  tags: roce_host
+
