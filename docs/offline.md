@@ -4,7 +4,10 @@ Building DeepOps Offline
 ## UNDER CONSTRUCTION
 
 This feature is currently incomplete and in development.
-Currently only CentOS is targeted for offline support.
+
+- Currently only CentOS is targeted for offline support.
+- DGXie and PXE containers are not yet supported.
+- Limited support for optional features (e.g. deployments in the `scripts/` directory).
 
 ## Dependencies for an offline build
 
@@ -65,6 +68,36 @@ You don't need to have any of the images for these containers downloaded in adva
 The necessary images will be imported as part of the setup process.
 To configure this process and enable or disable some services, see `roles/offline-repo-mirrors/defaults/main.yml`.
 
-## Performing an offline build
+## Building a DeepOps cluster offline
 
-TBD
+The primary difference between an "offline" build and an "online" one is what upstream servers it uses to download its software.
+In order to build DeepOps on a network without access to the Internet, you have to ensure that the Ansible playbooks and other scripts used to set up the cluster know where to find the software they need to install.
+We do this by overriding a collection of Ansible variables and environment variables used by DeepOps to control the download locations.
+
+### Specifying mirror locations
+
+1. Edit `config/offline_repo_vars.yml` file to specify your repository mirror locations for Ansible.
+    1. If you have set up a mirror server using the instructions above, you should be able to edit just the deepops_mirror_host` variable to point to the correct host.
+    1. If you are using different locations or port numbers for some or all of the mirrors, you should edit the variables for particular types of mirrors, e.g. `deepops_docker_mirror` or `deepops_charts_mirror`.
+        Note that some file downloads are not part of any particular type of repository; those files will be downloaded from `deepops_misc_mirror`.
+    1. If you need to specify particular locations for some downloads or container names, you can specify those individually in the rest of the file.
+        For example, `etcd_image_repo` specifies where to find the Docker image for `etcd`, and can be specified individually if it is not available in the larger Docker mirror.
+1. Edit the `config/offline_repo_shell_vars.sh` file to specify the locations of repos used by the deployment shell scripts.
+    E.g., `DEEPOPS_MISC_MIRROR` or `DEEPOPS_DOCKER_REGISTRY`.
+    As with the Ansible vars file, you can also edit the individual download location variables, such as `DOCKER_COMPOSE_URL`.
+
+### Using the mirror locations
+
+1. Source the `config/offline_repo_shell_vars.sh` file in your local environment.
+    This should correctly override download locations in any supported shell scripts.
+    ```
+    $ source config/offline_repo_shell_vars.sh
+    ```
+1. When running `ansible-playbook`, specify the `config/offline_repo_vars.yml` file as an "extra vars" file. E.g.,
+    ```
+    $ ansible-playbook -e @config/offline_repo_vars.yml playbooks/k8s-cluster.yml
+    ```
+1. If your hosts are not already configured to use local mirrors for the CentOS Yum repositories, you will need to do so before running other playbooks. You can configure them to use the DeepOps-configured Yum mirror using the following convenience playbook:
+    ```
+    $ ansible-playbook -e @config/offline_repo_vars.yml playbooks/use-offline-yum-mirrors.yml
+    ```

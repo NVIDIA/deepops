@@ -1,30 +1,49 @@
-# sudo docker run --rm -ti --net=host --privileged -v /mnt/:/iso:ro -e HOST_INT_PUB=ens160 -e HOST_INT_PRV=ens192 -e DEFAULT=DGX --name dgxie dgxie
+# sudo docker run --rm -ti --net=host --privileged -v /mnt/:/iso:ro -e HOST_INT_PUB=ens160 -e HOST_INT_PRV=ens192 --name dgxie dgxie
 # sudo docker run -d --name nfs --privileged --net=host -v /home/ubuntu/:/master -e SHARED_DIRECTORY=/master nfs-server:latest
-version: '3'
+version: '3.4'
 services:
     dgxie:
-        build: ~/dgxie
+        build:
+            context: .
+            network: "host"
         network_mode: "host"
         privileged: true
         volumes:
-            - /mnt/3.1.2:/iso:ro
+            - ${DATA_DIR}:/data:ro     # path to ISO files
+            - ../../config/pxe/machines:/etc/machines:ro
+            - ../../config/pxe/dnsmasq.extra.conf:/etc/dnsmasq.d/dnsmasq.extra.conf:ro
         environment:
-            - HOST_INT_PUB=eno1
-            - HOST_INT_PRV=enxa0cec820063a
-            - DEFAULT=DGX
-            #- IP=192.168.1.1
-            #- NETWORK=192.168.1.0
-            #- NETMASK=255.255.255.0
-            #- GATEWAY=192.168.1.1
-            #- DNS1=8.8.8.8
-            #- DNS2=8.8.4.4
-            #- DHCP_START=192.168.1.2
-            #- DHCP_END=192.168.254
+            - DHCP_ENABLE=${DHCP_ENABLE}
+            - DHCP_INT=${DHCP_INT}
+            - NETWORK=${NETWORK}
+            - NETMASK=${NETMASK}
+            - GATEWAY=${GATEWAY}
+            - DNS1=${DNS1}
+            - DNS2=${DNS2}
+            - DHCP_START=${DHCP_START}
+            - DHCP_END=${DHCP_END}
+            - LEASETIME=${LEASETIME}
+            - DOMAIN=${DOMAIN}
+            - NTP=${NTP}
+            - NAT_ENABLE=${NAT_ENABLE}
+            - NAT_INT_PUB=${NAT_INT_PUB}
+            - NAT_INT_PRV=${NAT_INT_PRV}
+            - HTTP_INT=${HTTP_INT}
+            - HTTP_PORT=${HTTP_PORT}
+            - DGX_INT=${DGX_INT}
+            - DGX_DISK=${DGX_DISK}
+            - DGX_KBD=${DGX_KBD}
+            - DGX_KERN_EXTRA=${DGX_KERN_EXTRA}
+            - DGX_EXTRA_PACKAGES=${DGX_EXTRA_PACKAGES}
+            - DGX_HTTPS_PROXY=${DGX_HTTPS_PROXY}
+            - VMW_NFS_IP=${VMW_NFS_IP}
+            - VMW_GPU_VIB=${VMW_GPU_VIB}
+            - VMW_VM_SIZE=${VMW_VM_SIZE}
     nfs-server:
-        build: ~/nfs-server
+        image: itsthenetwork/nfs-server-alpine:latest
         network_mode: "host"
         privileged: true
         volumes:
-            - ~:/shared
+            - ${DATA_DIR}:/shared
         environment:
             - SHARED_DIRECTORY=/shared

@@ -21,13 +21,12 @@
 
 # Slurm job scheduler configuration
 #slurm_user_home: /local/slurm
-#slurm_manage_gpus: no
+#slurm_manage_gpus: true
 #slurm_cluster_name: deepops
 #slurm_username: slurm
 #slurm_password: ReplaceWithASecurePasswordInTheVault
 #slurm_db_username: slurm
 #slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
-#slurm_exclusive: "NO"
 #slurm_max_job_timelimit: INFINITE
 #slurm_default_job_timelimit:
 
@@ -68,7 +67,19 @@
 #software_remove_packages:
 #  - popularity-contest
 
-#Uncomment the following three lines to use the Mellanox RoCE high-speed backend
-#kube_network_plugin: flannel
-#kube_network_plugin_multus: true
-#roce_backend: true
+# Set /etc/rc.local contents. Use playbooks/rc-local.yml
+# rc_local_contents: |
+#   echo foo
+#   echo bar
+
+# users configuration
+# create user `nvidia` with password `deepops` on all nodes
+# run with users.yml playbook
+users:
+  - username: nvidia
+    name: nvidia
+    password: $6$IrxI27V4ogJFfgTV$RvNskQFvXZzE9AFsIokuXKwDAyqs9Jd03Trfi7DsHoCyllK79/zhAciZPENt4.2uRNMR0gE6.mRD/o9jP7WcZ.
+    groups: ['sudo']
+    uid: 10007
+    home: /home/nvidia
+

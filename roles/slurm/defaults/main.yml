@@ -1,12 +1,12 @@
 epel_baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"
 epel_gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
 
-slurm_xenial_deb_url: "https://github.com/lukeyeager/ubuntu-slurm/releases/download/docker-1.3/slurm_18.08.5-2-xenial_amd64.deb"
-slurm_bionic_deb_url: "https://github.com/lukeyeager/ubuntu-slurm/releases/download/docker-1.3/slurm_18.08.5-2-bionic_amd64.deb"
-
 slurm_pkg_url: "https://github.com/DeepOps/slurm/releases/download/"
+slurm_xenial_deb: slurm_19.05.0-xenial_amd64.deb
+slurm_bionic_deb: slurm_19.05.0-bionic_amd64.deb
+slurm_rhel_rpm: slurm-19.05.0_7-1.x86_64.rpm
 
-slurm_pkg_tag: docker-1.4
+slurm_pkg_tag: v1.5
 
 slurm_cluster_name: deepops
 slurm_username: slurm
@@ -28,13 +28,12 @@ slurm_return_to_service: 1
 
 # Sets: GresTypes=gpu
 # Sets: Gres=gpu:{{ gpu_topology|count }}
-# Default: no
-slurm_manage_gpus: no
+slurm_manage_gpus: true
 
 # Controls the ability of the partition to execute more than one job at a time on each resource (node, socket or core depending upon the value of SelectTypeParameters). If resources are to be over-subscribed, avoiding memory over-subscription is very important. SelectTypeParameters should be configured to treat memory as a consumable resource and the --mem option should be used for job allocations. Sharing of resources is typically useful only when using gang scheduling (PreemptMode=suspend,gang). Possible values for OverSubscribe are "EXCLUSIVE", "FORCE", "YES", and "NO". Note that a value of "YES" or "FORCE" can negatively impact performance for systems with many thousands of running jobs. The default value is "NO". For more information see the following web pages: 
-# Sets: OverSubscribe=EXCLUSIVE
-# Default: NO
-slurm_exclusive: "EXCLUSIVE"
+# Sets partition OverSubscribe
+# To avoid sharing nodes, set to "EXCLUSIVE"
+slurm_oversubscribe: "NO"
 
 # Maximum run time limit for jobs. Format is minutes, minutes:seconds, hours:minutes:seconds, days-hours, days-hours:minutes, days-hours:minutes:seconds or "UNLIMITED". Time resolution is one minute and second values are rounded up to the next minute. This limit does not apply to jobs executed by SlurmUser or user root.
 # Sets: MaxTime={{ slurm_max_job_timelimit }}

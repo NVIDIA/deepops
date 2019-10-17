@@ -1,0 +1,30 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: create /etc/rc.local on Ubuntu
+      lineinfile:
+        path: /etc/rc.local
+        line: '#!/bin/sh -e'
+        insertbefore: BOF
+        mode: 0755
+        create: yes
+      when: ansible_distribution == "Ubuntu"
+    - name: manage /etc/rc.d/rc.local permissions on RHEL/CentOS
+      file:
+        path: /etc/rc.d/rc.local
+        mode: 0755
+      when: ansible_os_family == "RedHat"
+    - name: manage /etc/rc.local contents
+      blockinfile:
+        path: /etc/rc.local
+        block: |
+          {{ rc_local_contents | default('# ansible: rc_local_contents undefined') }}
+        insertbefore: "^exit 0"
+        mode: 0755
+        create: yes
+    - name: manage rc-local service
+      systemd:
+        name: rc-local
+        state: started
+        enabled: yes

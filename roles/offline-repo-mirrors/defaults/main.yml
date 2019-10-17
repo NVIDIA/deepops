@@ -13,7 +13,7 @@ deepops_dest_group: "root"
 # DeepOps repository
 deepops_repo_url: "https://github.com/NVIDIA/deepops"
 deepops_repo_dest_path: "{{ deepops_dest_path }}/deepops-repo"
-deepops_centos_slurm_url: "https://github.com/DeepOps/slurm/releases/download/docker-1.4/slurm-18.08.5_2_7-1.x86_64.rpm"
+deepops_centos_slurm_url: "https://github.com/DeepOps/slurm/releases/download/1.4/slurm-18.08.5_2_7-1.x86_64.rpm"
 
 # Flags for downloading content
 download_yum_repos: yes
@@ -274,6 +274,11 @@ docker_image_list:
   image: "prometheus/prometheus"
   version: "v2.2.1"
 
+- name: "local-volume-provisioner"
+  repo: "quay.io/"
+  image: "external_storage/local-volume-provisioner"
+  version: "v2.1.0"
+
 - name: "ceph"
   repo: ""
   image: "rook/ceph"
@@ -297,6 +302,61 @@ docker_image_list:
 - name: "pypiserver"
   repo: ""
   image: "pypiserver/pypiserver"
+  version: "latest"
+
+- name: "cuda"
+  repo: "nvcr.io/"
+  image: "nvidia/cuda"
+  version: "9.2-base-centos7"
+
+- name: "pytorch"
+  repo: "nvcr.io/"
+  image: "nvidia/pytorch"
+  version: "19.02-py3"
+
+- name: "cuda-sample"
+  repo: "nvcr.io/"
+  image: "nvidia/k8s/cuda-sample"
+  version: "nbody"
+
+- name: "cuda-10.0-devel"
+  repo: "nvcr.io/"
+  image: "nvidia/cuda"
+  version: "10.0-devel"
+
+- name: "tensorflow"
+  repo: ""
+  image: "tensorflow/tensorflow"
+  version: "latest"
+
+- name: "ubuntu"
+  repo: ""
+  image: "ubuntu"
+  version: "18.04"
+
+- name: "ubuntu"
+  repo: ""
+  image: "ubuntu"
+  version: "16.04"
+
+- name: "golang"
+  repo: ""
+  image: "golang"
+  version: "1.10.2"
+
+- name: "alpine"
+  repo: ""
+  image: "alpine"
+  version: "3.6"
+
+- name: "danderson-pixiecore"
+  repo: ""
+  image: "danderson/pixiecore"
+  version: "latest"
+
+- name: "deepops-pixiecore"
+  repo: ""
+  image: "deepops/pixiecore"
   version: "latest"
 
 # Specific images we need to reference later
@@ -333,6 +393,7 @@ pip_package_list:
 - name: "openshift"
 - name: "pip"
 - name: "setuptools"
+- name: "Jinja2"
 
 pip_port: 8003
 pip_src_path: "{{ extract_path }}/pip"

@@ -1,0 +1,16 @@
+---
+- name: install systemd unit file
+  template:
+    src: templates/docker.dcgm-exporter.service.j2
+    dest: "/etc/systemd/system/{{ nvidia_dcgm_svc_name }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: configure service
+  systemd:
+    name: "{{ nvidia_dcgm_svc_name }}"
+    state: "{{ nvidia_dcgm_state }}"
+    enabled: "{{ nvidia_dcgm_enabled }}"
+    daemon_reload: yes
+  notify: restart dcgm
