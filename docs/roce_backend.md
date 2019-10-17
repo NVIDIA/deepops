@@ -23,30 +23,30 @@ The settable variables for the role must be provided in vars/main.yml.
 
 1. SR-IOV resources for high-performance POD network interfaces.
 Each section of sriov_resources must have: 
-	pf_name – physical adapter interface name
-	vlan_id – VLAN ID for virtual function interfaces
-	res_name – resource pool name 
-	network_name – network name for annotation in POD YAML configuration 
+	pf_name â€“ physical adapter interface name
+	vlan_id â€“ VLAN ID for virtual function interfaces
+	res_name â€“ resource pool name 
+	network_name â€“ network name for annotation in POD YAML configuration 
 
 Below provided sriov_resources example for four interfaces.
 
 sriov_resources:
-  - pf_name: ens9f0
-    vlan_id: 111
-    res_name: "sriov_111"
-    network_name: sriov111
-  - pf_name: ens10f0
-    vlan_id: 112
-    res_name: "sriov_112"
-    network_name: sriov112
-  - pf_name: ens11f0
-    vlan_id: 113
-    res_name: "sriov_113"
-    network_name: sriov113
-  - pf_name: ens12f0
-    vlan_id: 114
-    res_name: "sriov_114"
-    network_name: sriov114
+  - pf_name: ens9f0  
+    vlan_id: 111    
+    res_name: "sriov_111"    
+    network_name: sriov111    
+  - pf_name: ens10f0  
+    vlan_id: 112    
+    res_name: "sriov_112"    
+    network_name: sriov112    
+  - pf_name: ens11f0  
+    vlan_id: 113    
+    res_name: "sriov_113"    
+    network_name: sriov113    
+  - pf_name: ens12f0  
+    vlan_id: 114    
+    res_name: "sriov_114"    
+    network_name: sriov114    
 
 2. Hardware adapter vendor - vendor. Default - 15b3.
 
@@ -106,6 +106,8 @@ BSD
 Author Information
 ------------------
 author: Vitaliy Razinkov
+
 email: vitaliyra@mellanox.com
+
 company: Mellanox Technologies
 
