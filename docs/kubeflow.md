@@ -28,3 +28,9 @@ Deploy Kubeflow:
 ```
 
 See the [install docs](https://www.kubeflow.org/docs/started/k8s/overview/) for additional install configuration options.
+
+Deploy older version of Kubeflow with built-in NGC support:
+
+```sh
+./scripts/k8s_deploy_kubeflow.v0.5.1.sh
+```
