@@ -1,0 +1,11 @@
+#
+# playbook to install the lmod tool to manage software packages/modules: 
+#
+---
+- hosts: slurm-master
+  roles:
+    - { role: lmod }
+
+- hosts: slurm-node
+  roles:
+    - { role: lmod }
