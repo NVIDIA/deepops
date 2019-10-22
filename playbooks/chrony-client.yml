@@ -1,0 +1,10 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Configure Chrony client
+      include_role:
+        name: unxnn.chrony
+
+    - name: Set timezone
+      shell: "timedatectl set-timezone {{ chrony_timezone }}"
