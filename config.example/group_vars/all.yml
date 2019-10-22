@@ -11,6 +11,8 @@
 
 # NTP configuration
 #chrony_timezone: "Asia/Dubai"
+#chrony_config_server:
+#  - 0.pool.ntp.org
 
 # Kerberos configuration
 #kerberos_client_realm_name: "example.com"
