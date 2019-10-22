@@ -42,3 +42,10 @@
     dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-nvidia-fw.log"
     flat: yes
   ignore_errors: yes
+
+- name: Copy ib/mlx to local machine
+  fetch:
+    src: "{{ nv_diag_dir }}.{{ hostname.stdout }}.log"
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-ib-mlx.log"
+    flat: yes
+  ignore_errors: yes

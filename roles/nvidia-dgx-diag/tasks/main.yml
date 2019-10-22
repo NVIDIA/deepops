@@ -7,5 +7,6 @@
 - include: load-image.yml
 - include: get-firmware.yml
 - include: get-health.yml
+- include: get-ib.yml
 - include: transfer-logs.yml
 - include: clean.yml
