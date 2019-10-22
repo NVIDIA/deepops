@@ -10,7 +10,7 @@
 #nis_server: 10.0.0.1
 
 # NTP configuration
-#chrony_timezone: "Asia/Dubai"
+#chrony_timezone: "America/Los_Angeles"
 #chrony_config_server:
 #  - 0.pool.ntp.org
 
