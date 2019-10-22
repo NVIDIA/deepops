@@ -1,0 +1,19 @@
+---
+
+# The Docker repo name
+firmware_update_repo: nvfw-dgx2
+
+# The Docker tag
+firmware_update_tag: 19.09.3
+
+# firmware update container to use.
+firmware_update_container: "{{ firmware_update_repo }}_{{ firmware_update_tag }}.tar.gz"
+
+# default log directory is set to the location of your inventory file, i.e. the root of this repository
+local_log_directory: "{{ inventory_dir }}"
+
+# Remote directory to save misc. temporary logs to
+nv_diag_dir: "/tmp/nv-diag"
+
+# The OS/mgmt interface on the server
+nv_mgmt_interface: enp134s0f0

@@ -1,0 +1,17 @@
+---
+
+- name: Remove firmware container image
+  command: "docker rmi -f {{ firmware_update_repo }}:{{ firmware_update_tag }}"
+  ignore_errors: yes
+
+- name: Remove firmware image tarbal
+  command: "rm {{ nv_diag_dir}}/{{ firmware_update_container }}"
+  ignore_errors: yes
+
+- name: Remove dump tarball
+  command: "rm {{ nv_diag_dir }}/{{ nvsm_dump_file.stdout }}"
+  changed_when: False
+
+- name: Remove diagnostic directory
+  command: "rm -rf {{ nv_diag_dir }}"
+

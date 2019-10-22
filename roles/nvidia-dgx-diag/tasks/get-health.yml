@@ -1,0 +1,11 @@
+---
+- name: Run NVSM human-readable health show
+  shell: "nvsm show health > {{ nv_diag_dir }}/nvsm-show-health.log"
+  become: yes
+  changed_when: False
+
+- name: Run NVSM dump health
+  shell: "nvsm dump health"
+  become: yes
+  changed_when: False
+
