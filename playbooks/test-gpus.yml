@@ -1,0 +1,65 @@
+---
+# This playbook will download/build several repos+containers. It will then run them against a cluster to stress the system and give some performance numbers.
+# These tests should run on any GPU system
+
+# set gpu_test_build to no if pre-built samples are on a nfs
+- hosts: all
+  gather_facts: no
+  vars:
+    gpu_test_cuda_dir: "/tmp/cuda-samples"
+    gpu_test_samples_dir: "{{ gpu_test_cuda_dir }}/Samples"
+    gpu_test_build: yes
+    gpu_p2p_min: 266.0
+
+  tasks:
+    - name: download cuda samples
+      git:
+        repo: https://github.com/NVIDIA/cuda-samples.git
+        clone: yes
+        dest: "{{ gpu_test_cuda_dir }}"
+      when: gpu_test_build
+
+    - name: make p2p
+      shell: "cd {{ gpu_test_samples_dir }}/p2pBandwidthLatencyTest && make"
+      ignore_errors: yes
+      when: gpu_test_build
+
+    - name: make matrixMul
+      shell: "cd {{ gpu_test_samples_dir }}/matrixMul && make"
+      ignore_errors: yes
+      when: gpu_test_build
+
+    # Look for " Bidirectional P2P=Enabled Bandwidth Matrix (GB/s)" Speed should be ~260 for gpu to gpu and ~800 within a gpu
+    - name: run p2p test
+      shell: "{{ gpu_test_samples_dir }}/p2pBandwidthLatencyTest/p2pBandwidthLatencyTest"
+      register: p2p
+
+    - name: run matrixmul test
+      shell: "{{ gpu_test_samples_dir }}/matrixMul/matrixMul -wA=4096 -hA=4096 -wB=4096 -hB=4096"
+      register: matrixmul
+    
+    - name: run dcgm diag for around 15 minutes
+      shell: "dcgmi diag -r 3"
+
+    # Note, this may fail to run depending on Ansible settings
+    - name: run TF training job
+      shell: "docker run --runtime=nvidia --rm -it nvcr.io/nvidia/tensorflow:18.07-py3 mpiexec --allow-run-as-root --bind-to socket -np 16 python /opt/tensorflow/nvidia-examples/cnn/resnet.py --layers=50 --precision=fp16 --batch_size=512"
+      
+    # We ignore errors here to show as many results as possible, this error checking is primarily valid for DGX2 systems
+    - name: Get p2p bidirectional results
+      shell: "echo {{ p2p.stdout }} | grep 'Bidirectional P2P=Enabled Bandwidth Matrix' -A 17 | sed 's/        1/         /g' | cut -d ' ' -f11- | tail -n 16"
+      register: p2p_results
+      ignore_errors: yes
+    - name: Report on p2p bidirectional results
+      debug:
+        msg: "{{ p2p_results.stdout }}"
+
+    - name: Report on matrixmul results
+      debug:
+        msg: "{{ matrixmul.stdout }}"
+
+
+
+
+
+
