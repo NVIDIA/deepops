@@ -1,0 +1,145 @@
+#
+# an ansible role to install easy_build.
+#
+# - name: "checking tmp directories"
+#   stat:
+#     path: "{{ eb_tmp_dir }}"
+#   register: folder_stats
+    
+# - name: "creating tmp folders"    
+#   file: 
+#     path: "{{ item.item }}"
+#     state: directory
+#     force: yes
+#     recurse: yes
+#     mode: 'u=rwx,g=rwx,o=rx' 
+#   when: item.stat.exists == false
+#   with_items:
+#     - "{{ folder_stats.results }}"
+---
+- name: "install needed packages"
+  become: yes
+  action: apt name=python-setuptools state=latest
+  when: ansible_os_family == "Debian"
+
+- name: "install needed packages"
+  become: yes
+  action: yum name=python-setuptools state=latest
+  when: ansible_os_family == "RedHat"
+
+- name: "rm previous tmp folders"    
+  file: 
+    path: "{{ eb_tmp_dir }}"
+    state: absent
+    force: yes
+
+- name: "rm EasyBuild software"
+  file: path="{{ software_path }}/EasyBuild" state=absent force=yes
+
+- name: "rm EasyBuild profile file"
+  become: yes
+  file: path="/etc/profile.d/z01_eb.sh" state=absent force=yes
+  when: ansible_os_family == "Debian"
+
+- name: "rm EasyBuild profile file"
+  become: yes
+  file: path="/etc/profile.d/z01_eb.csh" state=absent force=yes
+  when: ansible_os_family == "RedHat"
+
+- name: "rm EasyBuild module"
+  file: path={{ modulepath }}/EasyBuild state=absent force=yes
+
+- name: "mkdir tmp folders"    
+  file: 
+    path: "{{ eb_tmp_dir }}"
+    state: directory
+    force: yes
+    recurse: yes
+    mode: 'u=rwx,g=rwx,o=rx'
+  #delegate_to: 127.0.0.1
+
+- name: "mkdir required directories"
+  file: path={{ item }} state=directory recurse=yes #mode='u=rwx,g=rwx,o=rx' 
+  with_items:
+    - "{{ modulepath }}"
+    - "{{ software_path }}"
+  #delegate_to: 127.0.0.1
+
+- name: "download bootstrap script"
+  get_url: url="{{ item.url }}" dest="{{ item.dest }}" mode='u=rwx,g=rwx,o=rx' force=yes
+  with_items:
+    - url: "{{ eb_bootstrap_url }}" 
+      dest: '/tmp'
+#
+# Ansible doesn't run task in a login shell, so we have to source the
+# EasyBuild config manually. We might want to create some abstraction for this.
+# 
+- name: "install latest EasyBuild version"
+  shell: . /etc/profile && python /tmp/bootstrap_eb.py {{ eb_tmp_dir }}
+  args:
+    executable: /bin/bash
+
+- name: "stat EasyBuild software"
+  stat: path="{{ eb_tmp_dir }}/software/EasyBuild"
+  register: ebsw_stat
+
+- name: "get EasyBuild version"
+  become: yes
+  shell: ls {{ eb_tmp_dir }}/software/EasyBuild/
+  args:
+    executable: /bin/bash
+
+  register: ebsw_version
+  when: ebsw_stat.stat.exists
+
+- name: "patch EasyBuild module"
+  lineinfile:
+    dest: "{{ eb_tmp_dir }}/modules/all/EasyBuild/{{ ebsw_version.stdout }}.lua"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - regexp: '^local root .*$'
+      line: 'local root = "{{ software_path }}/EasyBuild/{{ ebsw_version.stdout }}"'
+
+# - name: "check EasyBuild software"
+#   stat: path="{{ software_path }}/EasyBuild/{{ ebsw_version.stdout }}"
+#   register: swpath_stat
+
+- name: "cp EasyBuild software"
+  command: cp -R "{{ eb_tmp_dir }}/software/EasyBuild" "{{ software_path }}"
+#  when: ebsw_stat.stat.exists
+
+# - name: "check EasyBuild module"
+#   stat: path="{{ modulepath }}/{{ ebsw_version.stdout }}.lua"
+#   register: mdpath_stat
+
+- name: "cp EasyBuild module"
+  command: cp -R "{{ eb_tmp_dir }}/modules/all/EasyBuild" "{{ modulepath }}"
+#  when: ebsw_stat.stat.exists
+
+- name: "rm EasyBuild tmp directories"
+  file: path={{ eb_tmp_dir }} state=absent force=yes
+
+- name: "configure sh profile"
+  become: yes
+  template:
+    src: templates/z01_eb.sh
+    dest: /etc/profile.d
+    owner: root
+    group: root
+    mode: 0777
+  when: ansible_os_family == "Debian"
+  tags:
+    - configuration
+
+- name: "configure csh profile"
+  become: yes
+  template:
+    src: templates/z01_eb.csh
+    dest: /etc/profile.d
+    owner: root
+    group: root
+    mode: 0777
+  when: ansible_os_family == "RedHat"
+  tags:
+    - configuration

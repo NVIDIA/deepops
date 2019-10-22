@@ -1,0 +1,7 @@
+#
+# install easy_build.
+#
+---
+- hosts: slurm-master
+  roles:
+    - { role: easy-build }
