@@ -1,0 +1,15 @@
+is_head: no
+is_compute: no
+
+eb_packages_path: "{{ eb_prefix_path}}/ebfiles_repo"
+eb_packages:
+    - binutils-2.30
+    - GCC-7.3.0-2.30
+    - CUDA-10.0.130
+    - ncurses-6.0-GCC-7.3.0-2.30
+    - CMake-3.13.1-GCC-7.3.0-2.30
+    - hwloc-1.11.10-GCC-7.3.0-2.30
+    - hwloc-1.11.3-GCC-7.3.0-2.30
+    - libevent-2.1.10-GCC-7.3.0-2.30
+    - pmix-3.1.3-GCC-7.3.0-2.30
+    - OpenMPI-3.1.4-GCC-7.3.0-2.30-CUDA-10.0.130

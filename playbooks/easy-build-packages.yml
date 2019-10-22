@@ -1,0 +1,7 @@
+#
+# Install packages using EasyBuild.
+#
+---
+- hosts: slurm-master
+  roles:
+    - role: easy-build-packages

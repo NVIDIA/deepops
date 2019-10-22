@@ -1,0 +1,29 @@
+#
+# install packages using EasyBuild.
+#
+---
+#- name: "change the ownership of the software and modules directories"
+#  become: yes
+#  file:
+#    path: "{{ item }}"
+#    owner: "{{ ansible_user }}"
+#  with_items:
+#    - "{{ eb_modulepath }}"
+#    - "{{ eb_software_path }}"
+#    - "{{ eb_modulepath_root }}"
+
+- name: "install depending software"
+  become: true
+  apt:
+    name:
+      - libssl-dev
+      - build-essential
+      - libsysfs-dev
+      - libibverbs-dev
+
+- name: "install the eb packages"
+  shell: . /etc/profile.d/z00_lmod.sh && . /etc/profile.d/z01_eb.sh && eb --parallel=48 "{{ eb_packages_path }}/{{ item }}.eb" --robot
+  with_items:
+    - "{{ eb_packages }}"
+  args:
+    executable: /bin/bash
