@@ -1,0 +1,24 @@
+---
+# set build to no if pre-built samples are on a nfs
+- hosts: slurm-node
+  gather_facts: no
+  vars:
+    logfile: /tmp/ib_diags
+  tasks:
+    - name: get hostname
+      shell: hostname
+      register: hostname
+
+    - name: check mlxconfig
+      become: yes
+      shell: "mlxconfig query  | egrep -e Device\|LINK_TYPE_P1\|LINK_TYPE_P2"
+      register: mlx_config
+
+    - name: check ibstat
+      become: yes
+      shell: "ibstat | egrep -e mlx\|Link"
+      register: ibstat
+
+    - local_action: shell echo "{{ hostname.stdout }}" >> "{{ logfile }}.{{ hostname.stdout }}.log"
+    - local_action: shell echo "{{ mlx_config.stdout }}" >> "{{ logfile }}.{{ hostname.stdout }}.log"
+    - local_action: shell echo "{{ ibstat.stdout }}" >> "{{ logfile }}.{{ hostname.stdout }}.log"
