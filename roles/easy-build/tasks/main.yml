@@ -34,7 +34,7 @@
     force: yes
 
 - name: "rm EasyBuild software"
-  file: path="{{ software_path }}/EasyBuild" state=absent force=yes
+  file: path="{{ eb_software_path }}/EasyBuild" state=absent force=yes
 
 - name: "rm EasyBuild profile file"
   become: yes
@@ -47,7 +47,7 @@
   when: ansible_os_family == "RedHat"
 
 - name: "rm EasyBuild module"
-  file: path={{ modulepath }}/EasyBuild state=absent force=yes
+  file: path={{ eb_modulepath }}/EasyBuild state=absent force=yes
 
 - name: "mkdir tmp folders"    
   file: 
@@ -61,8 +61,8 @@
 - name: "mkdir required directories"
   file: path={{ item }} state=directory recurse=yes #mode='u=rwx,g=rwx,o=rx' 
   with_items:
-    - "{{ modulepath }}"
-    - "{{ software_path }}"
+    - "{{ eb_modulepath }}"
+    - "{{ eb_software_path }}"
   #delegate_to: 127.0.0.1
 
 - name: "download bootstrap script"
@@ -99,22 +99,22 @@
     line: "{{ item.line }}"
   with_items:
     - regexp: '^local root .*$'
-      line: 'local root = "{{ software_path }}/EasyBuild/{{ ebsw_version.stdout }}"'
+      line: 'local root = "{{ eb_software_path }}/EasyBuild/{{ ebsw_version.stdout }}"'
 
 # - name: "check EasyBuild software"
-#   stat: path="{{ software_path }}/EasyBuild/{{ ebsw_version.stdout }}"
+#   stat: path="{{ eb_software_path }}/EasyBuild/{{ ebsw_version.stdout }}"
 #   register: swpath_stat
 
 - name: "cp EasyBuild software"
-  command: cp -R "{{ eb_tmp_dir }}/software/EasyBuild" "{{ software_path }}"
+  command: cp -R "{{ eb_tmp_dir }}/software/EasyBuild" "{{ eb_software_path }}"
 #  when: ebsw_stat.stat.exists
 
 # - name: "check EasyBuild module"
-#   stat: path="{{ modulepath }}/{{ ebsw_version.stdout }}.lua"
+#   stat: path="{{ eb_modulepath }}/{{ ebsw_version.stdout }}.lua"
 #   register: mdpath_stat
 
 - name: "cp EasyBuild module"
-  command: cp -R "{{ eb_tmp_dir }}/modules/all/EasyBuild" "{{ modulepath }}"
+  command: cp -R "{{ eb_tmp_dir }}/modules/all/EasyBuild" "{{ eb_modulepath }}"
 #  when: ebsw_stat.stat.exists
 
 - name: "rm EasyBuild tmp directories"

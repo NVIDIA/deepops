@@ -50,6 +50,13 @@
 
 # Lmod modules
 #lmod_modulepath: /shared/modules/all
+#
+
+# EasyBuild path configuration
+eb_prefix_path: /mnt/software
+eb_modulepath: "{{ eb_prefix_path }}/modules/all"
+eb_software_path: "{{ eb_prefix_path }}/software"
+eb_modulepath_root: "{{ eb_prefix_path }}/modules"
 
 # Extra software to install via software.yml playbook
 #software_extra_packages:

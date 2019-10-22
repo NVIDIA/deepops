@@ -28,10 +28,10 @@ if ( ! $?MODULEPATH_ROOT ) then
     setenv LMOD_SETTARG_CMD     :
     setenv LMOD_COLORIZE        yes
     setenv LMOD_PREPEND_BLOCK   normal
-    setenv MODULEPATH_ROOT      "{{ modulepath_root }}"
+    setenv MODULEPATH_ROOT      "{{ eb_modulepath_root }}"
     # setenv MODULEPATH           `/usr/share/lmod/lmod/libexec/addto --append MODULEPATH $MODULEPATH_ROOT/$LMOD_sys $MODULEPATH_ROOT/Core`
     # setenv MODULEPATH           `/usr/share/lmod/lmod/libexec/addto --append MODULEPATH /usr/share/lmod/lmod/modulefiles/Core`
-    setenv MODULEPATH           "{{ modulepath }}"
+    setenv MODULEPATH           "{{ eb_modulepath }}"
     setenv MODULESHOME          "/usr/share/lmod/lmod"
     setenv BASH_ENV             "$MODULESHOME/init/bash"
 

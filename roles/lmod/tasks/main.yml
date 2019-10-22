@@ -13,10 +13,10 @@
   when: ansible_os_family == "RedHat"
 
 - name: "mkdir software path"
-  file: path={{ software_path }} state=directory
+  file: path={{ eb_software_path }} state=directory
 
 - name: "mkdir module path"
-  file: path={{ modulepath }} state=directory 
+  file: path={{ eb_modulepath }} state=directory 
 
 - name: "configure sh profile"
   become: yes

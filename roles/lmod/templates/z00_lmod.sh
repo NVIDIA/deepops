@@ -15,8 +15,8 @@ if [ $(id -u) -ne 0 ] ; then
     export LMOD_FULL_SETTARG_SUPPORT=no
     export LMOD_COLORIZE=yes
     export LMOD_PREPEND_BLOCK=normal
-    export MODULEPATH_ROOT="{{ modulepath_root }}"
-    export MODULEPATH="{{ modulepath }}"
+    export MODULEPATH_ROOT="{{ eb_modulepath_root }}"
+    export MODULEPATH="{{ eb_modulepath }}"
     export MODULESHOME=/usr/share/lmod/lmod
     export BASH_ENV=$MODULESHOME/init/bash
     #
