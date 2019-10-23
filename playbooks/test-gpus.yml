@@ -8,7 +8,7 @@
   vars:
     gpu_test_cuda_dir: "/tmp/cuda-samples"
     gpu_test_samples_dir: "{{ gpu_test_cuda_dir }}/Samples"
-    gpu_test_build: yes
+    gpu_test_build: no
     gpu_p2p_min: 266.0
   tasks:
     # Setting this to False for now because figuring out the proper toolkit to install and the proper build flags for the cuda samples is tricky
@@ -45,20 +45,31 @@
       register: matrixmul
       ignore_errors: yes
     
+    # -r 1 for quick system validation test, 2 for mediuem extended validation, 3 for long HW diagnostics/stress
     - name: run dcgm diag for around 15 minutes
       shell: "dcgmi diag -r 3"
       ignore_errors: yes
+      register: dcgm
 
     # Note, this may fail to run depending on Ansible settings
     - name: run TF training job
       shell: "docker run --runtime=nvidia --rm -it nvcr.io/nvidia/tensorflow:18.07-py3 mpiexec --allow-run-as-root --bind-to socket -np 16 python /opt/tensorflow/nvidia-examples/cnn/resnet.py --layers=50 --precision=fp16 --batch_size=512"
       ignore_errors: yes
+      register: tf
       
     # We ignore errors here to show as many results as possible, this error checking is primarily valid for DGX2 systems
     - name: Get p2p bidirectional results
       shell: "echo {{ p2p.stdout }} | grep 'Bidirectional P2P=Enabled Bandwidth Matrix' -A 17 | sed 's/        1/         /g' | cut -d ' ' -f11- | tail -n 16"
       register: p2p_results
       ignore_errors: yes
+
+    - name: Report on tf results
+      debug:
+        msg: "{{ tf.stdout }}"
+
+    - name: Report on p2p bidirectional results
+      debug:
+        msg: "{{ p2p.stdout }}"
     - name: Report on p2p bidirectional results
       debug:
         msg: "{{ p2p_results.stdout }}"
@@ -67,8 +78,6 @@
       debug:
         msg: "{{ matrixmul.stdout }}"
 
-
-
-
-
-
+    - name: Report on dcgm results
+      debug:
+        msg: "{{ dcgm.stdout }}"
