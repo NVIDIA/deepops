@@ -1,6 +1,6 @@
 ---
 # set gpu clocks on all worker nodes
-- hosts: slurm-node
+- hosts: compute-node
   gather_facts: no
   become: yes
   vars:
