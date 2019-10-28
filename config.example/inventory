@@ -77,6 +77,12 @@ slurm-perf-node
 #slurm-node
 
 ######
+# MAAS
+######
+[maas]
+#mgmt01
+
+######
 # SSH connection configuration
 ######
 [all:vars]

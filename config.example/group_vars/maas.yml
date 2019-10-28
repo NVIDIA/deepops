@@ -1,0 +1,18 @@
+---
+# defaults file for ansible-maas
+maas_adminusers:
+  - username: 'admin'
+    email: 'admin@{{ maas_dns_domain }}'
+    password: 'admin'
+maas_dns_domain: 'deepops.local'
+maas_region_controller: '192.168.1.1'
+maas_region_controller_url: 'http://{{ maas_region_controller }}:5240/MAAS'
+maas_repo: 'ppa:maas/stable'
+
+# Defines if maas user should generate ssh keys
+# Usable for remote KVM/libvirt power actions
+maas_setup_user: false
+
+maas_single_node_install: true
+
+maas_kvm: false
