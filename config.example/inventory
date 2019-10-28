@@ -64,13 +64,6 @@ slurm-perf-master
 slurm-perf-node
 
 ######
-# GENERIC COMPUTE NODES (DO NOT EDIT)
-######
-[compute-node:children]
-kube-node
-slurm-node
-
-######
 # NFS
 ######
 [nfs-server]
