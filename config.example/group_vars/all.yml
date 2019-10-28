@@ -1,6 +1,15 @@
 # Configuration common to all hosts
 # Define per-group or per-host values in the other configuration files
 
+# Docker config
+# Used by:
+#   playbooks/docker.yml
+#   playbooks/nvidia-docker.yml
+docker_daemon_json:
+  # Docker's default subnet is 172.17.0.0/16
+  # Pick a smaller subnet, which is also less likely to conflict with corporate addresses.
+  bip: 192.168.99.1/24
+
 # dns-config
 #dns_config_servers: [8.8.8.8]
 #dns_config_search: [example.com]
@@ -8,6 +17,11 @@
 # NIS configuration
 #nis_domain: example.com
 #nis_server: 10.0.0.1
+
+# NTP configuration
+#chrony_timezone: "America/Los_Angeles"
+#chrony_config_server:
+#  - 0.pool.ntp.org
 
 # Kerberos configuration
 #kerberos_client_realm_name: "example.com"
@@ -66,6 +80,11 @@
 
 #software_remove_packages:
 #  - popularity-contest
+
+# Set /etc/rc.local contents. Use playbooks/rc-local.yml
+# rc_local_contents: |
+#   echo foo
+#   echo bar
 
 # users configuration
 # create user `nvidia` with password `deepops` on all nodes

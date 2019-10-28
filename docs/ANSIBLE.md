@@ -120,6 +120,22 @@ _Debugging_
 
 Show host vars: `ansible all -m debug -a 'var=hostvars'`
 
+## Ansible Troubleshooting
+
+_SSH Connection_
+
+Ansible is configured by default in DeepOps to use SSH multiplexing to speed up connections. If a target system changes and you have a persistent connection (the default length is 30m), you may need to clean up the control socket to prevent connection errors:
+
+```
+find ~/.ssh -type s -delete
+```
+
+_Fact cache inconsistencies_
+
+By default Ansible caches facts about hosts for 24h to speed up provisioning. If a host's details change in that amount of time, you'll want to flush the fact cache so that Ansible will re-collect information about the host.
+
+Add the `--flush-cache` flag to any `ansible-playbook` run to flush the fact cache and force Ansible to re-learn host information.
+
 ## Reference Documentation
 
 Inventory reference: https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html
