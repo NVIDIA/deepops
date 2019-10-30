@@ -4,11 +4,36 @@
 import sys
 import click
 
+from deepops.repo import clone_repo
+
 
 @click.group()
 def main(args=None):
     """Top-level group for cli"""
     return 0
+
+
+#######################################################################
+# Repository management commands
+#######################################################################
+
+
+@main.group()
+def repo(args=None):
+    """Commands for managing the local copy of the DeepOps repo"""
+    return 0
+
+
+@repo.command()
+@click.option("--path", default=None)
+@click.option(
+    "--remote", default="https://github.com/NVIDIA/deepops", show_default=True
+)
+@click.option("--tag", default="master", show_default=True)
+@click.option("--force", is_flag=True)
+def clone(path, remote, tag, force):
+    """Clone DeepOps repository locally"""
+    clone_repo(repo_path=path, remote=remote, force=force, tag=tag)
 
 
 #######################################################################
