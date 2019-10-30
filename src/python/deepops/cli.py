@@ -5,6 +5,7 @@ import sys
 import click
 
 from deepops.repo import clone_repo, local_repo_path
+from deepops.deps import run_deepops_setup
 
 
 @click.group()
@@ -51,6 +52,12 @@ def show_path():
 def install(args=None):
     """Commands for installing DeepOps components"""
     return 0
+
+
+@install.command(name="deepops-dependencies")
+def deepops_deps():
+    click.echo("Installing DeepOps repo dependencies")
+    run_deepops_setup()
 
 
 @install.command(name="nvidia-driver")
