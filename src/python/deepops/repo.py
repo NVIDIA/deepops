@@ -1,17 +1,16 @@
 import os
 import subprocess
 import shutil
-from pathlib import Path
 
 import click
-from deepops import config
+from .config import get_config
 
 
 def local_repo_path():
     """Determine correct local path for DeepOps repository"""
     if os.environ.get("DEEPOPS_REPO_PATH"):
         return os.environ.get("DEEPOPS_REPO_PATH")
-    deepops_config = config.get_config()
+    deepops_config = get_config()
     if "repo" in deepops_config.sections() and deepops_config.get("repo", "path"):
         return deepops_config.get("repo", "path")
     if os.environ.get("XDG_DATA_HOME"):
@@ -32,9 +31,9 @@ def check_repo_exists(repo_path=None):
 
 
 def _ensure_parent_exists(path):
-    p = Path(path)
-    if not os.path.isdir(p.parent):
-        os.makedirs(p.parent)
+    parent = os.path.dirname(path)
+    if not os.path.isdir(parent):
+        os.makedirs(parent)
 
 
 def clone_repo(

@@ -1,5 +1,9 @@
 import os
-from configparser import ConfigParser
+
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import SafeConfigParser as ConfigParser
 
 
 def config_file_path():

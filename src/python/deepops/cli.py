@@ -4,8 +4,8 @@
 import sys
 import click
 
-from deepops.repo import clone_repo, local_repo_path
-from deepops.deps import run_deepops_setup
+from .repo import clone_repo, local_repo_path
+from .deps import run_deepops_setup
 
 
 @click.group()
