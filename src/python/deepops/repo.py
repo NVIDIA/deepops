@@ -9,6 +9,8 @@ from deepops import config
 
 def local_repo_path():
     """Determine correct local path for DeepOps repository"""
+    if os.environ.get("DEEPOPS_REPO_PATH"):
+        return os.environ.get("DEEPOPS_REPO_PATH")
     deepops_config = config.get_config()
     if "repo" in deepops_config.sections() and deepops_config.get("repo", "path"):
         return deepops_config.get("repo", "path")
