@@ -4,7 +4,7 @@
 import sys
 import click
 
-from deepops.repo import clone_repo
+from deepops.repo import clone_repo, local_repo_path
 
 
 @click.group()
@@ -34,6 +34,12 @@ def repo(args=None):
 def clone(path, remote, tag, force):
     """Clone DeepOps repository locally"""
     clone_repo(repo_path=path, remote=remote, force=force, tag=tag)
+
+
+@repo.command()
+def show_path():
+    """Show configured repository path"""
+    click.echo(local_repo_path())
 
 
 #######################################################################
