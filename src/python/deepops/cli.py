@@ -5,13 +5,40 @@ import sys
 import click
 
 
-@click.command()
+@click.group()
 def main(args=None):
-    """Console script for deepops."""
-    click.echo("Replace this message by putting your code into "
-               "deepops.cli.main")
-    click.echo("See click documentation at https://click.palletsprojects.com/")
+    """Top-level group for cli"""
     return 0
+
+
+#######################################################################
+# Install commands
+#######################################################################
+
+@main.group()
+def install(args=None):
+    """Commands for installing DeepOps components"""
+    return 0
+
+
+@install.command(name="nvidia-driver")
+def nvidia_driver():
+    click.echo("Install NVIDIA driver")
+
+
+@install.command(name="nvidia-docker")
+def nvidia_docker():
+    click.echo("Install nvidia-docker")
+
+
+@install.command(name="k8s")
+def kubespray_install():
+    click.echo("Install Kubernetes using Kubespray")
+
+
+@install.command(name="slurm")
+def slurm_install():
+    click.echo("Install Slurm")
 
 
 if __name__ == "__main__":
