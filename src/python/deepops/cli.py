@@ -10,7 +10,7 @@ from .deps import run_deepops_setup
 
 @click.group()
 def main(args=None):
-    """Top-level group for cli"""
+    """GPU infrastructure and automation tools"""
     return 0
 
 
