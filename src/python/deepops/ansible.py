@@ -24,22 +24,14 @@ def make_host_groups_for_local(hostname=None, added_groups=[]):
         host_groups[g] = [localhost]
     return host_groups
 
-from .repo import local_repo_path
 
 
 def make_ansible_inventory_file(host_groups=None):
     if not host_groups:
-<<<<<<< HEAD
         host_groups = make_host_groups_for_local()
     fd, fname = mkstemp()
     with open(fname, "w") as f:
         for g in sorted(host_groups.keys()):
-=======
-        host_groups = {"all": ["localhost    ansible_connection=local"]}
-    fd, fname = mkstemp()
-    with open(fname, "w") as f:
-        for g in host_groups.keys():
->>>>>>> add comand to run nvidia-driver
             f.write("[{}]\n".format(g))
             for l in host_groups[g]:
                 f.write(l + "\n")
