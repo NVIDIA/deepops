@@ -25,7 +25,6 @@ def make_host_groups_for_local(hostname=None, added_groups=[]):
     return host_groups
 
 
-
 def make_ansible_inventory_file(host_groups=None):
     if not host_groups:
         host_groups = make_host_groups_for_local()
