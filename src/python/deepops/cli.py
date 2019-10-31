@@ -6,6 +6,7 @@ import click
 
 from .repo import clone_repo, local_repo_path
 from .deps import run_deepops_setup
+from .ansible import make_ansible_inventory_file, run_ansible_playbook
 
 
 @click.group()
@@ -61,8 +62,13 @@ def deepops_deps():
 
 
 @install.command(name="nvidia-driver")
-def nvidia_driver():
+@click.option("--debug", is_flag=True)
+def nvidia_driver(debug):
     click.echo("Install NVIDIA driver")
+    inv_file = make_ansible_inventory_file()
+    if debug:
+        click.echo("inventory file: {}".format(inv_file))
+    run_ansible_playbook("playbooks/nvidia-driver.yml", inv_file)
 
 
 @install.command(name="nvidia-docker")
