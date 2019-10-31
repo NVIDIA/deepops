@@ -180,8 +180,14 @@ def slurm_install(debug, dry_run):
             )
         )
         return 0
+
+    # For a localhost Slurm cluster, disable prolog/epilog
+    extra_flags = ["--extra-vars", "'{slurm_enable_prolog_epilog:false}'"]
+
     try:
-        run_ansible_playbook("playbooks/slurm-cluster.yml", inv_file)
+        run_ansible_playbook(
+            "playbooks/slurm-cluster.yml", inv_file, extra_flags=extra_flags
+        )
     except AnsibleFailedError:
         click.echo(
             "Ansible run failed, but this is expected if you are running \n"

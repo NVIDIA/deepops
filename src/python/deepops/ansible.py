@@ -22,10 +22,10 @@ def make_ansible_inventory_file(host_groups=None):
     return fname
 
 
-def run_ansible_playbook(playbook, inventory_file, repo_path=None):
+def run_ansible_playbook(playbook, inventory_file, repo_path=None, extra_flags=[]):
     if not repo_path:
         repo_path = local_repo_path()
-    command = ["ansible-playbook", "-i", inventory_file, playbook]
+    command = ["ansible-playbook", "-i", inventory_file] + extra_flags + [playbook]
     original_directory = os.getcwd()
     os.chdir(repo_path)
     rc = subprocess.call(command)
