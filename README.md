@@ -75,7 +75,7 @@ This project is released under the [BSD 3-clause license](https://github.com/NVI
 
 NVIDIA DGX customers should file an NVES ticket via [NVIDIA Enterprise Services](https://nvid.nvidia.com/enterpriselogin/).
 
-Otherwise, bugs and feature requests can be made by [filing a GitHub Issue](issues/new).
+Otherwise, bugs and feature requests can be made by [filing a GitHub Issue](https://github.com/NVIDIA/deepops/issues/new).
 
 ## Contributing
 
