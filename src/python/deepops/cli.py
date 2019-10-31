@@ -63,17 +63,44 @@ def deepops_deps():
 
 @install.command(name="nvidia-driver")
 @click.option("--debug", is_flag=True)
-def nvidia_driver(debug):
-    click.echo("Install NVIDIA driver")
+@click.option("--dry-run", is_flag=True)
+def nvidia_driver(debug, dry_run):
+    """Install NVIDIA driver"""
     inv_file = make_ansible_inventory_file()
     if debug:
         click.echo("inventory file: {}".format(inv_file))
+    if dry_run:
+        click.echo(
+            "Would have run ansible-playbook with {}/playbooks/nvidia-driver.yml".format(
+                local_repo_path()
+            )
+        )
+        return
     run_ansible_playbook("playbooks/nvidia-driver.yml", inv_file)
 
 
 @install.command(name="nvidia-docker")
-def nvidia_docker():
-    click.echo("Install nvidia-docker")
+@click.option("--debug", is_flag=True)
+@click.option("--dry-run", is_flag=True)
+def nvidia_docker(debug, dry_run):
+    """Install Docker and nvidia-docker"""
+    inv_file = make_ansible_inventory_file()
+    if debug:
+        click.echo("inventory file: {}".format(inv_file))
+    if dry_run:
+        click.echo(
+            "Would have run ansible-playbook with {}/playbooks/docker.yml".format(
+                local_repo_path()
+            )
+        )
+        click.echo(
+            "Would have run ansible-playbook with {}/playbooks/nvidia-docker.yml".format(
+                local_repo_path()
+            )
+        )
+        return
+    run_ansible_playbook("playbooks/docker.yml", inv_file)
+    run_ansible_playbook("playbooks/nvidia-docker.yml", inv_file)
 
 
 @install.command(name="k8s")

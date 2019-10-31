@@ -24,5 +24,7 @@ def run_ansible_playbook(playbook, inventory_file, repo_path=None):
     command = ["ansible-playbook", "-i", inventory_file, playbook]
     original_directory = os.getcwd()
     os.chdir(repo_path)
-    subprocess.call(command)
+    rc = subprocess.call(command)
     os.chdir(original_directory)
+    if rc != 0:
+        raise Exception("Command failed: {}".format(" ".join(command)))
