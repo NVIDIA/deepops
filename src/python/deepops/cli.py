@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 
 """Console script for deepops."""
 import sys
@@ -6,7 +8,11 @@ import click
 
 from .repo import clone_repo, local_repo_path
 from .deps import run_deepops_setup
-from .ansible import make_ansible_inventory_file, run_ansible_playbook
+from .ansible import (
+    make_ansible_inventory_file,
+    run_ansible_playbook,
+    AnsibleFailedError,
+)
 
 
 @click.group()
@@ -66,6 +72,7 @@ def deepops_deps():
 @click.option("--dry-run", is_flag=True)
 def nvidia_driver(debug, dry_run):
     """Install NVIDIA driver"""
+    click.echo("Run Ansible to install NVIDIA driver")
     inv_file = make_ansible_inventory_file()
     if debug:
         click.echo("inventory file: {}".format(inv_file))
@@ -76,7 +83,16 @@ def nvidia_driver(debug, dry_run):
             )
         )
         return
-    run_ansible_playbook("playbooks/nvidia-driver.yml", inv_file)
+    try:
+        run_ansible_playbook("playbooks/nvidia-driver.yml", inv_file)
+    except AnsibleFailedError:
+        click.echo(
+            "Ansible run failed, but this is expected if you are running \n"
+            "on localhost and the playbook wants to reboot to install the \n"
+            "driver.\n\n"
+            "If the last attempted task was a reboot, you should reboot \n"
+            "this host and run again to finish."
+        )
 
 
 @install.command(name="nvidia-docker")
@@ -84,6 +100,7 @@ def nvidia_driver(debug, dry_run):
 @click.option("--dry-run", is_flag=True)
 def nvidia_docker(debug, dry_run):
     """Install Docker and nvidia-docker"""
+    click.echo("Run Ansible to install Docker and nvidia-docker")
     inv_file = make_ansible_inventory_file()
     if debug:
         click.echo("inventory file: {}".format(inv_file))
@@ -108,6 +125,7 @@ def nvidia_docker(debug, dry_run):
 @click.option("--dry-run", is_flag=True)
 def kubespray_install(debug, dry_run):
     """Install Kubernetes using Kubespray"""
+    click.echo("Run Ansible to install Kubernetes")
     if not dry_run:
         if not click.confirm(
             "This will install a single-node Kubernetes cluster on the local "
@@ -139,6 +157,7 @@ def kubespray_install(debug, dry_run):
 @click.option("--dry-run", is_flag=True)
 def slurm_install(debug, dry_run):
     """Install Slurm"""
+    click.echo("Run Ansible to install Slurm")
     if not dry_run:
         if not click.confirm(
             "This will install a single-node Slurm cluster on the local "
@@ -161,7 +180,15 @@ def slurm_install(debug, dry_run):
             )
         )
         return 0
-    run_ansible_playbook("playbooks/slurm-cluster.yml", inv_file)
+    try:
+        run_ansible_playbook("playbooks/slurm-cluster.yml", inv_file)
+    except AnsibleFailedError:
+        click.echo(
+            "Ansible run failed, but this is expected if you are running \n"
+            "on localhost and the playbook wants to reboot.\n\n"
+            "If the last attempted task was a reboot, you should reboot \n"
+            "this host and run again to finish."
+        )
 
 
 if __name__ == "__main__":

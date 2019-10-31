@@ -5,6 +5,10 @@ from tempfile import mkstemp
 from .repo import local_repo_path
 
 
+class AnsibleFailedError(Exception):
+    pass
+
+
 def make_ansible_inventory_file(host_groups=None):
     if not host_groups:
         host_groups = {"all": ["localhost    ansible_connection=local"]}
@@ -27,4 +31,4 @@ def run_ansible_playbook(playbook, inventory_file, repo_path=None):
     rc = subprocess.call(command)
     os.chdir(original_directory)
     if rc != 0:
-        raise Exception("Command failed: {}".format(" ".join(command)))
+        raise AnsibleFailedError("Playbook run failed: {}".format(" ".join(command)))
