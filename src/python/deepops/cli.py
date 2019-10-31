@@ -104,13 +104,64 @@ def nvidia_docker(debug, dry_run):
 
 
 @install.command(name="k8s")
-def kubespray_install():
-    click.echo("Install Kubernetes using Kubespray")
+@click.option("--debug", is_flag=True)
+@click.option("--dry-run", is_flag=True)
+def kubespray_install(debug, dry_run):
+    """Install Kubernetes using Kubespray"""
+    if not dry_run:
+        if not click.confirm(
+            "This will install a single-node Kubernetes cluster on the local "
+            "machine. Are you sure you want to continue?"
+        ):
+            return 1
+    host_groups = {
+        "all": ["localhost    ansible_connection=local"],
+        "kube-master": ["localhost"],
+        "etcd": ["localhost"],
+        "kube-node": ["localhost"],
+        "k8s-cluster:children": ["kube-master", "kube-node"],
+    }
+    inv_file = make_ansible_inventory_file(host_groups)
+    if debug:
+        click.echo("inventory file: {}".format(inv_file))
+    if dry_run:
+        click.echo(
+            "Would have run ansible-playbook with {}/playbooks/k8s-cluster.yml".format(
+                local_repo_path()
+            )
+        )
+        return 0
+    run_ansible_playbook("playbooks/k8s-cluster.yml", inv_file)
 
 
 @install.command(name="slurm")
-def slurm_install():
-    click.echo("Install Slurm")
+@click.option("--debug", is_flag=True)
+@click.option("--dry-run", is_flag=True)
+def slurm_install(debug, dry_run):
+    """Install Slurm"""
+    if not dry_run:
+        if not click.confirm(
+            "This will install a single-node Slurm cluster on the local "
+            "machine. Are you sure you want to continue?"
+        ):
+            return 1
+    host_groups = {
+        "all": ["localhost    ansible_connection=local"],
+        "slurm-master": ["localhost"],
+        "slurm-node": ["localhost"],
+        "slurm-cluster:children": ["slurm-master", "slurm-node"],
+    }
+    inv_file = make_ansible_inventory_file(host_groups)
+    if debug:
+        click.echo("inventory file: {}".format(inv_file))
+    if dry_run:
+        click.echo(
+            "Would have run ansible-playbook with {}/playbooks/slurm-cluster.yml".format(
+                local_repo_path()
+            )
+        )
+        return 0
+    run_ansible_playbook("playbooks/slurm-cluster.yml", inv_file)
 
 
 if __name__ == "__main__":
