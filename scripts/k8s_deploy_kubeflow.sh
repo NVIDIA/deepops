@@ -125,6 +125,7 @@ function stand_up() {
   echo "cd ${KFAPP} && ${KFCTL} delete -V k8s; cd && sudo rm -rf ${KFAPP}; sudo rm ${KFCTL}" > ${KUBEFLOW_DEL_SCRIPT}
   echo "cd ${KFAPP} && ${KFCTL} delete -V all; cd && sudo rm -rf ${KFAPP}; sudo rm ${KFCTL}" > ${KUBEFLOW_DEL_SCRIPT}_full.sh
   chmod +x ${KUBEFLOW_DEL_SCRIPT}
+  chmod +x ${KUBEFLOW_DEL_SCRIPT}_full.sh
 }
 
 
@@ -146,8 +147,8 @@ function tear_down() {
 function get_url() {
   # Get LoadBalancer and NodePorts
   master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
-  nodePort="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=PORT:.spec.ports[?(@.name==\"http2\")].nodePort)"
-  secure_nodePort="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=PORT:.spec.ports[?(@.name==\"https\")].nodePort)"
+  nodePort="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=PORT:.spec.ports[?\(@.name==\"http2\"\)].nodePort)"
+  secure_nodePort="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=PORT:.spec.ports[?\(@.name==\"https\"\)].nodePort)"
   lb_ip="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=:.status.loadBalancer.ingress[0].ip)"
   export kf_url="http://${master_ip}:${nodePort}"
   export secure_kf_url="https://${master_ip}:${secure_nodePort}"
