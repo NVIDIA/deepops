@@ -182,7 +182,7 @@ def slurm_install(debug, dry_run):
         return 0
 
     # For a localhost Slurm cluster, disable prolog/epilog
-    extra_flags = ["--extra-vars", "'{slurm_enable_prolog_epilog:false}'"]
+    extra_flags = ["--extra-vars", "'{\"slurm_enable_prolog_epilog\":false}'"]
 
     try:
         run_ansible_playbook(
