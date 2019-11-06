@@ -28,7 +28,7 @@ def make_ansible_inventory_file(host_groups=None):
         host_groups = make_host_groups_for_local()
     fd, fname = mkstemp()
     with open(fname, "w") as f:
-        for g in host_groups.keys():
+        for g in sorted(host_groups.keys()):
             f.write("[{}]\n".format(g))
             for l in host_groups[g]:
                 f.write(l + "\n")
