@@ -6,12 +6,14 @@ from __future__ import absolute_import
 import sys
 import click
 import os
+import json
 
 from .repo import clone_repo, local_repo_path
 from .deps import run_deepops_setup
 from .ansible import (
     make_ansible_inventory_file,
     make_host_groups_for_local,
+    make_ansible_vars_file,
     run_ansible_playbook,
     AnsibleFailedError,
 )
@@ -153,16 +155,12 @@ def kubespray_install(debug, dry_run):
     run_ansible_playbook("playbooks/k8s-cluster.yml", inv_file)
 
 
-def slurm_extra_flags(disable_epilog=True, localuser=True):
-    extra_flags = []
-    if disable_epilog:
-        extra_flags += ["--extra-vars", "'{\"slurm_enable_prolog_epilog\":false}'"]
-    if localuser:
-        extra_flags += [
-            "--extra-vars",
-            '\'{{"slurm_allow_ssh_user": ["{}"]}}\''.format(os.environ["USER"]),
-        ]
-    return extra_flags
+def slurm_extra_vars():
+    return {
+        "slurm_enable_prolog_epilog": False,
+        "slurm_clear_old_prolog_epilog": True,
+        "slurm_allow_ssh_user": [os.environ["USER"]],
+    }
 
 
 @install.command(name="slurm")
@@ -183,8 +181,10 @@ def slurm_install(debug, dry_run):
     )
     host_groups["slurm-cluster:children"] = ["slurm-master", "slurm-node"]
     inv_file = make_ansible_inventory_file(host_groups)
+    vars_file = make_ansible_vars_file(ansible_vars=slurm_extra_vars())
     if debug:
         click.echo("inventory file: {}".format(inv_file))
+        click.echo("vars file: {}".format(vars_file))
 
     if dry_run:
         click.echo(
@@ -194,10 +194,9 @@ def slurm_install(debug, dry_run):
         )
         return 0
 
-    extra_flags = slurm_extra_flags()
     try:
         run_ansible_playbook(
-            "playbooks/slurm-cluster.yml", inv_file, extra_flags=extra_flags
+            "playbooks/slurm-cluster.yml", inv_file, extra_vars_file=vars_file,
         )
     except AnsibleFailedError:
         click.echo(

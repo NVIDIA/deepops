@@ -1,5 +1,7 @@
 import os
 import subprocess
+import yaml
+import click
 from tempfile import mkstemp
 from socket import gethostname
 
@@ -36,10 +38,24 @@ def make_ansible_inventory_file(host_groups=None):
     return fname
 
 
-def run_ansible_playbook(playbook, inventory_file, repo_path=None, extra_flags=[]):
+def make_ansible_vars_file(ansible_vars=dict()):
+    fd, fname = mkstemp()
+    with open(fname, "w") as f:
+        f.write(yaml.dump(ansible_vars))
+    os.close(fd)
+    return fname
+
+
+def run_ansible_playbook(
+    playbook, inventory_file, repo_path=None, extra_vars_file=None
+):
     if not repo_path:
         repo_path = local_repo_path()
-    command = ["ansible-playbook", "-i", inventory_file] + extra_flags + [playbook]
+    command = ["ansible-playbook", "-i", inventory_file]
+    if extra_vars_file:
+        command += ["-e", "@{}".format(extra_vars_file)]
+    command += [playbook]
+    click.echo(" ".join(command))
     original_directory = os.getcwd()
     os.chdir(repo_path)
     rc = subprocess.call(command)
