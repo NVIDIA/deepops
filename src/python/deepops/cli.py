@@ -41,7 +41,7 @@ def repo(args=None):
 @click.option(
     "--remote", default="https://github.com/NVIDIA/deepops", show_default=True
 )
-@click.option("--tag", default="master", show_default=True)
+@click.option("--tag", default="19.10", show_default=True)
 @click.option("--force", is_flag=True)
 def clone(path, remote, tag, force):
     """Clone DeepOps repository locally"""
