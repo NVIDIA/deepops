@@ -5,6 +5,7 @@ from __future__ import absolute_import
 """Console script for deepops."""
 import sys
 import click
+import os
 
 from .repo import clone_repo, local_repo_path
 from .deps import run_deepops_setup
@@ -152,6 +153,18 @@ def kubespray_install(debug, dry_run):
     run_ansible_playbook("playbooks/k8s-cluster.yml", inv_file)
 
 
+def slurm_extra_flags(disable_epilog=True, localuser=True):
+    extra_flags = []
+    if disable_epilog:
+        extra_flags += ["--extra-vars", "'{\"slurm_enable_prolog_epilog\":false}'"]
+    if localuser:
+        extra_flags += [
+            "--extra-vars",
+            '\'{"slurm_allow_ssh_user": ["{}"]\''.format(os.environ["USER"]),
+        ]
+    return extra_flags
+
+
 @install.command(name="slurm")
 @click.option("--debug", is_flag=True)
 @click.option("--dry-run", is_flag=True)
@@ -181,9 +194,7 @@ def slurm_install(debug, dry_run):
         )
         return 0
 
-    # For a localhost Slurm cluster, disable prolog/epilog
-    extra_flags = ["--extra-vars", "'{\"slurm_enable_prolog_epilog\":false}'"]
-
+    extra_flags = slurm_extra_flags()
     try:
         run_ansible_playbook(
             "playbooks/slurm-cluster.yml", inv_file, extra_flags=extra_flags
