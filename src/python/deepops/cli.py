@@ -10,6 +10,7 @@ from .repo import clone_repo, local_repo_path
 from .deps import run_deepops_setup
 from .ansible import (
     make_ansible_inventory_file,
+    make_host_groups_for_local,
     run_ansible_playbook,
     AnsibleFailedError,
 )
@@ -164,15 +165,15 @@ def slurm_install(debug, dry_run):
             "machine. Are you sure you want to continue?"
         ):
             return 1
-    host_groups = {
-        "all": ["localhost    ansible_connection=local"],
-        "slurm-master": ["localhost"],
-        "slurm-node": ["localhost"],
-        "slurm-cluster:children": ["slurm-master", "slurm-node"],
-    }
+
+    host_groups = make_host_groups_for_local(
+        added_groups=["slurm-master", "slurm-node"]
+    )
+    host_groups["slurm-cluster:children"] = ["slurm-master", "slurm-node"]
     inv_file = make_ansible_inventory_file(host_groups)
     if debug:
         click.echo("inventory file: {}".format(inv_file))
+
     if dry_run:
         click.echo(
             "Would have run ansible-playbook with {}/playbooks/slurm-cluster.yml".format(
