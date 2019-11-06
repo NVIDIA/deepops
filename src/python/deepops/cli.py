@@ -160,7 +160,7 @@ def slurm_extra_flags(disable_epilog=True, localuser=True):
     if localuser:
         extra_flags += [
             "--extra-vars",
-            '\'{"slurm_allow_ssh_user": ["{}"]\''.format(os.environ["USER"]),
+            '\'{{"slurm_allow_ssh_user": ["{}"]}}\''.format(os.environ["USER"]),
         ]
     return extra_flags
 
