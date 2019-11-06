@@ -133,16 +133,15 @@ def kubespray_install(debug, dry_run):
             "machine. Are you sure you want to continue?"
         ):
             return 1
-    host_groups = {
-        "all": ["localhost    ansible_connection=local"],
-        "kube-master": ["localhost"],
-        "etcd": ["localhost"],
-        "kube-node": ["localhost"],
-        "k8s-cluster:children": ["kube-master", "kube-node"],
-    }
+
+    host_groups = make_host_groups_for_local(
+        added_groups=["kube-master", "etcd", "kube-node"]
+    )
+    host_groups["k8s-cluster:children"] = ["kube-master", "kube-node"]
     inv_file = make_ansible_inventory_file(host_groups)
     if debug:
         click.echo("inventory file: {}".format(inv_file))
+
     if dry_run:
         click.echo(
             "Would have run ansible-playbook with {}/playbooks/k8s-cluster.yml".format(
