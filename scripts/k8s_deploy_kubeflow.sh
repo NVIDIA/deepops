@@ -1,15 +1,21 @@
 #!/usr/bin/env bash
 
 # Local files/directories to create and place scripts
-export KFAPP=${KFAPP:-~/kubeflow}
+export KF_DIR=${KF_DIR:-~/kubeflow}
 export KFCTL=${KFCTL:-~/kfctl}
-export KUBEFLOW_DEL_SCRIPT="${KFAPP}/deepops-delete-kubeflow.sh"
+export KUBEFLOW_DEL_SCRIPT="${KF_DIR}/deepops-delete-kubeflow.sh"
 
 # Download URLs and versions
-export KUBEFLOW_TAG=v0.6.2
+export KUBEFLOW_TAG=v0.7.0
 export KFCTL_URL=https://github.com/kubeflow/kubeflow/releases/download/${KUBEFLOW_TAG}/kfctl_${KUBEFLOW_TAG}_linux.tar.gz
-export CONFIG="https://raw.githubusercontent.com/kubeflow/kubeflow/v0.6-branch/bootstrap/config/kfctl_existing_arrikto.0.6.2.yaml"
-export NO_AUTH_CONFIG="https://raw.githubusercontent.com/kubeflow/kubeflow/v0.6-branch/bootstrap/config/kfctl_k8s_istio.0.6.2.yaml"
+
+# Config 1: https://www.kubeflow.org/docs/other-guides/kustomize/
+export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/v0.7-branch/kfdef/kfctl_existing_arrikto.0.7.0.yaml"
+export CONFIG_FILE="${KF_DIR}/kfctl_existing_arrikto.0.7.0.yaml"
+
+# Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
+export NO_AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/v0.7-branch/kfdef/kfctl_k8s_istio.0.7.0.yaml"
+export NO_AUTH_CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.0.7.0.yaml"
 
 
 # Specify credentials for the default user.
@@ -38,7 +44,8 @@ function get_opts() {
 	CONFIG=$OPTARG
         ;;
       x)
-	CONFIG=${NO_AUTH_CONFIG}
+	CONFIG_URI=${NO_AUTH_CONFIG_URI}
+	CONFIG_FILE=${NO_AUTH_CONFIG_FILE}
 	SKIP_LB=true
         ;;
       d)
@@ -116,24 +123,28 @@ function stand_up() {
   popd
   rm -rf /tmp/kf-download
 
-  # Initialize and apply the Kubeflow project using the specified config
-  ${KFCTL} init ${KFAPP} --config=${CONFIG} -V
-  cd ${KFAPP}
-  ${KFCTL} generate all -V
-  ${KFCTL} apply all -V
+  # Create directory for KF files
+  mkdir ${KF_DIR}
 
-  echo "cd ${KFAPP} && ${KFCTL} delete -V k8s; cd && sudo rm -rf ${KFAPP}; sudo rm ${KFCTL}" > ${KUBEFLOW_DEL_SCRIPT}
-  echo "cd ${KFAPP} && ${KFCTL} delete -V all; cd && sudo rm -rf ${KFAPP}; sudo rm ${KFCTL}" > ${KUBEFLOW_DEL_SCRIPT}_full.sh
+  # Make cleanup scripts first in case deployment fails
+  echo "cd ${KF_DIR} && ${KFCTL} delete -V -f ${CONFIG_FILE} --delete_storage; cd && sudo rm -rf ${KF_DIR}; sudo rm ${KFCTL}" > ${KUBEFLOW_DEL_SCRIPT}_full.sh
   chmod +x ${KUBEFLOW_DEL_SCRIPT}
+  chmod +x ${KUBEFLOW_DEL_SCRIPT}_full.sh
+
+  # Initialize and apply the Kubeflow project using the specified config. We do this in two steps to allow a chance to customize the config
+  cd ${KF_DIR}
+  ${KFCTL} build -V -f ${CONFIG_URI}
+  # TODO: Add potential CONFIG customizations here in CONFIG_FILE
+  ${KFCTL} apply -V -f ${CONFIG_FILE}
 }
 
 
 function tear_down() {
   if [ ${KUBEFLOW_FULL_DELETE} ]; then
-    bash ${KUBEFLOW_DEL_SCRIPT}_full.sh
+    bash ${KUBEFLOW_DEL_SCRIPT}_full.sh && sleep 5 # There seems to be a timing issue here in kfctl, so we sleep a bit.
 
     # Kubeflow use leads to some user created namespaces that are not torn down during kfctl delete
-    additional_namespaces="kubeflow-anonymous ${KUBEFLOW_EXTRA_NS}"
+    additional_namespaces="kubeflow-anonymous anonymous cert-manager istio-system knative-serving ${KUBEFLOW_EXTRA_NS}"
     echo "Deleting additional namespaces ${additional_namespaces}, this may take several minutes"
     kubectl delete ns ${additional_namespaces}
   else
@@ -146,8 +157,8 @@ function tear_down() {
 function get_url() {
   # Get LoadBalancer and NodePorts
   master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
-  nodePort="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=PORT:.spec.ports[?(@.name==\"http2\")].nodePort)"
-  secure_nodePort="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=PORT:.spec.ports[?(@.name==\"https\")].nodePort)"
+  nodePort="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=PORT:.spec.ports[?\(@.name==\"http2\"\)].nodePort)"
+  secure_nodePort="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=PORT:.spec.ports[?\(@.name==\"https\"\)].nodePort)"
   lb_ip="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=:.status.loadBalancer.ingress[0].ip)"
   export kf_url="http://${master_ip}:${nodePort}"
   export secure_kf_url="https://${master_ip}:${secure_nodePort}"
@@ -157,15 +168,17 @@ function get_url() {
 
 function print_info() {
   echo
-  echo "Kubeflow app installed to: ${KFAPP}"
-  echo "To remove, run: cd ${KFAPP} && ${KFCTL} delete -V k8s"
-  echo "To remove the kfctl binary: rm ${KFCTL}"
-  echo "To fully remove everything:"
+  echo "Kubeflow app installed to: ${KF_DIR}"
+  echo "To remove (excluding istio and cert-manager), run: ${0} -d"
+  echo "To remove all installed components and the kfctl binary: ${0} -D"
+  echo "Alternatively, to manually uninstall everything run:"
   echo "bash ${KUBEFLOW_DEL_SCRIPT}"
   echo 
   echo "Kubeflow Dashboard (HTTP NodePort): ${kf_url}"
   echo "Kubeflow Dashboard (HTTPS NodePort, required for auth): ${secure_kf_url}"
   echo "Kubeflow Dashboard (DEFAULT - LoadBalancer, required for auth w/Dex): ${lb_url}"
+  echo
+  echo "It may take several minutes for all services to start. Run 'kubectl get pods -n kubeflow' to verify"
   echo
 }
 
