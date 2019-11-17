@@ -163,15 +163,4 @@
   tags:
     - local
 
-- name: Add Mellanox RoCE backend
-  import_playbook: roce/roce.yaml
-  vars:
-    pf1: ens9f0
-    pf2: ens10f0
-    pf3: ens11f0
-    pf4: ens12f0
-    dev_id: 101c
-  when: roce_backend
-  tags:
-    - roce
 
