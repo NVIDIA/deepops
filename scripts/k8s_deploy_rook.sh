@@ -6,7 +6,7 @@
 # `helm upgrade --namespace rook-ceph rook-ceph rook-release/rook-ceph --version v0.9.0-174.g3b14e51`
 
 HELM_ROOK_CHART_REPO="${HELM_ROOK_CHART_REPO:-https://charts.rook.io/release}"
-HELM_ROOK_CHART_VERSION="${HELM_ROOK_CHART_VERSION:-v1.0.2}"
+HELM_ROOK_CHART_VERSION="${HELM_ROOK_CHART_VERSION:-v1.1.1}"
 
 ./scripts/install_helm.sh
 
@@ -16,12 +16,11 @@ helm repo add rook-release "${HELM_ROOK_CHART_REPO}"
 # Use an alternate image if set
 helm_install_extra_flags=""
 if [ "${ROOK_CEPH_IMAGE_REPO}" ]; then
-	helm_install_extra_flags="--set image.repository="${ROOK_CEPH_IMAGE_REPO}""
+	helm_install_extra_flags="--set image.repository=${ROOK_CEPH_IMAGE_REPO}"
 fi
 
 # Install rook-ceph
-helm status rook-ceph >/dev/null 2>&1
-if [ $? -ne 0 ] ; then
+if ! helm status rook-ceph >/dev/null 2>&1 ; then
     helm install --namespace rook-ceph --name rook-ceph rook-release/rook-ceph --version "${HELM_ROOK_CHART_VERSION}" ${helm_install_extra_flags}
 fi
 
@@ -29,7 +28,7 @@ if kubectl -n rook-ceph get pod -l app=rook-ceph-tools 2>&1 | grep "No resources
     sleep 5
     # If we have an alternate registry defined, dynamically substitute it in
     if [ "${DEEPOPS_ROOK_DOCKER_REGISTRY}" ]; then
-        cat services/rook-cluster.yml | sed "s/image: /image: ${DEEPOPS_ROOK_DOCKER_REGISTRY}\//g" | kubectl create -f -
+        sed "s/image: /image: ${DEEPOPS_ROOK_DOCKER_REGISTRY}\//g" services/rook-cluster.yml | kubectl create -f -
     else
         kubectl create -f services/rook-cluster.yml
     fi
