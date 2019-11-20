@@ -96,19 +96,6 @@ function install_dependencies() {
       echo "To provision Ceph storage, run: ./scripts/k8s_deploy_rook.sh"
       exit 1
   fi
-
-  # MetalLB
-  helm list  | grep metallb >/dev/null 2>&1
-  if [ $? -ne 0 ]; then
-      echo "LoadBalancer not found (MetalLB)"
-      if [ ${SKIP_LB} ]; then
-        echo "LoadBalancer not required for alternative install"
-      else
-        echo "To support Kubeflow on-prem with multi-user-auth please install a load balancer by running"
-        echo "./scripts/k8s_deploy_loadbalancer.sh"
-        exit 2
-      fi
-  fi
 }
 
 
