@@ -73,7 +73,7 @@ To access the NGC container registry via Kubernetes, add a secret which will be 
 2. Using the NGC API Key, create a Kubernetes secret so that Kubernetes will be able to pull container images from the NGC registry. Create the secret by running the following command on the master (substitute the registered email account and secret in the appropriate locations).
 
    ```sh
-   kubectl create secret docker-registry nvcr.dgxkey –docker-server=nvcr.io --docker-username=\$oauthtoken --docker-email=<email> --docker-password=<NGC API Key>
+   kubectl create secret docker-registry nvcr.dgxkey --docker-server=nvcr.io --docker-username=\$oauthtoken --docker-email=<email> --docker-password=<NGC API Key>
    ```
 
 3. Check that the secret exists.
