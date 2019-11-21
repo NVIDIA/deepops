@@ -152,6 +152,9 @@ function tear_down() {
   # There is an issues in the kfctl delete command that does not properly clean up and leaves NSs in a terminating state, this is a bit hacky but resolves it
   echo "Removing finalizers from all namespaces: ${namespaces}"
   fix_terminating_ns ${namespaces}
+  
+  # These should probably be deleted by kfctl, but they are not
+  kubectl delete crd -l app.kubernetes.io/part-of=kubeflow -o name
 
   rm ${KFCTL}
 }
