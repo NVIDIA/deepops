@@ -114,9 +114,8 @@ function stand_up() {
   mkdir ${KF_DIR}
 
   # Make cleanup scripts first in case deployment fails
-  echo "cd ${KF_DIR} && ${KFCTL} delete -V -f ${CONFIG_FILE} --delete_storage; cd && sudo rm -rf ${KF_DIR}; sudo rm ${KFCTL}" > ${KUBEFLOW_DEL_SCRIPT}_full.sh
+  echo "cd ${KF_DIR} && ${KFCTL} delete -V -f ${CONFIG_FILE} --delete_storage; cd && sudo rm -rf ${KF_DIR}" > ${KUBEFLOW_DEL_SCRIPT}
   chmod +x ${KUBEFLOW_DEL_SCRIPT}
-  chmod +x ${KUBEFLOW_DEL_SCRIPT}_full.sh
 
   # Initialize and apply the Kubeflow project using the specified config. We do this in two steps to allow a chance to customize the config
   cd ${KF_DIR}
@@ -125,18 +124,35 @@ function stand_up() {
   ${KFCTL} apply -V -f ${CONFIG_FILE}
 }
 
+# Modify the ns finalizers so they don't wait for async processes to complete
+function fix_terminating_ns() {
+  kubectl proxy &
+  for ns in ${@}; do
+    kubectl get namespace ${ns} -o json |jq '.spec = {"finalizers":[]}' > "/tmp/temp_${ns}.json"
+    curl -k -H "Content-Type: application/json" -X PUT --data-binary @"/tmp/temp_${ns}.json" 127.0.0.1:8001/api/v1/namespaces/${ns}/finalize
+  done
+}
 
 function tear_down() {
-  if [ ${KUBEFLOW_FULL_DELETE} ]; then
-    bash ${KUBEFLOW_DEL_SCRIPT}_full.sh && sleep 5 # There seems to be a timing issue here in kfctl, so we sleep a bit.
+  # Kubeflow use leads to some user created namespaces that are not torn down during kfctl delete
+  namespaces="kubeflow"
 
-    # Kubeflow use leads to some user created namespaces that are not torn down during kfctl delete
-    additional_namespaces="kubeflow-anonymous anonymous cert-manager istio-system knative-serving ${KUBEFLOW_EXTRA_NS}"
-    echo "Deleting additional namespaces ${additional_namespaces}, this may take several minutes"
-    kubectl delete ns ${additional_namespaces}
-  else
-    bash ${KUBEFLOW_DEL_SCRIPT}
+  # Delete other NS that were installed. These might be part of other apps and is slightly dangerous
+  if [ "${KUBEFLOW_FULL_DELETE}" == "true" ]; then
+    namespaces=" ${namespaces} kubeflow-anonymous auth anonymous cert-manager istio-system knative-serving ${KUBEFLOW_EXTRA_NS}"
   fi
+
+  # This runs kfctl delete pointing to the CONFIG that was used at install
+  bash ${KUBEFLOW_DEL_SCRIPT} && sleep 5 # There seems to be a timing issue here in kfctl, so we sleep a bit.
+
+  # delete all namespaces, including namespaces that "should" already have been deleted by kfctl delete
+  echo "Re-deleting namespaces ${namespaces} for a full cleanup"
+  kubectl delete ns ${namespaces}
+
+  # There is an issues in the kfctl delete command that does not properly clean up and leaves NSs in a terminating state, this is a bit hacky but resolves it
+  echo "Removing finalizers from all namespaces: ${namespaces}"
+  fix_terminating_ns ${namespaces}
+
   rm ${KFCTL}
 }
 
@@ -156,7 +172,7 @@ function get_url() {
 function print_info() {
   echo
   echo "Kubeflow app installed to: ${KF_DIR}"
-  echo "To remove (excluding istio and cert-manager), run: ${0} -d"
+  echo "To remove (excluding istio, auth, and cert-manager), run: ${0} -d"
   echo "To remove all installed components and the kfctl binary: ${0} -D"
   echo "Alternatively, to manually uninstall everything run:"
   echo "bash ${KUBEFLOW_DEL_SCRIPT}"
