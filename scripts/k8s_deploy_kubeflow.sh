@@ -155,6 +155,7 @@ function tear_down() {
   
   # These should probably be deleted by kfctl, but they are not
   kubectl delete crd -l app.kubernetes.io/part-of=kubeflow -o name
+  kubectl delete all -l app.kubernetes.io/part-of=kubeflow --all-namespaces
 
   rm ${KFCTL}
 }
