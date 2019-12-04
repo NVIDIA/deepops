@@ -5,8 +5,7 @@ set -x
 HELM_INSTALL_DIR=/usr/local/bin
 HELM_INSTALL_SCRIPT_URL="${HELM_INSTALL_SCRIPT_URL:-https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get}"
 
-kubectl version
-if [ $? -ne 0 ] ; then
+if ! kubectl version ; then
     echo "Unable to talk to Kubernetes API"
     exit 1
 fi
@@ -41,7 +40,7 @@ if ! type helm >/dev/null 2>&1 ; then
     chmod +x /tmp/get_helm.sh
     #sed -i 's/sudo//g' /tmp/get_helm.sh
     mkdir -p ${HELM_INSTALL_DIR}
-    HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v2.11.0 /tmp/get_helm.sh
+    HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v2.14.3 /tmp/get_helm.sh
 fi
 
 helm_extra_args=""
@@ -51,6 +50,7 @@ fi
 
 if type helm >/dev/null 2>&1 ; then
     helm init --client-only ${helm_extra_args}
+    helm repo update
 else
     echo "Helm client not installed"
     exit 1
