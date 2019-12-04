@@ -1,8 +1,9 @@
 # SLURMCTLD
 SlurmUser={{ slurm_username }}
-ControlMachine={{ slurm_controller_host }}
+ControlMachine={{ slurm_controller_host.split(".")[0] | lower }}
 SlurmctldPort=6817
 StateSaveLocation={{ slurm_spool_dir }}/slurmctld
+ProctrackType=proctrack/cgroup
 
 # SLURMD
 SlurmdPort=6818
@@ -11,14 +12,19 @@ ReturnToService=1
 
 # ACCOUNTING
 AccountingStorageType=accounting_storage/slurmdbd
-AccountingStorageHost={{ slurm_controller_host }}
+AccountingStorageHost={{ slurm_controller_host.split(".")[0] | lower }}
 AccountingStorageUser={{ slurm_db_username }}
 AccountingStoragePass=/var/run/munge/munge.socket.2
+AccountingStorageEnforce=associations,limits,qos
 ClusterName={{ slurm_cluster_name }}
+JobAcctGatherType=jobacct_gather/cgroup
+AccountingStorageTRES=gres/gpu
+DebugFlags=CPU_Bind,gres
 
 # SCHEDULING
-SelectType=select/linear
-SelectTypeParameters=CR_Memory
+SelectType=select/cons_tres
+SelectTypeParameters=CR_Core_Memory,CR_CORE_DEFAULT_DIST_BLOCK,CR_ONE_TASK_PER_CORE
+FastSchedule=1
 SchedulerType=sched/backfill
 
 # TASK SETTINGS
@@ -29,6 +35,13 @@ PrologFlags=alloc,contain
 Prolog={{ slurm_sysconf_dir }}/prolog.sh
 Epilog={{ slurm_sysconf_dir }}/epilog.sh
 
+# LOGGING
+SlurmctldDebug=3
+SlurmctldLogFile=/var/log/slurm/slurmctld.log
+SlurmdDebug=3
+SlurmdLogFile=/var/log/slurm/slurmd.log
+JobCompType=jobcomp/none
+
 # MPI
 TmpFS=/tmp/slurm
 
@@ -38,12 +51,19 @@ DebugFlags=CPU_Bind
 RebootProgram=/sbin/reboot
 
 # PARTITIONS
-PartitionName=batch Nodes=ALL Default=YES DefMemPerCPU=0 State=UP OverSubscribe=EXCLUSIVE
+{% set slurm_oversubscribe = (slurm_manage_gpus == true)|ternary('NO', 'EXCLUSIVE') %}
+PartitionName=batch Nodes=ALL Default=YES DefMemPerCPU=0 State=UP OverSubscribe={{ slurm_oversubscribe }}
 
 # NODES
+{% if slurm_manage_gpus %}
+GresTypes=gpu
+{% endif %}
 {% for node_name in slurm_compute_hosts %}
 {% set facts = hostvars[node_name]['ansible_local']['slurm_node_config'] -%}
-    NodeName={{ node_name }}{{ " " -}}
+{% set gpu_topology =  hostvars[node_name]["ansible_local"]["topology"]["gpu_topology"] -%}
+    NodeName={{ node_name.split(".")[0] | lower }}{{ " " -}}
+    NodeAddr={{ node_name }}{{ " " -}}
+    {% if slurm_manage_gpus %} {%- if gpu_topology|count %} Gres=gpu:{{ gpu_topology|count }} {% endif -%} {% endif %}
     Sockets={{ facts.cpu_topology.sockets|int }}{{ " " -}}
     CoresPerSocket={{ facts.cpu_topology.cores_per_socket|int }}{{ " " -}}
     ThreadsPerCore={{ facts.cpu_topology.threads_per_core }}{{ " " -}}

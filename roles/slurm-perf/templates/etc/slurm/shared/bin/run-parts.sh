@@ -25,7 +25,7 @@ fi
 
 # Find out if there are any more jobs on this node for this user
 last_user_job=0
-num_jobs=$(squeue -h -u "$SLURM_JOB_USER" -w "$HOSTNAME" -t running | wc -l)
+num_jobs=$(squeue -h -u "$SLURM_JOB_USER" -w "$(hostname -s)" -t running | wc -l)
 if [ "$num_jobs" -eq 0 ]; then
     last_user_job=1
 fi

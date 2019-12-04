@@ -1,14 +1,20 @@
 ---
+- name: remove slurm 19
+  apt:
+    name:
+      - slurm
+    state: removed
+    purge: yes
+    autoremove: yes
+
 - name: repo key
   apt_key:
     url: "{{ slurm_ubuntu_repo_key_url }}"
     id: "{{ slurm_ubuntu_repo_key_id }}"
-  when: slurm_ubuntu_repo_key_url|bool and slurm_ubuntu_repo_key_id|bool
 
 - name: repo
   apt_repository:
     repo: "{{ slurm_ubuntu_repo }}"
-  when: slurm_ubuntu_repo|bool
 
 - name: shared packages
   apt:

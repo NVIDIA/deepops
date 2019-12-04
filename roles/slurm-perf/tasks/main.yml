@@ -45,6 +45,19 @@
     - restart slurmd
   tags: config
 
+- name: copy gres/cgroup config
+  template:
+    src: "etc/slurm/{{ item }}"
+    dest: "{{ slurm_sysconf_dir }}/{{ item }}"
+  with_items:
+    - cgroup.conf
+    - gres.conf
+  notify:
+    - restart slurmctld
+    - restart slurmd
+  tags:
+    - config
+
 - include: controller.yml
   when: slurm_node_is_controller
 
