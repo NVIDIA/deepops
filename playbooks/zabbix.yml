@@ -1,0 +1,20 @@
+---
+- hosts: slurm-master
+  become: yes
+  vars:
+    zabbix_server: yes
+  roles:
+    - geerlingguy.postgresql
+    - dj-wasabi.zabbix-server
+    - dj-wasabi.zabbix-web
+  tags:
+    - zabbix-server
+
+- hosts: slurm-master:slurm-node
+  become: yes
+  vars:
+    zabbix_agent: yes
+  roles:
+    - dj-wasabi.zabbix-agent
+  tags:
+    - zabbix-agent

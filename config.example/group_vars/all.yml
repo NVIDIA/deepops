@@ -236,3 +236,30 @@ deepops_venv: '{{ deepops_dir }}/venv'
 # OpenMPI
 # Playbook: openmpi
 openmpi_version: 4.0.3
+
+# Zabbix
+# Web User: Admin, Pass: zabbix
+postgresql_users:
+  - name: zabbix-server
+    password: zabbix-server
+zabbix_url: 'http://{{ hostvars[groups["slurm-master"][0]]["ansible_fqdn"] }}:{{ zabbix_apache_vhost_port }}'
+zabbix_server_name: "{{ ansible_fqdn }}"
+zabbix_server_hostname: "{{ ansible_fqdn }}"
+zabbix_version: 4.4
+zabbix_apache_vhost_port: 8080
+zabbix_apache_vhost_tls_port: 8443
+zabbix_timezone: America/Los_Angeles
+zabbix_server_pgsql_login_host: localhost
+zabbix_server_pgsql_login_user: zabbix-server
+zabbix_server_pgsql_login_password: zabbix-server
+zabbix_agent_server: '{{ hostvars[groups["slurm-master"][0]]["ansible_fqdn"] }}, localhost'
+zabbix_agent_serveractive: '{{ hostvars[groups["slurm-master"][0]]["ansible_fqdn"] }}'
+zabbix_api_user: Admin
+zabbix_api_pass: zabbix
+zabbix_api_create_hostgroup: True
+zabbix_api_create_hosts: True
+zabbix_host_groups:
+  - Linux servers
+zabbix_link_templates:
+  - Template OS Linux by Zabbix agent
+>>>>>>> Zabbix playbook to install server/agent

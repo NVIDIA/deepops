@@ -41,9 +41,6 @@
 - src: geerlingguy.kibana
   version: "3.2.1"
 
-- src: https://github.com/DeepOps/ansible-maas.git
-  name: ansible-maas
-
 - src: https://github.com/DeepOps/ansible-role-chrony
   name: DeepOps.chrony
   version: 'c9022153036dfdde4e2b313aecde4a46cd6f6687'
@@ -56,3 +53,13 @@
 
 - src: lecorguille.singularity
   version: 1.2.0
+
+# Zabbix
+- src: geerlingguy.postgresql
+  version: "2.0.1"
+- src: dj-wasabi.zabbix-server
+  version: "1.7.0"
+- src: dj-wasabi.zabbix-web
+  version: "1.5.0"
+- src: dj-wasabi.zabbix-agent
+  version: "2.1.0"
