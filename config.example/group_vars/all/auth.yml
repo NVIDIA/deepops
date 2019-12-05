@@ -4,7 +4,7 @@
 #nis_server: 10.0.0.1
 
 # Kerberos configuration
-# Playbook: authentication.yml
+# Playbook: authentication
 #kerberos_client_realm_name: "example.com"
 #kerberos_client_kdc_hostname: "kerberos"
 #kerberos_client_admin_hostname: "kerberos"
