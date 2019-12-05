@@ -1,4 +1,5 @@
 # Slurm job scheduler configuration
+# Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
 #slurm_user_home: /local/slurm
 slurm_manage_gpus: true
 #slurm_cluster_name: deepops

@@ -1,5 +1,6 @@
 ---
-# defaults file for ansible-maas
+# MAAS (Metal as a Service)
+# Playbook: maas, maas_management
 maas_adminusers:
   - username: 'admin'
     email: 'admin@{{ maas_dns_domain }}'

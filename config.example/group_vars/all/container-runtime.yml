@@ -1,13 +1,12 @@
 # Docker config
-# Used by:
-#   playbooks/docker.yml
-#   playbooks/nvidia-docker.yml
+# Playbook: docker, nvidia-docker
 docker_daemon_json:
   # Docker's default subnet is 172.17.0.0/16
   # Pick a smaller subnet, which is also less likely to conflict with corporate addresses.
   bip: 192.168.99.1/24
 
 # Enroot configuration
+# Playbook: slurm-perf, slurm-perf-cluster
 enroot_runtime_path: '/tmp/enroot-runtime-$(id -u)'
 enroot_cache_path: '/tmp/enroot-cache-$(id -u)'
 enroot_data_path: '/tmp/enroot-data-$(id -u)'

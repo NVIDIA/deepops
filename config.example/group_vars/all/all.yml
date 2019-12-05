@@ -1,4 +1,5 @@
-# Set /etc/rc.local contents. Use playbooks/rc-local.yml
+# Set /etc/rc.local contents
+# Playbook: rc-local
 # rc_local_contents: |
 #   echo foo
 #   echo bar

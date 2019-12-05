@@ -1,4 +1,5 @@
-# Variables for the nvidia-set-gpu-clocks.yml playbook
+# NVIDIA GPU configuration
+# Playbook: nvidia-set-gpu-clocks
 
 gpu_clock_reset: no
 # Resets the Gpu clocks to the default values. (see the `--reset-gpu-clocks` flag in nvidia-smi for more)

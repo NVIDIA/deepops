@@ -1,15 +1,18 @@
 # AutoFS configuration
+# Playbook: authentication
 #autofs_mount: "/home"
 #autofs_map: "auto.home_linux"
 
-# Playbook: nfs-server.yml
+# NFS Server
 # This config will create an NFS server and share the given exports
+# Playbook: nfs-server.yml
 #nfs_exports:
 #  - path: /export/shared
 #    options: "*(rw,sync,no_root_squash)"
 
-# Playbook: nfs-client.yml
+# NFS Client
 # This config will mount an NFS share on hosts
+# Playbook: nfs-client.yml
 #nfs_mounts:
 #  - mountpoint: /mnt/shared
 #    server: '{{ groups["nfs-server"][0] }}'

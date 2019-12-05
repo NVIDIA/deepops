@@ -1,6 +1,6 @@
-# users configuration
+# User management
+# Playbook: users, user-password
 # create user `nvidia` with password `deepops` on all nodes
-# run with users.yml playbook
 users:
   - username: nvidia
     name: nvidia
