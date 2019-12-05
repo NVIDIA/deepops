@@ -51,25 +51,6 @@ slurm-master
 slurm-node
 
 ######
-# NFS
-######
-[nfs-server]
-#login01
-
-[nfs-clients]
-#gpu01
-#gpu02
-
-#[nfs-clients:children]
-#slurm-node
-
-######
-# MAAS
-######
-[maas]
-#mgmt01
-
-######
 # SSH connection configuration
 ######
 [all:vars]
