@@ -1,16 +1,11 @@
-# Slurm job scheduler configuration
-slurm_user_home: /local/slurm
-slurm_manage_gpus: true
-slurm_cluster_name: deepops
-slurm_username: slurm
-slurm_password: ReplaceWithASecurePasswordInTheVault
-slurm_db_username: slurm
-slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
-#slurm_max_job_timelimit: INFINITE
-#slurm_default_job_timelimit:
-slurm_install_pyxis: yes
-slurm_controller_host: "{{ groups['slurm-master'][0] }}"
-slurm_compute_hosts: "{{ groups['slurm-node'] }}"
+# Docker config
+# Used by:
+#   playbooks/docker.yml
+#   playbooks/nvidia-docker.yml
+docker_daemon_json:
+  # Docker's default subnet is 172.17.0.0/16
+  # Pick a smaller subnet, which is also less likely to conflict with corporate addresses.
+  bip: 192.168.99.1/24
 
 # Enroot configuration
 enroot_runtime_path: '/tmp/enroot-runtime-$(id -u)'

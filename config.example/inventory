@@ -51,19 +51,6 @@ slurm-master
 slurm-node
 
 ######
-# SLURM PERF (DO NOT EDIT)
-######
-[slurm-perf-master:children]
-slurm-master
-
-[slurm-perf-node:children]
-slurm-node
-
-[slurm-perf-cluster:children]
-slurm-perf-master
-slurm-perf-node
-
-######
 # NFS
 ######
 [nfs-server]

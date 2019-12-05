@@ -1,0 +1,13 @@
+# AutoFS configuration
+#autofs_mount: "/home"
+#autofs_map: "auto.home_linux"
+
+#nfs_exports:
+#  - path: /export/shared
+#    options: "*(rw,sync,no_root_squash)"
+
+#nfs_mounts:
+#  - mountpoint: /mnt/shared
+#    server: '{{ groups["nfs-server"][0] }}'
+#    path: /export/shared
+#    options: async,vers=3

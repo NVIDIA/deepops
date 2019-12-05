@@ -1,0 +1,8 @@
+# dns-config
+#dns_config_servers: [8.8.8.8]
+#dns_config_search: [example.com]
+
+# NTP configuration
+#chrony_timezone: "America/Los_Angeles"
+#chrony_config_server:
+#  - 0.pool.ntp.org
