@@ -1,7 +1,10 @@
 ################################################################################
-# DeepOps Config                                                               #
+# DeepOps Ansible Config                                                       #
 ################################################################################
-
+#
+# Configuration common to all hosts
+# Define per-group or per-host values in the other configuration files
+#
 
 ################################################################################
 # NETWORK                                                                      #
