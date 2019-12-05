@@ -1,8 +1,0 @@
-# Collectd
-# Playbook: collectd
-#collectd_network_server: "deepops-mgmt.example.com"
-#collectd_network_port: "30300"
-#collectd_python_module_path: "/usr/lib/collectd/dcgm"
-#collectd_python_modules: []
-#collectd_config_dir: "/etc/collectd/collectd.conf.d"
-#with_dcgm_collectd: false

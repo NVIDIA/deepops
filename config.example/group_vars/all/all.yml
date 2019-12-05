@@ -1,5 +1,0 @@
-# Set /etc/rc.local contents
-# Playbook: rc-local
-# rc_local_contents: |
-#   echo foo
-#   echo bar
