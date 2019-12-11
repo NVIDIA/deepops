@@ -10,9 +10,10 @@ pipeline {
     stage('Cluster Up') {
       steps {
         // TODO: ideally lock should work with declared stages
-        lock(resource: null, label: 'gpu', quantity: 1, variable: 'GPUDATA') {
+        lock(resource: null, label: 'gpu', quantity: 2, variable: 'GPUDATA') {
           echo "Munge files for testing"
           sh '''
+            export DEEPOPS_FULL_INSTALL="true"
             bash -x ./.jenkins-scripts/munge-files.sh
           '''
 

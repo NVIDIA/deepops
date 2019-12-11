@@ -6,13 +6,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.private_key_path = ["~/.ssh/id_rsa", "~/.vagrant.d/insecure_private_key"]
   config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "~/.ssh/authorized_keys"
 
-  config.vm.define "virtual-mgmt" do |mgmt|
-    mgmt.vm.provider "libvirt" do |v|
+  config.vm.define "virtual-mgmt01" do |mgmt01|
+    mgmt01.vm.provider "libvirt" do |v|
       v.memory = 2048
       v.cpus = 2
     end
-    mgmt.vm.box = BOX_IMAGE
-    mgmt.vm.network :private_network, ip: "10.0.0.2"
+    mgmt01.vm.box = BOX_IMAGE
+    mgmt01.vm.network :private_network, ip: "10.0.0.2"
   end
 
   config.vm.define "virtual-login" do |login|
@@ -32,7 +32,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       v.cpu_mode = "host-passthrough"
       # comment in for pci passthrough (and change bus according
       # to local hw setup - `lspci -nnk | grep NVIDIA`)
-      #v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
+      #BUS-GPU01 v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
     end
     gpu.vm.box = BOX_IMAGE
     gpu.vm.network :private_network, ip: "10.0.0.11"

@@ -8,15 +8,26 @@ if vagrant destroy -f ; then
   echo "Destroyed cluster."
 else
   echo "Unable to vagrant destroy. Manually removing the VMs."
-  virsh destroy virtual_virtual-mgmt
-  virsh undefine virtual_virtual-mgmt
-  virsh vol-delete --pool default virtual_virtual-mgmt.img
+  virsh destroy virtual_virtual-mgmt01
+  virsh undefine virtual_virtual-mgmt01-1
+  virsh vol-delete --pool default virtual_virtual-mgmt01.img
   virsh destroy virtual_virtual-login
   virsh undefine virtual_virtual-login
   virsh vol-delete --pool default virtual_virtual-login.img
   virsh destroy virtual_virtual-gpu01
   virsh undefine virtual_virtual-gpu01
   virsh vol-delete --pool default virtual_virtual-gpu01.img
+  if [ ${DEEPOPS_FULL_INSTALL} ]; then
+    virsh destroy virtual_virtual-mgmt02
+    virsh undefine virtual_virtual-mgmt02-1
+    virsh vol-delete --pool default virtual_virtual-mgmt02.img
+    virsh destroy virtual_virtual-mgmt03
+    virsh undefine virtual_virtual-mgmt03-1
+    virsh vol-delete --pool default virtual_virtual-mgmt03.img
+    virsh destroy virtual_virtual-gpu02
+    virsh undefine virtual_virtual-gpu02-1
+    virsh vol-delete --pool default virtual_virtual-gpu02.img
+  fi
 fi
 cd -
 

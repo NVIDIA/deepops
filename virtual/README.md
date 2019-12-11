@@ -43,7 +43,9 @@ Also, using VMs and optionally GPU passthrough assumes that the host machine has
    #       configure the DEEPOPS_VAGRANT_FILE variable accordingly...
    #       export DEEPOPS_VAGRANT_FILE=$(pwd)/Vagrantfile-centos
    # NOTE: virtual-gpu01 requires GPU passthrough, by default it is not enabled
-   # NOTE: 3 VMs are started by default: virtual-mgmt, virtual-login, virtual-gpu01
+   # NOTE: 3 VMs are started by default: virtual-mgmt01, virtual-login, virtual-gpu01
+   # NOTE: 6 VMs are started if the environment variable DEEPOPS_FULL_INSTALL is set:
+   #       virtual-mgmt01, virtual-mgmt02, virtual-mgmt03, virtual-login, virtual-gpu01, virtual-gpu02
    
    cd virtual
    ./vagrant_startup.sh
