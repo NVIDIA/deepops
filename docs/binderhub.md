@@ -9,7 +9,7 @@ The default installation works on a single node. Multi-node installations are su
 
 ## Installation
 
-Deploy Kubernetes by following the [Kubernetes GPU Cluster Deployment Guide](kubernetes-cluster.md)
+Deploy Kubernetes by following the [DeepOps Kubernetes Deployment Guide](kubernetes-cluster.md)
 
 Deploy the [LoadBalancer](ingress.md#on-prem-loadbalancer)
 
