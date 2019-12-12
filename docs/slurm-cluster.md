@@ -39,7 +39,13 @@ Instructions for deploying a GPU cluster with Slurm
    # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
    ```
 
-4. Install Slurm. 
+4. Verify the configuration
+
+   ```sh
+   ansible all -m raw -a "hostname"
+   ```
+
+5. Install Slurm.
 
    ```sh
    # NOTE: If SSH requires a password, add: `-k`
