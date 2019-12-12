@@ -113,7 +113,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 5. Verify the configuration
 
    ```sh
-   ansible all -a "hostname"
+   ansible all -m raw -a "hostname"
    ```
 
 6. Edit the NFS configuration

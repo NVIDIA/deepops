@@ -36,8 +36,13 @@ Instructions for deploying a GPU cluster with Kubernetes
    
    # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
    ```
+4. Verify the configuration
 
-4. Install Kubernetes using Ansible and Kubespray.
+   ```sh
+   ansible all -m raw -a "hostname"
+   ```
+
+5. Install Kubernetes using Ansible and Kubespray.
 
    ```sh
    # NOTE: If SSH requires a password, add: `-k`
@@ -48,7 +53,7 @@ Instructions for deploying a GPU cluster with Kubernetes
    
    More information on Kubespray can be found in the official [Getting Started Guide](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md)
 
-5. Verify that the Kubernetes cluster is running. 
+6. Verify that the Kubernetes cluster is running.
 
    ```sh
    # You may need to manually run: `sudo cp ./config/artifacts/kubectl /usr/local/bin`
