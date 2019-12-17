@@ -1,4 +1,19 @@
 ---
+- name: install virtualenv	
+  apt:	
+    name: "{{ item }}"	
+    state: present	
+  with_items:	
+    - "virtualenv"	
+    - "python-setuptools"	
+  when: ansible_distribution == 'Ubuntu'	
+
+- name: create location for python virtual env	
+  file:	
+    path: "{{ deepops_dir }}"	
+    state: directory	
+  when: ansible_distribution == 'Ubuntu'
+
 - name: create GPU device plugin
   k8s:
     state: present
