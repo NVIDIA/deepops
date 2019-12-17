@@ -30,7 +30,7 @@
     - bootstrap
 
 # Install the OpenShift API libraries required by the GPU plugin
-- include: openshift
+- include: bootstrap-openshift.yml
 
 # Install Kubernetes
 # for configuration, see: config/group_vars/k8s-cluster.yml

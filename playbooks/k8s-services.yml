@@ -1,4 +1,6 @@
 ---
+- include: bootstrap-openshift.yml
+
 # Install packages required for Ansible Helm module
 - hosts: kube-master
   become: true
@@ -42,9 +44,6 @@
 - hosts: kube-master
   become: true
   tasks:
-    - name: Install required OpenShift packages to support Docker registry
-      include_role:
-        name: openshift
     - name: Install helm chart for container registry
       include_role:
         name: container-registry
