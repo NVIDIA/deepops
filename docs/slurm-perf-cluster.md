@@ -5,7 +5,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    This guide utilizes a collection of playbooks to configure a cluster, deploy a workload manager, and verify performance.
 
-   It leverages open source tools such as Pyxis and Enroot to optimize Slurm for multi-node Deep Learning jobs beyond the cluster configuration described in the [Slurm Deployment Guide](/docs/slurm-cluster.md). Additional details can be found [here](https://docs.nvidia.com/ngc/multi-node-bert-user-guide).
+   It leverages open source tools such as Pyxis and Enroot to optimize Slurm for multi-node Deep Learning jobs beyond the cluster configuration described in the [DeepOps Slurm Deployment Guide](/docs/slurm-cluster.md). Additional details can be found [here](https://docs.nvidia.com/ngc/multi-node-bert-user-guide).
 
 ## Supported Distributions
 
