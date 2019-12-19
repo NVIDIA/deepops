@@ -16,7 +16,7 @@ Check out the [video tutorial](https://drive.google.com/file/d/1RNLQYlgJqE8JMv0n
 
 ## Releases
 
-Latest release: [DeepOps 19.07 Release](https://github.com/NVIDIA/deepops/releases/tag/19.07)
+Latest release: [DeepOps 19.10 Release](https://github.com/NVIDIA/deepops/releases/tag/19.10)
 
 It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally functional but may change significantly between releases.
 
@@ -75,7 +75,7 @@ This project is released under the [BSD 3-clause license](https://github.com/NVI
 
 NVIDIA DGX customers should file an NVES ticket via [NVIDIA Enterprise Services](https://nvid.nvidia.com/enterpriselogin/).
 
-Otherwise, bugs and feature requests can be made by [filing a GitHub Issue](issues/new).
+Otherwise, bugs and feature requests can be made by [filing a GitHub Issue](https://github.com/NVIDIA/deepops/issues/new).
 
 ## Contributing
 
