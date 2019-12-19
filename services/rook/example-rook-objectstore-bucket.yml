@@ -1,0 +1,20 @@
+# Example definition of a bucket for a Ceph object store.
+# You will likely want to adjust this based on your application needs.
+#
+# To create a bucket based on this definition, you would run:
+#   kubectl create -f example-rook-objectstore-bucket.yml
+#
+# After the bucket is created, you can get the configuration needed to access
+# this bucket:
+#
+# export AWS_HOST=$(kubectl -n default get cm my-bucket-claim -o yaml | grep BUCKET_HOST | awk '{print $2}')
+# export AWS_ACCESS_KEY_ID=$(kubectl -n default get secret my-bucket-claim -o yaml | grep AWS_ACCESS_KEY_ID | awk '{print $2}' | base64 --decode)
+# export AWS_SECRET_ACCESS_KEY=$(kubectl -n default get secret my-bucket-claim -o yaml | grep AWS_SECRET_ACCESS_KEY | awk '{print $2}' | base64 --decode)
+---
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: my-bucket-claim
+spec:
+  generateBucketName: my-bucket
+  storageClassName: rook-ceph-bucket

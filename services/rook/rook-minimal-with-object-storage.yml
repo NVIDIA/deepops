@@ -1,0 +1,191 @@
+# Creates a Ceph cluster using Rook which includes an S3-compatible object
+# storage pool, along with a gateway pod for accessing the object interface.
+#
+# For information on using the object storage interface, see the Rook
+# documentation:
+# https://rook.io/docs/rook/v1.1/ceph-object.html
+#
+# To deploy Rook with this service file:
+#   > cd ${DEEPOPS_ROOT}
+#   > export ROOK_SERVICE_FILE="${DEEPOPS_ROOT}/services/rook/rook-minimal-with-object-storage.yml"
+#   > ./scripts/k8s_deploy_rook.sh
+---
+apiVersion: ceph.rook.io/v1
+kind: CephCluster
+metadata:
+  name: rook-ceph
+  namespace: rook-ceph
+spec:
+  cephVersion:
+    # For the latest ceph images, see https://hub.docker.com/r/ceph/ceph/tags
+    image: ceph/ceph:v14.2
+  dataDirHostPath: /var/lib/rook
+  mon:
+    count: 3
+    allowMultiplePerNode: true
+  dashboard:
+    enabled: true
+  storage:
+    useAllNodes: true
+    useAllDevices: false
+    directories:
+      - path: /var/lib/rook
+    config:
+      databaseSizeMB: "1024"
+      journalSizeMB: "1024"
+---
+apiVersion: ceph.rook.io/v1
+kind: CephBlockPool
+metadata:
+  name: replicapool
+  namespace: rook-ceph
+spec:
+  failureDomain: host
+  replicated:
+    size: 1
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+   name: rook-ceph-block
+   annotations:
+     storageclass.kubernetes.io/is-default-class: "true"
+provisioner: ceph.rook.io/block
+parameters:
+  blockPool: replicapool
+  # The value of "clusterNamespace" MUST be the same as the one in which your rook cluster exist
+  clusterNamespace: rook-ceph
+  # Specify the filesystem type of the volume. If not specified, it will use `ext4`.
+  fstype: xfs
+# Optional, default reclaimPolicy is "Delete". Other options are: "Retain", "Recycle" as documented in https://kubernetes.io/docs/concepts/storage/storage-classes/
+reclaimPolicy: Retain
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rook-ceph-tools
+  namespace: rook-ceph
+  labels:
+    app: rook-ceph-tools
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rook-ceph-tools
+  template:
+    metadata:
+      labels:
+        app: rook-ceph-tools
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: rook-ceph-tools
+        image: rook/ceph:master
+        command: ["/tini"]
+        args: ["-g", "--", "/usr/local/bin/toolbox.sh"]
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: ROOK_ADMIN_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: rook-ceph-mon
+                key: admin-secret
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - mountPath: /dev
+            name: dev
+          - mountPath: /sys/bus
+            name: sysbus
+          - mountPath: /lib/modules
+            name: libmodules
+          - name: mon-endpoint-volume
+            mountPath: /etc/rook
+      # if hostNetwork: false, the "rbd map" command hangs, see https://github.com/rook/rook/issues/2021
+      hostNetwork: true
+      volumes:
+        - name: dev
+          hostPath:
+            path: /dev
+        - name: sysbus
+          hostPath:
+            path: /sys/bus
+        - name: libmodules
+          hostPath:
+            path: /lib/modules
+        - name: mon-endpoint-volume
+          configMap:
+            name: rook-ceph-mon-endpoints
+            items:
+            - key: data
+              path: mon-endpoints
+---
+apiVersion: ceph.rook.io/v1
+kind: CephFilesystem
+metadata:
+  name: cephfs
+  namespace: rook-ceph
+spec:
+  metadataPool:
+    replicated:
+      size: 1
+  dataPools:
+    - replicated:
+        size: 1
+      #failureDomain: osd
+  metadataServer:
+    activeCount: 1
+    activeStandby: true
+---
+apiVersion: ceph.rook.io/v1
+kind: CephObjectStore
+metadata:
+  name: objectstore
+  namespace: rook-ceph
+spec:
+  metadataPool:
+    failureDomain: host
+    replicated:
+      size: 1
+  dataPool:
+    failureDomain: host
+    replicated:
+      size: 1
+  preservePoolsOnDelete: true
+  gateway:
+    type: s3
+    sslCertificateRef:
+    port: 80
+    securePort:
+    instances: 1
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: rook-ceph-bucket
+provisioner: ceph.rook.io/bucket
+reclaimPolicy: Delete
+parameters:
+  objectStoreName: objectstore
+  objectStoreNamespace: rook-ceph
+  region: us-east-1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rook-ceph-mgr-dashboard-external-https
+  namespace: rook-ceph
+  labels:
+    app: rook-ceph-mgr
+    rook_cluster: rook-ceph
+spec:
+  ports:
+  - name: dashboard
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: rook-ceph-mgr
+    rook_cluster: rook-ceph
+  sessionAffinity: None
+  type: NodePort
