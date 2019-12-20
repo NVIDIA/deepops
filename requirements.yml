@@ -23,13 +23,12 @@
   ## version: "v1.1.0"
 
 - src: https://github.com/phogan-nvidia/ansible-role-nvidia-driver
-    name: "nvidia.nvidia_driver"
-      version: "proxy"
-
+  name: "nvidia.nvidia_driver"
+  version: "proxy"
 
 - src: https://github.com/phogan-nvidia/ansible-role-nvidia-docker
-    name: "nvidia.nvidia_docker"
-      version: "proxy"
+  name: "nvidia.nvidia_docker"
+  version: "proxy"
 
 - src: https://github.com/NVIDIA/ansible-role-enroot.git
   verions: "v0.1.2"
