@@ -1,13 +1,4 @@
 ---
-
-- name: add epel repo
-  yum_repository:
-    name: epel
-    description: EPEL YUM repo
-    baseurl: "{{ epel_baseurl }}"
-    gpgkey: "{{ epel_gpgkey }}"
-  when: ansible_os_family == "RedHat"
-
 - include: munge.yml
 
 - name: install slurm (xenial)

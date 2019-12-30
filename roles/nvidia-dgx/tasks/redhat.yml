@@ -2,13 +2,6 @@
 - name: include os specific variables
   include_vars: redhat.yml
 
-- name: Add epel repo
-  yum_repository:
-    name: epel
-    description: EPEL YUM repo
-    baseurl: "{{ epel_baseurl }}"
-    gpgkey: "{{ epel_gpgkey }}"
-
 - name: Add DGX repo
   yum_repository:
     name: nvidia-dgx-7

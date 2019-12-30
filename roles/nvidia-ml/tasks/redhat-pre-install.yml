@@ -1,11 +1,4 @@
 ---
-- name: add epel repo
-  yum_repository:
-    name: epel
-    description: EPEL YUM repo
-    baseurl: "{{ epel_baseurl }}"
-    gpgkey: "{{ epel_gpgkey }}"
-
 - name: add repo
   yum_repository:
     name: machine-learning
