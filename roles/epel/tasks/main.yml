@@ -1,0 +1,8 @@
+---
+- name: add epel repository
+  yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: "{{ epel_baseurl }}"
+    gpgkey: "{{ epel_gpgkey }}"
+  when: ansible_os_family == "RedHat"
