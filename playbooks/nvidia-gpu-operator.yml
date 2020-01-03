@@ -1,4 +1,18 @@
 ---
+# Curently, GPU Operator is not supported on any distro but Ubuntu
+- hosts: kube-node
+  become: yes
+  any_errors_fatal: yes
+  tasks:
+    - name: Ensure we are running on a supported distro for all compute hosts
+      assert:
+        that:
+          - ansible_os_family == "Ubuntu"
+          - ansible_product_name is not search("DGX-1")
+          - ansible_product_name is not search("DGX-2")
+        fail_msg: "GPU Operator is currently only supported on Ubuntu, and not on DGX OS"
+        success_msg: "All nodes are on supported OS"
+
 # Install packages required for Ansible Helm module
 - hosts: kube-master
   become: true
