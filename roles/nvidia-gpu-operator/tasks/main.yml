@@ -34,9 +34,10 @@
       PYTHONHOME: "{{ deepops_venv }}"
     when: ansible_distribution == "Ubuntu"
 
-- name: create GPU operator special resource definition (RedHat)
-  k8s:
-    state: present
-    definition: "{{ lookup('url', gpu_operator_custom_resource_url, split_lines=False) }}"
-    run_once: true
-    when: ansible_distribution == "RedHat"
+# GPU Operator isn't supported yet on RedHat, but including this commented out for future use
+# - name: create GPU operator special resource definition (RedHat)
+#   k8s:
+#     state: present
+#     definition: "{{ lookup('url', gpu_operator_custom_resource_url, split_lines=False) }}"
+#     run_once: true
+#     when: ansible_distribution == "RedHat"
