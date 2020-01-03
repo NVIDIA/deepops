@@ -36,20 +36,21 @@
     host: "{{ tiller_host }}"
     chart:
       name: "{{ gpu_operator_chart_name }}"
+      version: "{{ gpu_operator_chart_version }}"
       source:
         type: repo
         location: "{{ gpu_operator_helm_repo }}"
-      state: present
-      name: "{{ gpu_operator_release_name }}"
+    state: present
+    name: "{{ gpu_operator_release_name }}"
 
 - name: create GPU operator special resource definition (Ubuntu)
   k8s:
     state: present
     definition: "{{ lookup('url', gpu_operator_custom_resource_url, split_lines=False) }}"
-    run_once: true
-    environment:
-      PYTHONHOME: "{{ deepops_venv }}"
-    when: ansible_distribution == "Ubuntu"
+  run_once: true
+  environment:
+    PYTHONHOME: "{{ deepops_venv }}"
+  when: ansible_distribution == "Ubuntu"
 
 # GPU Operator isn't supported yet on RedHat, but including this commented out for future use
 # - name: create GPU operator special resource definition (RedHat)
