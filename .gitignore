@@ -3,7 +3,8 @@
 
 # project-specific
 /admin.conf
-/config/
+/config*/
+!/config.example/
 /galaxy-roles/
 /k8s-config/
 /kubectl
