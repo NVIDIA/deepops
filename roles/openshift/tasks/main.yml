@@ -1,0 +1,27 @@
+---
+- name: install virtualenv and setuptools
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "virtualenv"
+    - "python-setuptools"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: create location for python virtual env
+  file:
+    path: "{{ deepops_dir }}"
+    state: directory
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install openshift python client for k8s_raw module
+  pip:
+    name: openshift
+    virtualenv: "{{ deepops_venv }}"
+  when: ansible_distribution == 'Ubuntu'
+
+  # TODO: Verify that RHEL  does not require venv
+- name: install openshift python client for k8s_raw module
+  yum:
+    name: python2-openshift
+  when: ansible_os_family == 'RedHat'
