@@ -38,17 +38,32 @@
   tags:
     - always
 
+# Ensure OpenShift packages are installed
+- include: bootstrap-openshift.yml
+
 # Register Tiller service info
 - hosts: kube-master
   become: true
   tasks:
-    - name: Get tiller service info
-      k8s_facts:
+    - name: Get tiller service info (Ubuntu)
+      k8s_info:
         api_version: v1
         kind: Service
         name: tiller-deploy
         namespace: kube-system
-      register: tiller_service
+      environment:
+        PYTHONHOME: "{{ deepops_venv }}"
+      register: tiller_service_ubuntu
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Get tiller service info (RedHat)
+      k8s_info:
+        api_version: v1
+        kind: Service
+        name: tiller-deploy
+        namespace: kube-system
+      register: tiller_service_redhat
+      when: ansible_distribution == "RedHat"
   tags:
     - always
 
@@ -56,12 +71,21 @@
 - hosts: kube-master
   become: yes
   tasks:
-    - name: Install helm chart for GPU operator
+    - name: Install helm chart for GPU operator (Ubuntu)
       include_role:
         name: nvidia-gpu-operator
       vars:
-        tiller_host: "{{ tiller_service.resources[0].spec.clusterIP }}"
+        tiller_host: "{{ tiller_service_ubuntu.resources[0].spec.clusterIP }}"
       run_once: true
+      when: ansible_distribution == "Ubuntu"
+      
+    - name: Install helm chart for GPU operator (RedHat)
+      include_role:
+        name: nvidia-gpu-operator
+      vars:
+        tiller_host: "{{ tiller_service_redhat.resources[0].spec.clusterIP }}"
+      run_once: true
+      when: ansible_distribution == "RedHat"
   tags:
     - nvidia
     - nvidia-gpu-operator
