@@ -92,25 +92,25 @@
 - include: nvidia-driver.yml
   tags:
     - nvidia
-  when: "not {{ deepops_gpu_operator_enabled | default(false) }}"
+  when: deepops_gpu_operator_enabled | default('false') | bool == false
 
 # Install NVIDIA container runtime on GPU servers
 - include: nvidia-docker.yml
   tags:
     - nvidia
-  when: "not {{ deepops_gpu_operator_enabled | default(false) }}"
+  when: deepops_gpu_operator_enabled | default('false') | bool == false
 
 # Install k8s GPU device plugin
 - include: k8s-gpu-plugin.yml
   tags:
     - nvidia
-  when: "not {{ deepops_gpu_operator_enabled | default(false) }}"
+  when: deepops_gpu_operator_enabled | default('false') | bool == false
 
 # Install NVIDIA GPU Operator
 - include: nvidia-gpu-operator.yml
   tags:
     - nvidia
-  when: "{{ deepops_gpu_operator_enabled | default(false) }}"
+  when: deepops_gpu_operator_enabled | default('false') | bool == true
 
 # Manage kubectl binary
 - hosts: all
