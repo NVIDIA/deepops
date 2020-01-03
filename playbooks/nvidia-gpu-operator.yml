@@ -7,7 +7,7 @@
     - name: Ensure we are running on a supported distro for all compute hosts
       assert:
         that:
-          - ansible_os_family == "Ubuntu"
+          - ansible_distribution == "Ubuntu"
           - ansible_product_name is not search("DGX-1")
           - ansible_product_name is not search("DGX-2")
         fail_msg: "GPU Operator is currently only supported on Ubuntu, and not on DGX OS"
