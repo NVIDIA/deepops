@@ -46,7 +46,7 @@
   become: true
   tasks:
     - name: Get tiller service info (Ubuntu)
-      k8s_info:
+      k8s_facts:
         api_version: v1
         kind: Service
         name: tiller-deploy
@@ -57,7 +57,7 @@
       when: ansible_distribution == "Ubuntu"
 
     - name: Get tiller service info (RedHat)
-      k8s_info:
+      k8s_facts:
         api_version: v1
         kind: Service
         name: tiller-deploy
