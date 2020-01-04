@@ -1,21 +1,4 @@
 ---
-- name: configure to include required kernel modules
-  copy:
-    src: "nvidia-driver.conf"
-    dest: "/etc/modules-load.d/driver.conf"
-    owner: "root"
-    group: "root"
-    mode: "0644"
-  when: ansible_distribution == "Ubuntu"
-
-- name: load required kernel modules
-  modprobe:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - "i2c_core"
-    - "ipmi_msghandler"
-
 - name: install virtualenv
   apt:
     name: "{{ item }}"

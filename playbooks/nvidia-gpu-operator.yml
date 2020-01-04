@@ -67,6 +67,17 @@
   tags:
     - always
 
+# Prepare compute nodes for GPU operator
+- hosts: kube-node
+  become: yes
+  tasks:
+    - name: node prep for GPU operator
+      include_role:
+        name: nvidia-gpu-operator-node-prep
+  tags:
+    - nvidia
+    - nvidia-gpu-operator
+
 # GPU operator
 - hosts: kube-master
   become: yes
