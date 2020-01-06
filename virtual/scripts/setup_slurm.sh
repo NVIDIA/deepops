@@ -21,6 +21,7 @@ fi
 
 # Configure Slurm cluster
 ansible-playbook \
+	-vvv \
 	-i "${VIRT_DIR}/config/inventory" \
 	-l slurm-cluster \
 	-e "@${VIRT_DIR}/vars_files/virt_slurm.yml" ${ansible_extra_args} \
