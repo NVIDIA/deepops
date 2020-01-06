@@ -1,3 +1,0 @@
-[submodule "kubespray"]
-	path = kubespray
-	url = https://github.com/kubernetes-incubator/kubespray.git
