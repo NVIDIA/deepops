@@ -11,6 +11,8 @@ export GPU
 BUS="$(echo "${GPUDATA}" | cut -d"-" -f2)"
 export BUS
 
+git submodule sync
+
 echo "modify GPU passthrough to point to this resource's GPU"
 sed -i -e "s/#v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'/v.pci :bus => '$BUS', :slot => '0x00', :function => '0x0'/g" virtual/Vagrant*
 
