@@ -1,0 +1,44 @@
+---
+- name: install virtualenv
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "virtualenv"
+    - "python-setuptools"
+  when: ansible_distribution == "Ubuntu"
+
+- name: create location for python virtualenv
+  file:
+    path: "{{ deepops_dir }}"
+    state: directory
+  when: ansible_distribution == "Ubuntu"
+
+- name: install GPU operator helm chart
+  helm:
+    host: "{{ tiller_host }}"
+    chart:
+      name: "{{ gpu_operator_chart_name }}"
+      version: "{{ gpu_operator_chart_version }}"
+      source:
+        type: repo
+        location: "{{ gpu_operator_helm_repo }}"
+    state: present
+    name: "{{ gpu_operator_release_name }}"
+
+- name: create GPU operator special resource definition (Ubuntu)
+  k8s:
+    state: present
+    definition: "{{ lookup('url', gpu_operator_custom_resource_url, split_lines=False) }}"
+  run_once: true
+  environment:
+    PYTHONHOME: "{{ deepops_venv }}"
+  when: ansible_distribution == "Ubuntu"
+
+# GPU Operator isn't supported yet on RedHat, but including this commented out for future use
+# - name: create GPU operator special resource definition (RedHat)
+#   k8s:
+#     state: present
+#     definition: "{{ lookup('url', gpu_operator_custom_resource_url, split_lines=False) }}"
+#     run_once: true
+#     when: ansible_distribution == "RedHat"
