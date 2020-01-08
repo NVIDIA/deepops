@@ -2,12 +2,13 @@
 
 - name: Copy DGX firmware container tarball to temporary directory on remote node
   copy:
-    src: "{{ inventory_dir }}/containers/dgx-firmware/{{ firmware_update_container }}.tar.gz"
+    src: "{{ firmware_container_src_dir }}/{{ firmware_update_container }}"
     dest: "{{ nv_diag_dir }}"
+  ignore_errors: yes
 
 # Using 'command' instead of 'docker_image' since docker-py is required to use 'docker_image'
 - name: Load image from archive
   command: "docker load -i {{ firmware_update_container }}"
   args:
     chdir: "{{ nv_diag_dir }}"
-  changed_when: False
+  ignore_errors: yes

@@ -1,31 +1,23 @@
 ---
-- name: Run NVSM human-readable health show
-  shell: "nvsm show health > {{ nv_diag_dir }}/nvsm-show-health.log"
-  become: yes
-  changed_when: False
-
-- name: Run NVSM dump health
-  shell: "nvsm dump health"
-  become: yes
-  changed_when: False
-
 - name: get hostname
   shell: hostname
   register: hostname
 
 - name: check mlxconfig
   become: yes
-  shell: "mlxconfig query  | egrep -e Device\|LINK_TYPE_P1\|LINK_TYPE_P2"
+  shell: "mlxconfig query  | egrep -e Device\\|LINK_TYPE_P1\\|LINK_TYPE_P2"
   register: mlx_config
+  ignore_errors: yes
 
 - name: check ibstat
   become: yes
-  shell: "ibstat | egrep -e mlx\|Link"
+  shell: "ibstat | egrep -e mlx\\|Link"
   register: ibstat
+  ignore_errors: yes
 
-- name: save hostname
-  shell: echo "{{ hostname.stdout }}" >> "{{ nv_diag_dir }}.{{ hostname.stdout }}.log"
+- name: save actual hostname
+  shell: echo "{{ hostname.stdout }}" >> "{{ nv_diag_dir }}/{{ inventory_hostname }}.log"
 - name: save mlx_config
-- shell: echo "{{ mlx_config.stdout }}" >> "{{ nv_diag_dir }}.{{ hostname.stdout }}.log"
-- name: ibstat
-- shell: echo "{{ ibstat.stdout }}" >> "{{ nv_diag_dir }}.{{ hostname.stdout }}.log"
+  shell: echo "{{ mlx_config.stdout }}" >> "{{ nv_diag_dir }}/{{ inventory_hostname }}.log"
+- name: save ibstat
+  shell: echo "{{ ibstat.stdout }}" >> "{{ nv_diag_dir }}/{{ inventory_hostname }}.log"

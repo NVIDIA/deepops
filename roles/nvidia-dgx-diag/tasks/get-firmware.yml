@@ -3,4 +3,4 @@
   shell: "docker run --privileged --rm -v /:/hostfs {{ firmware_update_repo }}:{{ firmware_update_tag }} show_version | tee {{ nv_diag_dir }}/fw-versions.log"
   args:
     chdir: "{{ nv_diag_dir }}"
-  changed_when: False
+  ignore_errors: yes
