@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cluster-gpu-tests
+spec:
+  parallelism: 4 # DYNAMIC_PARALLELISM
+  completions: 4 # DYNAMIC_COMPLETIONS
+  backoffLimit: 5
+  template:
+    spec:
+      containers:
+        - name: cluster-gpu-tests
+          image: nvcr.io/nvidia/cuda:10.0-devel
+          command: ["/bin/bash","-c","nvidia-smi && sleep 30"]
+          args:
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+      restartPolicy: Never
+
