@@ -1,0 +1,7 @@
+---
+- hosts: [ kube-node, slurm-node ]
+  gather_facts: no
+  tasks:
+    - name: Include NVIDIA GPU tests role
+      include_role:
+        name: nvidia-gpu-tests
