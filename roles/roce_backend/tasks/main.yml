@@ -80,14 +80,14 @@
 - name: Install Universal SR-IOV device plugin
   k8s:
     state: present
-    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/intel/sriov-network-device-plugin/master/images/sriovdp-daemonset.yaml', split_lines=False) }}"
+    definition: "{{ lookup('url', {{ sriov_dp_ds }}, split_lines=False) }}"
   run_once: true          
   tags: 
     - roce_k8s
 - name: Install SR-IOV CNI 
   k8s:
     state: present
-    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/intel/sriov-cni/master/images/sriov-cni-daemonset.yaml', split_lines=False) }}"
+    definition: "{{ lookup('url', {{ sriov_cni_ds }}, split_lines=False) }}"
   run_once: true
   tags: 
     - roce_k8s
@@ -104,7 +104,7 @@
 - name: Multus update
   k8s:
     state: present
-    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/intel/multus-cni/master/images/multus-daemonset.yml', split_lines=False) }}"
+    definition: "{{ lookup('url',{{ multus_ds }} , split_lines=False) }}"
   run_once: true
   tags:
     - roce_k8s
