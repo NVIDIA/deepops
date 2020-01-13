@@ -43,4 +43,4 @@ if ! helm status "${app_name}" >/dev/null 2>&1; then
 		stable/nginx-ingress
 fi
 
-kubectl wait --for=condition=Ready -l "app=${app_name},component=controller" --timeout=90s pod
+kubectl wait --for=condition=Ready -l "app=${app_name},component=controller" --timeout=180s pod
