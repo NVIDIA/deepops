@@ -63,7 +63,7 @@ Instructions for deploying a GPU cluster with Kubernetes
    Optionally, test a GPU job to ensure that your Kubernetes setup can tap into GPUs. 
 
    ```sh
-   kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
+   kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 nvidia-smi
    ```
 
 ## Using Kubernetes
