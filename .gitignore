@@ -1,6 +1,9 @@
 # ansible
 *.retry
 
+# misc.
+.*.swp
+
 # project-specific
 /admin.conf
 /config/
