@@ -65,7 +65,7 @@
 # Playbook: nfs-client.yml
 #nfs_mounts:
 #  - mountpoint: /mnt/shared
-#    server: '{{ groups["nfs-server"][0] }}'
+#    server: '{{ groups["slurm-master"][0] }}'
 #    path: /export/shared
 #    options: async,vers=3
 
