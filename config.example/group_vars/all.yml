@@ -188,3 +188,9 @@ maas_kvm: false
 # rc_local_contents: |
 #   echo foo
 #   echo bar
+#
+# DeepOps specific config
+deepops_dir: /opt/deepops
+# Directory for python virtualenv
+# Roles: K8s GPU operator, GPU plugin, OpenShift/K8s
+deepops_venv: '{{ deepops_dir }}/venv'
