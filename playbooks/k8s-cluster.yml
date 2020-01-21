@@ -119,6 +119,12 @@
     ansible_become: no
     config_dir: "../config"
   tasks:
+    - name: copy kubectl binary to ansible host
+      synchronize:
+        mode: pull
+        src: "/usr/local/bin/kubectl"
+        dest: "{{ config_dir }}/artifacts/kubectl"
+      run_once: yes
     - name: register alternate config path
       stat:
         path: "../k8s-config"
