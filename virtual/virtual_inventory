@@ -12,7 +12,6 @@ virtual-mgmt ansible_host=10.0.0.2 ip=10.0.0.2
 virtual-login ansible_host=10.0.0.4 ip=10.0.0.4
 virtual-gpu01 ansible_host=10.0.0.11 ip=10.0.0.11
 
-
 ######
 # KUBERNETES
 ######
@@ -42,15 +41,6 @@ virtual-gpu01
 [slurm-cluster:children]
 slurm-master
 slurm-node
-
-######
-# NFS
-######
-[nfs-server]
-virtual-login
-
-[nfs-clients]
-virtual-gpu01
 
 ######
 # SSH connection configuration
