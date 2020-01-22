@@ -10,7 +10,7 @@ echo "    \"threads_per_core\": \"$THREADSPERCORE\"",
 echo "    \"logical_cpus\": \"$(expr $SOCKETS \* $CORESPERSOCKET \* $THREADSPERCORE)\""
 echo "  },"
 echo "  \"gpu_topology\": ["
-gpus=$(for i in `lspci | grep -i nvidia | grep 3D | awk '{print $1}' | cut -d : -f 1`; do \
+gpus=$(for i in `lspci | grep -E "(3D|VGA compatible) controller: NVIDIA" | awk '{print $1}' | cut -d : -f 1`; do \
     echo -n \"$(cat /sys/class/pci_bus/0000:$i/cpulistaffinity)\",; done | sed 's/,$//')
 echo "    $gpus"
 echo "  ]"

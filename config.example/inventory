@@ -23,11 +23,13 @@
 #mgmt02
 #mgmt03
 
+# Odd number of nodes required
 [etcd]
 #mgmt01
 #mgmt02
 #mgmt03
 
+# Also add mgmt/master nodes here if they will run non-control plane jobs
 [kube-node]
 #gpu01
 #gpu02
@@ -51,35 +53,10 @@ slurm-master
 slurm-node
 
 ######
-# SLURM PERF (DO NOT EDIT)
-######
-[slurm-perf-master:children]
-slurm-master
-
-[slurm-perf-node:children]
-slurm-node
-
-[slurm-perf-cluster:children]
-slurm-perf-master
-slurm-perf-node
-
-######
-# NFS
-######
-[nfs-server]
-#login01
-
-[nfs-clients]
-#gpu01
-#gpu02
-
-#[nfs-clients:children]
-#slurm-node
-
-######
 # SSH connection configuration
 ######
 [all:vars]
+# SSH User
 #ansible_user=ubuntu
-# Configure SSH bastion/jumpbox for the cluster
+# SSH bastion/jumpbox
 #ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'

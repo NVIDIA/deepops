@@ -7,8 +7,7 @@ metadata:
 spec:
   cephVersion:
     # For the latest ceph images, see https://hub.docker.com/r/ceph/ceph/tags
-    # v14 as of 27.06.19 has a bug in the dashboard: https://github.com/rook/rook/issues/3106
-    image: ceph/ceph:v13
+    image: ceph/ceph:v14.2
   dataDirHostPath: /var/lib/rook
   mon:
     count: 3

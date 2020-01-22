@@ -11,7 +11,7 @@ Getting Started
 1. Pick a provisioning node to deploy from. This is where the Ansible scripts should be run from and is often a development laptop that has a connection to the target cluster. On this provisioning node, clone the DeepOps repository...
 
 ```
-git clone git@github.com:NVIDIA/deepops.git
+git clone https://github.com/NVIDIA/deepops.git
 ```
 
 2. Checkout a recent release tag. This is an optional step, but if not done, the latest development code will be used, not an official release.

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
 # can be run standalone with: curl -sL git.io/deepops | bash
+# or: curl -sL git.io/deepops | bash -s -- 19.07
+
+# DeepOps branch to setup
+DEEPOPS_TAG="${1:-master}"
 
 . /etc/os-release
 
@@ -157,7 +161,7 @@ esac
 if ! grep -i deepops README.md >/dev/null 2>&1 ; then
     cd "${SCRIPT_DIR}"
     if ! test -d deepops ; then
-        git clone https://github.com/NVIDIA/deepops.git
+        git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
     fi
     cd deepops
 fi
