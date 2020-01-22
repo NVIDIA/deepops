@@ -123,18 +123,20 @@
 - hosts: all
   gather_facts: false
   vars:
-    ansible_become: no
+    config_dir: "../config"
   tasks:
     - name: check for kubectl
       stat:
         path: "{{ artifacts_dir }}/kubectl"
       register: kubectl_local
+      become: no
       delegate_to: localhost
       run_once: true
     - name: modify kubectl permissions
       file:
         path: "{{ artifacts_dir }}/kubectl"
         mode: '0755'
+      become: no
       when: kubectl_local.stat.exists
       delegate_to: localhost
       run_once: true
@@ -160,6 +162,7 @@
         owner: root
         group: root
         mode: '0755'
+      become: yes
       ignore_errors: yes
       when: kubectl_system.stat.exists
       delegate_to: localhost
