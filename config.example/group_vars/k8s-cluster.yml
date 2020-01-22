@@ -1,7 +1,8 @@
 ansible_become: true
 kubeadm_enabled: true
 kube_api_anonymous_auth: true
-kubectl_localhost: true
+# Set to false due to kubespray bug: https://github.com/kubernetes-sigs/kubespray/issues/5059
+kubectl_localhost: false
 kubeconfig_localhost: true
 helm_enabled: true
 tiller_node_selectors: "node-role.kubernetes.io/master=''"
