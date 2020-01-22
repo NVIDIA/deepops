@@ -17,56 +17,78 @@
 #   with_items:
 #     - "{{ folder_stats.results }}"
 ---
-- name: "install needed packages"
+- name: "install needed packages (Debian)"
   become: yes
-  action: apt name=python-setuptools state=latest
+  apt:
+    name:
+      - python-setuptools
+    state: latest
   when: ansible_os_family == "Debian"
 
-- name: "install needed packages"
+- name: "install needed packages (RedHat)"
   become: yes
-  action: yum name=python-setuptools state=latest
+  yum:
+    name:
+      - python-setuptools
+    state: latest
   when: ansible_os_family == "RedHat"
 
-- name: "rm previous tmp folders"    
-  file: 
-    path: "{{ eb_tmp_dir }}"
+- name: "rm tmp directory, EasyBuild software, and EasyBuild modules"
+  become: yes
+  file:
+    path: "{{ item }}"
     state: absent
     force: yes
+    with_items:
+      - "{{ eb_tmp_dir }}"
+      - "{{ eb_software_path }}/EasyBuild"
+      - "{{ eb_modulepath }}/EasyBuild"
 
-- name: "rm EasyBuild software"
-  file: path="{{ eb_software_path }}/EasyBuild" state=absent force=yes
-
-- name: "rm EasyBuild profile file"
+- name: "rm EasyBuild profile file (Debian)"
   become: yes
-  file: path="/etc/profile.d/z01_eb.sh" state=absent force=yes
+  file:
+    path: "/etc/profile.d/z01_eb.sh"
+    state: absent
+    force: yes
   when: ansible_os_family == "Debian"
 
-- name: "rm EasyBuild profile file"
+- name: "rm EasyBuild profile file (RedHat)"
   become: yes
-  file: path="/etc/profile.d/z01_eb.csh" state=absent force=yes
+  file:
+    path: "/etc/profile.d/z01_eb.csh"
+    state: absent
+    force: yes
   when: ansible_os_family == "RedHat"
 
-- name: "rm EasyBuild module"
-  file: path={{ eb_modulepath }}/EasyBuild state=absent force=yes
-
-- name: "mkdir tmp folders"    
+- name: "mkdir tmp folders"
   file: 
-    path: "{{ eb_tmp_dir }}"
+    path: "{{ item }}"
     state: directory
     force: yes
     recurse: yes
     mode: 'u=rwx,g=rwx,o=rx'
   #delegate_to: 127.0.0.1
+  with_items:
+    - "{{ eb_tmp_dir }}"
 
-- name: "mkdir required directories"
-  file: path={{ item }} state=directory recurse=yes #mode='u=rwx,g=rwx,o=rx' 
+- name: "mkdir tmp folders"
+  file:
+    path: "{{ item }}"
+    state: directory
+    force: yes
+    recurse: yes
+    # delegate_to: 127.0.0.1
+    # mode='u=rwx,g=rwx,o=rx'
   with_items:
     - "{{ eb_modulepath }}"
     - "{{ eb_software_path }}"
-  #delegate_to: 127.0.0.1
 
 - name: "download bootstrap script"
-  get_url: url="{{ item.url }}" dest="{{ item.dest }}" mode='u=rwx,g=rwx,o=rx' force=yes
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: 'u=rwx,g=rwx,o=rx'
+    force: yes
   with_items:
     - url: "{{ eb_bootstrap_url }}" 
       dest: '/tmp'
@@ -88,7 +110,6 @@
   shell: ls {{ eb_tmp_dir }}/software/EasyBuild/
   args:
     executable: /bin/bash
-
   register: ebsw_version
   when: ebsw_stat.stat.exists
 
@@ -118,7 +139,10 @@
 #  when: ebsw_stat.stat.exists
 
 - name: "rm EasyBuild tmp directories"
-  file: path={{ eb_tmp_dir }} state=absent force=yes
+  file:
+    path: "{{ eb_tmp_dir }}"
+    state=absent
+    force=yes
 
 - name: "configure sh profile"
   become: yes
