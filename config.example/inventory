@@ -87,5 +87,6 @@ slurm-perf-node
 ######
 [all:vars]
 #ansible_user=ubuntu
+#ansible_ssh_private_key_file='~/.ssh/id_rsa'
 # Configure SSH bastion/jumpbox for the cluster
 #ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'
