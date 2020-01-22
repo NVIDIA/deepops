@@ -5,7 +5,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/.."
 cd "${ROOT_DIR}" || exit 1
 
-HELM_COREOS_CHART_REPO="${HELM_COREOS_CHART_REPO:-https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/}"
+GPU_HELM_CHARTS_REPO="${GPU_HELM_CHARTS_REPO:-https://nvidia.github.io/gpu-monitoring-tools/helm-charts}"
 
 # Determine DeepOps config dir
 config_dir="$(pwd)/config"
@@ -35,29 +35,9 @@ master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o
 
 ./scripts/install_helm.sh
 
-case "$1" in
-    delete)
-        helm del --purge prometheus-operator
-        helm del --purge kube-prometheus
-        kubectl delete ns monitoring
-        exit 0
-        ;;
-esac
-
-kubectl version
-if [ $? -ne 0 ] ; then
-    echo "Unable to talk to Kubernetes API"
-    exit 1
-fi
-
-# Get IP of first master
-master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
-
-./scripts/install_helm.sh
-
 # Add repo for Prometheus charts
-if ! helm repo list | grep coreos >/dev/null 2>&1 ; then
-    helm repo add coreos "${HELM_COREOS_CHART_REPO}"
+if ! helm repo list | grep gpu-helm-charts >/dev/null 2>&1 ; then
+    helm repo add gpu-helm-charts "${GPU_HELM_CHARTS_REPO}"
 fi
 
 
@@ -68,16 +48,17 @@ if [ "${PROMETHEUS_OPER_REPO}" ]; then
 fi
 if ! helm status prometheus-operator >/dev/null 2>&1 ; then
     helm install \
-	    coreos/prometheus-operator \
+	    gpu-helm-charts/prometheus-operator \
 	    --name prometheus-operator \
 	    --namespace monitoring \
 	    --values ${config_dir}/helm/prometheus-operator.yml ${helm_prom_oper_args}
 fi
 
-# Create GPU Dashboard config map
-if ! kubectl -n monitoring get configmap kube-prometheus-grafana-gpu >/dev/null 2>&1 ; then
-    kubectl create configmap kube-prometheus-grafana-gpu --from-file=${config_dir}/gpu-dashboard.json -n monitoring
-fi
+# TODO: add back custom dashboard
+## Create GPU Dashboard config map
+#if ! kubectl -n monitoring get configmap kube-prometheus-grafana-gpu >/dev/null 2>&1 ; then
+#    kubectl create configmap kube-prometheus-grafana-gpu --from-file=${config_dir}/gpu-dashboard.json -n monitoring
+#fi
 
 # Deploy the ingress controller with a set name
 ingress_name="nginx-ingress"
@@ -106,7 +87,7 @@ if [ "${GRAFANA_WATCHER_REPO}" ]; then
 	helm_kube_prom_args="${helm_kube_prom_args} --set-string grafana.grafanaWatcher.repository="${GRAFANA_WATCHER_REPO}""
 fi
 if ! helm status kube-prometheus >/dev/null 2>&1 ; then
-    helm install coreos/kube-prometheus \
+    helm install gpu-helm-charts/kube-prometheus \
 	--name kube-prometheus \
 	--namespace monitoring \
 	--values ${config_dir}/helm/kube-prometheus.yml \
