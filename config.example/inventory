@@ -6,6 +6,7 @@
 
 ######
 # ALL NODES
+# NOTE: Use existing hostnames here, DeepOps will configure server hostnames to match these values
 ######
 [all]
 #mgmt01     ansible_host=10.0.0.1
