@@ -17,4 +17,3 @@ spec:
             limits:
               nvidia.com/gpu: 1
       restartPolicy: Never
-

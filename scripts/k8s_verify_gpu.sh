@@ -7,14 +7,14 @@
 export KFCTL=${KFCTL:-~/kfctl}
 export CLUSTER_VERIFY_NS=${CLUSTER_VERIFY_NS:-cluster-gpu-verify}
 export CLUSTER_VERIFY_EXPECTED_PODS=${CLUSTER_VERIFY_EXPECTED_PODS:-}
-
+export CLUSTER_VERIFY_JOB=tests/cluster-gpu-test-job.yml
 # Ensure we start in the correct working directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/.."
 cd "${ROOT_DIR}" || exit 1
 TESTS_DIR=$ROOT_DIR/tests
 
-job_name=$(cat $TESTS_DIR/cluster-gpu-test-job.yml | grep -A1 metadata | awk '{print $2}')
+job_name=$(grep 'name:' ${CLUSTER_VERIFY_JOB} | awk -F": " '{print $2}' | tail -n1)
 echo "job_name=$job_name"
 
 # Count the number of nodes with GPUs present and the total GPUs across all nodes
@@ -29,18 +29,23 @@ done
 echo "total_gpus=$total_gpus"
 
 echo "Creating/Deleting sandbox Namespace"
-kubectl delete ns ${CLUSTER_VERIFY_NS}
+kubectl delete ns ${CLUSTER_VERIFY_NS} > /dev/null
 kubectl create ns ${CLUSTER_VERIFY_NS}
 
 echo "updating test yml"
 sed -i "s/.*DYNAMIC_PARALLELISM.*/  parallelism: ${total_gpus} # DYNAMIC_PARALLELISM/g" $TESTS_DIR/cluster-gpu-test-job.yml
 sed -i "s/.*DYNAMIC_COMPLETIONS.*/  completions: ${total_gpus} # DYNAMIC_COMPLETIONS/g" $TESTS_DIR/cluster-gpu-test-job.yml
 
-echo "executing ..."
-kubectl -n ${CLUSTER_VERIFY_NS} create -f $TESTS_DIR/cluster-gpu-test-job.yml > /dev/null
-sleep 10
+echo "downloading containers ..."
+kubectl -n ${CLUSTER_VERIFY_NS} create -f ${CLUSTER_VERIFY_JOB} > /dev/null
+kubectl -n ${CLUSTER_VERIFY_NS} wait --for=condition=complete --timeout=600s job/${job_name}
+kubectl -n ${CLUSTER_VERIFY_NS} delete job/${job_name}
 
-# The test job sleeps for 30 seconds, so if we create the pods and wait less than 30 seconds we should have everything in either a RUNNING or PENDING state
+echo "executing ..."
+kubectl -n ${CLUSTER_VERIFY_NS} create -f ${CLUSTER_VERIFY_JOB} > /dev/null
+kubectl -n ${CLUSTER_VERIFY_NS} wait --for=condition=complete --timeout=5s job/${job_name} # Wait for less time than it takes the actual job to complete, but long enough to start containers
+
+# Count all the containers in a RUNNING state, these were the success containers
 pods_output=$(kubectl -n ${CLUSTER_VERIFY_NS} get pods | grep ${job_name} | awk '$3 ~/Running/ {print $1}' )
 string_array=($pods_output)
 number_pods=${#string_array[@]}
@@ -64,6 +69,10 @@ elif [ -n "${CLUSTER_VERIFY_EXPECTED_PODS}" ]; then
     if [ "${CLUSTER_VERIFY_EXPECTED_PODS}" != "${number_pods}" ]; then
         echo "ERROR: expected ${CLUSTER_VERIFY_EXPECTED_PODS} Pods, found ${number_pods}"
         echo "GPU driver test failed, use 'kubectl -n ${CLUSTER_VERIFY_NS} describe nodes' to check GPU driver status"
+	k8s_gpu_device_plugin=$(grep nvidia_k8s_device_plugin_def roles/k8s-gpu-plugin/defaults/main.yml  | awk '{print $2}')
+	echo "Try redeploying the NVIDIA Device Plugin by running (you may need to run this several times):"
+	echo "kubectl delete -f ${k8s_gpu_device_plugin}"
+	echo "kubectl create -f ${k8s_gpu_device_plugin}"
         exit 1
     fi
 fi
