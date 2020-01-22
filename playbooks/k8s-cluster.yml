@@ -113,7 +113,7 @@
   when: deepops_gpu_operator_enabled | default('false') | bool == true
 
 # Manage kubectl binary
-- hosts: all
+- hosts: kube-master
   gather_facts: false
   vars:
     ansible_become: no
@@ -125,6 +125,14 @@
         src: "/usr/local/bin/kubectl"
         dest: "{{ config_dir }}/artifacts/kubectl"
       run_once: yes
+  tags:
+    - local
+- hosts: all
+  gather_facts: false
+  vars:
+    ansible_become: no
+    config_dir: "../config"
+  tasks:
     - name: register alternate config path
       stat:
         path: "../k8s-config"
