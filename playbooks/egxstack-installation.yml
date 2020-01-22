@@ -68,7 +68,6 @@
    - name: Reset Kubernetes component
      when: "'running' not in k8sup.stdout"
      shell: "kubeadm reset --force"
-     register: reset_cluster
 
    - name: remove etcd directory
      when: "'running' not in k8sup.stdout"
