@@ -1,0 +1,142 @@
+- hosts: localhost
+  gather_facts: no
+  tasks:
+   - name: Validate whether Kubernetes cluster installed
+     shell: kubectl cluster-info
+     register: k8sup
+     ignore_errors: yes
+
+   - name: install Required Packages 
+     when: "'running' not in k8sup.stdout"
+     apt: 
+       name: ['apt-transport-https', 'curl', 'ca-certificates', 'gnupg-agent' ,'software-properties-common']
+       state: present
+
+   - name: Set up the Repository
+     when: "'running' not in k8sup.stdout"
+     command: "{{ item }}"
+     args: 
+       warn: false
+     with_items:
+       - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+       - sudo apt-key fingerprint 0EBFCD88
+       - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+   
+   - name: install Docker Engine
+     when: "'running' not in k8sup.stdout"
+     shell: apt install -y docker-ce=5:19.03.1~3-0~ubuntu-bionic docker-ce-cli=5:19.03.1~3-0~ubuntu-bionic containerd.io
+
+   - name: install Docker Engine
+     when: "'running' not in k8sup.stdout"
+     shell: sudo systemctl start docker && sudo systemctl enable docker
+
+   - name: Remove swapfile from /etc/fstab
+     when: "'running' not in k8sup.stdout"
+     mount:
+       name: "{{ item }}"
+       fstype: swap
+       state: absent
+     with_items:
+      - swap
+      - none
+
+   - name: Disable swap
+     when: "'running' not in k8sup.stdout"
+     command: swapoff -a
+
+   - name: Add an apt signing key for Kubernetes
+     when: "'running' not in k8sup.stdout"
+     apt_key:
+       url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+       state: present
+
+   - name: Adding apt repository for Kubernetes
+     when: "'running' not in k8sup.stdout"
+     apt_repository:
+      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+      state: present
+      filename: kubernetes
+   
+   - name: install kubernetes components
+     when: "'running' not in k8sup.stdout"
+     shell: apt-get install -y kubelet=1.15.5-00 kubeadm=1.15.5-00 kubectl=1.15.5-00
+
+   - name: start kubelet
+     when: "'running' not in k8sup.stdout"
+     service: name=kubelet state=started
+
+   - name: Reset Kubernetes component
+     when: "'running' not in k8sup.stdout"
+     shell: "kubeadm reset --force"
+     register: reset_cluster
+
+   - name: remove etcd directory
+     when: "'running' not in k8sup.stdout"
+     shell: "/bin/rm -rf /var/lib/etcd"
+
+   - name: Initialize the Kubernetes cluster using kubeadm
+     when: "'running' not in k8sup.stdout"
+     command: kubeadm init --pod-network-cidr=192.168.0.0/16
+
+   - name: Create kube directory
+     when: "'running' not in k8sup.stdout"
+     file:
+       path: $HOME/.kube
+       state: directory
+
+   - name: Copy kubeconfig to home
+     when: "'running' not in k8sup.stdout"
+     copy:
+       src:  /etc/kubernetes/admin.conf
+       dest:  $HOME/.kube/config
+       mode: '0644'
+
+   - name: Install networking plugin to kubernetes cluster
+     when: "'running' not in k8sup.stdout"
+     command: kubectl apply -f https://docs.projectcalico.org/v3.9/manifests/calico.yaml
+
+   - name: Taint the Kubernetes Control Plane node
+     when: "'running' not in k8sup.stdout"
+     command: kubectl taint nodes --all node-role.kubernetes.io/master-
+
+   - name: "Check if Helm is installed"
+     shell: command -v helm >/dev/null 2>&1
+     register: helm_exists
+     ignore_errors: yes
+
+   - name: "Install Helm"
+     command: "{{ item }}"
+     args: 
+       warn: false
+     with_items:
+       - wget https://get.helm.sh/helm-v2.14.3-linux-arm64.tar.gz
+       - tar xvzf helm-v2.14.3-linux-arm64.tar.gz
+       - sudo cp linux-arm64/helm /usr/local/bin/
+       - rm -rf helm-v2.14.3-linux-amd64.tar.gz linux-amd64
+
+     when: helm_exists.rc > 0
+
+   - name: "Tiller RBAC configuration"
+     when: "'running' not in k8sup.stdout"
+     command: "{{ item }}"
+     args: 
+       warn: false
+     with_items:
+       - kubectl create serviceaccount -n kube-system tiller
+       - kubectl create clusterrolebinding tiller-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+       - kubectl --namespace kube-system patch deploy tiller-deploy -p '{"spec":{"template":{"spec":{"serviceaccount":"tiller"}}}}'
+
+   - name: "Initialize Helm"
+     when: "'running' not in k8sup.stdout"
+     shell: "helm init --service-account tiller"
+
+   - name: Installing the GPU Operator 
+     when: "'running' not in k8sup.stdout"
+     command: "{{ item }}"
+     args: 
+       warn: false
+     with_items:
+        - helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
+        - helm repo update
+        - helm install --devel nvidia/gpu-operator -n test-operator --wait
+        - kubectl apply -f https://raw.githubusercontent.com/NVIDIA/gpu-operator/master/manifests/cr/sro_cr_sched_none.yaml

@@ -1,0 +1,57 @@
+- hosts: localhost
+  gather_facts: no
+  tasks: 
+    - name: Validate kubernetes cluster is up
+      shell:  kubectl cluster-info | grep master
+      register: cluster
+      failed_when: cluster.rc == 1
+      ignore_errors: yes
+
+    - name: check master node is up and running
+      shell: kubectl get nodes | grep -i ready
+      register: nodeready
+      failed_when: "'NotReady' in nodeready.stdout"
+      ignore_errors: yes
+
+    - name: Check all pods are running for Kubernetes 
+      shell: kubectl get pods --all-namespaces | egrep -v 'Running|NAME'
+      register: kubepods
+      failed_when: kubepods.rc == 0
+      ignore_errors: yes
+
+    - name: validate helm installed 
+      shell: helm ls
+      register: helmls
+      failed_when: helmls.rc == 1
+      ignore_errors: yes
+
+    - name: Check whether cluster role is created for Helm
+      shell: kubectl get clusterrole cluster-admin -n kube-system | grep cluster-admin
+      register: clusterrole
+      failed_when: clusterrole.rc == 1
+      ignore_errors: yes
+
+    - name: Check whether clusterrolebinding is created for Helm
+      shell: kubectl get clusterrolebinding -n kube-system | grep tiller
+      register: clusterrolebinding
+      failed_when: clusterrolebinding.rc == 1
+      ignore_errors: yes
+
+    - name: Check whether Tiller Service Account is Created for Helm
+      shell:  kubectl get sa -n kube-system |grep tiller 
+      register: sa
+      failed_when: sa.rc == 1
+      ignore_errors: yes
+  
+    - name: Check whether Tiller Service Account is added to Helm
+      shell: sudo kubectl get deploy -n kube-system | grep tiller| awk '{print $1}' | xargs -L1 -I {} sudo kubectl get deploy/{} -n kube-system -o=jsonpath='{.spec.template.spec.serviceAccount}{"\n"}' 
+      register: sahelm
+      failed_when: sahelm.rc == 1
+      ignore_errors: yes
+
+    - name: Validate the GPU Operator pods State
+      shell: sudo kubectl get pods --all-namespaces | egrep -v 'kube-system|NAME'
+      register: pods
+      failed_when: pods.rc == 1
+      ignore_errors: yes
+
