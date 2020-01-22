@@ -124,7 +124,7 @@
      with_items:
        - kubectl create serviceaccount -n kube-system tiller
        - kubectl create clusterrolebinding tiller-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-       - kubectl --namespace kube-system patch deploy tiller-deploy -p '{"spec":{"template":{"spec":{"serviceaccount":"tiller"}}}}'
+       - kubectl --namespace kube-system patch deploy tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 
    - name: "Initialize Helm"
      when: "'running' not in k8sup.stdout"
