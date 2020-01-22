@@ -1,4 +1,6 @@
 ---
+- include: bootstrap-openshift.yml
+
 # Install packages required for Ansible Helm module
 - hosts: kube-master
   become: true

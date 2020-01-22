@@ -12,7 +12,7 @@ Kubeflow is an [open source project](https://github.com/kubeflow/kubeflow) and i
 
 ## Installation
 
-Deploy Kubernetes by following the [Kubernetes GPU Cluster Deployment Guide](kubernetes-cluster.md)
+Deploy Kubernetes by following the [DeepOps Kubernetes Deployment Guide](kubernetes-cluster.md)
 
 Deploy [Ceph](kubernetes-cluster.md#persistent-storage)
 

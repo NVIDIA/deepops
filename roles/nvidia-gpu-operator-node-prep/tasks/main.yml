@@ -1,0 +1,34 @@
+---
+- name: unload nouveau
+  modprobe:
+    name: nouveau
+    state: absent
+  ignore_errors: true
+
+- name: blacklist nouveau
+  copy:
+    src: "blacklist-nouveau.conf"
+    dest: "/etc/modprobe.d/blacklist-nouveau.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  notify:
+  - update-initramfs
+
+- name: configure to include required kernel modules
+  copy:
+    src: "nvidia-driver.conf"
+    dest: "/etc/modules-load.d/nvidia-driver.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
+- name: load required kernel modules
+  modprobe:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "i2c_core"
+    - "ipmi_msghandler"
+
+
