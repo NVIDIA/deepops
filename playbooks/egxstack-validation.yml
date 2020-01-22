@@ -45,8 +45,8 @@
   
     - name: Check whether Tiller Service Account is added to Helm
       shell: sudo kubectl get deploy -n kube-system | grep tiller| awk '{print $1}' | xargs -L1 -I {} sudo kubectl get deploy/{} -n kube-system -o=jsonpath='{.spec.template.spec.serviceAccount}{"\n"}' 
-      register: sahelm
-      failed_when: sahelm.rc == 1
+      register: saadded
+      failed_when: saadded.rc == 1
       ignore_errors: yes
 
     - name: Validate the GPU Operator pods State
