@@ -142,7 +142,7 @@ function tear_down() {
 
   # Delete other NS that were installed. These might be part of other apps and is slightly dangerous
   if [ "${KUBEFLOW_FULL_DELETE}" == "true" ]; then
-    namespaces=" ${namespaces} kubeflow-anonymous auth anonymous cert-manager istio-system knative-serving ${KUBEFLOW_EXTRA_NS}"
+    namespaces=" ${namespaces} admin auth cert-manager istio-system knative-serving ${KUBEFLOW_EXTRA_NS}"
   fi
 
   # This runs kfctl delete pointing to the CONFIG that was used at install
