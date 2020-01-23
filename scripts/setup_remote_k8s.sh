@@ -11,7 +11,7 @@ case "$ID" in
             sudo yum -y install curl
         fi
         ;;
-    debian*)
+    ubuntu*)
         type curl >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
             sudo apt-get -y install curl

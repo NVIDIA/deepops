@@ -24,7 +24,7 @@ case "$ID" in
             sudo yum -y install curl
         fi
         ;;
-    debian*)
+    ubuntu*)
         if ! type curl >/dev/null 2>&1 ; then
             sudo apt-get -y install curl
         fi

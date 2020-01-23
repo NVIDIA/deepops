@@ -77,7 +77,7 @@ function install_dependencies() {
               sudo yum -y install curl wget
           fi
           ;;
-      debian*)
+      ubuntu*)
           type curl >/dev/null 2>&1
           if [ $? -ne 0 ] ; then
               sudo apt -y install curl wget
