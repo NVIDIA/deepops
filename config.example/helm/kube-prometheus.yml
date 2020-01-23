@@ -10,7 +10,7 @@ prometheus:
   service:
     type: NodePort
     nodePort: 30500
-  serviceMonitors:
+  additionalServiceMonitors:
   - name: dcgm-exporter
     selector:
       matchLabels:
