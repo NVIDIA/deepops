@@ -5,8 +5,6 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/.."
 cd "${ROOT_DIR}" || exit 1
 
-HELM_COREOS_CHART_REPO="${HELM_COREOS_CHART_REPO:-https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/}"
-
 # Determine DeepOps config dir
 config_dir="$(pwd)/config"
 if [ "${DEEPOPS_CONFIG_DIR}" ]; then
@@ -15,10 +13,16 @@ elif [ -d "$(pwd)/config" ] ; then
     config_dir="$(pwd)/config"
 fi
 
+HELM_CHARTS_REPO_STABLE="${HELM_CHARTS_REPO_STABLE:-https://kubernetes-charts.storage.googleapis.com}"
+
 case "$1" in
     delete)
         helm del --purge prometheus-operator
-        helm del --purge kube-prometheus
+        kubectl delete crd prometheuses.monitoring.coreos.com
+        kubectl delete crd prometheusrules.monitoring.coreos.com
+        kubectl delete crd servicemonitors.monitoring.coreos.com
+        kubectl delete crd podmonitors.monitoring.coreos.com
+        kubectl delete crd alertmanagers.monitoring.coreos.com
         kubectl delete ns monitoring
         exit 0
         ;;
@@ -33,50 +37,31 @@ fi
 # Get IP of first master
 master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
 
+# Install/initialize Helm if needed
 ./scripts/install_helm.sh
 
-case "$1" in
-    delete)
-        helm del --purge prometheus-operator
-        helm del --purge kube-prometheus
-        kubectl delete ns monitoring
-        exit 0
-        ;;
-esac
-
-kubectl version
-if [ $? -ne 0 ] ; then
-    echo "Unable to talk to Kubernetes API"
-    exit 1
+# Add Helm stable repo if it doesn't exist
+if ! helm repo list | grep stable >/dev/null 2>&1 ; then
+    helm repo add stable "${HELM_CHARTS_REPO_STABLE}"
 fi
 
-# Get IP of first master
-master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
-
-./scripts/install_helm.sh
-
-# Add repo for Prometheus charts
-if ! helm repo list | grep coreos >/dev/null 2>&1 ; then
-    helm repo add coreos "${HELM_COREOS_CHART_REPO}"
-fi
-
-
-# Install Prometheus Operator, with alternate repo if needed
+# Configure air-gapped deployment
 helm_prom_oper_args=""
 if [ "${PROMETHEUS_OPER_REPO}" ]; then
 	helm_prom_oper_args="${helm_prom_oper_args} --set-string image.repository="${PROMETHEUS_OPER_REPO}""
 fi
-if ! helm status prometheus-operator >/dev/null 2>&1 ; then
-    helm install \
-	    coreos/prometheus-operator \
-	    --name prometheus-operator \
-	    --namespace monitoring \
-	    --values ${config_dir}/helm/prometheus-operator.yml ${helm_prom_oper_args}
+helm_kube_prom_args=""
+if [ "${ALERTMANAGER_REPO}" ]; then
+	helm_kube_prom_args="${helm_kube_prom_args} --set-string alertmanager.image.repository="${ALERTMANAGER_REPO}""
 fi
-
-# Create GPU Dashboard config map
-if ! kubectl -n monitoring get configmap kube-prometheus-grafana-gpu >/dev/null 2>&1 ; then
-    kubectl create configmap kube-prometheus-grafana-gpu --from-file=${config_dir}/gpu-dashboard.json -n monitoring
+if [ "${PROMETHEUS_REPO}" ]; then
+	helm_kube_prom_args="${helm_kube_prom_args} --set-string prometheus.image.repository="${PROMETHEUS_REPO}""
+fi
+if [ "${GRAFANA_REPO}" ]; then
+	helm_kube_prom_args="${helm_kube_prom_args} --set-string grafana.image.repository="${GRAFANA_REPO}""
+fi
+if [ "${GRAFANA_WATCHER_REPO}" ]; then
+	helm_kube_prom_args="${helm_kube_prom_args} --set-string grafana.grafanaWatcher.repository="${GRAFANA_WATCHER_REPO}""
 fi
 
 # Deploy the ingress controller with a set name
@@ -91,28 +76,27 @@ if kubectl describe service -l "app=${ingress_name},component=controller" | grep
 	echo "Using load balancer url: ${ingress_ip_string}"
 fi
 
-# Deploy Monitoring stack, with alternate repo if needed
-helm_kube_prom_args=""
-if [ "${ALERTMANAGER_REPO}" ]; then
-	helm_kube_prom_args="${helm_kube_prom_args} --set-string alertmanager.image.repository="${ALERTMANAGER_REPO}""
-fi
-if [ "${PROMETHEUS_REPO}" ]; then
-	helm_kube_prom_args="${helm_kube_prom_args} --set-string prometheus.image.repository="${PROMETHEUS_REPO}""
-fi
-if [ "${GRAFANA_REPO}" ]; then
-	helm_kube_prom_args="${helm_kube_prom_args} --set-string grafana.image.repository="${GRAFANA_REPO}""
-fi
-if [ "${GRAFANA_WATCHER_REPO}" ]; then
-	helm_kube_prom_args="${helm_kube_prom_args} --set-string grafana.grafanaWatcher.repository="${GRAFANA_WATCHER_REPO}""
-fi
-if ! helm status kube-prometheus >/dev/null 2>&1 ; then
-    helm install coreos/kube-prometheus \
-	--name kube-prometheus \
-	--namespace monitoring \
-	--values ${config_dir}/helm/kube-prometheus.yml \
+# Deploy Monitoring stack via Prometheus Operator Helm chart
+echo
+echo "Deploying monitoring stack..."
+if ! helm status prometheus-operator >/dev/null 2>&1 ; then
+    helm install \
+	    stable/prometheus-operator \
+	    --name prometheus-operator \
+	    --namespace monitoring \
+	    --values ${config_dir}/helm/prometheus-operator.yml \
+	    --values ${config_dir}/helm/kube-prometheus.yml \
         --set alertmanager.ingress.hosts[0]="alertmanager-${ingress_ip_string}" \
         --set prometheus.ingress.hosts[0]="prometheus-${ingress_ip_string}" \
-        --set grafana.ingress.hosts[0]="grafana-${ingress_ip_string}" ${helm_kube_prom_args}
+        --set grafana.ingress.hosts[0]="grafana-${ingress_ip_string}" \
+        ${helm_prom_oper_args} \
+        ${helm_kube_prom_args}
+fi
+
+# Create GPU Dashboard config map
+if ! kubectl -n monitoring get configmap kube-prometheus-grafana-gpu >/dev/null 2>&1 ; then
+    kubectl create configmap kube-prometheus-grafana-gpu --from-file=${config_dir}/gpu-dashboard.json -n monitoring
+    kubectl -n monitoring label configmap kube-prometheus-grafana-gpu grafana_dashboard=1
 fi
 
 # Label GPU nodes
@@ -134,9 +118,9 @@ fi
 
 # Use NodePort directly if the IP string uses the master IP, otherwise use Ingress URL
 if echo "${ingress_ip_string}" | grep "${master_ip}" >/dev/null 2>&1; then
-	grafana_port=$(kubectl  -n monitoring get svc -l app=kube-prometheus-grafana --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
-	prometheus_port=$(kubectl  -n monitoring get svc -l app=prometheus --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
-	alertmanager_port=$(kubectl  -n monitoring get svc -l app=alertmanager --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
+	grafana_port=$(kubectl -n monitoring get svc prometheus-operator-grafana --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
+	prometheus_port=$(kubectl -n monitoring get svc prometheus-operator-prometheus --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
+	alertmanager_port=$(kubectl -n monitoring get svc prometheus-operator-alertmanager --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
 	echo
 	echo "Grafana: http://${master_ip}:${grafana_port}/"
 	echo "Prometheus: http://${master_ip}:${prometheus_port}/"

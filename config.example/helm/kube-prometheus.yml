@@ -37,6 +37,7 @@ alertmanager:
     nodePort: 30400
 
 grafana:
+  adminPassword: deepops
   ingress:
     enabled: true
     annotations:
