@@ -18,8 +18,8 @@ kubectl -n kube-system wait --for=condition=Ready -l app=helm,name=tiller --time
 
 # Install dependencies
 . /etc/os-release
-case "$ID_LIKE" in
-    rhel*)
+case "$ID" in
+    rhel*|centos*)
         if ! type curl >/dev/null 2>&1 ; then
             sudo yum -y install curl
         fi

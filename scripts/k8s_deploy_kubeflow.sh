@@ -70,8 +70,8 @@ function get_opts() {
 function install_dependencies() {
   # Install dependencies
   . /etc/os-release
-  case "$ID_LIKE" in
-      rhel*)
+  case "$ID" in
+      rhel*|centos*)
           type curl >/dev/null 2>&1
           if [ $? -ne 0 ] ; then
               sudo yum -y install curl wget
