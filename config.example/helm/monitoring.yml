@@ -1,3 +1,7 @@
+prometheusOperator:
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
+
 prometheus:
   ingress:
     enabled: true
@@ -5,8 +9,9 @@ prometheus:
       kubernetes.io/ingress.class: "nginx"
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/rewrite-target: /
-  nodeSelector:
-    node-role.kubernetes.io/master: ""
+  prometheusSpec:
+    nodeSelector:
+      node-role.kubernetes.io/master: ""
   service:
     type: NodePort
     nodePort: 30500
@@ -30,8 +35,9 @@ alertmanager:
       kubernetes.io/ingress.class: "nginx"
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/rewrite-target: /
-  nodeSelector:
-    node-role.kubernetes.io/master: ""
+  alertmanagerSpec:
+    nodeSelector:
+      node-role.kubernetes.io/master: ""
   service:
     type: NodePort
     nodePort: 30400

@@ -84,8 +84,7 @@ if ! helm status prometheus-operator >/dev/null 2>&1 ; then
 	    stable/prometheus-operator \
 	    --name prometheus-operator \
 	    --namespace monitoring \
-	    --values ${config_dir}/helm/prometheus-operator.yml \
-	    --values ${config_dir}/helm/kube-prometheus.yml \
+	    --values ${config_dir}/helm/monitoring.yml \
         --set alertmanager.ingress.hosts[0]="alertmanager-${ingress_ip_string}" \
         --set prometheus.ingress.hosts[0]="prometheus-${ingress_ip_string}" \
         --set grafana.ingress.hosts[0]="grafana-${ingress_ip_string}" \
@@ -116,18 +115,22 @@ if kubectl -n monitoring get pod -l app=dcgm-exporter 2>&1 | grep "No resources 
     fi
 fi
 
+# Get Grafana auth details
+grafana_user=$(kubectl -n monitoring get secrets prometheus-operator-grafana -o 'go-template={{ index .data "admin-user" }}' | base64 -d)
+grafana_password=$(kubectl -n monitoring get secrets prometheus-operator-grafana -o 'go-template={{ index .data "admin-password" }}' | base64 -d)
+
 # Use NodePort directly if the IP string uses the master IP, otherwise use Ingress URL
 if echo "${ingress_ip_string}" | grep "${master_ip}" >/dev/null 2>&1; then
 	grafana_port=$(kubectl -n monitoring get svc prometheus-operator-grafana --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
 	prometheus_port=$(kubectl -n monitoring get svc prometheus-operator-prometheus --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
 	alertmanager_port=$(kubectl -n monitoring get svc prometheus-operator-alertmanager --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
 	echo
-	echo "Grafana: http://${master_ip}:${grafana_port}/"
+    echo "Grafana: http://${master_ip}:${grafana_port}/     admin user: ${grafana_user}     admin password: ${grafana_password}"
 	echo "Prometheus: http://${master_ip}:${prometheus_port}/"
 	echo "Alertmanager: http://${master_ip}:${alertmananger_port}/"
 else
 	echo
-	echo "Grafana: http://grafana-${ingress_ip_string}/"
+	echo "Grafana: http://grafana-${ingress_ip_string}/     admin user: ${grafana_user}     admin password: ${grafana_password}"
 	echo "Prometheus: http://prometheus-${ingress_ip_string}/"
 	echo "Alertmanager: http://alertmanager-${ingress_ip_string}/"
 fi
