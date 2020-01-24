@@ -4,14 +4,14 @@ KUBECTL_BINARY_URL="${KUBECTL_BINARY_URL:-https://storage.googleapis.com/kuberne
 
 # Install dependencies
 . /etc/os-release
-case "$ID_LIKE" in
-    rhel*)
+case "$ID" in
+    rhel*|centos*)
         type curl >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
             sudo yum -y install curl
         fi
         ;;
-    debian*)
+    ubuntu*)
         type curl >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
             sudo apt-get -y install curl
