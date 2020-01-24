@@ -445,7 +445,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "node_memory_MemTotal{instance=\"$hostname:9100\"} - node_memory_MemFree{instance=\"$hostname:9100\"} - node_memory_Buffers{instance=\"$hostname:9100\"} - node_memory_Cached{instance=\"$hostname:9100\"}",
+          "expr": "node_memory_MemTotal_bytes{instance=\"$hostname:9100\"} - node_memory_MemFree_bytes{instance=\"$hostname:9100\"} - node_memory_Buffers_bytes{instance=\"$hostname:9100\"} - node_memory_Cached_bytes{instance=\"$hostname:9100\"}",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -455,7 +455,7 @@
           "refId": "A"
         },
         {
-          "expr": "node_memory_Buffers{instance=\"$hostname:9100\"}",
+          "expr": "node_memory_Buffers_bytes{instance=\"$hostname:9100\"}",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -465,7 +465,7 @@
           "refId": "B"
         },
         {
-          "expr": "node_memory_Cached{instance=\"$hostname:9100\"}",
+          "expr": "node_memory_Cached_bytes{instance=\"$hostname:9100\"}",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
@@ -473,7 +473,7 @@
           "refId": "C"
         },
         {
-          "expr": "node_memory_MemFree{instance=\"$hostname:9100\"}",
+          "expr": "node_memory_MemFree_bytes{instance=\"$hostname:9100\"}",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -723,7 +723,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(collectd_dcgm_collectd_pcie_tx_throughput{exported_instance=\"$hostname\"}[$__interval]))",
+          "expr": "sum(rate(dcgm_pcie_tx_throughput{instance=\"$hostname:9101\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
@@ -731,7 +731,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(rate(collectd_dcgm_collectd_pcie_rx_throughput{exported_instance=\"$hostname\"}[$__interval]))",
+          "expr": "sum(rate(dcgm_pcie_rx_throughput{instance=\"$hostname:9101\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 2,
@@ -1153,21 +1153,21 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(node_network_transmit_bytes{instance=\"$hostname:9100\",device=~\"enp.*\"}[$__interval]))",
+          "expr": "sum(rate(node_network_transmit_bytes_total{instance=\"$hostname:9100\",device=~\"en.*\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
           "interval": "",
-          "intervalFactor": 2,
+          "intervalFactor": 10,
           "legendFormat": "Transmit",
           "refId": "B"
         },
         {
-          "expr": "sum(rate(node_network_receive_bytes{instance=\"$hostname:9100\",device=~\"enp.*\"}[$__interval]))",
+          "expr": "sum(rate(node_network_receive_bytes_total{instance=\"$hostname:9100\",device=~\"en.*\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
           "instant": false,
           "interval": "",
-          "intervalFactor": 2,
+          "intervalFactor": 10,
           "legendFormat": "Receive",
           "refId": "A"
         }
