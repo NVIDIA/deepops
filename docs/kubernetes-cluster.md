@@ -70,7 +70,7 @@ Instructions for deploying a GPU cluster with Kubernetes
 
    ```sh
    export CLUSTER_VERIFY_EXPECTED_PODS=1 # Expected number of GPUs in the cluster
-   ./scripts/k8s_verifyi_gpu.sh 
+   ./scripts/k8s_verify_gpu.sh 
    ```
 
 ## Using Kubernetes
