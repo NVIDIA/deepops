@@ -1,8 +1,7 @@
 - include: k8s-cluster.yml
   vars:
     deepops_gpu_operator_enabled: true
-    kube_version: v1.15.5
-    helm_version: "v2.14.3"
-    docker_version: 19.03
+    helm_version: v2.14.3
+    docker_version: 'latest'
     docker_versioned_pkg:
-      '19.03': docker-ce=5:19.03.1~3-0~ubuntu-{{ ansible_distribution_release|lower }}
+      'latest': docker-ce
