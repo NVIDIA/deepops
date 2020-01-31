@@ -1,6 +1,6 @@
 ---
 - name: Get a count of GPUs
-  shell: "lspci -d 10de: | grep -c VGA | wc -l"
+  shell: "lspci -d 10de: | grep -iv audio | wc -l"
   register: gpu_count
 
 # This bit seems a bit buggy depending on the OS 
