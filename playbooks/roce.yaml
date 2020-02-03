@@ -1,4 +1,5 @@
 ---
+# Playbook for installation SR-IOV DP with CNI and corresponded prerequisites
 - hosts: all
   become: true
   become_method: sudo
@@ -8,8 +9,6 @@
       tags: 
         - roce_host
         - roce_pip
-        
-
     
 - hosts: kube-node
   become: true

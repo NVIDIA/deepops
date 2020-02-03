@@ -18,5 +18,3 @@
     - reboot:
       when: install_mofed.changed
   when: check_mlnx_adapter.stdout|int > 0
-
-

@@ -4,9 +4,9 @@
 - name: MOFED installation
   include_tasks: mofed-install.yaml
   when: ansible_distribution == 'Ubuntu'
-  run_once: true
   tags: 
     - roce_host
+
 # Activate VF for relevant PF
 - name: checking the Mellanox OFED is installed
   stat:
@@ -26,12 +26,34 @@
   tags: 
     - roce_host
 
+- name: Add first line to /etc/rc.local
+  lineinfile: 
+    path: /etc/rc.local
+    regexp: '^#!/bin/sh -e'
+    state: present
+    line: '#!/bin/sh -e'
+    insertbefore: BOF
+  when: ofed_present.stat.exists  
+  tags:
+    - roce_host
+
+- name: Add last line to /etc/rc.local
+  lineinfile:
+    path: /etc/rc.local
+    regexp: '^exit 0'
+    state: present
+    line: 'exit 0'
+    insertafter: EOF
+  when: ofed_present.stat.exists  
+  tags:
+    - roce_host
+      
 - include_tasks: vf-activate.yaml
   with_items: "{{ sriov_resources }}"
   when: ofed_present.stat.exists
   tags: 
     - roce_host
-
+      
 #Install Mellanox GPUDirect - WIP
 
 #Install Python modules
@@ -80,17 +102,19 @@
 - name: Install Universal SR-IOV device plugin
   k8s:
     state: present
-    definition: "{{ lookup('url', {{ sriov_dp_ds }}, split_lines=False) }}"
+    definition: "{{ lookup('url', '{{ sriov_dp_ds }}', split_lines=False ) }}"
   run_once: true          
   tags: 
     - roce_k8s
+
 - name: Install SR-IOV CNI 
   k8s:
     state: present
-    definition: "{{ lookup('url', {{ sriov_cni_ds }}, split_lines=False) }}"
+    definition: "{{ lookup('url', '{{ sriov_cni_ds }}', split_lines=False) }}"
   run_once: true
   tags: 
     - roce_k8s
+
 - name: Install DHCP CNI 
   k8s:
     state: present
@@ -104,7 +128,7 @@
 - name: Multus update
   k8s:
     state: present
-    definition: "{{ lookup('url',{{ multus_ds }} , split_lines=False) }}"
+    definition: "{{ lookup('url', '{{ multus_ds }}', split_lines=False) }}"
   run_once: true
   tags:
     - roce_k8s
