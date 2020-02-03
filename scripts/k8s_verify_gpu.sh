@@ -29,8 +29,9 @@ done
 echo "total_gpus=$total_gpus"
 
 echo "Creating/Deleting sandbox Namespace"
-kubectl delete ns ${CLUSTER_VERIFY_NS} > /dev/null
-kubectl create ns ${CLUSTER_VERIFY_NS}
+if !(kubectl get ns | grep ${CLUSTER_VERIFY_NS} >/dev/null);then
+        kubectl create ns ${CLUSTER_VERIFY_NS} > /dev/null
+fi
 
 echo "updating test yml"
 sed -i "s/.*DYNAMIC_PARALLELISM.*/  parallelism: ${total_gpus} # DYNAMIC_PARALLELISM/g" $TESTS_DIR/cluster-gpu-test-job.yml
@@ -39,14 +40,17 @@ sed -i "s/.*DYNAMIC_COMPLETIONS.*/  completions: ${total_gpus} # DYNAMIC_COMPLET
 echo "downloading containers ..."
 kubectl -n ${CLUSTER_VERIFY_NS} create -f ${CLUSTER_VERIFY_JOB} > /dev/null
 kubectl -n ${CLUSTER_VERIFY_NS} wait --for=condition=complete --timeout=600s job/${job_name}
-kubectl -n ${CLUSTER_VERIFY_NS} delete job/${job_name}
 
 echo "executing ..."
-kubectl -n ${CLUSTER_VERIFY_NS} create -f ${CLUSTER_VERIFY_JOB} > /dev/null
-kubectl -n ${CLUSTER_VERIFY_NS} wait --for=condition=complete --timeout=5s job/${job_name} # Wait for less time than it takes the actual job to complete, but long enough to start containers
 
 # Count all the containers in a RUNNING state, these were the success containers
-pods_output=$(kubectl -n ${CLUSTER_VERIFY_NS} get pods | grep ${job_name} | awk '$3 ~/Running/ {print $1}' )
+pods_output=$(kubectl -n ${CLUSTER_VERIFY_NS} get pods | grep ${job_name} | awk '$3 ~/Completed/ {print $1}' )
+
+if [ -z "$pods_output" ]; then
+	echo "GPU verification can't be executed, please check GPU node directly"
+	exit 1
+fi
+
 string_array=($pods_output)
 number_pods=${#string_array[@]}
 
@@ -78,4 +82,6 @@ elif [ -n "${CLUSTER_VERIFY_EXPECTED_PODS}" ]; then
 fi
 
 # Only delete on success to allow debugging
+kubectl -n ${CLUSTER_VERIFY_NS} delete job/${job_name}
 kubectl delete ns ${CLUSTER_VERIFY_NS}
+
