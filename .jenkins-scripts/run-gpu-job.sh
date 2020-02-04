@@ -1,7 +1,8 @@
 #!/bin/bash
+set -ex
 
 # Get absolute path for the virtual DeepOps directory
-VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/../virtual"
 ROOT_DIR="${VIRT_DIR}/.."
 
 # Ensure working directory is root
