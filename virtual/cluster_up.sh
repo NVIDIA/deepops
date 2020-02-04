@@ -22,9 +22,8 @@ DEEPOPS_VIRT_CLEAN_CONFIG="${DEEPOPS_VIRT_CLEAN_CONFIG:-1}"
 if [ "${DEEPOPS_VIRT_CLEAN_CONFIG}" -ne 0 ]; then
 	rm -rf "${VIRT_DIR}/config"
 	cp -r "${ROOT_DIR}/config.example/" "${DEEPOPS_CONFIG_DIR}/"
-	if [ -z ${DEEPOPS_FULL_INSTALL} ]; then
-	  cp "${VIRT_DIR}/virtual_inventory" "${DEEPOPS_CONFIG_DIR}/inventory"
-	else
+	cp "${VIRT_DIR}/virtual_inventory" "${DEEPOPS_CONFIG_DIR}/inventory"
+	if [ ${DEEPOPS_FULL_INSTALL} ]; then
 	  cp "${VIRT_DIR}/virtual_inventory_full" "${DEEPOPS_CONFIG_DIR}/inventory"
 	fi
 fi

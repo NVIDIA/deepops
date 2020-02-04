@@ -13,8 +13,8 @@ Set up a virtual cluster with DeepOps. Useful for...
 The host machine should have enough resources to fufill the minimum VM needs...
 
 Total: 6 vCPU, 20 GB RAM, 96 GB Storage
-* virtual-login: 2 vCPU, 2GB RAM and 32GB Storage
-* virtual-mgmt: 2 vCPU, 2GB RAM and 32GB Storage
+* virtual-login01: 2 vCPU, 2GB RAM and 32GB Storage
+* virtual-mgmt01: 2 vCPU, 2GB RAM and 32GB Storage
 * virtual-gpu01: 2 vCPU, 16GB RAM and 32GB Storage
 
 ### Operating System Requirements
@@ -43,9 +43,9 @@ Also, using VMs and optionally GPU passthrough assumes that the host machine has
    #       configure the DEEPOPS_VAGRANT_FILE variable accordingly...
    #       export DEEPOPS_VAGRANT_FILE=$(pwd)/Vagrantfile-centos
    # NOTE: virtual-gpu01 requires GPU passthrough, by default it is not enabled
-   # NOTE: 3 VMs are started by default: virtual-mgmt01, virtual-login, virtual-gpu01
+   # NOTE: 3 VMs are started by default: virtual-mgmt01, virtual-login01, virtual-gpu01
    # NOTE: 6 VMs are started if the environment variable DEEPOPS_FULL_INSTALL is set:
-   #       virtual-mgmt01, virtual-mgmt02, virtual-mgmt03, virtual-login, virtual-gpu01, virtual-gpu02
+   #       virtual-mgmt01, virtual-mgmt02, virtual-mgmt03, virtual-login01, virtual-gpu01, virtual-gpu02
    
    cd virtual
    ./vagrant_startup.sh
@@ -156,7 +156,7 @@ The default Vagrantfiles create VMs that are very minimal in terms of resources 
 In the Vagrantfile of choice (Vagrantfile-<os_type>), make the following modifications...
 
 1. Increase the memory and cpus for the `virtual-mgmt` VM. Suggested - v.memory = 16384, v.cpus = 8.
-2. Comment out the `virtual-login` VM. Unless you are running slurm, this is not necessary and just takes up resources.
+2. Comment out the `virtual-login01` VM. Unless you are running slurm, this is not necessary and just takes up resources.
 3. Increase the cpus for the `virtual-gpu01` VM. Suggested - v.cpus = 8.
 4. If more GPUs are available, pass all of them through using the instructions in the section above.
 
