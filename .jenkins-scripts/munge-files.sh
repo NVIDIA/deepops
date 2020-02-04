@@ -3,8 +3,8 @@ source .jenkins-scripts/jenkins-common.sh
 
 # comment in for pci passthrough (and change bus according to local hw setup - `lspci -nnk | grep NVIDIA`)
 echo "modify GPU passthrough to point to this resource's GPU: ${GPU01}/${GPU02} and BUS: ${BUS01}/${BUS02} based on: ${GPUDATA}"
-sed -i -e "s/BUS-GPU01.*/v.pci :bus => '$BUS01', :slot => '0x00', :function => '0x0'/g" virtual/Vagrant*
-sed -i -e "s/BUS-GPU02.*/v.pci :bus => '$BUS02', :slot => '0x00', :function => '0x0'/g" virtual/Vagrant* # This is a no-op if not full-install
+sed -i -e "s/#BUS-GPU01.*/v.pci :bus => '$BUS01', :slot => '0x00', :function => '0x0'/g" virtual/Vagrant*
+sed -i -e "s/#BUS-GPU02.*/v.pci :bus => '$BUS02', :slot => '0x00', :function => '0x0'/g" virtual/Vagrant* # This is a no-op if not full-install
 
 echo "modify CPU and RAM requirements"
 git grep -lz "v.cpus = 2" virtual/ | xargs -0 sed -i -e "s/v.cpus = 2/v.cpus = 4/g"
