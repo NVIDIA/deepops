@@ -65,6 +65,13 @@ Instructions for deploying a GPU cluster with Kubernetes
    ```sh
    kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 nvidia-smi
    ```
+   
+   Optionally, verify all GPU nodes plug-ins in the Kubernetes cluster with following script.
+
+   ```sh
+   export CLUSTER_VERIFY_EXPECTED_PODS=1 # Expected number of GPUs in the cluster
+   ./scripts/k8s_verify_gpu.sh 
+   ```
 
 ## Using Kubernetes
 
