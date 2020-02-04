@@ -39,7 +39,7 @@ DeepOps currently supports the following Linux distributions:
 
 Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications.
 
-Consult the [Kubernetes Guide](docs/kubernetes-cluster.md) for instructions on building a GPU-enabled Kubernetes cluster using DeepOps.
+Consult the [DeepOps Kubernetes Deployment Guide](docs/kubernetes-cluster.md) for instructions on building a GPU-enabled Kubernetes cluster using DeepOps.
 
 For more information on Kubernetes in general, refer to the [official Kubernetes docs](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/).
 
@@ -47,7 +47,7 @@ For more information on Kubernetes in general, refer to the [official Kubernetes
 
 Slurm is an open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters.
 
-Consult the [Slurm Guide](docs/slurm-cluster.md) for instructions on building a GPU-enabled Slurm cluster using DeepOps.
+Consult the [DeepOps Slurm Deployment Guide](docs/slurm-cluster.md) for instructions on building a GPU-enabled Slurm cluster using DeepOps.
 
 For more information on Slurm in general, refer to the [official Slurm docs](https://slurm.schedmd.com/overview.html).
 
@@ -55,17 +55,17 @@ For more information on Slurm in general, refer to the [official Slurm docs](htt
 
 A hybrid cluster with both Kubernetes and Slurm can also be deployed. This is recommended for [DGX POD](https://www.nvidia.com/en-us/data-center/dgx-pod-reference-architecture/) and other setups that wish to make maximal use of the cluster.
 
-Consult the [DGX POD Guide](docs/dgx-pod.md) for step-by-step instructions on building a GPU-enabled hybrid cluster using DeepOps.
+Consult the [DeepOps DGX POD Deployment Guide](docs/dgx-pod.md) for step-by-step instructions on building a GPU-enabled hybrid cluster using DeepOps.
 
 ### Virtual
 
 To try DeepOps before deploying it on an actual cluster, a virtualized version of DeepOps may be deployed on a single node using Vagrant. This can be used for testing, adding new features, or configuring DeepOps to meet deployment-specific needs.
 
-Consult the [Virtual Guide](virtual/README.md) to build a GPU-enabled virtual cluster with DeepOps.
+Consult the [Virtual DeepOps Deployment Guide](virtual/README.md) to build a GPU-enabled virtual cluster with DeepOps.
 
 ## Updating DeepOps
 
-To update from a previous version of DeepOps to a newer release, please consult the [Update Guide](docs/update-deepops.md).
+To update from a previous version of DeepOps to a newer release, please consult the [DeepOps Update Guide](docs/update-deepops.md).
 
 ## Copyright and License
 

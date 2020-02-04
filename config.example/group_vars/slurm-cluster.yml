@@ -1,0 +1,14 @@
+# Slurm job scheduler configuration
+# Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
+#slurm_user_home: /local/slurm
+slurm_manage_gpus: true
+#slurm_cluster_name: deepops
+#slurm_username: slurm
+slurm_password: ReplaceWithASecurePasswordInTheVault
+#slurm_db_username: slurm
+slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
+#slurm_max_job_timelimit: INFINITE
+#slurm_default_job_timelimit:
+#slurm_install_pyxis: yes
+slurm_controller_host: "{{ groups['slurm-master'][0] }}"
+slurm_compute_hosts: "{{ groups['slurm-node'] }}"

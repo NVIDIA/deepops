@@ -1,0 +1,20 @@
+---
+# Directories to download samples
+gpu_test_cuda_dir: "/tmp/cuda-samples"
+gpu_test_samples_dir: "{{ gpu_test_cuda_dir }}/Samples"
+
+# Whether to install the CUDA toolkit package
+# Set to no if the CUDA toolkit is installed
+gpu_test_install_toolkit: no
+
+# Whether or not to download and build cuda-samples
+# Set to no if they have already been built once
+gpu_test_build: yes
+
+# 1 -> quick test (seconds), 2 -> regular test (minute), 3 -> long test (minutes)
+gpu_test_dcgm_level: 3
+
+# Batch size to use for Tensorflow tests
+# DGX-2 -> (512, 50); DGX-1 -> (256,50); DGX-Station -> (128, 50)
+gpu_test_tf_batch_size: 128 # (choose from 32, 64, 128, 256, 512)
+gpu_test_tf_layers: 50 # (choose from 18, 34, 50, 101, 152)

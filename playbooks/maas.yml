@@ -1,5 +1,5 @@
 ---
-- hosts: maas
+- hosts: all
   become: yes
   roles:
     - role: ansible-maas

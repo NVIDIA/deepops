@@ -13,27 +13,25 @@ if [ ! -d "${config_dir}" ]; then
 	exit 1
 fi
 
-kubectl version
-if [ $? -ne 0 ] ; then
+if ! kubectl version ; then
     echo "Unable to talk to Kubernetes API"
     exit 1
 fi
 
-# Check for environment vars overriding image names
-helm_extra_args=""
+# We need to dynamically set up Helm args, so let's use an array
+helm_install_args=("--values" "${config_dir}/helm/metallb.yml"
+                   "--name" "metallb"
+)
 if [ "${METALLB_SPEAKER_REPO}" ]; then
-	helm_extra_args="${helm_extra_args} --set-string speaker.image.repository="${METALLB_SPEAKER_REPO}""
+	helm_install_args+=("--set-string" "speaker.image.repository=${METALLB_SPEAKER_REPO}")
 fi
 if [ "${METALLB_CONTROLLER_REPO}" ]; then
-	helm_extra_args="${helm_extra_args} --set-string controller.image.repository="${METALLB_CONTROLLER_REPO}""
+	helm_install_args+=("--set-string" "controller.image.repository=${METALLB_CONTROLLER_REPO}")
 fi
 
 # Set up the MetalLB load balancer
 if ! helm status metallb >/dev/null 2>&1; then
-	helm install \
-		--values "${config_dir}/helm/metallb.yml"  ${helm_extra_args} \
-		--name metallb \
-		stable/metallb
+	helm install "${helm_install_args[@]}" stable/metallb
 fi
 
 kubectl wait --for=condition=Ready -l app=metallb,component=controller pod

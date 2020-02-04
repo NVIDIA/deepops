@@ -5,7 +5,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    This guide utilizes a collection of playbooks to configure a cluster, deploy a workload manager, and verify performance.
 
-   It leverages open source tools such as Pyxis and Enroot to optimize Slurm for multi-node Deep Learning jobs beyond the cluster configuration described in the [Slurm Deployment Guide](/docs/slurm-cluster.md). Additional details can be found [here](https://docs.nvidia.com/ngc/multi-node-bert-user-guide).
+   It leverages open source tools such as Pyxis and Enroot to optimize Slurm for multi-node Deep Learning jobs beyond the cluster configuration described in the [DeepOps Slurm Deployment Guide](/docs/slurm-cluster.md). Additional details can be found [here](https://docs.nvidia.com/ngc/multi-node-bert-user-guide).
 
 ## Supported Distributions
 
@@ -54,7 +54,7 @@ High-Performance Multi-Node Cluster Deployment Guide
       
    ```sh
    # Modify the Ansible inventory file
-   # Especially the `all`, `slurm`, and `nfs` sections
+   # Especially the `all` and `slurm` sections
    vi config/inventory
    ```
 
@@ -79,14 +79,6 @@ High-Performance Multi-Node Cluster Deployment Guide
    worker-node-01
    worker-node-02
 
-   ...
-
-   [nfs-server]
-   login-node
-
-   [nfs-clients]
-   worker-node-01
-   worker-node-02
    ```
 
 4. Add or modify user(s) across cluster
@@ -113,7 +105,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 5. Verify the configuration
 
    ```sh
-   ansible all -a "hostname"
+   ansible all -m raw -a "hostname"
    ```
 
 6. Edit the NFS configuration
@@ -130,13 +122,18 @@ High-Performance Multi-Node Cluster Deployment Guide
 
 7. Configure NFS across your cluster
 
-   Run the nfs playbook.
+   Run the nfs playbooks.
 
    > Note: This step can be skipped if NFS is already configured
 
    ```sh
    # NOTE: If SSH user is different than current user, add: `-u <user>`
-   ansible-playbook playbooks/nfs.yml
+
+   # create the NFS server (if not using an existing NFS server)
+   ansible-playbook playbooks/nfs-server.yml
+
+   # mount the NFS shares to the clients
+   ansible-playbook playbooks/nfs-clients.yml
    ```
 
 8. Deploy optimized Slurm software using Ansible

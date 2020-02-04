@@ -13,15 +13,20 @@ HELM_ROOK_CHART_VERSION="${HELM_ROOK_CHART_VERSION:-v1.1.1}"
 # https://github.com/rook/rook/blob/master/Documentation/helm-operator.md
 helm repo add rook-release "${HELM_ROOK_CHART_REPO}"
 
+# We need to dynamically set up Helm args, so let's use an array
+helm_install_args=("--namespace" "rook-ceph"
+                   "--name" "rook-ceph"
+		   "--version" "${HELM_ROOK_CHART_VERSION}"
+)
+
 # Use an alternate image if set
-helm_install_extra_flags=""
 if [ "${ROOK_CEPH_IMAGE_REPO}" ]; then
-	helm_install_extra_flags="--set image.repository=${ROOK_CEPH_IMAGE_REPO}"
+	helm_install_args+=("--set" "image.repository=${ROOK_CEPH_IMAGE_REPO}")
 fi
 
 # Install rook-ceph
 if ! helm status rook-ceph >/dev/null 2>&1 ; then
-    helm install --namespace rook-ceph --name rook-ceph rook-release/rook-ceph --version "${HELM_ROOK_CHART_VERSION}" ${helm_install_extra_flags}
+    helm install "${helm_install_args[@]}" rook-release/rook-ceph
 fi
 
 if kubectl -n rook-ceph get pod -l app=rook-ceph-tools 2>&1 | grep "No resources found." >/dev/null 2>&1; then

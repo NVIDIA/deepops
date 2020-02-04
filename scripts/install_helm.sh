@@ -18,13 +18,13 @@ kubectl -n kube-system wait --for=condition=Ready -l app=helm,name=tiller --time
 
 # Install dependencies
 . /etc/os-release
-case "$ID_LIKE" in
-    rhel*)
+case "$ID" in
+    rhel*|centos*)
         if ! type curl >/dev/null 2>&1 ; then
             sudo yum -y install curl
         fi
         ;;
-    debian*)
+    ubuntu*)
         if ! type curl >/dev/null 2>&1 ; then
             sudo apt-get -y install curl
         fi
@@ -43,13 +43,14 @@ if ! type helm >/dev/null 2>&1 ; then
     HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v2.14.3 /tmp/get_helm.sh
 fi
 
-helm_extra_args=""
+# We need to dynamically set up Helm args, so let's use an array
+helm_init_args=("--client-only")
 if [ "${DEEPOPS_HELM_REPO}" ]; then
-	helm_extra_args="--stable-repo-url ${DEEPOPS_HELM_REPO}"
+	helm_init_args+=("--stable-repo-url" "${DEEPOPS_HELM_REPO}")
 fi
 
 if type helm >/dev/null 2>&1 ; then
-    helm init --client-only ${helm_extra_args}
+    helm init "${helm_init_args[@]}"
     helm repo update
 else
     echo "Helm client not installed"
