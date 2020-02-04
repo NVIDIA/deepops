@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+echo "Beginning to poll for Ceph and Rook setup completion."
+echo "This may throw several errors and take up to 10 minutes. This behavior is expected."
 
 rook_tools_pod=$(kubectl -n rook-ceph get pod -l app=rook-ceph-tools -o name | cut -d \/ -f2 | sed -e 's/\\r$//g')
 
