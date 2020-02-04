@@ -49,6 +49,3 @@ kubectl get nodes
 
 # Deploy monitoring (optional)
 "${ROOT_DIR}/scripts/k8s_deploy_monitoring.sh"
-
-# Deploy Kubeflow (optional)
-"${ROOT_DIR}/scripts/k8s_deploy_kubeflow.sh"

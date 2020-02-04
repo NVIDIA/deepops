@@ -1,19 +1,5 @@
 #!/bin/bash
-
-if [ -z "${GPUDATA+x}" ]; then
-	echo "GPUDATA variable is not set, are we running in Jenkins?"
-	echo "Bailing!"
-	exit 1
-fi
-
-GPU01="$(echo "${GPUDATA}" | cut -d"," -f1 | cut -d"-" -f1)"
-export GPU01
-BUS01="$(echo "${GPUDATA}" | cut -d"," -f1 | cut -d"-" -f2)"
-export BUS01
-GPU02="$(echo "${GPUDATA}" | cut -d"," -f2 | cut -d"-" -f1)"
-export GPU02
-BUS02="$(echo "${GPUDATA}" | cut -d"," -f2 | cut -d"-" -f2)"
-export BUS02
+source jenkins-common.sh
 
 # comment in for pci passthrough (and change bus according to local hw setup - `lspci -nnk | grep NVIDIA`)
 echo "modify GPU passthrough to point to this resource's GPU: ${GPU01}/${GPU02} and BUS: ${BUS01}/${BUS02} based on: ${GPUDATA}"

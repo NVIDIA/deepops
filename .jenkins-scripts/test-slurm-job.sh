@@ -1,7 +1,5 @@
 #!/bin/bash
-pwd
-# TODO: Move this to a common library
-GPU01="$(echo "${GPUDATA}" | cut -d"," -f1 | cut -d"-" -f1)"
+source jenkins-common.sh
 ssh -v \
 	-o "StrictHostKeyChecking no" \
 	-o "UserKnownHostsFile /dev/null" \

@@ -33,6 +33,16 @@ pipeline {
              bash -x ./.jenkins-scripts/verify-ingress-config.sh
           '''
 
+          echo "Test Rook+Ceph installation"
+          sh '''
+             bash -x ./.jenkins-scripts/test-ceph.sh
+          '''
+
+          echo "Test Kubeflow installation"
+          sh '''
+             bash -x ./.jenkins-scripts/test-kubeflow.sh
+          '''
+
           echo "Set up Slurm"
           sh '''
             pwd
