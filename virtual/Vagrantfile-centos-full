@@ -33,7 +33,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     mgmt.vm.network :private_network, ip: "10.0.0.4"
   end 
 
-  config.vm.define "virtual-login" do |login|
+  config.vm.define "virtual-login01" do |login|
     login.vm.provider "libvirt" do |v|
       v.memory = 2048
       v.cpus = 2

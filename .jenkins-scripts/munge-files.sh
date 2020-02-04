@@ -6,13 +6,13 @@ if [ -z "${GPUDATA+x}" ]; then
 	exit 1
 fi
 
-GPU01="$(echo "${GPUDATA}" | cut -d"," -f1 | cud -d"-" -f1)"
+GPU01="$(echo "${GPUDATA}" | cut -d"," -f1 | cut -d"-" -f1)"
 export GPU01
-BUS01="$(echo "${GPUDATA}" | cud -d"," -f1 | cut -d"-" -f2)"
+BUS01="$(echo "${GPUDATA}" | cut -d"," -f1 | cut -d"-" -f2)"
 export BUS01
-GPU02="$(echo "${GPUDATA}" | cut -d"," -f2 | cud -d"-" -f1)"
+GPU02="$(echo "${GPUDATA}" | cut -d"," -f2 | cut -d"-" -f1)"
 export GPU02
-BUS02="$(echo "${GPUDATA}" | cud -d"," -f2 | cut -d"-" -f2)"
+BUS02="$(echo "${GPUDATA}" | cut -d"," -f2 | cut -d"-" -f2)"
 export BUS02
 
 # comment in for pci passthrough (and change bus according to local hw setup - `lspci -nnk | grep NVIDIA`)
@@ -26,19 +26,19 @@ git grep -lz "v.memory = 2048" virtual/ | xargs -0 sed -i -e "s/v.memory = 2048/
 
 # We append the index of GPU01 to each IP address to ensure uniqueness across the 4 GPU Node
 # This allows us to assign IP addresses from 10.0.x.[1-24] before breaking.
-echo "modify machine names and IPs" # mgmt01, login, gpu01
+echo "modify machine names and IPs" # mgmt01, login01, gpu01
 git grep -lz virtual-mgmt01 virtual/ | xargs -0 sed -i -e "s/virtual-mgmt01/virtual-mgmt01-${GPU01}/g"
-git grep -lz virtual-login virtual/ | xargs -0 sed -i -e "s/virtual-login/virtual-login-${GPU01}/g"
+git grep -lz virtual-login01 virtual/ | xargs -0 sed -i -e "s/virtual-login01/virtual-login01-${GPU01}/g"
 git grep -lz virtual-gpu01 virtual/ | xargs -0 sed -i -e "s/virtual-gpu01/virtual-gpu01-${GPU01}/g"
 git grep -lz 10.0.0.2 virtual/ | xargs -0 sed -i -e "s/10.0.0.2/10.0.0.2${GPU01}/g"
-git grep -lz 10.0.0.4 virtual/ | xargs -0 sed -i -e "s/10.0.0.4/10.0.0.4${GPU01}/g"
+git grep -lz 10.0.0.5 virtual/ | xargs -0 sed -i -e "s/10.0.0.5/10.0.0.5${GPU01}/g"
 git grep -lz 10.0.0.11 virtual/ | xargs -0 sed -i -e "s/10.0.0.11/10.0.0.11${GPU01}/g"
-if [ -z ${DEEPOPS_FULL_INSTALL} ]; then # mgmt02, mgmt03, gpu02
+if [ ${DEEPOPS_FULL_INSTALL} ]; then # mgmt02, mgmt03, gpu02
   git grep -lz virtual-mgmt02 virtual/ | xargs -0 sed -i -e "s/virtual-mgmt02/virtual-mgmt02-${GPU01}/g"
   git grep -lz virtual-mgmt03 virtual/ | xargs -0 sed -i -e "s/virtual-mgmt03/virtual-mgmt03-${GPU01}/g"
-  git grep -lz virtual-gpu02 virtual/ | xargs -0 sed -i -e "s/virtual-gpu01/virtual-gpu02-${GPU01}/g"
+  git grep -lz virtual-gpu02 virtual/ | xargs -0 sed -i -e "s/virtual-gpu02/virtual-gpu02-${GPU01}/g"
   git grep -lz 10.0.0.3 virtual/ | xargs -0 sed -i -e "s/10.0.0.3/10.0.0.3${GPU01}/g"
-  git grep -lz 10.0.0.5 virtual/ | xargs -0 sed -i -e "s/10.0.0.5/10.0.0.5${GPU01}/g"
+  git grep -lz 10.0.0.4 virtual/ | xargs -0 sed -i -e "s/10.0.0.4/10.0.0.4${GPU01}/g"
   git grep -lz 10.0.0.12 virtual/ | xargs -0 sed -i -e "s/10.0.0.12/10.0.0.12${GPU01}/g"
 fi
 

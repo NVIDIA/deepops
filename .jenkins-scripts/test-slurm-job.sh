@@ -9,5 +9,5 @@ ssh -v \
 	-o "UserKnownHostsFile /dev/null" \
 	-l vagrant \
 	-i "${HOME}/.ssh/id_rsa" \
-	"10.0.0.4${GPU01}" \
+	"10.0.0.5${GPU01}" \
 	srun -n1 hostname

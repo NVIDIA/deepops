@@ -11,9 +11,9 @@ else
   virsh destroy virtual_virtual-mgmt01
   virsh undefine virtual_virtual-mgmt01-1
   virsh vol-delete --pool default virtual_virtual-mgmt01.img
-  virsh destroy virtual_virtual-login
-  virsh undefine virtual_virtual-login
-  virsh vol-delete --pool default virtual_virtual-login.img
+  virsh destroy virtual_virtual-login01
+  virsh undefine virtual_virtual-login01
+  virsh vol-delete --pool default virtual_virtual-login01.img
   virsh destroy virtual_virtual-gpu01
   virsh undefine virtual_virtual-gpu01
   virsh vol-delete --pool default virtual_virtual-gpu01.img

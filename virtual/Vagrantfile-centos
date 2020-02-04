@@ -21,7 +21,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       v.cpus = 2
     end
     login.vm.box = BOX_IMAGE
-    login.vm.network :private_network, ip: "10.0.0.4"
+    login.vm.network :private_network, ip: "10.0.0.5"
   end
 
   config.vm.define "virtual-gpu01" do |gpu|
