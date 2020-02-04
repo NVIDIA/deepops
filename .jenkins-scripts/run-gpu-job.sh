@@ -1,9 +1,9 @@
 #!/bin/bash
 set -ex
-source jenkins-common.sh
+source .jenkins-scripts/jenkins-common.sh
 
 # Ensure working directory is root
-cd "${ROOT_DIR}"
+cd "${ROOT_DIR}" || exit 1
 
 chmod 755 "$K8S_CONFIG_DIR/artifacts/kubectl"
 
@@ -13,6 +13,6 @@ kubectl run gpu-test --pod-running-timeout=2m0s --rm -t -i --restart=Never --ima
 
 # Run multi-GPU test
 if [ "${DEEPOPS_FULL_INSTALL}" ]; then
-  export CLUSTER_VERIFY_EXPECTED_PODS=2
-  # TODO: Uncomment when this PR is merged https://github.com/NVIDIA/deepops/pull/420 # ./scripts/k8s_verify_gpu.sh
+  export CLUSTER_VERIFY_EXPECTED_PODS=${CLUSTER_VERIFY_EXPECTED_PODS:-2}
+  ./scripts/k8s_verify_gpu.sh
 fi

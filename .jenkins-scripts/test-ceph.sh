@@ -1,9 +1,9 @@
 #!/bin/bash
 set -ex
-source jenkins-common.sh
+source .jenkins-scripts/jenkins-common.sh
 
 # Ensure working directory is root
-cd "${ROOT_DIR}"
+cd "${ROOT_DIR}" || exit 1
 
 # Deploy rook, fail if it takes longer than 5 minutes
 timeout 300 ./scripts/k8s_deploy_rook.sh
