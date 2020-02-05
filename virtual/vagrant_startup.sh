@@ -61,7 +61,7 @@ case "$ID" in
 
     # Set up Vagrantfile and start up the configuration in Vagrant
     if [ ${DEEPOPS_FULL_INSTALL} ]; then
-      export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-cientos-full}"
+      export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos-full}"
     else
       export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos}"
     fi

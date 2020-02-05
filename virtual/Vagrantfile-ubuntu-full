@@ -50,6 +50,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       v.cpu_mode = "host-passthrough"
       # comment in for pci passthrough (and change bus according
       # to local hw setup - `lspci -nnk | grep NVIDIA`)
+      # BUS-GPU01 is a magic string used by automation, this should be removed
       #BUS-GPU01 v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
     end 
     gpu.vm.box = BOX_IMAGE
@@ -64,6 +65,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       v.cpu_mode = "host-passthrough"
       # comment in for pci passthrough (and change bus according
       # to local hw setup - `lspci -nnk | grep NVIDIA`)
+      # BUS-GPU02 is a magic string used by automation, this should be removed
       #BUS-GPU02 v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
     end
     gpu.vm.box = BOX_IMAGE

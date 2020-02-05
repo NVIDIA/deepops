@@ -4,9 +4,17 @@ We have several Jenkinsfiles. There is one that is meant to be a lightweight ver
 
 In addition to that we have several which are meant to run nightly and be more robust checks on functionality to check if dependencies have broken.
 
+## Configuration
+
+GPU resources are configured and requested with the following line. Currently the scripting supports allocating `1` or `2` GPUs nodes each with a single GPU:
+
+```sh
+lock(resource: null, label: 'gpu', quantity: 1, variable: 'GPUDATA')
+```
+
 ## Jenkinsfile
 
-This is the original Jenkinsfile that does a quick test to verify:
+This is the original Jenkinsfile that runs everytime a PR is created. It does a quick test to verify:
 
 * K8S deploys
 * Slurm Deploys
@@ -27,5 +35,5 @@ This does everything `Jenkinsfile-nightly` does in addition to:
 
 * Deploys 3 management nodes
 * Deploys 2 GPU nodes
-* Runs a multi-node GPU Vericiation
+* Runs a multi-node GPU Verification
 
