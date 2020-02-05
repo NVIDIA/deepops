@@ -14,7 +14,7 @@ timeout=120
 time=0
 while [ ${time} -lt ${timeout} ]; do
 
-  curl -s --raw -L "${dashboard_url}" && \
+  curl -ks --raw -L "${dashboard_url}" && \
     echo "Dashboard URLs are all responding" && exit 0
   let time=$time+15
   sleep 15
