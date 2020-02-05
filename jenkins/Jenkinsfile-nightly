@@ -26,7 +26,7 @@ pipeline {
 
           echo "Verify we can run a GPU job"
           sh '''
-            bash -x ./.jenkins-scripts/run-gpu-job.sh
+            timeout 500 bash -x ./.jenkins-scripts/run-gpu-job.sh
           '''
 
           echo "Verify ingress config"
@@ -36,12 +36,22 @@ pipeline {
 
           echo "Test Rook+Ceph installation"
           sh '''
-             bash -x ./.jenkins-scripts/test-ceph.sh
+             timeout 2200 bash -x ./.jenkins-scripts/test-ceph.sh
           '''
 
           echo "Test Kubeflow installation"
           sh '''
-             bash -x ./.jenkins-scripts/test-kubeflow.sh
+             timeout 1500 bash -x ./.jenkins-scripts/test-kubeflow.sh
+          '''
+
+          echo "Test Monitoring installation"
+          sh '''
+             timeout 800 bash -x ./.jenkins-scripts/test-monitoring.sh
+          '''
+
+          echo "Test Dashboard installation"
+          sh '''
+             timeout 180 bash -x ./.jenkins-scripts/test-dashboard.sh
           '''
 
           echo "Set up Slurm"

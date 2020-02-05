@@ -11,9 +11,10 @@ master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o
 # Get access token
 token=$(kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}') | grep ^token: | awk '{print $2}')
 
-# Print Grafana address
+export dashboard_url="https://${master_ip}:6443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login"
+# Print Dashboard address
 echo
-echo "Dashboard is available at: https://${master_ip}:6443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login"
+echo "Dashboard is available at: ${dashboard_url}"
 
 # Print token
 echo

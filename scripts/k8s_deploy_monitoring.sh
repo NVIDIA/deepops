@@ -124,13 +124,17 @@ if echo "${ingress_ip_string}" | grep "${master_ip}" >/dev/null 2>&1; then
 	grafana_port=$(kubectl -n monitoring get svc prometheus-operator-grafana --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
 	prometheus_port=$(kubectl -n monitoring get svc prometheus-operator-prometheus --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
 	alertmanager_port=$(kubectl -n monitoring get svc prometheus-operator-alertmanager --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
-	echo
-    echo "Grafana: http://${master_ip}:${grafana_port}/     admin user: ${grafana_user}     admin password: ${grafana_password}"
-	echo "Prometheus: http://${master_ip}:${prometheus_port}/"
-	echo "Alertmanager: http://${master_ip}:${alertmananger_port}/"
+
+        export grafana_url="http://${master_ip}:${grafana_port}/"
+	export prometheus_url="http://${master_ip}:${prometheus_port}/"
+	export alertmanager_url="http://${master_ip}:${alertmananger_port}/"
 else
-	echo
-	echo "Grafana: http://grafana-${ingress_ip_string}/     admin user: ${grafana_user}     admin password: ${grafana_password}"
-	echo "Prometheus: http://prometheus-${ingress_ip_string}/"
-	echo "Alertmanager: http://alertmanager-${ingress_ip_string}/"
+	export grafana_url="http://grafana-${ingress_ip_string}/"
+	export prometheus_url="http://prometheus-${ingress_ip_string}/"
+	export alertmanager_url="http://alertmanager-${ingress_ip_string}/"
 fi
+
+echo
+echo "Grafana: ${grafana_url}     admin user: ${grafana_user}     admin password: ${grafana_password}"
+echo "Prometheus: ${prometheus_url}"
+echo "Alertmanager: ${alertmanager_url}"
