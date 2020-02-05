@@ -10,3 +10,17 @@ export KFCTL=${ROOT_DIR}/config/kfctl
 
 # Deploy Kubflow, fail if it takes longer than 15 minutes
 timeout 900 ./scripts/k8s_deploy_kubeflow.sh
+
+# The deployment script exports the http endpoints, verify it returns a 200
+# It typically takes ~5 minutes for all pods and services to start, so we poll
+timeout=600
+time=0
+while [ ${time} -lt ${timeout} ]; do
+  curl -s --raw -L ${kf_url} && echo "Kubeflow is homepage is up " && exit 0
+  let time=$time+15
+  sleep 15
+done
+
+# Kubeflow deployment failure
+echo "Kubeflow did not come up in time"
+exit 1
