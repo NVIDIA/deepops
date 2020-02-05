@@ -169,7 +169,7 @@ NOTE: The amount of CPUs and memory on the host system will vary. Change the amo
 The default configuration deploys a single management node and a single GPU node. To run multi-node Deep Learning jobs or to test our Kubernetes HA it's necessary to deploy multiple nodes.
 
 1. If using GPUs, ensure that 2 GPUs are available.
-2. If using GPUS, update the GPU BUS address for virtual-gpu01 and virtual-gpu02 in the "full" Vagrantfile of choice (Vagrantfile-<os-type>-full).
+2. If using GPUS, update the GPU BUS address for virtual-gpu01 and virtual-gpu02 in the "full" Vagrantfile of choice (Vagrantfile-<os_type>-full).
 3. Run `export DEEPOPS_FULL_INSTALL=true`.
 4. Continue with the standard installation steps.
 
