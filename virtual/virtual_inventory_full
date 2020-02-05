@@ -12,8 +12,8 @@ virtual-mgmt01 ansible_host=10.0.0.2 ip=10.0.0.2
 virtual-mgmt02 ansible_host=10.0.0.3 ip=10.0.0.3
 virtual-mgmt03 ansible_host=10.0.0.4 ip=10.0.0.4
 virtual-login01 ansible_host=10.0.0.5 ip=10.0.0.5
-virtual-gpu01 ansible_host=10.0.0.11 ip=10.0.0.11
-virtual-gpu02 ansible_host=10.0.0.12 ip=10.0.0.12
+virtual-gpu01 ansible_host=10.0.0.6 ip=10.0.0.6
+virtual-gpu02 ansible_host=10.0.0.7 ip=10.0.0.7
 
 
 ######

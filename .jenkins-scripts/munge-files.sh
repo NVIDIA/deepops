@@ -18,14 +18,14 @@ git grep -lz virtual-login01 virtual/ | xargs -0 sed -i -e "s/virtual-login01/vi
 git grep -lz virtual-gpu01 virtual/ | xargs -0 sed -i -e "s/virtual-gpu01/virtual-gpu01-${GPU01}/g"
 git grep -lz 10.0.0.2 virtual/ | xargs -0 sed -i -e "s/10.0.0.2/10.0.0.2${GPU01}/g"
 git grep -lz 10.0.0.5 virtual/ | xargs -0 sed -i -e "s/10.0.0.5/10.0.0.5${GPU01}/g"
-git grep -lz 10.0.0.11 virtual/ | xargs -0 sed -i -e "s/10.0.0.11/10.0.0.11${GPU01}/g"
+git grep -lz 10.0.0.6 virtual/ | xargs -0 sed -i -e "s/10.0.0.6/10.0.0.6${GPU01}/g"
 if [ ${DEEPOPS_FULL_INSTALL} ]; then # mgmt02, mgmt03, gpu02
   git grep -lz virtual-mgmt02 virtual/ | xargs -0 sed -i -e "s/virtual-mgmt02/virtual-mgmt02-${GPU01}/g"
   git grep -lz virtual-mgmt03 virtual/ | xargs -0 sed -i -e "s/virtual-mgmt03/virtual-mgmt03-${GPU01}/g"
   git grep -lz virtual-gpu02 virtual/ | xargs -0 sed -i -e "s/virtual-gpu02/virtual-gpu02-${GPU01}/g"
   git grep -lz 10.0.0.3 virtual/ | xargs -0 sed -i -e "s/10.0.0.3/10.0.0.3${GPU01}/g"
   git grep -lz 10.0.0.4 virtual/ | xargs -0 sed -i -e "s/10.0.0.4/10.0.0.4${GPU01}/g"
-  git grep -lz 10.0.0.12 virtual/ | xargs -0 sed -i -e "s/10.0.0.12/10.0.0.12${GPU01}/g"
+  git grep -lz 10.0.0.7 virtual/ | xargs -0 sed -i -e "s/10.0.0.7/10.0.0.7${GPU01}/g"
 fi
 
 echo "Also fix IPs in the load balancer config"

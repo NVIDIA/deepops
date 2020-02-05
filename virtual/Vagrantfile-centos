@@ -36,6 +36,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       #BUS-GPU01 v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
     end
     gpu.vm.box = BOX_IMAGE
-    gpu.vm.network :private_network, ip: "10.0.0.11"
+    gpu.vm.network :private_network, ip: "10.0.0.6"
   end
 end
