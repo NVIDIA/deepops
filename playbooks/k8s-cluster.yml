@@ -50,7 +50,7 @@
     - swap
  
 # Manage Kubernetes cluster access config file
-- hosts: all
+- hosts: k8s-cluster
   gather_facts: false
   vars:
     ansible_become: no
