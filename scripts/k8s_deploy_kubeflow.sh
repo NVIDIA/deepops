@@ -1,12 +1,20 @@
 #!/usr/bin/env bash
 
+# Get the DeepOps root_dir and config_dir
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/.."
+CONFIG_DIR="${ROOT_DIR}/config"
+
 # Specify credentials for the default user.
 export KUBEFLOW_USER_EMAIL="${KUBEFLOW_USER_EMAIL:-admin@kubeflow.org}"
 export KUBEFLOW_PASSWORD="${KUBEFLOW_PASSWORD:-12341234}"
 
+# Speificy how long to poll for Kubeflow to start
+export KUBEFLOW_TIMEOUT="${KUBEFLOW_TIMEOUT:-600}"
+
 # Local files/directories to create and place scripts
-export KF_DIR=${KF_DIR:-~/kubeflow}
-export KFCTL=${KFCTL:-~/kfctl}
+export KF_DIR="${KF_DIR:-${CONFIG_DIR}/kubeflow-install}"
+export KFCTL="${KFCTL:-${CONFIG_DIR}/kfctl}"
 export KUBEFLOW_DEL_SCRIPT="${KF_DIR}/deepops-delete-kubeflow.sh"
 
 # Download URLs and versions
@@ -30,17 +38,21 @@ function help_me() {
   echo "-D    Full Delete Kubeflow from your system along with all Kubeflow CRDs the istio-system namespace. WARNING, do not use this option if other components depend on istio."
   echo "-x    Install Kubeflow without multi-user auth (this option is deprecated)"
   echo "-c    Specify a different Kubeflow config to install with"
+  echo "-w    Wait for Kubeflow homepage to respond"
 }
 
 
 function get_opts() {
-  while getopts "hpc:xdD" option; do
+  while getopts "hpwc:xdD" option; do
     case $option in
       p)
         KUBEFLOW_PRINT=true
         ;;
       c)
 	CONFIG=$OPTARG
+        ;;
+      w)
+        KUBEFLOW_WAIT=true
         ;;
       x)
 	CONFIG_URI=${NO_AUTH_CONFIG_URI}
@@ -166,6 +178,20 @@ function tear_down() {
 }
 
 
+function poll_url() {
+  # It typically takes ~5 minutes for all pods and services to start, so we poll for ten minutes here
+  time=0
+  while [ ${time} -lt ${KUBEFLOW_TIMEOUT} ]; do
+    curl -s --raw -L "${kf_url}" && \
+      echo "Kubeflow homepage is up" && exit 0
+    let time=$time+15
+    sleep 15
+  done
+  echo "Kubeflow did not respond within ${KUBEFLOW_TIMEOUT} seconds"
+  exit 1
+}
+
+
 function get_url() {
   # Get LoadBalancer and NodePorts
   master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
@@ -244,6 +270,11 @@ elif [ ${KUBEFLOW_PRINT} ]; then
   print_info
 elif [ ${KUBEFLOW_DELETE} ]; then
   tear_down
+elif [ ${KUBEFLOW_WAIT} ]; then
+  # Run print_info to get the kf_url
+  get_url
+  print_info
+  poll_url
 else
   install_dependencies
   stand_up
