@@ -13,7 +13,6 @@ source ./scripts/k8s_deploy_monitoring.sh
 timeout=600
 time=0
 while [ ${time} -lt ${timeout} ]; do
-
   curl -s --raw -L "${prometheus_url}" && \
     curl -s --raw -L "${grafana_url}" && \
     curl -s --raw -L "${alertmanager_url}"  && \
@@ -25,4 +24,3 @@ done
 # Monitoring deployment failure
 echo "Monitoring did not come up in time"
 exit 1
-

@@ -13,7 +13,6 @@ source ./scripts/k8s_deploy_dashboard_user.sh
 timeout=120
 time=0
 while [ ${time} -lt ${timeout} ]; do
-
   curl -ks --raw -L "${dashboard_url}" && \
     echo "Dashboard URLs are all responding" && exit 0
   let time=$time+15
@@ -23,4 +22,3 @@ done
 # Dashboard deployment failure
 echo "Dashboard did not come up in time"
 exit 1
-
