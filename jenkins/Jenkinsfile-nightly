@@ -54,6 +54,13 @@ pipeline {
              timeout 180 bash -x ./.jenkins-scripts/test-dashboard.sh
           '''
 
+          echo "Start new virtual environment pre-Slurm checks"
+          sh '''
+            cd virtual
+            bash -x ./vagrant_shutdown.sh
+            bash -x ./vagrant_startup.sh
+          '''
+
           echo "Set up Slurm"
           sh '''
             pwd
