@@ -133,7 +133,11 @@ function stand_up() {
   # Initialize and apply the Kubeflow project using the specified config. We do this in two steps to allow a chance to customize the config
   cd ${KF_DIR}
   ${KFCTL} build -V -f ${CONFIG_URI}
-  # TODO: Add potential CONFIG customizations here in CONFIG_FILE
+
+  # Update Kubeflow with the NGC containers and NVIDIA configurations
+  ${SCRIPT_DIR}/update_kubeflow_config.py
+
+  # XXX: Add potential CONFIG customizations here before applying
   ${KFCTL} apply -V -f ${CONFIG_FILE}
 }
 
