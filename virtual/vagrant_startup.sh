@@ -60,7 +60,11 @@ case "$ID" in
     vagrant --version
 
     # Set up Vagrantfile and start up the configuration in Vagrant
-    export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos}"
+    if [ ${DEEPOPS_FULL_INSTALL} ]; then
+      export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos-full}"
+    else
+      export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos}"
+    fi
 
     # End Install Vagrant & Dependencies for RHEL Systems
     ;;
@@ -115,7 +119,11 @@ case "$ID" in
     vagrant --version
 
     # Set up Vagrantfile and start up the configuration in Vagrant
-    export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu}"
+    if [ ${DEEPOPS_FULL_INSTALL} ]; then
+      export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu-full}"
+    else
+      export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu}"
+    fi
 
     # End Install Vagrant & Dependencies for Debian Systems
     ;;
