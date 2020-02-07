@@ -1,12 +1,15 @@
 ansible_become: true
 kubeadm_enabled: true
 kube_api_anonymous_auth: true
-kubectl_localhost: true
+# Set to false due to kubespray bug: https://github.com/kubernetes-sigs/kubespray/issues/5059
+kubectl_localhost: false
 kubeconfig_localhost: true
 helm_enabled: true
 tiller_node_selectors: "node-role.kubernetes.io/master=''"
 docker_dns_servers_strict: no
 docker_storage_options: -s overlay2
+
+artifacts_dir: "{{ inventory_dir }}/artifacts"
 
 # Reset Flex Volume path to the default. Kubespray changes the path, which breaks Rook
 # see: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-storage/flexvolume.md

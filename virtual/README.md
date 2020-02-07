@@ -13,8 +13,8 @@ Set up a virtual cluster with DeepOps. Useful for...
 The host machine should have enough resources to fufill the minimum VM needs...
 
 Total: 6 vCPU, 20 GB RAM, 96 GB Storage
-* virtual-login: 2 vCPU, 2GB RAM and 32GB Storage
-* virtual-mgmt: 2 vCPU, 2GB RAM and 32GB Storage
+* virtual-login01: 2 vCPU, 2GB RAM and 32GB Storage
+* virtual-mgmt01: 2 vCPU, 2GB RAM and 32GB Storage
 * virtual-gpu01: 2 vCPU, 16GB RAM and 32GB Storage
 
 ### Operating System Requirements
@@ -43,7 +43,9 @@ Also, using VMs and optionally GPU passthrough assumes that the host machine has
    #       configure the DEEPOPS_VAGRANT_FILE variable accordingly...
    #       export DEEPOPS_VAGRANT_FILE=$(pwd)/Vagrantfile-centos
    # NOTE: virtual-gpu01 requires GPU passthrough, by default it is not enabled
-   # NOTE: 3 VMs are started by default: virtual-mgmt, virtual-login, virtual-gpu01
+   # NOTE: 3 VMs are started by default: virtual-mgmt01, virtual-login01, virtual-gpu01
+   # NOTE: 6 VMs are started if the environment variable DEEPOPS_FULL_INSTALL is set:
+   #       virtual-mgmt01, virtual-mgmt02, virtual-mgmt03, virtual-login01, virtual-gpu01, virtual-gpu02
    
    cd virtual
    ./vagrant_startup.sh
@@ -103,7 +105,7 @@ $ virsh list --all
 ----------------------------------------------------
 ```
 
-## Configure GPU passthrough
+## Configure GPU Passthrough
 
 If the host machine has a GPU and is configured for GPU passthrough, it is possible to configure the `virtual-gpu01` VM to use the GPU.
 
@@ -131,7 +133,9 @@ $ lspci -nnk | grep NVIDIA
 
 In this example, the GPU at `08:00.0` is chosen.
 
-In the `Vagrantfile`, uncomment the `v.pci` configuration and update it with a mapping to the bus discovered with `lspci`...
+In the `Vagrantfile` there is a "magic string" `#BUS-GPU01` that is utilized in Jenkins automation. This can be updated manually.
+
+Uncomment the `#BUS-GPU01 v.pci` configuration and update it with a mapping to the bus discovered with `lspci`...
 
 ```
 v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
@@ -155,8 +159,8 @@ The default Vagrantfiles create VMs that are very minimal in terms of resources 
 
 In the Vagrantfile of choice (Vagrantfile-<os_type>), make the following modifications...
 
-1. Increase the memory and cpus for the `virtual-mgmt` VM. Suggested - v.memory = 16384, v.cpus = 8.
-2. Comment out the `virtual-login` VM. Unless you are running slurm, this is not necessary and just takes up resources.
+1. Increase the memory and cpus for the `virtual-mgmt01` VM. Suggested - v.memory = 16384, v.cpus = 8.
+2. Comment out the `virtual-login01` VM. Unless you are running slurm, this is not necessary and just takes up resources.
 3. Increase the cpus for the `virtual-gpu01` VM. Suggested - v.cpus = 8.
 4. If more GPUs are available, pass all of them through using the instructions in the section above.
 
@@ -182,15 +186,24 @@ sudo resize2fs /dev/sda3
 df -h /
 ```
 
-# Enabling virtualization and GPU passthrough
+### Larger Clusters
+
+The default configuration deploys a single management node and a single GPU node. To run multi-node Deep Learning jobs or to test our Kubernetes HA it's necessary to deploy multiple nodes.
+
+1. If using GPUs, ensure that 2 GPUs are available.
+2. If using GPUS, update the GPU BUS address for virtual-gpu01 and virtual-gpu02 in the "full" Vagrantfile of choice (Vagrantfile-<os_type>-full).
+3. Run `export DEEPOPS_FULL_INSTALL=true`.
+4. Continue with the standard installation steps.
+
+# Enabling Virtualization and GPU Passthrough
 
 On many machines, virtualization and GPU passthrough are not enabled by default. Follow these directions so that a virtual DeepOps cluster can start on your host machine with GPU access on the VMs.
 
-## BIOS and bootloader changes
+## BIOS and Bootloader Changes
 
 To support KVM, we need GPU pass through. To enable GPU pass through, we need to enable VFIO support in BIOS and Bootloader.
 
-### BIOS changes
+### BIOS Changes
 
 * Enable BIOS settings: Intel VT-d and Intel VT-x
 * Enable BIOS support for large-BAR1 GPUs: 'MMIO above 4G' or 'Above 4G encoding', etc.
@@ -216,7 +229,7 @@ $ grep -oE 'svm|vmx' /proc/cpuinfo | uniq
 vmx
 ```
 
-### Bootloader changes
+### Bootloader Changes
 
 1. Add components necessary to load VFIO (Virtual Function I/O). VFIO is required to pass full devices through to a virtual machine, so that Ubuntu loads everything it needs. Edit and add the following to `/etc/modules` file:
 ```
@@ -241,7 +254,7 @@ $ echo vfio-pci | sudo tee /etc/modules-load.d/vfio-pci.conf
 
 4. Run `sudo update-grub` to update GRUB with the new settings and reboot the system.
 
-### Blacklist the GPU devices
+### Blacklist the GPU Devices
 
 We do not want the host running DGX Base OS to use the GPU Devices. Instead we want Guest VMs to get full access to the NVIDIA GPU devices. Hence, in the DGX Base OS on the host,  blacklist them by adding their IDs to the initramfs.
 

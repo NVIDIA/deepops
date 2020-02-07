@@ -6,6 +6,7 @@
 
 ######
 # ALL NODES
+# NOTE: Use existing hostnames here, DeepOps will configure server hostnames to match these values
 ######
 [all]
 #mgmt01     ansible_host=10.0.0.1
@@ -58,5 +59,6 @@ slurm-node
 [all:vars]
 # SSH User
 #ansible_user=ubuntu
+#ansible_ssh_private_key_file='~/.ssh/id_rsa'
 # SSH bastion/jumpbox
 #ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q ubuntu@10.0.0.1"'

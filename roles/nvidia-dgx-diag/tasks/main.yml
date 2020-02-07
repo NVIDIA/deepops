@@ -1,0 +1,12 @@
+---
+- name: Make log dir
+  file:
+    path: "{{ nv_diag_dir }}"
+    state: directory
+
+- include: load-image.yml
+- include: get-firmware.yml
+- include: get-health.yml
+- include: get-ib.yml
+- include: transfer-logs.yml
+- include: clean.yml

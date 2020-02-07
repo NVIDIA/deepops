@@ -29,8 +29,6 @@ Deploy Kubeflow:
 
 See the [install docs](https://www.kubeflow.org/docs/started/k8s/overview/) for additional install configuration options.
 
-Deploy older version of Kubeflow with built-in NGC support:
+Kubeflow configuration files will be saved to `./config/kubeflow-install`.
 
-```sh
-./scripts/k8s_deploy_kubeflow.v0.5.1.sh
-```
+The kfctl binary will be saved to `./config/kfctl`. For easier management this file can be copied to `/usr/local/bin` or added to the `PATH`.
