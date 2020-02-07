@@ -167,12 +167,18 @@ NOTE: The amount of CPUs and memory on the host system will vary. Change the amo
 1. Add v.machine_virtual_size = 100 to the Vagrantfile (Vagrantfile-<os_type>). This parameter should go under each libvirt section per node. The units are GBs, so in this case 100 GB are allocated per node.
 2. Vagrant ssh to each machine (ex: `vagrant ssh virtual-gpu01`)  and do the following...
 ```sh
+# run fdisk
 sudo fdisk /dev/sda
 # d, 3, n, p, 3, enter, enter, no, p, w
+```
+
+```sh
+# resize
 sudo resize2fs /dev/sda3
 ```
-3. Double-check the size...
+
 ```sh
+# double-chck that the disk size increased
 df -h /
 ```
 
