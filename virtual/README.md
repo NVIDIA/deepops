@@ -178,7 +178,7 @@ sudo resize2fs /dev/sda3
 ```
 
 ```sh
-# double-chck that the disk size increased
+# double-check that the disk size increased
 df -h /
 ```
 
