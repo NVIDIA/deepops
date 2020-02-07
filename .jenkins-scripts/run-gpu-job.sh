@@ -1,12 +1,18 @@
 #!/bin/bash
+set -ex
+source .jenkins-scripts/jenkins-common.sh
 
-pwd
-cd virtual || exit 1
-
-K8S_CONFIG_DIR=$(pwd)/config
-export KUBECONFIG="${K8S_CONFIG_DIR}/artifacts/admin.conf"
-export PATH="${K8S_CONFIG_DIR}/artifacts:${PATH}"
+# Ensure working directory is root
+cd "${ROOT_DIR}" || exit 1
 
 chmod 755 "$K8S_CONFIG_DIR/artifacts/kubectl"
+
+# Verify Nodes & run single GPU test
 kubectl get nodes
-kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
+timeout 120 kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
+
+# Run multi-GPU test
+if [ "${DEEPOPS_FULL_INSTALL}" ]; then
+  export CLUSTER_VERIFY_EXPECTED_PODS=${CLUSTER_VERIFY_EXPECTED_PODS:-2}
+  timeout 300 ./scripts/k8s_verify_gpu.sh
+fi

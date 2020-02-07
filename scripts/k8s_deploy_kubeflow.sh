@@ -114,13 +114,13 @@ function install_dependencies() {
 function stand_up() {
   # Download the kfctl binary and move it to the default location
   pushd .
-  mkdir /tmp/kf-download
-  cd /tmp/kf-download
+  mkdir ${CONFIG_DIR}/tmp-kf-download
+  cd ${CONFIG_DIIR}/tmp-kf-download
   curl -O -L ${KFCTL_URL}
   tar -xvf ${KFCTL_FILE}
   mv kfctl ${KFCTL}
   popd
-  rm -rf /tmp/kf-download
+  rm -rf ${CONFIG_DIR}/tmp-kf-download
 
   # Create directory for KF files
   mkdir ${KF_DIR}
@@ -186,6 +186,7 @@ function poll_url() {
   # It typically takes ~5 minutes for all pods and services to start, so we poll for ten minutes here
   time=0
   while [ ${time} -lt ${KUBEFLOW_TIMEOUT} ]; do
+    # XXX: This validates that the webapp is responding, it does not guarentee functionality
     curl -s --raw -L "${kf_url}" && \
       echo "Kubeflow homepage is up" && exit 0
     let time=$time+15
