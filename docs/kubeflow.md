@@ -32,3 +32,14 @@ See the [install docs](https://www.kubeflow.org/docs/started/k8s/overview/) for 
 Kubeflow configuration files will be saved to `./config/kubeflow-install`.
 
 The kfctl binary will be saved to `./config/kfctl`. For easier management this file can be copied to `/usr/local/bin` or added to the `PATH`.
+
+## Login information
+
+The default username is `admin@kubeflow.org` and the default password is `12341234`. 
+
+To change these at deployment time export the `KUBEFLOW_USER_EMAIL` and `KUBEFLOW_PASSWORD` environment variables.
+
+```sh
+export KUBEFLOW_USER_EMAIL="deepops@example.com"
+export KUBEFLOW_PASSWORD="deepops"
+```
