@@ -8,7 +8,7 @@
         name: roce_backend
       tags: 
         - roce_host
-        - roce_pip
+#        - roce_pip
     
 - hosts: kube-node
   become: true
@@ -34,5 +34,6 @@
   - include_role:
       name: roce_backend
     tags: 
+      - roce_pip
       - roce_k8s
       - roce_j2
