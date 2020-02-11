@@ -12,21 +12,21 @@ RUN source activate ${CONDA_ENV} && \
 
 # Install the NVIDIA Jupyter Dashboard
 RUN source activate ${CONDA_ENV} && \
-    pip install jupyterlab-nvdashboard && \
+    conda install -y -c conda-forge jupyterlab-nvdashboard==0.1.11 && conda clean -yac * && \
     jupyter labextension install jupyterlab-nvdashboard
 
 # Install ipyvolume for clean HTML5 visualizations
 RUN source activate ${CONDA_ENV} && \
-    conda install -y -c conda-forge ipyvolume && conda clean -yac * && \
+    conda install -y -c conda-forge ipyvolume==0.5.2 && conda clean -yac * && \
     jupyter labextension install ipyvolume
 
 # Install graphviz for clean graph/node/edge rendering
 RUN source activate ${CONDA_ENV} && \
-    conda install -c conda-forge python-graphviz graphviz && conda clean -yac *
+    conda install -c conda-forge python-graphviz=0.13.2 graphviz=2.42.3 && conda clean -yac *
 
 # Install dask_kubernetes for deploying works through K8S and monitoring through Jupyter
 RUN source activate ${CONDA_ENV} && \
-    pip install dask-kubernetes
+    conda install -c conda-forge dask-kubernetes==0.10.1 && conda clean -yac *
 
 # Expose Jupyter and Dask ports
 EXPOSE 8888
