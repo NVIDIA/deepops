@@ -155,6 +155,8 @@ Next, shutdown the virtual cluster (if it is running) and startup vagrant + run 
 
 The default Vagrantfiles create VMs that are very minimal in terms of resources to maximize where a virtual DeepOps cluster can be run. To run resource-intensive Kubernetes applications such as Kubeflow, it's necessary to increase some of the settings.
 
+### Increase CPUs, memory, and GPUs
+
 In the Vagrantfile of choice (Vagrantfile-<os_type>), make the following modifications...
 
 1. Increase the memory and cpus for the `virtual-mgmt01` VM. Suggested - v.memory = 16384, v.cpus = 8.
@@ -163,6 +165,26 @@ In the Vagrantfile of choice (Vagrantfile-<os_type>), make the following modific
 4. If more GPUs are available, pass all of them through using the instructions in the section above.
 
 NOTE: The amount of CPUs and memory on the host system will vary. Change the amounts above accordingly to values that make sense.
+
+### Increase Disk Space
+
+1. Add v.machine_virtual_size = 100 to the Vagrantfile (Vagrantfile-<os_type>). This parameter should go under each libvirt section per node. The units are GBs, so in this case 100 GB are allocated per node.
+2. `vagrant ssh` to each machine (ex: `vagrant ssh virtual-gpu01`)  and do the following...
+```sh
+# run fdisk
+sudo fdisk /dev/sda
+# d, 3, n, p, 3, enter, enter, no, p, w
+```
+
+```sh
+# resize
+sudo resize2fs /dev/sda3
+```
+
+```sh
+# double-check that the disk size increased
+df -h /
+```
 
 ### Larger Clusters
 
