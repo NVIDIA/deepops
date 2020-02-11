@@ -169,7 +169,7 @@ NOTE: The amount of CPUs and memory on the host system will vary. Change the amo
 ### Increase Disk Space
 
 1. Add v.machine_virtual_size = 100 to the Vagrantfile (Vagrantfile-<os_type>). This parameter should go under each libvirt section per node. The units are GBs, so in this case 100 GB are allocated per node.
-2. Vagrant ssh to each machine (ex: `vagrant ssh virtual-gpu01`)  and do the following...
+2. `vagrant ssh` to each machine (ex: `vagrant ssh virtual-gpu01`)  and do the following...
 ```sh
 # run fdisk
 sudo fdisk /dev/sda
