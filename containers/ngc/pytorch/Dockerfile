@@ -7,21 +7,18 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/*
 
 # Install nodejs, it is a dependency for Jupyter labextensions
-RUN conda install nodejs
+RUN conda install nodejs=10.13.0 && conda clean -yac *
 
 # Install the NVIDIA Jupyter Dashboard
-RUN pip install jupyterlab-nvdashboard && \
+RUN conda install -y -c conda-forge jupyterlab-nvdashboard==0.1.11 && conda clean -yac * && \
     jupyter labextension install jupyterlab-nvdashboard
 
 # Install ipyvolume for clean HTML5 visualizations
-RUN pip install ipyvolume && \
-    jupyter labextension install ipyvolume
+RUN  conda install -y -c conda-forge ipyvolume==0.5.2 && conda clean -yac * && \
+     jupyter labextension install ipyvolume
 
 # Install graphviz for clean graph/node/edge rendering
-RUN apt-get update && \
-    apt-get install -y graphviz && \
-    pip install graphviz && \
-    rm -rf /var/lib/apt/*
+RUN  conda install -c conda-forge python-graphviz=0.13.2 graphviz=2.42.3 && conda clean -yac *
 
 # Expose Jupyter & Tensorboard
 EXPOSE 8888
