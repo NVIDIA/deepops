@@ -115,7 +115,7 @@ function stand_up() {
   # Download the kfctl binary and move it to the default location
   pushd .
   mkdir ${CONFIG_DIR}/tmp-kf-download
-  cd ${CONFIG_DIIR}/tmp-kf-download
+  cd ${CONFIG_DIR}/tmp-kf-download
   curl -O -L ${KFCTL_URL}
   tar -xvf ${KFCTL_FILE}
   mv kfctl ${KFCTL}
