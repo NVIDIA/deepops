@@ -35,7 +35,7 @@ The kfctl binary will be saved to `./config/kfctl`. For easier management this f
 
 ## Login information
 
-The default username is `admin@kubeflow.org` and the default password is `12341234`. 
+The default username is `deepops@example.com` and the default password is `deepops`. 
 
 To change these at deployment time export the `KUBEFLOW_USER_EMAIL` and `KUBEFLOW_PASSWORD` environment variables.
 
