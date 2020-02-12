@@ -6,8 +6,8 @@ ROOT_DIR="${SCRIPT_DIR}/.."
 CONFIG_DIR="${ROOT_DIR}/config"
 
 # Specify credentials for the default user.
-export KUBEFLOW_USER_EMAIL="${KUBEFLOW_USER_EMAIL:-admin@kubeflow.org}"
-export KUBEFLOW_PASSWORD="${KUBEFLOW_PASSWORD:-12341234}"
+export KUBEFLOW_USER_EMAIL="${KUBEFLOW_USER_EMAIL:-deepops@example.com}"
+export KUBEFLOW_PASSWORD="${KUBEFLOW_PASSWORD:-deepops}"
 
 # Speificy how long to poll for Kubeflow to start
 export KUBEFLOW_TIMEOUT="${KUBEFLOW_TIMEOUT:-600}"
