@@ -4,7 +4,4 @@
   command: "docker run --rm --privileged  -v /:/hostfs {{ firmware_update_repo }}:{{ firmware_update_tag }} show_version"
   register: firmware_versions
   changed_when: "'no' in firmware_versions.stdout"
-
-- name: debug
-  debug:
-    var: firmware_versions
+  

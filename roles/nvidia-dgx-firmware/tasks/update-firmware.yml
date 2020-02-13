@@ -21,10 +21,6 @@
         var: update_output.stdout
     - include: transfer-logs.yml
 
-- name: debug
-  debug:
-    var: update_output
-
 - name: Reboot if necessary
   shell: sleep 2 && /sbin/shutdown -r now "Reboot required"
   async: 1
