@@ -1,0 +1,13 @@
+---
+
+- name: Make firmware dir
+  file:
+    path: "{{ fw_dir }}"
+    state: directory
+
+- include: load-image.yml
+
+- include: run-diagnostics.yml
+  when: run_diagnostics
+
+- include: clean.yml

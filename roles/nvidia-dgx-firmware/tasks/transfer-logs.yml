@@ -10,7 +10,7 @@
 
 - name: Copy fw versions log file to local machine
   fetch:
-    src: "{{ nv_diag_dir }}/fw-versions.log"
+    src: "{{ fw_dir }}/fw-versions.log"
     dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-fw-version.log"
     flat: yes
   ignore_errors: yes
@@ -24,14 +24,14 @@
 
 - name: Copy show health log file to local machine
   fetch:
-    src: "{{ nv_diag_dir }}/nvsm-show-health.log"
+    src: "{{ fw_dir }}/nvsm-show-health.log"
     dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-nvsm-show-health.log"
     flat: yes
   ignore_errors: yes
 
 - name: Copy dcgm diag log file to local machine
   fetch:
-    src: "{{ nv_diag_dir }}/dcgm_diag_1.log"
+    src: "{{ fw_dir }}/dcgm_diag_1.log"
     dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-dcgm_diag_1.log"
     flat: yes
   ignore_errors: yes
@@ -52,7 +52,7 @@
 
 - name: Copy ib/mlx to local machine
   fetch:
-    src: "{{ nv_diag_dir }}/{{ inventory_hostname }}.log"
+    src: "{{ fw_dir }}/{{ inventory_hostname }}.log"
     dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-ib-mlx.log"
     flat: yes
   ignore_errors: yes
