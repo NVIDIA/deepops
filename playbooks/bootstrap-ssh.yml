@@ -28,6 +28,7 @@
         user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
         state: present
         key: "{{ lookup('file', private_key + '.pub') }}"
+      tags: ssh-public
 
     - debug:
         msg: Now, you shouldn't need to use -k/--ask-pass for these hosts anymore.

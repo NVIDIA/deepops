@@ -60,12 +60,18 @@ case "$ID" in
     vagrant --version
 
     # Set up Vagrantfile and start up the configuration in Vagrant
-    export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos}"
+    if [ ${DEEPOPS_FULL_INSTALL} ]; then
+      export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos-full}"
+    else
+      export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos}"
+    fi
 
     # End Install Vagrant & Dependencies for RHEL Systems
     ;;
 
   ubuntu*)
+    # No interactive prompts from apt during this process
+    export DEBIAN_FRONTEND=noninteractive
     # Install Vagrant & Dependencies for Debian Systems
 
     export APT_DEPENDENCIES="build-essential sshpass qemu-kvm libvirt-bin libvirt-dev bridge-utils \
@@ -76,11 +82,11 @@ case "$ID" in
       echo "Installing apt dependencies..."
 
       # Update apt
-      sudo apt update -y
+      sudo apt-get update -y
 
       # Install build-essential tools
       # shellcheck disable=SC2086
-      sudo apt install -y $APT_DEPENDENCIES
+      sudo apt-get install -y $APT_DEPENDENCIES
     fi
 
     # Ensure we have permissions to manage VMs
@@ -113,7 +119,11 @@ case "$ID" in
     vagrant --version
 
     # Set up Vagrantfile and start up the configuration in Vagrant
-    export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu}"
+    if [ ${DEEPOPS_FULL_INSTALL} ]; then
+      export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu-full}"
+    else
+      export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu}"
+    fi
 
     # End Install Vagrant & Dependencies for Debian Systems
     ;;

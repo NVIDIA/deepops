@@ -2,9 +2,11 @@
 - hosts: all
   become: true
   become_method: sudo
-  vars:
-    docker_daemon_json: {}
   tasks:
+    - name: Check for DGX packages
+      stat:
+        path: /etc/dgx-release
+      register: is_dgx
 
     - name: create docker config directory
       file:
@@ -18,15 +20,18 @@
         owner: root
         group: root
         mode: 0644
+      when:
+        - is_dgx.stat.exists == False
 
     - name: install docker
       include_role:
         name: docker
       vars:
         # matches: kubespray/roles/container-engine/docker/vars/ubuntu-amd64.yml
-        #docker_package: 'docker-ce=18.06.1~ce~3-0~ubuntu'
-        docker_package: 'docker-ce=5:18.09.5~3-0~ubuntu-{{ ansible_distribution_release }}'
-      when: ansible_distribution == "Ubuntu"
+        docker_package: 'docker-ce=5:18.09.7~3-0~ubuntu-{{ ansible_distribution_release|lower }}'
+      when:
+        - ansible_distribution == "Ubuntu"
+        - is_dgx.stat.exists == False
       environment: "{{proxy_env if proxy_env is defined else {}}}"
 
     - name: install docker
@@ -34,7 +39,8 @@
         name: docker
       vars:
         # matches: kubespray/roles/container-engine/docker/vars/redhat.yml
-        #docker_package: 'docker-ce-18.06.2.ce-3.el7'
-        docker_package: 'docker-ce-18.09.5-3.el7'
-      when: ansible_os_family == "RedHat"
+        docker_package: 'docker-ce-18.09.7-3.el7'
+      when:
+        - ansible_os_family == "RedHat"
+        - is_dgx.stat.exists == False
       environment: "{{proxy_env if proxy_env is defined else {}}}"

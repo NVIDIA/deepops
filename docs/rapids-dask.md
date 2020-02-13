@@ -9,7 +9,15 @@ Dask has tight kubernetes integration that allows you to scale up/down your Dask
 
 ## Installation
 
-Deploy Kubernetes by following the [Kubernetes GPU Cluster Deployment Guide](kubernetes-cluster.md)
+### Kubeflow
+
+If Kubeflow has already been installed using the [DeepOps Kubeflow Deployment Guide](kubeflow.md) there are no additional K8S setup steps required.
+
+When deploying through Kubeflow, it is necessary to ensure that a proper Docker image, entrypoint, and cmd have been specified; or Kubeflow will not properly start Jupyter and the service will immediately fail. See the [Dask Kubernetes](../examples/k8s-dask-rapids/docker/Dockerfile) Dockerfile for an example.
+
+### Stand-alone
+
+Deploy Kubernetes by following the [DeepOps Kubernetes Deployment Guide](kubernetes-cluster.md)
 
 Deploy the [LoadBalancer](ingress.md#on-prem-loadbalancer)
 

@@ -1,120 +1,288 @@
 #!/usr/bin/env bash
 
-export KS_VER=0.13.1
-export KS_PKG=ks_${KS_VER}_linux_amd64
-export KS_INSTALL_DIR=/usr/local/bin
+# Get the DeepOps root_dir and config_dir
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/.."
+CONFIG_DIR="${ROOT_DIR}/config"
 
-export KUBEFLOW_TAG=v0.5.1
-export KFAPP=kubeflow
-export KUBEFLOW_SRC=/opt/kubeflow
+# Specify credentials for the default user.
+export KUBEFLOW_USER_EMAIL="${KUBEFLOW_USER_EMAIL:-deepops@example.com}"
+export KUBEFLOW_PASSWORD="${KUBEFLOW_PASSWORD:-deepops}"
 
-export DEEPOPS_DIR=$(dirname $(dirname  $(readlink -f $0)))
+# Speificy how long to poll for Kubeflow to start
+export KUBEFLOW_TIMEOUT="${KUBEFLOW_TIMEOUT:-600}"
 
-KSONNET_URL="${KSONNET_URL:-https://github.com/ksonnet/ksonnet/releases/download/v${KS_VER}/${KS_PKG}.tar.gz}"
-KUBEFLOW_URL="${KUBEFLOW_URL:-https://raw.githubusercontent.com/kubeflow/kubeflow/${KUBEFLOW_TAG}/scripts/download.sh}"
+# Local files/directories to create and place scripts
+export KF_DIR="${KF_DIR:-${CONFIG_DIR}/kubeflow-install}"
+export KFCTL="${KFCTL:-${CONFIG_DIR}/kfctl}"
+export KUBEFLOW_DEL_SCRIPT="${KF_DIR}/deepops-delete-kubeflow.sh"
 
-###
+# Download URLs and versions
+export KFCTL_FILE=kfctl_v1.0-rc.1-0-g963c787_linux.tar.gz
+export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.0-rc.1/${KFCTL_FILE}"
 
-# Install dependencies
-. /etc/os-release
-case "$ID_LIKE" in
-    rhel*)
-        type curl >/dev/null 2>&1
-        if [ $? -ne 0 ] ; then
-            sudo yum -y install curl wget
-        fi
+# Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
+export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/b37bad9eded2c47c54ce1150eb9e6edbfb47ceda/kfdef/kfctl_existing_arrikto.0.7.1.yaml"
+export CONFIG_FILE="${KF_DIR}/kfctl_existing_arrikto.0.7.1.yaml"
+
+# Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
+export NO_AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/v0.7-branch/kfdef/kfctl_k8s_istio.0.7.0.yaml"
+export NO_AUTH_CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.0.7.0.yaml"
+
+
+function help_me() {
+  echo "Usage:"
+  echo "-h    This message."
+  echo "-p    Print out the connection info for Kubeflow"
+  echo "-d    Delete Kubeflow from your system (skipping the CRDs and istio-system namespace that may have been installed with Kubeflow"
+  echo "-D    Full Delete Kubeflow from your system along with all Kubeflow CRDs the istio-system namespace. WARNING, do not use this option if other components depend on istio."
+  echo "-x    Install Kubeflow without multi-user auth (this option is deprecated)"
+  echo "-c    Specify a different Kubeflow config to install with"
+  echo "-w    Wait for Kubeflow homepage to respond"
+}
+
+
+function get_opts() {
+  while getopts "hpwc:xdD" option; do
+    case $option in
+      p)
+        KUBEFLOW_PRINT=true
         ;;
-    debian*)
-        type curl >/dev/null 2>&1
-        if [ $? -ne 0 ] ; then
-            sudo apt -y install curl wget
-        fi
+      c)
+	CONFIG=$OPTARG
         ;;
-    *)
-        echo "Unsupported Operating System $ID_LIKE"
+      w)
+        KUBEFLOW_WAIT=true
+        ;;
+      x)
+	CONFIG_URI=${NO_AUTH_CONFIG_URI}
+	CONFIG_FILE=${NO_AUTH_CONFIG_FILE}
+	SKIP_LB=true
+        ;;
+      d)
+        KUBEFLOW_DELETE=true
+        ;;
+      D)
+        KUBEFLOW_DELETE=true
+        KUBEFLOW_FULL_DELETE=true
+        ;;
+      h)
+        help_me
         exit 1
         ;;
-esac
+      * )
+        help_me
+        exit 1
+        ;;
+    esac
+  done
+}
 
-# Rook
-kubectl get storageclass 2>&1 | grep "No resources found." >/dev/null 2>&1
-if [ $? -eq 0 ] ; then
-    echo "No storageclass found"
-    echo "To provision Ceph storage, run: ./scripts/k8s_deploy_rook.sh"
-    exit 1
-fi
 
-# Ksonnet
-wget -O /tmp/${KS_PKG}.tar.gz "${KSONNET_URL}" \
-      --no-check-certificate
-mkdir -p ${KS_INSTALL_DIR}
-tempd=$(mktemp -d)
-tar -xvf /tmp/${KS_PKG}.tar.gz -C ${tempd}
-sudo mv ${tempd}/${KS_PKG}/ks ${KS_INSTALL_DIR}
-rm -rf ${tempd} /tmp/${KS_PKG}.tar.gz
+function install_dependencies() {
+  # Install dependencies
+  . /etc/os-release
+  case "$ID" in
+      rhel*|centos*)
+          type curl >/dev/null 2>&1
+          if [ $? -ne 0 ] ; then
+              sudo yum -y install curl wget
+          fi
+          ;;
+      ubuntu*)
+          type curl >/dev/null 2>&1
+          if [ $? -ne 0 ] ; then
+              sudo apt -y install curl wget
+          fi
+          ;;
+      *)
+          echo "Unsupported Operating System $ID_LIKE"
+          exit 1
+          ;;
+  esac
 
-# Kubeflow
-if [ ! -d ${KUBEFLOW_SRC} ] ; then
-    tempd=$(mktemp -d)
-    cd ${tempd}
-    curl "${KUBEFLOW_URL}" | bash
-    cd -
-    sudo mv ${tempd} ${KUBEFLOW_SRC}
-fi
+  # Rook
+  kubectl get storageclass 2>&1 | grep "No resources found." >/dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+      echo "No storageclass found"
+      echo "To provision Ceph storage, run: ./scripts/k8s_deploy_rook.sh"
+      exit 1
+  fi
+}
 
-# Get master ip
-master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
 
-# Check for ingress controller
-ingress_name="nginx-ingress"
-ingress_ip_string="$(echo ${master_ip} | tr '.' '-')"
-if kubectl describe service -l "app=${ingress_name},component=controller" | grep 'LoadBalancer Ingress' >/dev/null 2>&1; then
-    lb_ip="$(kubectl describe service -l "app=${ingress_name},component=controller" | grep 'LoadBalancer Ingress' | awk '{print $3}')"
-    ingress_ip_string="$(echo ${lb_ip} | tr '.' '-').nip.io"
-    echo "Using load balancer url: ${ingress_ip_string}"
-fi
+function stand_up() {
+  # Download the kfctl binary and move it to the default location
+  pushd .
+  mkdir ${CONFIG_DIR}/tmp-kf-download
+  cd ${CONFIG_DIR}/tmp-kf-download
+  curl -O -L ${KFCTL_URL}
+  tar -xvf ${KFCTL_FILE}
+  mv kfctl ${KFCTL}
+  popd
+  rm -rf ${CONFIG_DIR}/tmp-kf-download
 
-# Initialize and generate kubeflow
-set -e # XXX: Fail if anything in the initialization or configuration fail
-pushd ${HOME}
-${KUBEFLOW_SRC}/scripts/kfctl.sh init ${KFAPP} --platform none
-cd ${KFAPP}
+  # Create directory for KF files
+  mkdir ${KF_DIR}
 
-# Update the Kubeflow Jupyter UI
-export KSAPP_DIR="$(pwd)/ks_app"
-export KUBEFLOW_SRC
-${DEEPOPS_DIR}/scripts/update_kubeflow_config.py
+  # Make cleanup scripts first in case deployment fails
+  # TODO: This kfctl delete seems to be failing due to a Kubeflow config bug
+  echo "cd ${KF_DIR} && ${KFCTL} delete -V -f ${CONFIG_FILE} --delete_storage; cd && sudo rm -rf ${KF_DIR}" > ${KUBEFLOW_DEL_SCRIPT}
+  chmod +x ${KUBEFLOW_DEL_SCRIPT}
 
-${KUBEFLOW_SRC}/scripts/kfctl.sh generate k8s
-pushd ${KSAPP_DIR}
-set +e
+  # Initialize and apply the Kubeflow project using the specified config. We do this in two steps to allow a chance to customize the config
+  cd ${KF_DIR}
+  ${KFCTL} build -V -f ${CONFIG_URI}
 
-# NOTE: temporarily using a custom image, to add custom command functionality
-ks param set jupyter-web-app image deepops/kubeflow-jupyter-web-app:v0.5-custom-command
+  # Update Kubeflow with the NGC containers and NVIDIA configurations
+  ${SCRIPT_DIR}/update_kubeflow_config.py
 
-# Use NodePort directly if the IP string uses the master IP, otherwise use Ingress URL
-if echo "${ingress_ip_string}" | grep "${master_ip}" >/dev/null 2>&1; then
-    ks param set ambassador ambassadorServiceType NodePort
-    popd
-    ${KUBEFLOW_SRC}/scripts/kfctl.sh apply k8s
-    popd
-    kf_ip=$master_ip
-    kf_port=$(kubectl -n kubeflow get svc ambassador --no-headers -o custom-columns=:.spec.ports.*.nodePort)
-    kf_url="http://${kf_ip}:${kf_port}"
+  # XXX: Add potential CONFIG customizations here before applying
+  ${KFCTL} apply -V -f ${CONFIG_FILE}
+}
+
+
+# Modify the ns finalizers so they don't wait for async processes to complete
+function fix_terminating_ns() {
+  kubectl proxy &
+  for ns in ${@}; do
+    kubectl get namespace ${ns} -o json |jq '.spec = {"finalizers":[]}' > "/tmp/temp_${ns}.json"
+    curl -k -H "Content-Type: application/json" -X PUT --data-binary @"/tmp/temp_${ns}.json" 127.0.0.1:8001/api/v1/namespaces/${ns}/finalize
+  done
+}
+
+
+function tear_down() {
+  # Kubeflow use leads to some user created namespaces that are not torn down during kfctl delete
+  namespaces="kubeflow"
+
+  # Delete other NS that were installed. These might be part of other apps and is slightly dangerous
+  if [ "${KUBEFLOW_FULL_DELETE}" == "true" ]; then
+    namespaces=" ${namespaces} admin auth cert-manager istio-system knative-serving ${KUBEFLOW_EXTRA_NS}"
+  fi
+
+  # This runs kfctl delete pointing to the CONFIG that was used at install
+  bash ${KUBEFLOW_DEL_SCRIPT} && sleep 5 # There seems to be a timing issue here in kfctl, so we sleep a bit.
+
+  # delete all namespaces, including namespaces that "should" already have been deleted by kfctl delete
+  echo "Re-deleting namespaces ${namespaces} for a full cleanup"
+  kubectl delete ns ${namespaces}
+
+  # There is an issues in the kfctl delete command that does not properly clean up and leaves NSs in a terminating state, this is a bit hacky but resolves it
+  # echo "Removing finalizers from all namespaces: ${namespaces}"
+  # fix_terminating_ns ${namespaces}
+
+  if [ "${KUBEFLOW_FULL_DELETE}" == "true" ]; then
+    # These should probably be deleted by kfctl, but they are not
+    kubectl delete crd -l app.kubernetes.io/part-of=kubeflow -o name
+    kubectl delete all -l app.kubernetes.io/part-of=kubeflow --all-namespaces
+  fi
+
+  rm ${KFCTL}
+}
+
+
+function poll_url() {
+  # It typically takes ~5 minutes for all pods and services to start, so we poll for ten minutes here
+  time=0
+  while [ ${time} -lt ${KUBEFLOW_TIMEOUT} ]; do
+    # XXX: This validates that the webapp is responding, it does not guarentee functionality
+    curl -s --raw -L "${kf_url}" && \
+      echo "Kubeflow homepage is up" && exit 0
+    let time=$time+15
+    sleep 15
+  done
+  echo "Kubeflow did not respond within ${KUBEFLOW_TIMEOUT} seconds"
+  exit 1
+}
+
+
+function get_url() {
+  # Get LoadBalancer and NodePorts
+  master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
+  nodePort="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=PORT:.spec.ports[?\(@.name==\"http2\"\)].nodePort)"
+  secure_nodePort="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=PORT:.spec.ports[?\(@.name==\"https\"\)].nodePort)"
+  lb_ip="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=:.status.loadBalancer.ingress[0].ip)"
+  export kf_url="http://${master_ip}:${nodePort}"
+  export secure_kf_url="https://${master_ip}:${secure_nodePort}"
+  export lb_url="https://${lb_ip}"
+}
+
+
+function print_info() {
+  echo
+  echo "Kubeflow app installed to: ${KF_DIR}"
+  echo
+  echo "It may take several minutes for all services to start. Run 'kubectl get pods -n kubeflow' to verify"
+  echo
+  echo "To remove (excluding CRDs, istio, auth, and cert-manager), run: ${0} -d"
+  echo
+  echo "To perform a full uninstall : ${0} -D"
+  echo
+  echo "Kubeflow Dashboard (HTTP NodePort): ${kf_url}"
+  # echo "Kubeflow Dashboard (HTTPS NodePort, required for auth): ${secure_kf_url}"
+  # echo "Kubeflow Dashboard (DEFAULT - LoadBalancer, required for auth w/Dex): ${lb_url}"
+  echo
+}
+
+
+function test_script() {
+  # Don't test recursively
+  if [ ${KUBEFLOW_TEST} ]; then
+    export KUBEFLOW_TEST=""
+  else
+    return
+  fi
+
+  ./${0} -dp
+  if [ ${?} -eq 0 ]; then
+    exit 10
+  fi
+  ./${0} -h
+  if [ ${?} -eq 0 ]; then
+    exit 11
+  fi
+  
+  ./${0}
+  if [ ${?} -ne 0 ]; then
+    exit 12 # we should really test with a curl
+  fi
+  ./${0} -D
+  if [ ${?} -ne 0 ]; then
+    exit 13
+  fi
+  ./${0} -x
+  if [ ${?} -ne 0 ]; then
+    exit 14
+  fi
+  ./${0} -e
+  if [ ${?} -ne 0 ]; then
+    exit 15
+  fi
+
+  exit 0
+}
+
+test_script
+
+get_opts ${@}
+
+if [ ${KUBEFLOW_PRINT} ] && [ ${KUBEFLOW_DELETE} ]; then
+  echo "Cannot specify print flag and delete flag"
+  exit 2
+elif [ ${KUBEFLOW_PRINT} ]; then
+  get_url
+  print_info
+elif [ ${KUBEFLOW_DELETE} ]; then
+  tear_down
+elif [ ${KUBEFLOW_WAIT} ]; then
+  # Run print_info to get the kf_url
+  get_url
+  print_info
+  poll_url
 else
-    ks param set ambassador ambassadorServiceType LoadBalancer
-    popd
-    ${KUBEFLOW_SRC}/scripts/kfctl.sh apply k8s
-    popd
-    kf_ip=$(kubectl -n kubeflow get svc ambassador --no-headers -o custom-columns=:.status.loadBalancer.ingress[0].ip)
-    kf_url="http://${kf_ip}"
+  install_dependencies
+  stand_up
+  get_url
+  print_info
 fi
-
-echo
-echo "Kubeflow app installed to: ${HOME}/${KFAPP}"
-echo "To remove, run: cd ${HOME}/${KFAPP} && ${KUBEFLOW_SRC}/scripts/kfctl.sh delete k8s"
-echo "To fully remove all source and application code run: cd ${HOME} && rm -rf ${KFAPP}; rm -rf ${KUBEFLOW_SRC}"
-echo "To fully remove everything: cd ${HOME}/${KFAPP} && ${KUBEFLOW_SRC}/scripts/kfctl.sh delete k8s; cd ${DEEPOPS_DIR} && sudo rm -rf ${KFAPP}; sudo rm -rf ${KUBEFLOW_SRC}"
-echo
-echo "Kubeflow Dashboard: ${kf_url}"
-echo

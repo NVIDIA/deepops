@@ -28,20 +28,29 @@
   when: ansible_os_family == 'RedHat'
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
+- name: pull GPU device plugin file
+  get_url:
+    url: "{{ nvidia_k8s_device_plugin_def }}"
+    dest: "{{ nvidia_k8s_device_plugin_file }}"
+    mode: 0755
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
 - name: create GPU device plugin
   k8s:
     state: present
-    definition: "{{ lookup('url', nvidia_k8s_device_plugin_def, split_lines=False) }}"
-    path: "{{ deepops_dir }}"
+    definition: "{{ lookup('file', nvidia_k8s_device_plugin_file, split_lines=False) }}"
+    ## definition: "{{ lookup('url', nvidia_k8s_device_plugin_def, split_lines=False) }}"
   run_once: true
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  environment:
+      PYTHONHOME: "{{ deepops_venv }}"
   when: ansible_distribution == 'Ubuntu'
 
 - name: create GPU device plugin
   k8s:
     state: present
-    definition: "{{ lookup('url', nvidia_k8s_device_plugin_def, split_lines=False) }}"
-    path: "{{ deepops_dir }}"
-    environment: "{{proxy_env if proxy_env is defined else {}}}"
+    definition: "{{ lookup('file', nvidia_k8s_device_plugin_file, split_lines=False) }}"
+    ## definition: "{{ lookup('url', nvidia_k8s_device_plugin_def, split_lines=False) }}"
   run_once: true
+  environment:
+      PYTHONHOME: "{{ deepops_venv }}"
   when: ansible_os_family == 'RedHat'

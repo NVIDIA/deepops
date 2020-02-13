@@ -14,13 +14,13 @@ spec:
         app: dcgm-exporter
       name: dcgm-exporter
     spec:
-      serviceAccountName: kube-prometheus-exporter-node
+      serviceAccountName: prometheus-operator-prometheus-node-exporter
       hostNetwork: true
       hostPID: true
       nodeSelector:
         hardware-type: NVIDIAGPU
       containers:
-      - image: quay.io/prometheus/node-exporter:v0.16.0
+      - image: quay.io/prometheus/node-exporter:v0.18.1
         args:
         - "--web.listen-address=0.0.0.0:9101"
         - "--path.procfs=/host/proc"
@@ -83,7 +83,7 @@ spec:
         - name: collector-textfiles
           readOnly: true
           mountPath: /run/prometheus
-      - image: nvcr.io/nvidia/k8s/dcgm-exporter:1.4.3
+      - image: nvcr.io/nvidia/k8s/dcgm-exporter:1.4.6
         name: nvidia-dcgm-exporter
         securityContext:
           runAsNonRoot: false

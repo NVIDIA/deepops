@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
 # can be run standalone with: curl -sL git.io/deepops | bash
+# or: curl -sL git.io/deepops | bash -s -- 19.07
+
+# DeepOps branch to setup
+DEEPOPS_TAG="${1:-master}"
 
 . /etc/os-release
 
@@ -11,11 +15,15 @@ cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
 ANSIBLE_OK="2.7.8"
 ANSIBLE_VERSION="2.7.11"
 ANSIBLE_REPO_VER="2.7"
+PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/proxy.sh | grep -v ^$ | wc -l` 
 
 as_sudo(){
-   cmd="sudo bash -c '. ${SCRIPT_DIR}/proxy.sh && $1'"
-   echo $cmd
-   eval $cmd
+    if [ $PROXY_USE -gt 0 ]; then
+      cmd="sudo bash -c '. ${SCRIPT_DIR}/proxy.sh && $1'"
+    else
+      cmd="sudo bash -c '$1'"
+    fi
+    eval $cmd
 }
 
 # Install Software
@@ -82,6 +90,8 @@ case "$ID" in
         wget --version | head -1
         ;;
     ubuntu*)
+	# No interactive prompts from apt during this process
+	export DEBIAN_FRONTEND=noninteractive
         # Update apt cache
         echo "Updating apt cache..."
         as_sudo 'apt-get update' >/dev/null
@@ -150,7 +160,7 @@ case "$ID" in
 
         # Install wget
         if ! which wget >/dev/null 2>&1; then
-        echo "Installing wget..."
+            echo "Installing wget..."
             as_sudo 'apt -y install wget' >/dev/null
         fi
         wget --version | head -1
@@ -164,7 +174,9 @@ esac
 if ! grep -i deepops README.md >/dev/null 2>&1 ; then
     cd "${SCRIPT_DIR}"
     if ! test -d deepops ; then
-	    . ${SCRIPT_DIR}/proxy.sh && git clone https://github.com/NVIDIA/deepops.git
+	      . ${SCRIPT_DIR}/proxy.sh && git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
+        # Master branch
+        # git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
     fi
     cd deepops
 fi
@@ -172,7 +184,7 @@ fi
 # Install Ansible Galaxy roles
 ansible-galaxy --version >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
-    ansible-galaxy install -r requirements.yml
+    . ${SCRIPT_DIR}/proxy.sh && ansible-galaxy install -r requirements.yml
 else
     echo "ERROR: Unable to install Ansible Galaxy roles"
 fi
@@ -181,7 +193,7 @@ fi
 git status >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
 	## . ${SCRIPT_DIR/proxy.sh && git submodule update --init
-	git submodule update --init
+	. ${SCRIPT_DIR}/proxy.sh && git submodule update --init
 else
     echo "ERROR: Unable to update Git submodules"
 fi
@@ -195,14 +207,3 @@ else
     echo "Configuration directory '${CONFIG_DIR}' exists, not overwriting"
 fi
 
-# TODO: What if proxies already set via env
-# update the config/group_vars/all.yml file for proxy config
-if [ `grep -v ^# ${SCRIPT_DIR}/proxy.sh | grep -v ^$ | wc -l` -gt 0 ]; then
-    o=config.example/group_vars/all.yml
-    t=config/group_vars/all.yml 
-    echo "Updating [$t] to use proxies"
-    . ${SCRIPT_DIR}/proxy.sh && cat $o | sed -e "s|#PROXY_ENV|proxy_env:|g" \
-	                                    -e "s|#NO_PROXY|no_proxy: $no_proxy|g" \
-	                                    -e "s|#HTTP_PROXY|http_proxy: $http_proxy|g" \
-	                                    -e "s|#HTTPS_PROXY|https_proxy: $https_proxy|g" > $t
-fi

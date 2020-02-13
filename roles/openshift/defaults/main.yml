@@ -1,0 +1,2 @@
+deepops_dir: /opt/deepops
+deepops_venv: '{{ deepops_dir }}/venv'

@@ -10,8 +10,8 @@
 
 - name: configure /etc/fstab on clients
   mount:
-    name: "{{ item.mountpoint}}"
-    src: "{{ item.server|default(groups['nfs-server'][0]) }}:{{ item.path }}"
+    name: "{{ item.mountpoint }}"
+    src: "{{ item.server }}:{{ item.path }}"
     opts: "{{ item.options }}"
     fstype: nfs 
     state: mounted

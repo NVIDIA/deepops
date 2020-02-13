@@ -1,67 +1,48 @@
+################################################################################
+# DeepOps Ansible Config                                                       #
+################################################################################
+#
 # Configuration common to all hosts
 # Define per-group or per-host values in the other configuration files
+#
 
-# Proxy Variables needed for ansible etc.
-#HTTP_PROXY
-#HTTPS_PROXY
-#NO_PROXY
+################################################################################
+# PROXY
+################################################################################
+# Proxy Variables needed for scripts, ansible, etc.
+# http_proxy: http://10.0.2.5:3128
+# https_proxy: http://10.0.2.5:3128
+# no_proxy: localhost,cluster.local,127.0.0.1,::1,10.0.2.10,10.0.2.20,10.0.2.30
 
-#PROXY_ENV
-    #HTTP_PROXY
-    #HTTPS_PROXY
-    #NO_PROXY
+# proxy_env:
+        # http_proxy: '{{ http_proxy }}'
+        # https_proxy: '{{ https_proxy }}'
+        # no_proxy: '{{ no_proxy }}'
 
-# dns-config
+################################################################################
+# NETWORK                                                                      #
+################################################################################
+# DNS config
+# Playbook: dns-config
 #dns_config_servers: [8.8.8.8]
 #dns_config_search: [example.com]
 
-# NIS configuration
-#nis_domain: example.com
-#nis_server: 10.0.0.1
+# NTP configuration
+# Playbook: ntp-client
+#chrony_timezone: "America/Los_Angeles"
+#chrony_config_server:
+#  - 0.pool.ntp.org
 
-# Kerberos configuration
-#kerberos_client_realm_name: "example.com"
-#kerberos_client_kdc_hostname: "kerberos"
-#kerberos_client_admin_hostname: "kerberos"
-#nfs_idmapd_domain: example.com
 
-# AutoFS configuration
-#autofs_mount: "/home"
-#autofs_map: "auto.home_linux"
-
-# Slurm job scheduler configuration
-#slurm_user_home: /local/slurm
-#slurm_manage_gpus: true
-#slurm_cluster_name: deepops
-#slurm_username: slurm
-#slurm_password: ReplaceWithASecurePasswordInTheVault
-#slurm_db_username: slurm
-#slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
-#slurm_max_job_timelimit: INFINITE
-#slurm_default_job_timelimit:
-
-#nfs_exports:
-#  - path: /export/shared
-#    options: "*(rw,sync,no_root_squash)"
-
-#nfs_mounts:
-#  - mountpoint: /mnt/shared
-#    server: '{{ groups["nfs-server"][0] }}'
-#    path: /export/shared
-#    options: async,vers=3
-
-# Collectd
-#collectd_network_server: "deepops-mgmt.example.com"
-#collectd_network_port: "30300"
-#collectd_python_module_path: "/usr/lib/collectd/dcgm"
-#collectd_python_modules: []
-#collectd_config_dir: "/etc/collectd/collectd.conf.d"
-#with_dcgm_collectd: false
-
+################################################################################
+# SOFTWARE                                                                     #
+################################################################################
 # Lmod modules
+# Playbook: lmod
 #lmod_modulepath: /shared/modules/all
 
-# Extra software to install via software.yml playbook
+# Extra software to install or remove
+# Playbook: software
 #software_extra_packages:
 #  - curl
 #  - git
@@ -73,6 +54,156 @@
 #  - build-essential
 #  - linux-tools-generic
 #  - "{{ 'linux-headers-' + ansible_kernel }}"
-
 #software_remove_packages:
 #  - popularity-contest
+
+
+################################################################################
+# STORAGE                                                                      #
+################################################################################
+# AutoFS configuration
+# Playbook: authentication
+#autofs_mount: "/home"
+#autofs_map: "auto.home_linux"
+
+# NFS Server
+# This config will create an NFS server and share the given exports
+# Playbook: nfs-server.yml
+#nfs_exports:
+#  - path: /export/shared
+#    options: "*(rw,sync,no_root_squash)"
+
+# NFS Client
+# This config will mount an NFS share on hosts
+# Playbook: nfs-client.yml
+#nfs_mounts:
+#  - mountpoint: /mnt/shared
+#    server: '{{ groups["slurm-master"][0] }}'
+#    path: /export/shared
+#    options: async,vers=3
+
+
+################################################################################
+# USERS                                                                        #
+################################################################################
+# User management
+# Playbook: users, user-password
+# create user `nvidia` with password `deepops` on all nodes
+users:
+  - username: nvidia
+    name: nvidia
+    password: $6$IrxI27V4ogJFfgTV$RvNskQFvXZzE9AFsIokuXKwDAyqs9Jd03Trfi7DsHoCyllK79/zhAciZPENt4.2uRNMR0gE6.mRD/o9jP7WcZ.
+    groups: ['sudo']
+    uid: 10007
+    home: /home/nvidia
+
+
+################################################################################
+# NVIDIA                                                                       #
+################################################################################
+# NVIDIA GPU configuration
+# Playbook: nvidia-set-gpu-clocks
+# Resets the Gpu clocks to the default values. (see the `--reset-gpu-clocks` flag in nvidia-smi for more)
+gpu_clock_reset: no
+# Specifies <minGpuClock,maxGpuClock> clocks as a pair (e.g. 1500,1500) that defines the range of desired locked GPU clock speed in MHz. Setting this will supercede application clocks and take effect regardless if an app is running. Input can also be a singular desired clock value. (see the `--lock-gpu-clocks` flag in nvidia-smi for more)
+gpu_clock_lock: "1507,1507"
+
+
+################################################################################
+# CONTAINER RUNTIME                                                            #
+################################################################################
+# Docker config
+# Playbook: docker, nvidia-docker
+docker_daemon_json:
+  # Docker's default subnet is 172.17.0.0/16
+  # Pick a smaller subnet, which is also less likely to conflict with corporate addresses.
+  bip: 192.168.99.1/24
+
+# Enroot configuration
+# Playbook: slurm-perf, slurm-perf-cluster
+enroot_runtime_path: '/tmp/enroot-runtime-$(id -u)'
+enroot_cache_path: '/tmp/enroot-cache-$(id -u)'
+enroot_data_path: '/tmp/enroot-data-$(id -u)'
+enroot_config: |
+  ENROOT_CONFIG_PATH ${HOME}/.config/enroot
+  ENROOT_SQUASH_OPTIONS -noI -noD -noF -noX -no-duplicates
+  ENROOT_MOUNT_HOME y
+  ENROOT_RESTRICT_DEV y
+  ENROOT_RUNTIME_PATH {{ enroot_runtime_path }}
+  ENROOT_CACHE_PATH {{ enroot_cache_path }}
+  ENROOT_DATA_PATH {{ enroot_data_path }}
+enroot_environ_config_files:
+  - filename: 50-mellanox.env
+    content: |
+      MELLANOX_VISIBLE_DEVICES=all
+  - filename: 50-mpi.env
+    content: |
+      OMPI_MCA_btl_tcp_if_exclude=lo,docker0,ib0,ib1,ib2,ib3
+
+
+################################################################################
+# AUTH                                                                         #
+################################################################################
+# NIS configuration
+# Playbook: authentication
+#nis_domain: example.com
+#nis_server: 10.0.0.1
+
+# Kerberos configuration
+# Playbook: authentication
+#kerberos_client_realm_name: "example.com"
+#kerberos_client_kdc_hostname: "kerberos"
+#kerberos_client_admin_hostname: "kerberos"
+#nfs_idmapd_domain: example.com
+
+
+################################################################################
+# MONITORING                                                                   #
+################################################################################
+# Collectd
+# Playbook: collectd
+#collectd_network_server: "deepops-mgmt.example.com"
+#collectd_network_port: "30300"
+#collectd_python_module_path: "/usr/lib/collectd/dcgm"
+#collectd_python_modules: []
+#collectd_config_dir: "/etc/collectd/collectd.conf.d"
+#with_dcgm_collectd: false
+
+
+################################################################################
+# MAAS                                                                         #
+################################################################################
+# MAAS (Metal as a Service): Node provisioning/PXE service
+# Playbook: maas, maas_management
+maas_adminusers:
+  - username: 'admin'
+    email: 'admin@{{ maas_dns_domain }}'
+    password: 'admin'
+maas_dns_domain: 'deepops.local'
+maas_region_controller: '192.168.1.1'
+maas_region_controller_url: 'http://{{ maas_region_controller }}:5240/MAAS'
+maas_repo: 'ppa:maas/stable'
+
+# Defines if maas user should generate ssh keys
+# Usable for remote KVM/libvirt power actions
+maas_setup_user: false
+
+maas_single_node_install: true
+
+maas_kvm: false
+
+
+################################################################################
+# Misc.                                                                        #
+################################################################################
+# Set /etc/rc.local contents
+# Playbook: rc-local
+# rc_local_contents: |
+#   echo foo
+#   echo bar
+#
+# DeepOps specific config
+deepops_dir: /opt/deepops
+# Directory for python virtualenv
+# Roles: K8s GPU operator, GPU plugin, OpenShift/K8s
+deepops_venv: '{{ deepops_dir }}/venv'

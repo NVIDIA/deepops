@@ -36,8 +36,13 @@ Instructions for deploying a GPU cluster with Kubernetes
    
    # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
    ```
+4. Verify the configuration
 
-4. Install Kubernetes using Ansible and Kubespray.
+   ```sh
+   ansible all -m raw -a "hostname"
+   ```
+
+5. Install Kubernetes using Ansible and Kubespray.
 
    ```sh
    # NOTE: If SSH requires a password, add: `-k`
@@ -48,7 +53,7 @@ Instructions for deploying a GPU cluster with Kubernetes
    
    More information on Kubespray can be found in the official [Getting Started Guide](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md)
 
-5. Verify that the Kubernetes cluster is running. 
+6. Verify that the Kubernetes cluster is running.
 
    ```sh
    # You may need to manually run: `sudo cp ./config/artifacts/kubectl /usr/local/bin`
@@ -58,8 +63,19 @@ Instructions for deploying a GPU cluster with Kubernetes
    Optionally, test a GPU job to ensure that your Kubernetes setup can tap into GPUs. 
 
    ```sh
-   kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
+   kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 nvidia-smi
    ```
+   
+   Optionally, verify all GPU nodes plug-ins in the Kubernetes cluster with following script.
+
+   ```sh
+   export CLUSTER_VERIFY_EXPECTED_PODS=1 # Expected number of GPUs in the cluster
+   ./scripts/k8s_verify_gpu.sh 
+   ```
+
+## Using Kubernetes
+
+Now that Kubernetes is installed, consult the [Kubernetes Usage Guide](kubernetes-usage.md) for examples of how to use Kubernetes.
 
 ## Optional Components
 
@@ -116,6 +132,10 @@ one that is resolvable outside the cluster), add `-e container_registry_hostname
 ansible-playbook --tags container-registry playbooks/k8s-services.yml
 ```
 
+### Load Balancer and Ingress
+
+Many K8s applications require the deployment of a Load Balancer and Ingress. To deploy one, or both, of these services, refer to the [Load Balancer and Ingress Guide](ingress.md).
+
 ### Kubeflow
 
 Kubeflow is a popular way for multiple users to run ML workloads. It exposes a Jupyter Notebook interface where users can request access to GPUs via the browser GUI. Deploy Kubeflow with a convenient script:
@@ -126,7 +146,53 @@ Kubeflow is a popular way for multiple users to run ML workloads. It exposes a J
 
 For more on Kubeflow, please refer to the [official documentation](https://www.kubeflow.org/docs/about/kubeflow/).
 
-## Using Kubernetes
+## Cluster Maintenance
 
-Now that Kubernetes is installed, consult the [Kubernetes Usage Guide](kubernetes-usage.md) for examples of how to use Kubernetes.
+DeepOps uses [Kubespray](https://github.com/kubernetes-sigs/kubespray) to deploy Kubernetes and therefore common cluster actions (such as adding nodes, removing them, draining and upgrading the cluster) should be performed with it. Kubespray is included as a submodule in the deepops/kubespray directory.
 
+### Adding Nodes
+
+To add K8s nodes, modify the `config/inventory` file to include the new nodes under `[all]`. Then list the nodes as relevant under the `[kube-master]`, `[etcd]`, and `[kube-node]` sections. For example, if adding a new master node, list it under kube-master and etcd. A new worker node would go under kube-node.
+
+Then run the Kubespray `scale.yml` playbook...
+
+```sh
+# NOTE: If SSH requires a password, add: `-k`
+# NOTE: If sudo on remote machine requires a password, add: `-K`
+# NOTE: If SSH user is different than current user, add: `-u ubuntu`
+ansible-playbook -l k8s-cluster kubespray/scale.yml
+```
+
+More information on this topic may be found in the [Kubespray docs](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md#adding-nodes).
+
+### Removing Nodes
+
+Removing nodes can be performed with Kubespray's `remove-node.yml` playbook and supplying the node names as extra vars...
+
+```sh
+# NOTE: If SSH requires a password, add: `-k`
+# NOTE: If sudo on remote machine requires a password, add: `-K`
+# NOTE: If SSH user is different than current user, add: `-u ubuntu`
+ansible-playbook kubespray/remove-node.yml --extra-vars "node=nodename0,nodename1"
+```
+
+This will drain `nodename0` & `nodename1`, stop Kubernetes services, delete certificates, and finally execute the kubectl command to delete the nodes.
+
+More information on this topic may be found in the [Kubespray docs](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md#remove-nodes).
+
+### Reset the Cluster
+
+Sometimes a cluster will get into a bad state - perhaps one where certs are misconfigured or different across nodes. When this occurs it's often helpful to completely reset the cluster. To accomplish this, run the `remove-node.yml` playbook for all k8s nodes...
+
+```sh
+# NOTE: If SSH requires a password, add: `-k`
+# NOTE: If sudo on remote machine requires a password, add: `-K`
+# NOTE: If SSH user is different than current user, add: `-u ubuntu`
+ansible-playbook kubespray/remove-node.yml --extra-vars "node=k8s-cluster"
+```
+
+> NOTE: There is also a Kubespray `reset.yml` playbook, but this does not do a complete tear-down of the cluster.
+
+### Upgrading the Cluster
+
+Refer to the [Kubespray Upgrade docs](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/upgrades.md) for instructions on how to upgrade the cluster.

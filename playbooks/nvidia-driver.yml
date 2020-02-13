@@ -2,6 +2,11 @@
 - hosts: all
   become: true
   tasks:
+    - name: Check for DGX packages
+      stat:
+        path: /etc/dgx-release
+      register: is_dgx
+
     - name: install custom facts
       include_role:
         name: facts
@@ -9,10 +14,14 @@
     - name: install nvidia driver
       include_role:
         name: nvidia.nvidia_driver
-      when: ansible_local['gpus']['count']
+      when:
+        - ansible_local['gpus']['count']
+        - is_dgx.stat.exists == False
       environment: "{{proxy_env if proxy_env is defined else{}}}"
 
     - name: test nvidia-smi
       command: nvidia-smi
       changed_when: false
-      when: ansible_local['gpus']['count']
+      when:
+        - ansible_local['gpus']['count']
+        - is_dgx.stat.exists == False
