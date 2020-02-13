@@ -49,6 +49,11 @@ pipeline {
   post {
     always {
       sh '''
+        bash -x ./.jenkins-scripts/test-remove-rook.sh
+      '''
+    }
+    always {
+      sh '''
         pwd
         cd virtual && ./vagrant_shutdown.sh
       '''

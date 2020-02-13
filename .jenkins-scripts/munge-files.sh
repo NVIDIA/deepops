@@ -33,3 +33,8 @@ sed -i -e  "s/10\\.0\\.0\\.100-10\\.0\\.0\\.110$/10.0.0.1${GPU01}0-10.0.0.1${GPU
 
 echo "Increase debug scope for ansible-playbook commands"
 sed -i -e "s/ansible-playbook/ansible-playbook -v/g" virtual/scripts/*
+
+# Update the ROOK Dir to be unique across the board to avoid potential conflicts
+ROOK_DIR=/var/lib/rook-$(date +%s)
+sed -i -e "s:/var/lib/rook:${ROOK_DIR}:g" ${ROOT_DIR}/services/rook-cluster.yml
+sed -i -e "s:/var/lib/rook:${ROOK_DIR}:g" ${ROOT_DIR}/scripts/rmrook.sh
