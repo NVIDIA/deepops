@@ -7,6 +7,11 @@
 
 - include: load-image.yml
 
+- include: update-firmware.yml
+  vars:
+    force_parameter: ''
+  when: update_firmware
+
 - include: run-diagnostics.yml
   when: run_diagnostics
 

@@ -2,15 +2,15 @@
 
 - include: check-firmware.yml
 
-- name: Check if force udpate requested
+- name: Check if force update requested
   set_fact:
     force_parameter: '-f'
-  when: "force_update == 'true'"
+  when: force_update
 
 - name: Update firmware if required
   block:
     - name: Update firmware if required
-      command: "docker run --rm --privileged -v /:/hostfs -t -e auto=1 -e COLUMNS=200 -e LINES=300 {{ firmware_update_container }} update_fw {{ force_parameter }} {{ target_fw }}"
+      command: "docker run --rm -ti --privileged -v /:/hostfs -e auto=1 -e COLUMNS=200 -e LINES=300 {{ firmware_update_repo }}:{{ firmware_update_tag }} set_flags AUTO=1 update_fw {{ force_parameter }} {{ target_fw }}"
       register: update_output
       when:
         - "'no' in firmware_versions.stdout"
@@ -20,6 +20,10 @@
       debug:
         var: update_output.stdout
     - include: transfer-logs.yml
+
+- name: debug
+  debug:
+    var: update_output
 
 - name: Reboot if necessary
   shell: sleep 2 && /sbin/shutdown -r now "Reboot required"
