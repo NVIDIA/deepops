@@ -6,8 +6,9 @@ ROOT_DIR="${SCRIPT_DIR}/.."
 CONFIG_DIR="${ROOT_DIR}/config"
 
 # Specify credentials for the default user.
-export KUBEFLOW_USER_EMAIL="${KUBEFLOW_USER_EMAIL:-deepops@example.com}"
-export KUBEFLOW_PASSWORD="${KUBEFLOW_PASSWORD:-deepops}"
+# TODO: Add support for this, Kubeflow user/pass now needs to be hashed and added to the CONFIG
+export KUBEFLOW_USER_EMAIL="${KUBEFLOW_USER_EMAIL:-admin@kubeflow.org}"
+export KUBEFLOW_PASSWORD="${KUBEFLOW_PASSWORD:-12341234}"
 
 # Speificy how long to poll for Kubeflow to start
 export KUBEFLOW_TIMEOUT="${KUBEFLOW_TIMEOUT:-600}"
@@ -17,17 +18,17 @@ export KF_DIR="${KF_DIR:-${CONFIG_DIR}/kubeflow-install}"
 export KFCTL="${KFCTL:-${CONFIG_DIR}/kfctl}"
 export KUBEFLOW_DEL_SCRIPT="${KF_DIR}/deepops-delete-kubeflow.sh"
 
-# Download URLs and versions
-export KFCTL_FILE=kfctl_v1.0-rc.1-0-g963c787_linux.tar.gz
-export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.0-rc.1/${KFCTL_FILE}"
+# Download URLs and versions # XXX: kfctl introcuded a version mismatch, this is naming only
+export KFCTL_FILE=kfctl_v1.0-rc.3-1-g24b60e8_linux.tar.gz
+export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.0-rc.4/${KFCTL_FILE}"
 
 # Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
-export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/b37bad9eded2c47c54ce1150eb9e6edbfb47ceda/kfdef/kfctl_existing_arrikto.0.7.1.yaml"
-export CONFIG_FILE="${KF_DIR}/kfctl_existing_arrikto.0.7.1.yaml"
+export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/9eeab3ee045b85e90f236b7dcccbdf5997722bfb/kfdef/kfctl_istio_dex.v1.0.0.yaml"
+export CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.0.0.yaml"
 
 # Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
-export NO_AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/v0.7-branch/kfdef/kfctl_k8s_istio.0.7.0.yaml"
-export NO_AUTH_CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.0.7.0.yaml"
+export NO_AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/9eeab3ee045b85e90f236b7dcccbdf5997722bfb/kfdef/kfctl_k8s_istio.v1.0.0.yaml"
+export NO_AUTH_CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.v1.0.0.yaml"
 
 
 function help_me() {
@@ -43,7 +44,7 @@ function help_me() {
 
 
 function get_opts() {
-  while getopts "hpwc:xdD" option; do
+  while getopts "hpwc:xdDZ" option; do
     case $option in
       p)
         KUBEFLOW_PRINT=true
@@ -66,6 +67,10 @@ function get_opts() {
         KUBEFLOW_DELETE=true
         KUBEFLOW_FULL_DELETE=true
         ;;
+      Z)
+	# This is a dangerous command and is not included in the help
+	KUBEFLOW_EXTRA_FULL_DELETE=true
+	;;
       h)
         help_me
         exit 1
@@ -169,8 +174,11 @@ function tear_down() {
   kubectl delete ns ${namespaces}
 
   # There is an issues in the kfctl delete command that does not properly clean up and leaves NSs in a terminating state, this is a bit hacky but resolves it
-  # echo "Removing finalizers from all namespaces: ${namespaces}"
-  # fix_terminating_ns ${namespaces}
+  if [ "${KUBEFLOW_EXTRA_FULL_DELETE}" == "true" ]; then
+    sleep 10 # Give the other deletion steps proper time to cleanup
+    echo "Removing finalizers from all namespaces: ${namespaces}"
+    fix_terminating_ns ${namespaces}
+  fi
 
   if [ "${KUBEFLOW_FULL_DELETE}" == "true" ]; then
     # These should probably be deleted by kfctl, but they are not
