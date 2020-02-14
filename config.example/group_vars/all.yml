@@ -24,6 +24,19 @@
 ################################################################################
 # DNS config
 # Playbook: dns-config
+
+# Docker config
+# Used by:
+#   playbooks/docker.yml
+#   playbooks/nvidia-docker.yml
+docker_daemon_json:
+  # Docker's default subnet is 172.17.0.0/16
+  # Pick a smaller subnet, which is also less likely to conflict with corporate addresses.
+  bip: 192.168.99.1/24
+
+
+# dns-config
+>>>>>>> 6d1fd49c78d367ef8d0dffed97e85b90dc9725c8
 #dns_config_servers: [8.8.8.8]
 #dns_config_search: [example.com]
 
