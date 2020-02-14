@@ -36,7 +36,6 @@ docker_daemon_json:
 
 
 # dns-config
->>>>>>> 6d1fd49c78d367ef8d0dffed97e85b90dc9725c8
 #dns_config_servers: [8.8.8.8]
 #dns_config_search: [example.com]
 
