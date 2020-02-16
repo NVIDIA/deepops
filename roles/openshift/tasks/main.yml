@@ -14,13 +14,13 @@
     path: "{{ deepops_dir }}"
     state: directory
   when: ansible_distribution == 'Ubuntu'
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
 
 - name: install openshift python client for k8s_raw module
   pip:
     name: openshift
     virtualenv: "{{ deepops_venv }}"
   when: ansible_distribution == 'Ubuntu'
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
 
   # TODO: Verify that RHEL  does not require venv
 - name: install openshift python client for k8s_raw module
