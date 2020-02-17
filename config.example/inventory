@@ -53,6 +53,9 @@ kube-node
 slurm-master
 slurm-node
 
+[easy-build-node]
+slurm-master
+
 ######
 # SSH connection configuration
 ######

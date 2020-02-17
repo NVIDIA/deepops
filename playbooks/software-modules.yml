@@ -1,0 +1,12 @@
+#
+# install software modules using EasyBuild.
+#
+---
+- hosts: all
+  roles:
+    - name: lmod
+
+- hosts: easy-build-node
+  roles:
+    - name: easy-build
+    - name: easy-build-packages
