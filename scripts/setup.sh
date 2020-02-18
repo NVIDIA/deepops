@@ -45,7 +45,7 @@ case "$ID" in
 
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
-            as_sudo 'pip install ansible=="${ANSIBLE_VERSION}"'
+            as_sudo "pip install ansible==${ANSIBLE_VERSION}"
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
             if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
@@ -122,7 +122,7 @@ case "$ID" in
 
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
-            as_sudo 'pip install ansible=="${ANSIBLE_VERSION}"'
+            as_sudo "pip install ansible==${ANSIBLE_VERSION}"
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
             if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
