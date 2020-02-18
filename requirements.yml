@@ -17,10 +17,10 @@
   version: "v5.2.6"
 
 - src: nvidia.nvidia_driver
-  version: "v1.1.2"
+  version: "v1.2.0"
 
 - src: nvidia.nvidia_docker
-  version: "v1.1.1"
+  version: "v1.2.0"
 
 - src: https://github.com/NVIDIA/ansible-role-enroot.git
   verions: "v0.1.2"
