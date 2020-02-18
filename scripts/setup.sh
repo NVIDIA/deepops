@@ -18,7 +18,7 @@ PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/proxy.sh | grep -v ^$ | wc -l`
 
 as_sudo(){
     if [ $PROXY_USE -gt 0 ]; then
-        cmd="sudo bash -c '. ${SCRIPT_DIR}/proxy.sh && $1'"
+        cmd="sudo -H bash -c '. ${SCRIPT_DIR}/proxy.sh && $1'"
     else
         cmd="sudo bash -c '$1'"
     fi
