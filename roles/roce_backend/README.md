@@ -104,12 +104,14 @@ Role deployment
 ---------------
 
 With root user:
-
-# ansible-playbook -l k8s-cluster playbooks/roce.yaml
+```
+ansible-playbook -l k8s-cluster playbooks/roce.yaml
+```
 
 With standard user:
-
-$ ansible-playbook -l k8s-cluster playbooks/roce.yaml -u "username" -k -K
+```
+ansible-playbook -l k8s-cluster playbooks/roce.yaml -u "username" -k -K
+```
 
 License
 -------
