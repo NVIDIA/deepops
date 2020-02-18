@@ -6,15 +6,14 @@
   tasks:
     - include_role:
         name: roce_backend
-      tags: 
-        - roce_host
-#        - roce_pip
+        tasks_from: allhosts
     
 - hosts: kube-node
   become: true
   become_method: sudo
   tasks:
-    - pip:
+    - name: Install docker-py
+      pip:
         name: docker-py
     - name: Pull docker image nfvpe/sriov-device-plugin
       docker_image: 
@@ -33,7 +32,4 @@
   tasks:
   - include_role:
       name: roce_backend
-    tags: 
-      - roce_pip
-      - roce_k8s
-      - roce_j2
+      tasks_from: k8smaster

@@ -4,9 +4,9 @@ resourceList:
     isRdma: true
     selectors:
       vendors: 
-      - {{ vendor }}
+      - "{{ vendor }}"
       devices: 
-      - {{ dev_id }}
+      - "{{ dev_id }}"
       pfNames: 
-      - {{ sriov_resource.pf_name }}
+      - "{{ sriov_resource.pf_name }}"
 {% endfor %}
