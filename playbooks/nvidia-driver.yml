@@ -17,6 +17,7 @@
       when:
         - ansible_local['gpus']['count']
         - is_dgx.stat.exists == False
+      environment: "{{proxy_env if proxy_env is defined else{}}}"
 
     - name: test nvidia-smi
       command: nvidia-smi

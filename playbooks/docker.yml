@@ -32,6 +32,7 @@
       when:
         - ansible_distribution == "Ubuntu"
         - is_dgx.stat.exists == False
+      environment: "{{proxy_env if proxy_env is defined else {}}}"
 
     - name: install docker
       include_role:
@@ -42,3 +43,4 @@
       when:
         - ansible_os_family == "RedHat"
         - is_dgx.stat.exists == False
+      environment: "{{proxy_env if proxy_env is defined else {}}}"
