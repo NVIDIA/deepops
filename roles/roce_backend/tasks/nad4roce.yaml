@@ -6,7 +6,9 @@
 - name: Create netattdef
   vars:
     config_json: |
+      cniVersion: "0.3.1"
       type: "sriov"
+      spoofChk: "off"
       name: "{{ item.network_name }}"
       vlan: {{ item.vlan_id |int }}
       ipam:
