@@ -2,14 +2,13 @@
 # install software modules using EasyBuild:
 #
 ---
-- name: "install depending software"
-  become: true
-  apt:
-    name:
-      - libssl-dev
-      - build-essential
-      - libsysfs-dev
-      - libibverbs-dev
+- name: "ubuntu pre-install tasks"
+  include_tasks: ubuntu-pre-install.yml
+  when: ansible_distribution == 'Ubuntu'
+
+- name: "redhat family pre-install tasks"
+  include_tasks: redhat-pre-install.yml
+  when: ansible_os_family == 'RedHat'
 
 - name: "download default easy-configs if needed"
   git:
