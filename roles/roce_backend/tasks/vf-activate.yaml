@@ -1,0 +1,31 @@
+---
+- name: Check activation
+  register: result
+  shell: "grep -i {{ item.pf_name }} /etc/rc.local"
+  failed_when: result.rc == 2
+  tags: roce_host
+
+- name: VF activation
+  shell: |
+    echo {{ num_vf|int }} > /sys/class/net/{{ item.pf_name }}/device/sriov_numvfs
+  args:
+    executable: /bin/bash
+    warn: no  
+  when: result.rc > 0
+  tags: roce_host
+
+- name: VF activation update (remove)
+  lineinfile:
+    path: /etc/rc.local
+    regexp: '^{{ item.pf_name }}'
+    state: absent
+  when: result.rc == 0
+  tags: roce_host
+
+- name: For persistant VF activation 
+  lineinfile:
+    path: /etc/rc.local
+    line: 'echo {{ num_vf|int }} > /sys/class/net/{{ item.pf_name }}/device/sriov_numvfs'
+    insertbefore: '^exit 0'
+  tags: roce_host
+  

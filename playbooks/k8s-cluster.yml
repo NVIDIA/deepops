@@ -38,6 +38,7 @@
   tags:
     - k8s
 
+
 # Disable swap (required for k8s), kubespray method doesn't quite cut it
 - hosts: all
   become: true
@@ -177,3 +178,5 @@
       run_once: true
   tags:
     - local
+
+
