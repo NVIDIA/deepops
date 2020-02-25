@@ -2,6 +2,11 @@
 - hosts: all
   become: true
   tasks:
+    - name: Check for DGX packages
+      stat:
+        path: /etc/dgx-release
+      register: is_dgx
+
     - name: install custom facts module
       include_role:
         name: facts
@@ -11,4 +16,5 @@
         name: nvidia.nvidia_docker
       when:
         - ansible_local['gpus']['count'] and (ansible_distribution == "Ubuntu" or ansible_os_family == "RedHat")
-        - ansible_product_name is not search("DGX-1") and ansible_product_name is not search("DGX-2")
+        - is_dgx.stat.exists == False
+      environment: "{{proxy_env if proxy_env is defined else {}}}"

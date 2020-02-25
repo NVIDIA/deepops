@@ -1,0 +1,86 @@
+---
+- name: Get a count of GPUs
+  shell: "lspci -d 10de: | grep -iv audio | wc -l"
+  register: gpu_count
+
+# This bit seems a bit buggy depending on the OS 
+- name: Install cuda toolkit
+  become: yes
+  package:
+    name: nvidia-cuda-toolkit
+    state: present
+  when: gpu_test_install_toolkit
+
+- name: download cuda samples
+  git:
+    repo: https://github.com/NVIDIA/cuda-samples.git
+    clone: yes
+    dest: "{{ gpu_test_cuda_dir }}"
+  when: gpu_test_build
+  ignore_errors: yes
+
+- name: make p2p
+  shell: "cd {{ gpu_test_samples_dir }}/p2pBandwidthLatencyTest && make"
+  when: gpu_test_build
+  ignore_errors: yes
+
+- name: make matrixMul
+  shell: "cd {{ gpu_test_samples_dir }}/matrixMul && make"
+  when: gpu_test_build
+  ignore_errors: yes
+
+# Save the output to a log file so we can parse the critical information later
+- name: run p2p test
+  shell: "{{ gpu_test_samples_dir }}/p2pBandwidthLatencyTest/p2pBandwidthLatencyTest | tee {{ gpu_test_samples_dir }}/p2pBandwidthLatencyTest/p2p.log"
+  register: p2p
+  ignore_errors: yes
+
+- name: run matrixmul test
+  shell: "{{ gpu_test_samples_dir }}/matrixMul/matrixMul -wA=4096 -hA=4096 -wB=4096 -hB=4096 | tee {{ gpu_test_samples_dir }}/matrixMul/matrixMul.log"
+  register: matrixmul
+  ignore_errors: yes
+
+# -r 1 for quick system validation test, 2 for mediuem extended validation, 3 for long HW diagnostics/stress
+- name: run dcgm diag for up to 15 minutes
+  shell: "dcgmi diag -r {{ gpu_test_dcgm_level }}"
+  register: dcgm
+  ignore_errors: yes
+
+# Note, this may fail to run depending on Ansible settings
+# We only look at the last few lines with relevant output
+- name: run TF training job for up to 5 minutes
+  become: yes
+  shell: "docker run --runtime=nvidia --rm -t nvcr.io/nvidia/tensorflow:18.07-py3 mpiexec --allow-run-as-root --bind-to socket -np {{ gpu_count.stdout }} python /opt/tensorflow/nvidia-examples/cnn/resnet.py --layers={{ gpu_test_tf_layers }} --precision=fp16 --batch_size={{ gpu_test_tf_batch_size }} | tail -n 12"
+  register: tf
+  ignore_errors: yes
+
+# Look for " Bidirectional P2P=Enabled Bandwidth Matrix (GB/s)" Speed should be ~260 for gpu to gpu and ~800 within a gpu
+- name: Get p2p bidirectional results
+  shell: "grep 'Bidirectional P2P=Enabled Bandwidth Matrix' -A 17 {{ gpu_test_samples_dir }}/p2pBandwidthLatencyTest/p2p.log | sed 's/        1/
+/g' | cut -d ' ' -f11- | tail -n {{ gpu_count.stdout }}"
+  register: p2p_results
+  ignore_errors: yes
+
+- name: Report on p2p bidirectional results
+  debug:
+    msg: "{{ p2p.stdout }}"
+
+- name: Report on tf results
+  debug:
+    msg: "{{ tf.stdout }}"
+
+- name: Report on p2p bidirectional results
+  debug:
+    msg: "{{ p2p_results.stdout }}"
+
+- name: Report on matrixmul results
+  debug:
+    msg: "{{ matrixmul.stdout }}"
+
+- name: Report on dcgm results
+  debug:
+    msg: "{{ dcgm.stdout }}"
+
+- name: Report on GPU results
+  debug:
+    msg: "Found {{ gpu_count.stdout }} GPUs"

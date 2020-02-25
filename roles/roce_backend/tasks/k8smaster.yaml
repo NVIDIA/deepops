@@ -1,0 +1,92 @@
+---
+# Tasks for Master node
+- name: Install Openshift pip module
+  pip:
+    name: openshift
+  tags:
+    - roce_k8s
+
+- name: check for module openshift
+  python_requirements_facts:
+    dependencies:
+      - openshift
+  tags:
+    - roce_k8s
+
+#Create configmap for SRIOV device plugin    
+
+- name: create configmap
+  k8s:
+    state: present
+    definition:
+      kind: ConfigMap
+      apiVersion: v1
+      metadata:
+        name: sriovdp-config
+        namespace: kube-system
+      data:
+        config.json: "{{ lookup('template', 'config_dp.j2') | from_yaml | to_nice_json }}"
+  run_once: true
+  tags:
+    - roce_k8s
+
+#Install DP and CNI's
+
+- name: Install Universal SR-IOV device plugin
+  k8s:
+    state: present
+    definition: "{{ lookup('url', '{{ sriov_dp_ds }}', split_lines=False ) }}"
+  run_once: true
+  tags:
+    - roce_k8s
+
+- name: Install SR-IOV CNI
+  k8s:
+    state: present
+    definition: "{{ lookup('url', '{{ sriov_cni_ds }}', split_lines=False) }}"
+  run_once: true
+  tags:
+    - roce_k8s
+
+- name: Install DHCP CNI
+  k8s:
+    state: present
+    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/Mellanox/dhcp-cni/master/dhcp-cni-ds.yaml', split_lines=False) }}"
+  run_once: true
+  tags:
+    - roce_k8s
+
+#Update Multus to latest version
+
+- name: Multus update
+  k8s:
+    state: present
+    definition: "{{ lookup('url', '{{ multus_ds }}', split_lines=False) }}"
+  run_once: true
+  tags:
+    - roce_k8s
+- name: Multus is updating, please wait for a while
+  pause:
+    minutes: 1
+  tags:
+    - roce_k8s
+
+#Create Network Attach Definitions
+
+- name: Add NetworkAttachmentDefinition
+  include_tasks: nad4roce.yaml
+  with_items: "{{ sriov_resources }}"
+  tags:
+    - roce_k8s
+
+#Install MPI Operator:latest
+
+- name: Install Kubeflow MPI-Operator version v1alpha2
+  k8s:
+    state: present
+    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/kubeflow/mpi-operator/master/deploy/mpi-operator.yaml', split_lines=False) }}"
+  run_once: true
+  tags:
+    - roce_k8s
+
+

@@ -1,0 +1,48 @@
+---
+# vars file for roce_backend
+# Physical function adapter names which part of RoCE backend
+sriov_resources:
+  - pf_name: "enp5s0f0"
+    vlan_id: 111
+    res_name: "sriov_111"
+    network_name: "sriov111"
+  - pf_name: "enp11s0f0"
+    vlan_id: 112
+    res_name: "sriov_112"
+    network_name: "sriov112"
+  - pf_name: "ens11f0"
+    vlan_id: 113
+    res_name: "sriov_113"
+    network_name: "sriov113"
+  - pf_name: "ens12f0"
+    vlan_id: 114
+    res_name: "sriov_114"
+    network_name: "sriov114"
+
+# Virtual function device ID. Default - "MT28908 Family [ConnectX-6 Virtual Function]"
+# Detailed information about all Mellanox Device ID can be found - https://devicehunt.com/view/type/pci/vendor/15B3.
+# Supported values 
+#    101c - MT28908 Family [ConnectX-6 Virtual Function]
+#    101a - MT28800 Family [ConnectX-5 Ex Virtual Function]
+#    1018 - MT27800 Family [ConnectX-5 Virtual Function]   
+#    1016 - MT27710 Family [ConnectX-4 Lx Virtual Function]
+#    1014 - MT27700 Family [ConnectX-4 Virtual Function]
+vendor: "15b3"
+dev_id: "101c"
+num_vf: 8
+
+#Mellanox OFED parameters
+mofed_version: "4.7-3.2.9.0"
+mofed_site_place: "MLNX_OFED-4.7-3.2.9.0"
+mofed_file_name: "MLNX_OFED_LINUX-4.7-3.2.9.0-ubuntu18.04-x86_64.iso"
+
+# before K8s 1.16
+multus_ds: "https://raw.githubusercontent.com/intel/multus-cni/master/images/multus-daemonset-pre-1.16.yml"
+sriov_dp_ds: "https://raw.githubusercontent.com/intel/sriov-network-device-plugin/master/deployments/k8s-v1.10-v1.15/sriovdp-daemonset.yaml"
+sriov_cni_ds: "https://raw.githubusercontent.com/intel/sriov-cni/master/images/k8s-v1.10-v1.15/sriov-cni-daemonset.yaml"
+
+# from K8s 1.16
+# multus_ds: "https://raw.githubusercontent.com/intel/multus-cni/master/images/multus-daemonset.yml"
+# sriov_dp_ds: "https://raw.githubusercontent.com/intel/sriov-network-device-plugin/master/deployments/k8s-v1.16/sriovdp-daemonset.yaml"
+# sriov_cni_ds: "https://raw.githubusercontent.com/intel/sriov-cni/master/images/k8s-v1.16/sriov-cni-daemonset.yaml"
+

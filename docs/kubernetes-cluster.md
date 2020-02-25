@@ -36,8 +36,13 @@ Instructions for deploying a GPU cluster with Kubernetes
    
    # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
    ```
+4. Verify the configuration
 
-4. Install Kubernetes using Ansible and Kubespray.
+   ```sh
+   ansible all -m raw -a "hostname"
+   ```
+
+5. Install Kubernetes using Ansible and Kubespray.
 
    ```sh
    # NOTE: If SSH requires a password, add: `-k`
@@ -48,7 +53,7 @@ Instructions for deploying a GPU cluster with Kubernetes
    
    More information on Kubespray can be found in the official [Getting Started Guide](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md)
 
-5. Verify that the Kubernetes cluster is running. 
+6. Verify that the Kubernetes cluster is running.
 
    ```sh
    # You may need to manually run: `sudo cp ./config/artifacts/kubectl /usr/local/bin`
@@ -58,7 +63,14 @@ Instructions for deploying a GPU cluster with Kubernetes
    Optionally, test a GPU job to ensure that your Kubernetes setup can tap into GPUs. 
 
    ```sh
-   kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
+   kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 nvidia-smi
+   ```
+   
+   Optionally, verify all GPU nodes plug-ins in the Kubernetes cluster with following script.
+
+   ```sh
+   export CLUSTER_VERIFY_EXPECTED_PODS=1 # Expected number of GPUs in the cluster
+   ./scripts/k8s_verify_gpu.sh 
    ```
 
 ## Using Kubernetes

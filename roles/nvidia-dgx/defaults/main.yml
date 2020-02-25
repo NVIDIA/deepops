@@ -9,3 +9,5 @@ nvidia_dgx_ubuntu_gpgkey: "https://international.download.nvidia.com/dgx/repos/b
 dgx_configure_raid_array: false
 nvidia_driver_skip_reboot: false
 dgx_raid_mount_path: /raid
+
+dgx_full_upgrade: false

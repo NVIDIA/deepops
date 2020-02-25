@@ -24,6 +24,7 @@
       package: name=sudo
       become: true
       become_method: "{{ method }}"
+      environment: "{{proxy_env if proxy_env is defined else {}}}"
 
     - name: "grant password-less sudo to user \"{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}\""
       copy:

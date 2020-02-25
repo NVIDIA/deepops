@@ -2,6 +2,7 @@
 # Configure a global NFS share across the slurm cluster
 nfs_mounts:
 - mountpoint: "/shared"
+  server: '{{ groups["slurm-master"][0] }}'
   path: "/shared"
   options: "nfsvers=3,rw,sync"
 

@@ -1,0 +1,12 @@
+resourceList:
+{% for sriov_resource in sriov_resources %}
+  - resourceName: "{{ sriov_resource.res_name }}"
+    isRdma: true
+    selectors:
+      vendors: 
+      - "{{ vendor }}"
+      devices: 
+      - "{{ dev_id }}"
+      pfNames: 
+      - "{{ sriov_resource.pf_name }}"
+{% endfor %}

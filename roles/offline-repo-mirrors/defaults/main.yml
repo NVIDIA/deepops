@@ -87,7 +87,7 @@ ksonnet_url: "https://github.com/ksonnet/ksonnet/releases/download/v0.13.1/ks_0.
 kubectl_url: "https://storage.googleapis.com/kubernetes-release/release/{{ kube_version }}/bin/linux/amd64/kubectl"
 kubeadm_url: "https://storage.googleapis.com/kubernetes-release/release/{{ kube_version }}/bin/linux/amd64/kubeadm"
 hyperkube_url: "https://storage.googleapis.com/kubernetes-release/release/{{ kube_version }}/bin/linux/amd64/hyperkube"
-nvidia_k8s_device_plugin_url: "https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v.1.12/nvidia-device-plugin.yml"
+nvidia_k8s_device_plugin_url: "https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/1.0.0-beta4/nvidia-device-plugin.yml"
 nvidia_docker_wrapper_url: "https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/nvidia-docker"
 cni_download_url: "https://github.com/containernetworking/plugins/releases/download/{{ cni_version }}/cni-plugins-linux-amd64-{{ cni_version }}.tgz"
 

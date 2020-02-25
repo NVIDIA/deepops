@@ -17,10 +17,10 @@
   version: "v5.2.6"
 
 - src: nvidia.nvidia_driver
-  version: "v1.1.0"
+  version: "v1.2.0"
 
 - src: nvidia.nvidia_docker
-  version: "v1.1.0"
+  version: "v1.2.0"
 
 - src: https://github.com/NVIDIA/ansible-role-enroot.git
   verions: "v0.1.2"
@@ -39,3 +39,9 @@
 
 - src: geerlingguy.kibana
   version: "3.2.1"
+
+- src: https://github.com/DeepOps/ansible-maas.git
+  name: ansible-maas
+
+- src: unxnn.chrony
+  version: 'c95f84431c8c3ed693e88b35c87edf792fcf152f'
