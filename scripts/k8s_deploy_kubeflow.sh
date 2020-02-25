@@ -23,11 +23,11 @@ export KFCTL_FILE=kfctl_v1.0-rc.3-1-g24b60e8_linux.tar.gz
 export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.0-rc.4/${KFCTL_FILE}"
 
 # Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
-export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/9eeab3ee045b85e90f236b7dcccbdf5997722bfb/kfdef/kfctl_istio_dex.v1.0.0.yaml"
+export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/2a9816f9b482be927f7d8a772cc66095cb571aa8/kfdef/kfctl_istio_dex.v1.0.0.yaml"
 export CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.0.0.yaml"
 
 # Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
-export NO_AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/9eeab3ee045b85e90f236b7dcccbdf5997722bfb/kfdef/kfctl_k8s_istio.v1.0.0.yaml"
+export NO_AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/2a9816f9b482be927f7d8a772cc66095cb571aa8/kfdef/kfctl_k8s_istio.v1.0.0.yaml"
 export NO_AUTH_CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.v1.0.0.yaml"
 
 
@@ -58,7 +58,6 @@ function get_opts() {
       x)
 	CONFIG_URI=${NO_AUTH_CONFIG_URI}
 	CONFIG_FILE=${NO_AUTH_CONFIG_FILE}
-	SKIP_LB=true
         ;;
       d)
         KUBEFLOW_DELETE=true
