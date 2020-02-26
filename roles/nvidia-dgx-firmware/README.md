@@ -6,7 +6,7 @@ This role makes use of the NVIDIA DGX firmware container and can be used to:
 
 ## Setup
 
-1) Download the latest DGX firmware container and put it in `./deepops/config/containers/dgx-firmware`. Keep the original file name. Update the role variables to reflect the version being used. 
+1) Download the latest DGX firmware container and put it in `config/containers/dgx-firmware`. Keep the original file name. Update the role variables to reflect the version being used. 
 
 ```yml
 # The Docker repo name
