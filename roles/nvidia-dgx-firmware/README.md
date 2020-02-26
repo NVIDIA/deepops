@@ -58,4 +58,16 @@ The following information is collected on all hosts. To limit the hosts, use the
 
 ## Update Firmware
 
-This role can also be used to update the firmware on DGX nodes. To achieve this, set `update_firmware: true`. Running diagnostics and updating firmware can both be achieved in the same run.
+This role can also be used to update the firmware on DGX nodes. To achieve this, set `update_firmware: true`. Running diagnostics and updating firmware can both be achieved in the same run. Updating firmware might require rebooting the systems (depending on what portion of the firmware is being updated).
+
+The following playbooks encapsulate this role and can be run separately to collect diagnostics and update the firmware...
+
+```sh
+# collect diagnostic info
+ansible-playbook -l slurm-node playbooks/nvidia-dgx-diag.yml
+```
+
+```sh
+# update all firmware
+ansible-playbook -l slurm-node playbooks/nvidia-dgx-fw-update.yml
+```
