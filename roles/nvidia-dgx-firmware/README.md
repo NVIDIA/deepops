@@ -41,7 +41,7 @@ run_diagnostics: false
 
 ### Collected Information
 
-All logs will be stored locally in `./deepops/config/logs`. Logs are stored by hostname with timestamps. To change where logs are stored change the `local_log_directory` variable.
+All logs will be stored locally in `config/logs`. Logs are stored by hostname with timestamps. To change where logs are stored change the `local_log_directory` variable.
 
 Logs will temporarily be stored in `fw_dir` on the remote machines and will be cleaned up at the end of the playbook. The default remote log dir is `/tmp/nvfw`.
 
