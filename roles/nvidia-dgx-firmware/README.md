@@ -45,7 +45,7 @@ All logs will be stored locally in `config/logs`. Logs are stored by hostname wi
 
 Logs will temporarily be stored in `fw_dir` on the remote machines and will be cleaned up at the end of the playbook. The default remote log dir is `/tmp/nvfw`.
 
-The following information is collected on all `kube-node` and `slurm-node` hosts:
+The following information is collected on all hosts. To limit the hosts, use the ansible `-l` parameter (ex: `-l kube-node`).
 
 * Current firmware
 * Out of date firmware
