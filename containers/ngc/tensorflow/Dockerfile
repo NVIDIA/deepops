@@ -24,6 +24,9 @@ RUN  pip install jupyterlab-nvdashboard==0.2.0 && \
 RUN pip install ipyvolume==0.5.2 && \
     jupyter labextension install ipyvolume
 
+# Install toc to build table of ontents in Jupyter, not available through Conda
+RUN jupyter labextension install @jupyterlab/toc
+
 # Install graphviz for clean graph/node/edge rendering
 RUN apt-get update && \
     apt-get install -s graphviz=2.40.1-2 && \

@@ -20,6 +20,10 @@ RUN source activate ${CONDA_ENV} && \
     conda install -y -c conda-forge ipyvolume==0.5.2 && conda clean -yac * && \
     jupyter labextension install ipyvolume
 
+# Install toc to build table of ontents in Jupyter, not available through Conda
+RUN source activate ${CONDA_ENV} && \
+    jupyter labextension install @jupyterlab/toc
+
 # Install graphviz for clean graph/node/edge rendering
 RUN source activate ${CONDA_ENV} && \
     conda install -c conda-forge python-graphviz=0.13.2 graphviz=2.42.3 && conda clean -yac *
