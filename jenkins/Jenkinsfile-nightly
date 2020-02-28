@@ -73,6 +73,17 @@ pipeline {
           sh '''
             bash -x ./.jenkins-scripts/test-slurm-job.sh
           '''
+
+          echo "Reset repo and unmunge files"
+          sh '''
+            git reset --hard
+          '''
+
+          echo "Tear down Vagrant before next cluster-up"
+          sh '''
+            pwd
+            cd virtual && ./vagrant_shutdown.sh
+          '''
         }
       }
     }
