@@ -61,9 +61,9 @@ case "$ID" in
 
     # Set up Vagrantfile and start up the configuration in Vagrant
     if [ ${DEEPOPS_FULL_INSTALL} ]; then
-      export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos-full}"
+      export CENTOS_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos-full}"
     else
-      export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos}"
+      export CENTOS_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos}"
     fi
 
     # End Install Vagrant & Dependencies for RHEL Systems
@@ -120,9 +120,9 @@ case "$ID" in
 
     # Set up Vagrantfile and start up the configuration in Vagrant
     if [ ${DEEPOPS_FULL_INSTALL} ]; then
-      export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu-full}"
+      export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu-full}"
     else
-      export DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu}"
+      export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu}"
     fi
 
     # End Install Vagrant & Dependencies for Debian Systems
@@ -136,6 +136,13 @@ esac
 #####################################
 # Set up VMs for virtual cluster
 #####################################
+
+# Startup the specified VM OS, defaulting to Ubuntu
+if [ ${DEEPOPS_VAGRANT_OS} = "centos" ]; then
+  export DEEPOPS_VAGRANT_FILE=${CENTOS_DEEPOPS_VAGRANT_FILE}
+else
+  export DEEPOPS_VAGRANT_FILE=${UBUNTU_DEEPOPS_VAGRANT_FILE}
+fi
 
 cp "${DEEPOPS_VAGRANT_FILE}" "${VIRT_DIR}/Vagrantfile"
 
