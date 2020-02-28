@@ -41,6 +41,4 @@
     ## definition: "{{ lookup('file', nvidia_k8s_device_plugin_file, split_lines=False) }}"
     definition: "{{ nvidia_k8s_device_plugin_contents.stdout }}"
   run_once: true
-  environment:
-    PYTHONHOME: '{{ deepops_venv }}'
   when: ansible_os_family == 'RedHat'
