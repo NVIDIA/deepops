@@ -11,7 +11,7 @@ pipeline {
         milestone label: '', ordinal:  Integer.parseInt(env.BUILD_ID)
       }
     }
-    stage('Cluster Up') {
+    stage('Cluster Up - Ubuntu') {
       steps {
         // TODO: ideally lock should work with declared stages
         lock(resource: null, label: 'gpu', quantity: 2, variable: 'GPUDATA') {
@@ -76,7 +76,7 @@ pipeline {
         }
       }
     }
-    stage('Cluster Up') {
+    stage('Cluster Up - CentOS') {
       environment {
         DEEPOPS_VAGRANT_OS = 'centos'
       }
