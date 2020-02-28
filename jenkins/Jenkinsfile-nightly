@@ -2,7 +2,7 @@ pipeline {
   agent any
   environment {
     DEEPOPS_FULL_INSTALL = ''
-    DEEPOPS_VAGRANT_OS = 'ubuntu'
+    DEEPOPS_VAGRANT_OS = 'centos'
   }
   stages {
     stage('Stop Any Old Builds') {
@@ -77,6 +77,7 @@ pipeline {
           echo "Reset repo and unmunge files"
           sh '''
             git reset --hard
+            rm -rf config
           '''
 
           echo "Tear down Vagrant before next cluster-up"
