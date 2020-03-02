@@ -5,7 +5,7 @@
   ignore_errors: yes
 
 - name: Remove firmware image tarbal
-  command: "rm {{ nv_diag_dir}}/{{ firmware_update_container }}"
+  command: "rm {{ fw_dir}}/{{ firmware_update_container }}"
   ignore_errors: yes
 
 # nvsm does not allow you to specify a dump location, so we search /tmp for the last dump
@@ -19,5 +19,5 @@
   ignore_errors: yes
 
 - name: Remove diagnostic directory
-  command: "rm -rf {{ nv_diag_dir }}"
+  command: "rm -rf {{ fw_dir }}"
 
