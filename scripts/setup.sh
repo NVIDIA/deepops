@@ -185,10 +185,8 @@ fi
 ansible-galaxy --version >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
     if [ $PROXY_USE -gt 0 ]; then
-        . ${SCRIPT_DIR}/proxy.sh && git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
         . ${SCRIPT_DIR}/proxy.sh && ansible-galaxy install -r requirements.yml
     else
-        git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
         ansible-galaxy install -r requirements.yml
     fi
 
