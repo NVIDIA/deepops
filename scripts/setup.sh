@@ -13,7 +13,7 @@ cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
 
 # Pinned Ansible version
 ANSIBLE_OK="2.7.8"
-ANSIBLE_VERSION="2.7.11"
+ANSIBLE_VERSION="2.9.5"
 PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/proxy.sh | grep -v ^$ | wc -l`
 
 as_sudo(){
@@ -72,13 +72,17 @@ case "$ID" in
 
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
-            as_sudo "pip install ansible==${ANSIBLE_VERSION}"
+            as_sudo "pip install ansible==${ANSIBLE_VERSION}" >/dev/null
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
             if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
                 echo "Unsupported version of Ansible: ${current_version}"
                 echo "Version must be ${ANSIBLE_OK} or greater"
                 exit 1
+            fi
+            if python -c "from distutils.version import LooseVersion; print LooseVersion('$current_version') < LooseVersion('$ANSIBLE_VERSION')" | grep True >/dev/null 2>&1 ; then
+                echo "Upgrading Ansible version to ${ANSIBLE_VERSION}..."
+                as_sudo "pip install ansible==${ANSIBLE_VERSION}" >/dev/null
             fi
         fi
         ansible --version | head -1
@@ -166,13 +170,17 @@ case "$ID" in
 
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
-            as_sudo "pip install ansible==${ANSIBLE_VERSION}"
+            as_sudo "pip install ansible==${ANSIBLE_VERSION}" >/dev/null
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
             if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
                 echo "Unsupported version of Ansible: ${current_version}"
                 echo "Version must be ${ANSIBLE_OK} or greater"
                 exit 1
+            fi
+            if python -c "from distutils.version import LooseVersion; print LooseVersion('$current_version') < LooseVersion('$ANSIBLE_VERSION')" | grep True >/dev/null 2>&1 ; then
+                echo "Upgrading Ansible version to ${ANSIBLE_VERSION}..."
+                as_sudo "pip install ansible==${ANSIBLE_VERSION}" >/dev/null
             fi
         fi
         ansible --version | head -1
@@ -219,7 +227,7 @@ if ! grep -i deepops README.md >/dev/null 2>&1 ; then
         if [ $PROXY_USE -gt 0 ]; then
             . ${SCRIPT_DIR}/proxy.sh && git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
         else
-	    git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
+            git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
         fi
     fi
     cd deepops
@@ -228,10 +236,11 @@ fi
 # Install Ansible Galaxy roles
 ansible-galaxy --version >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
+    echo "Updating Ansible Galaxy roles..."
     if [ $PROXY_USE -gt 0 ]; then
-        . ${SCRIPT_DIR}/proxy.sh && ansible-galaxy install -r requirements.yml
+        . ${SCRIPT_DIR}/proxy.sh && ansible-galaxy install --force -r requirements.yml >/dev/null
     else
-        ansible-galaxy install -r requirements.yml
+        ansible-galaxy install --force -r requirements.yml >/dev/null
     fi
 
 
