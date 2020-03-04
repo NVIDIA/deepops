@@ -1,10 +1,4 @@
 ---
-- name: create location for python virtualenv
-  file:
-    path: "{{ deepops_dir }}"
-    state: directory
-  when: ansible_distribution == "Ubuntu"
-
 - name: install GPU operator helm chart
   helm:
     host: "{{ tiller_host }}"

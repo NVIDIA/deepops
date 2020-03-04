@@ -1,9 +1,4 @@
 ---
-- name: create location for DeepOps files
-  file:
-    path: "{{ deepops_dir }}"
-    state: directory
-
 - name: pull GPU device plugin file
   get_url:
     url: "{{ nvidia_k8s_device_plugin_def }}"
