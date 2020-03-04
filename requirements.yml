@@ -20,7 +20,7 @@
   version: "v1.2.0"
 
 - src: nvidia.nvidia_docker
-  version: "v1.2.0"
+  version: "v1.2.1"
 
 - src: https://github.com/NVIDIA/ansible-role-enroot.git
   verions: "v0.1.2"
