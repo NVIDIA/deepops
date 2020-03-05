@@ -15,6 +15,13 @@ cd "${ROOT_DIR}"
 # Ensure Ansible Galaxy dependencies are present
 ./scripts/setup.sh
 
+# Use ansible install in virtualenv
+if [ -d env ] ; then
+    . env/bin/activate
+else
+    echo "WARNING: virtual env not detected, using system python install"
+fi
+
 export DEEPOPS_CONFIG_DIR="${VIRT_DIR}/config"
 
 # Ensure clean config dirs for a new turnup

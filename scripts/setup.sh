@@ -25,6 +25,14 @@ as_sudo(){
     eval $cmd
 }
 
+as_user(){
+    if [ $PROXY_USE -gt 0 ]; then
+        cmd="bash -c '. ${SCRIPT_DIR}/proxy.sh && $1'"
+    else
+        cmd="bash -c '$1'"
+    fi
+    eval $cmd
+}
 
 # Install Software
 case "$ID" in
@@ -39,13 +47,34 @@ case "$ID" in
         fi
         pip --version
 
+        # Use virtualenv vs system pip when we're running under Jenkins
+        if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
+            # Install python virtualenv
+            type virtualenv >/dev/null 2>&1
+            if [ $? -ne 0 ] ; then
+                as_sudo 'yum -y install python-virtualenv' >/dev/null
+            fi
+            # Create virtual environment
+            virtualenv env
+            # Use virtual environment
+            . env/bin/activate
+        fi
+
         # Ensure Jinja2 is updated
         echo "Upgrading jinja2"
-        as_sudo 'pip install --upgrade Jinja2'
+        if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
+            as_user 'pip install --upgrade Jinja2'
+        else
+            as_sudo 'pip install --upgrade Jinja2'
+        fi
 
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
-            as_sudo "pip install ansible==${ANSIBLE_VERSION}"
+            if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
+                as_user "pip install ansible==${ANSIBLE_VERSION}"
+            else
+                as_sudo "pip install ansible==${ANSIBLE_VERSION}"
+            fi
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
             if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
@@ -59,9 +88,14 @@ case "$ID" in
         # Install python-netaddr
         python -c 'import netaddr' >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
-            echo "Installing Python dependencies..."
-            as_sudo 'yum -y install python36 python-netaddr' >/dev/null
-            as_sudo 'ln -s /usr/bin/python36 /usr/bin/python3'
+            if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
+                echo "Installing Python dependencies..."
+                as_user 'pip install netaddr' >/dev/null
+            else
+                echo "Installing Python dependencies..."
+                as_sudo 'yum -y install python36 python-netaddr' >/dev/null
+                as_sudo 'ln -s /usr/bin/python36 /usr/bin/python3'
+            fi
         fi
 
         # Install git
@@ -120,9 +154,26 @@ case "$ID" in
             as_sudo 'apt-get -y install python-setuptools' >/dev/null
         fi
 
+        # Use virtualenv vs system pip when we're running under Jenkins
+        if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
+            # Install python virtualenv
+            type virtualenv >/dev/null 2>&1
+            if [ $? -ne 0 ] ; then
+                as_sudo 'apt-get -y install virtualenv' >/dev/null
+            fi
+            # Create virtual environment
+            virtualenv env
+            # Use virtual environment
+            . env/bin/activate
+        fi
+
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
-            as_sudo "pip install ansible==${ANSIBLE_VERSION}"
+            if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
+                as_user "pip install ansible==${ANSIBLE_VERSION}"
+            else
+                as_sudo "pip install ansible==${ANSIBLE_VERSION}"
+            fi
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
             if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
@@ -136,8 +187,13 @@ case "$ID" in
         # Install python-netaddr
         python -c 'import netaddr' >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
-            echo "Installing Python dependencies..."
-            as_sudo 'apt-get -y install python-netaddr python3-netaddr' >/dev/null
+            if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
+                echo "Installing Python dependencies..."
+                as_user 'pip install netaddr' >/dev/null
+            else
+                echo "Installing Python dependencies..."
+                as_sudo 'apt-get -y install python-netaddr python3-netaddr' >/dev/null
+            fi
         fi
 
         # Install git

@@ -47,3 +47,6 @@ export ROOT_DIR="${VIRT_DIR}/.."
 K8S_CONFIG_DIR=${VIRT_DIR}/config
 export KUBECONFIG="${K8S_CONFIG_DIR}/artifacts/admin.conf"
 export PATH="${K8S_CONFIG_DIR}/artifacts:${PATH}"
+
+# Let setup script know we're running from a Jenkins job
+export JENKINS=1
