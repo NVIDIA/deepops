@@ -200,7 +200,7 @@ docker_image_list:
 - name: "speaker"
   repo: ""
   image: "metallb/speaker"
-  version: "{{ metallb_vesrion }}"
+  version: "{{ metallb_version }}"
 
 - name: "nginx"
   repo: ""
