@@ -58,23 +58,21 @@ case "$ID" in
             virtualenv env
             # Use virtual environment
             . env/bin/activate
+            # Upgrade jinja2
+            as_user 'pip install --upgrade Jinja2'
+            # Install ansible
+            as_user "pip install ansible==${ANSIBLE_VERSION}"
+            # Install netaddr
+            as_user 'pip install netaddr'
         fi
 
         # Ensure Jinja2 is updated
         echo "Upgrading jinja2"
-        if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
-            as_user 'pip install --upgrade Jinja2'
-        else
-            as_sudo 'pip install --upgrade Jinja2'
-        fi
+        as_sudo 'pip install --upgrade Jinja2'
 
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
-            if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
-                as_user "pip install ansible==${ANSIBLE_VERSION}"
-            else
-                as_sudo "pip install ansible==${ANSIBLE_VERSION}"
-            fi
+            as_sudo "pip install ansible==${ANSIBLE_VERSION}"
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
             if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
@@ -88,14 +86,9 @@ case "$ID" in
         # Install python-netaddr
         python -c 'import netaddr' >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
-            if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
-                echo "Installing Python dependencies..."
-                as_user 'pip install netaddr' >/dev/null
-            else
-                echo "Installing Python dependencies..."
-                as_sudo 'yum -y install python36 python-netaddr' >/dev/null
-                as_sudo 'ln -s /usr/bin/python36 /usr/bin/python3'
-            fi
+            echo "Installing Python dependencies..."
+            as_sudo 'yum -y install python36 python-netaddr' >/dev/null
+            as_sudo 'ln -s /usr/bin/python36 /usr/bin/python3'
         fi
 
         # Install git
@@ -165,15 +158,15 @@ case "$ID" in
             virtualenv env
             # Use virtual environment
             . env/bin/activate
+            # Install Ansible
+            as_user "pip install ansible==${ANSIBLE_VERSION}"
+            # Install netaddr
+            as_user 'pip install netaddr' >/dev/null
         fi
 
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
-            if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
-                as_user "pip install ansible==${ANSIBLE_VERSION}"
-            else
-                as_sudo "pip install ansible==${ANSIBLE_VERSION}"
-            fi
+            as_sudo "pip install ansible==${ANSIBLE_VERSION}"
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
             if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
@@ -187,13 +180,8 @@ case "$ID" in
         # Install python-netaddr
         python -c 'import netaddr' >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
-            if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
-                echo "Installing Python dependencies..."
-                as_user 'pip install netaddr' >/dev/null
-            else
-                echo "Installing Python dependencies..."
-                as_sudo 'apt-get -y install python-netaddr python3-netaddr' >/dev/null
-            fi
+            echo "Installing Python dependencies..."
+            as_sudo 'apt-get -y install python-netaddr python3-netaddr' >/dev/null
         fi
 
         # Install git
