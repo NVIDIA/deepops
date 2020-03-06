@@ -4,6 +4,9 @@ metadata:
   name: dcgm-exporter
   namespace: monitoring
 spec:
+  selector:
+    matchLabels:
+      app: dcgm-exporter
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 1
