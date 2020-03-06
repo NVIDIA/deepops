@@ -6,6 +6,11 @@
       include_role:
         name: facts
 
+    - name: remove docker overrides from DGX OS
+      file:
+        path: /etc/systemd/system/docker.service.d/docker-override.conf
+        state: absent
+
     - name: install nvidia-docker
       include_role:
         name: nvidia.nvidia_docker
