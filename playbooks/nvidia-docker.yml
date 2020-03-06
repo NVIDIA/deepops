@@ -11,4 +11,4 @@
         name: nvidia.nvidia_docker
       when:
         - ansible_local['gpus']['count'] and (ansible_distribution == "Ubuntu" or ansible_os_family == "RedHat")
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+      environment: "{{proxy_env if proxy_env is defined else {}}}"
