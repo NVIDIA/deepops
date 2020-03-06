@@ -31,7 +31,7 @@
     - ansible_product_name is search("DGX-1")
     - not dgx_full_upgrade
   notify:
-    - name: restart docker
+    - restart docker
 
 - name: install dgx packages
   apt:
@@ -44,7 +44,7 @@
     - ansible_product_name is search("DGX-2")
     - not dgx_full_upgrade
   notify:
-    - name: restart docker
+    - restart docker
 
 - name: install dgx cuda 10.1 repo
   apt:
