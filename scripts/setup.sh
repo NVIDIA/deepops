@@ -25,6 +25,14 @@ as_sudo(){
     eval $cmd
 }
 
+as_user(){
+    if [ $PROXY_USE -gt 0 ]; then
+        cmd="bash -c '. ${SCRIPT_DIR}/proxy.sh && $1'"
+    else
+        cmd="bash -c '$1'"
+    fi
+    eval $cmd
+}
 
 # Install Software
 case "$ID" in
@@ -38,6 +46,25 @@ case "$ID" in
             as_sudo 'yum -y install python-pip' >/dev/null
         fi
         pip --version
+
+        # Use virtualenv vs system pip when we're running under Jenkins
+        if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
+            # Install python virtualenv
+            type virtualenv >/dev/null 2>&1
+            if [ $? -ne 0 ] ; then
+                as_sudo 'yum -y install python-virtualenv' >/dev/null
+            fi
+            # Create virtual environment
+            virtualenv env
+            # Use virtual environment
+            . env/bin/activate
+            # Upgrade jinja2
+            as_user 'pip install --upgrade Jinja2'
+            # Install ansible
+            as_user "pip install ansible==${ANSIBLE_VERSION}"
+            # Install netaddr
+            as_user 'pip install netaddr'
+        fi
 
         # Ensure Jinja2 is updated
         echo "Upgrading jinja2"
@@ -118,6 +145,23 @@ case "$ID" in
         if ! dpkg -l python-setuptools >/dev/null 2>&1; then
             echo "Installing setuptools..."
             as_sudo 'apt-get -y install python-setuptools' >/dev/null
+        fi
+
+        # Use virtualenv vs system pip when we're running under Jenkins
+        if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
+            # Install python virtualenv
+            type virtualenv >/dev/null 2>&1
+            if [ $? -ne 0 ] ; then
+                as_sudo 'apt-get -y install virtualenv' >/dev/null
+            fi
+            # Create virtual environment
+            virtualenv env
+            # Use virtual environment
+            . env/bin/activate
+            # Install Ansible
+            as_user "pip install ansible==${ANSIBLE_VERSION}"
+            # Install netaddr
+            as_user 'pip install netaddr' >/dev/null
         fi
 
         # Check Ansible version and install with pip
