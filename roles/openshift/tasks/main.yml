@@ -9,7 +9,7 @@
   when: ansible_distribution == 'Ubuntu'
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
-- name: create location for python virtual env
+- name: create location for deepops files
   file:
     path: "{{ deepops_dir }}"
     state: directory

@@ -1,19 +1,4 @@
 ---
-- name: install virtualenv
-  apt:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - "virtualenv"
-    - "python-setuptools"
-  when: ansible_distribution == 'Ubuntu'
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
-
-- name: create location for DeepOps files
-  file:
-    path: "{{ deepops_dir }}"
-    state: directory
-
 - name: pull GPU device plugin file
   get_url:
     url: "{{ nvidia_k8s_device_plugin_def }}"
