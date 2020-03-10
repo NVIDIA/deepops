@@ -41,11 +41,11 @@ case "$ID" in
         as_sudo 'yum -y install epel-release'
 
         # Install pip
-        if ! which pip >/dev/null 2>&1; then
+        if ! which pip3 >/dev/null 2>&1; then
             echo "Installing pip..."
-            as_sudo 'yum -y install python-pip' >/dev/null
+            as_sudo 'yum -y install python36-pip' >/dev/null
         fi
-        pip --version
+        pip3 --version
 
         # Use virtualenv vs system pip when we're running under Jenkins
         if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
@@ -55,24 +55,24 @@ case "$ID" in
                 as_sudo 'yum -y install python-virtualenv' >/dev/null
             fi
             # Create virtual environment
-            virtualenv env
+            virtualenv --python=/usr/bin/python3.6 env
             # Use virtual environment
             . env/bin/activate
             # Upgrade jinja2
-            as_user 'pip install --upgrade Jinja2'
+            as_user 'pip3 install --upgrade Jinja2'
             # Install ansible
-            as_user "pip install ansible==${ANSIBLE_VERSION}"
+            as_user "pip3 install ansible==${ANSIBLE_VERSION}"
             # Install netaddr
-            as_user 'pip install netaddr'
+            as_user 'pip3 install netaddr'
         fi
 
         # Ensure Jinja2 is updated
         echo "Upgrading jinja2"
-        as_sudo 'pip install --upgrade Jinja2'
+        as_sudo 'pip3 install --upgrade Jinja2'
 
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
-            as_sudo "pip install ansible==${ANSIBLE_VERSION}" >/dev/null
+            as_sudo "pip3 install ansible==${ANSIBLE_VERSION}" >/dev/null
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
             if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
@@ -82,7 +82,7 @@ case "$ID" in
             fi
             if python -c "from distutils.version import LooseVersion; print LooseVersion('$current_version') < LooseVersion('$ANSIBLE_VERSION')" | grep True >/dev/null 2>&1 ; then
                 echo "Upgrading Ansible version to ${ANSIBLE_VERSION}..."
-                as_sudo "pip install ansible==${ANSIBLE_VERSION}" >/dev/null
+                as_sudo "pip3 install ansible==${ANSIBLE_VERSION}" >/dev/null
             fi
         fi
         ansible --version | head -1
@@ -91,7 +91,7 @@ case "$ID" in
         python -c 'import netaddr' >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
             echo "Installing Python dependencies..."
-            as_sudo 'yum -y install python36 python-netaddr' >/dev/null
+            as_sudo 'yum -y install python36 python36-netaddr python-netaddr' >/dev/null
             as_sudo 'ln -s /usr/bin/python36 /usr/bin/python3'
         fi
 
@@ -139,11 +139,11 @@ case "$ID" in
         fi
 
         # Install pip
-        if ! which pip >/dev/null 2>&1; then
+        if ! which pip3 >/dev/null 2>&1; then
             echo "Installing pip..."
-            as_sudo 'apt-get -y install python-pip' >/dev/null
+            as_sudo 'apt-get -y install python-pip3' >/dev/null
         fi
-        pip --version
+        pip3 --version
 
         # Install setuptools
         if ! dpkg -l python-setuptools >/dev/null 2>&1; then
@@ -159,18 +159,18 @@ case "$ID" in
                 as_sudo 'apt-get -y install virtualenv' >/dev/null
             fi
             # Create virtual environment
-            virtualenv env
+            virtualenv --python=/usr/bin/python3.6 env
             # Use virtual environment
             . env/bin/activate
             # Install Ansible
-            as_user "pip install ansible==${ANSIBLE_VERSION}"
+            as_user "pip3 install ansible==${ANSIBLE_VERSION}"
             # Install netaddr
-            as_user 'pip install netaddr' >/dev/null
+            as_user 'pip3 install netaddr' >/dev/null
         fi
 
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
-            as_sudo "pip install ansible==${ANSIBLE_VERSION}" >/dev/null
+            as_sudo "pip3 install ansible==${ANSIBLE_VERSION}" >/dev/null
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
             if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
@@ -180,7 +180,7 @@ case "$ID" in
             fi
             if python -c "from distutils.version import LooseVersion; print LooseVersion('$current_version') < LooseVersion('$ANSIBLE_VERSION')" | grep True >/dev/null 2>&1 ; then
                 echo "Upgrading Ansible version to ${ANSIBLE_VERSION}..."
-                as_sudo "pip install ansible==${ANSIBLE_VERSION}" >/dev/null
+                as_sudo "pip3 install ansible==${ANSIBLE_VERSION}" >/dev/null
             fi
         fi
         ansible --version | head -1
