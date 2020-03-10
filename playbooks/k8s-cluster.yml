@@ -31,6 +31,20 @@
 
 # Install the OpenShift API libraries required by the GPU plugin
 - include: bootstrap-openshift.yml
+  tags:
+    - bootstrap
+
+# Install 'sshpass' program for: https://github.com/ansible/ansible/issues/56629
+- hosts: all
+  gather_facts: true
+  tasks:
+    - name: install sshpass
+      package:
+        name: sshpass
+        state: present
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  tags:
+    - bootstrap
 
 # Install Kubernetes
 # for configuration, see: config/group_vars/k8s-cluster.yml
