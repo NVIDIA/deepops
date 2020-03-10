@@ -75,12 +75,12 @@ case "$ID" in
             as_sudo "pip3 install ansible==${ANSIBLE_VERSION}" >/dev/null
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
-            if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
+            if ! python -c "from distutils.version import LooseVersion; print(LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version'))" | grep True >/dev/null 2>&1 ; then
                 echo "Unsupported version of Ansible: ${current_version}"
                 echo "Version must be ${ANSIBLE_OK} or greater"
                 exit 1
             fi
-            if python -c "from distutils.version import LooseVersion; print LooseVersion('$current_version') < LooseVersion('$ANSIBLE_VERSION')" | grep True >/dev/null 2>&1 ; then
+            if python -c "from distutils.version import LooseVersion; print(LooseVersion('$current_version') < LooseVersion('$ANSIBLE_VERSION'))" | grep True >/dev/null 2>&1 ; then
                 echo "Upgrading Ansible version to ${ANSIBLE_VERSION}..."
                 as_sudo "pip3 install ansible==${ANSIBLE_VERSION}" >/dev/null
             fi
@@ -173,12 +173,12 @@ case "$ID" in
             as_sudo "pip3 install ansible==${ANSIBLE_VERSION}" >/dev/null
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
-            if ! python -c "from distutils.version import LooseVersion; print LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version')" | grep True >/dev/null 2>&1 ; then
+            if ! python -c "from distutils.version import LooseVersion; print(LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version'))" | grep True >/dev/null 2>&1 ; then
                 echo "Unsupported version of Ansible: ${current_version}"
                 echo "Version must be ${ANSIBLE_OK} or greater"
                 exit 1
             fi
-            if python -c "from distutils.version import LooseVersion; print LooseVersion('$current_version') < LooseVersion('$ANSIBLE_VERSION')" | grep True >/dev/null 2>&1 ; then
+            if python -c "from distutils.version import LooseVersion; print(LooseVersion('$current_version') < LooseVersion('$ANSIBLE_VERSION'))" | grep True >/dev/null 2>&1 ; then
                 echo "Upgrading Ansible version to ${ANSIBLE_VERSION}..."
                 as_sudo "pip3 install ansible==${ANSIBLE_VERSION}" >/dev/null
             fi
