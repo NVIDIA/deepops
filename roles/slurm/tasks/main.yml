@@ -50,7 +50,7 @@
 - name: Check for supported OS
   fail:
     msg: OS not supported for slurm packaging
-  when: (install_slurm_xenial|skipped) and (install_slurm_bionic|skipped) and (install_slurm_rhel|skipped)
+  when: (install_slurm_xenial is skipped) and (install_slurm_bionic is skipped) and (install_slurm_rhel is skipped)
 
 - name: create slurm user home
   file:
