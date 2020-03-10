@@ -39,6 +39,9 @@
         name: docker
       vars:
         # matches: kubespray/roles/container-engine/docker/vars/redhat.yml
+        # override deprecated dockerproject repo; old docker repo broken as of 03.04.2020
+        dockerproject_rh_repo_base_url: 'https://download.docker.com/linux/centos/7/$basearch/stable'
+        dockerproject_rh_repo_gpgkey: 'https://download.docker.com/linux/centos/gpg'
         docker_package: 'docker-ce-18.09.7-3.el7'
       when:
         - ansible_os_family == "RedHat"
