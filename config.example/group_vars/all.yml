@@ -112,12 +112,13 @@ gpu_clock_lock: "1507,1507"
 ################################################################################
 # CONTAINER RUNTIME                                                            #
 ################################################################################
-# Docker config
-# Playbook: docker, nvidia-docker
-docker_daemon_json:
-  # Docker's default subnet is 172.17.0.0/16
-  # Pick a smaller subnet, which is also less likely to conflict with corporate addresses.
-  bip: 192.168.99.1/24
+# Docker configuration
+# Playbook: docker, nvidia-docker, k8s-cluster
+# For supported Docker versions, see: kubespray/roles/container-engine/docker/vars/*
+docker_version: '18.09'
+docker_dns_servers_strict: no
+docker_storage_options: -s overlay2
+#docker_options: "--bip=192.168.99.1/24"
 
 # Enroot configuration
 # Playbook: slurm-perf, slurm-perf-cluster

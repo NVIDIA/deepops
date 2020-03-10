@@ -3,44 +3,19 @@
   become: true
   become_method: sudo
   tasks:
-    - name: Check for DGX packages
-      stat:
-        path: /etc/dgx-release
-      register: is_dgx
-
-    - name: create docker config directory
+    - name: include default kubespray vars required for set_facts tasks
+      include_vars: ../kubespray/roles/kubespray-defaults/defaults/main.yaml
+    - name: include kubespray task to set facts required for docker role
+      include: ../kubespray/roles/kubernetes/preinstall/tasks/0040-set_facts.yml
+    - name: remove docker overrides from DGX OS
       file:
-        path: /etc/docker
-        state: directory
+        path: /etc/systemd/system/docker.service.d/docker-override.conf
+        state: absent
 
-    - name: write new docker config
-      copy:
-        content: "{{ docker_daemon_json | to_nice_json }}"
-        dest: /etc/docker/daemon.json
-        owner: root
-        group: root
-        mode: 0644
-      when:
-        - is_dgx.stat.exists == False
-
-    - name: install docker
-      include_role:
-        name: docker
-      vars:
-        # matches: kubespray/roles/container-engine/docker/vars/ubuntu-amd64.yml
-        docker_package: 'docker-ce=5:18.09.7~3-0~ubuntu-{{ ansible_distribution_release|lower }}'
-      when:
-        - ansible_distribution == "Ubuntu"
-        - is_dgx.stat.exists == False
-      environment: "{{proxy_env if proxy_env is defined else {}}}"
-
-    - name: install docker
-      include_role:
-        name: docker
-      vars:
-        # matches: kubespray/roles/container-engine/docker/vars/redhat.yml
-        docker_package: 'docker-ce-18.09.7-3.el7'
-      when:
-        - ansible_os_family == "RedHat"
-        - is_dgx.stat.exists == False
-      environment: "{{proxy_env if proxy_env is defined else {}}}"
+- hosts: all
+  become: true
+  become_method: sudo
+  roles:
+    - { role: kubespray-defaults }
+    - { role: "../kubespray/roles/container-engine/docker" }
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
