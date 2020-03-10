@@ -19,3 +19,7 @@
     - { role: kubespray-defaults }
     - { role: "../kubespray/roles/container-engine/docker" }
   environment: "{{proxy_env if proxy_env is defined else {}}}"
+  vars:
+    # override deprecated dockerproject repo; old docker repo broken as of 03.04.2020
+    dockerproject_rh_repo_base_url: 'https://download.docker.com/linux/centos/7/$basearch/stable'
+    dockerproject_rh_repo_gpgkey: 'https://download.docker.com/linux/centos/gpg'
