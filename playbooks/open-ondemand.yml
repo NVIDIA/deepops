@@ -85,6 +85,34 @@
         create: yes
       tags:
         - configure
+    - name: install package dependency for htpasswd module
+      package:
+        name: python-passlib
+        state: present
+      tags:
+        - configure
+    - name: create .htpasswd entries
+      htpasswd:
+        path: /etc/apache2/.htpasswd
+        name: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
+        password: 'deepops'
+        create: yes
+      tags:
+        - configure
+    - name: install required apache module
+      apache2_module:
+        state: present
+        name: proxy_wstunnel
+      register: mod_install
+      tags:
+        - configure
+    - name: restart apache after module install
+      systemd:
+        service: apache2
+        state: restarted
+      when: mod_install.changed
+      tags:
+        - configure
 
 - hosts: slurm-master
   become: yes
