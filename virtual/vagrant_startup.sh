@@ -150,6 +150,7 @@ newgrp "${LIBVIRT_GROUP}" << MAKE_VMS
   vagrant global-status --prune
 
   # Start vagrant via libvirt - set up the VMs
+  set -e
   vagrant up --provider=libvirt
 
   # Show the running VMs
