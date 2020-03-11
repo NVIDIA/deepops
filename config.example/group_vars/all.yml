@@ -28,10 +28,15 @@
 #dns_config_search: [example.com]
 
 # NTP configuration
-# Playbook: ntp-client
-#chrony_timezone: "America/Los_Angeles"
-#chrony_config_server:
-#  - 0.pool.ntp.org
+# Playbook: chrony-client
+chrony_service_state: "started"
+chrony_service_enabled: "yes"
+chrony_timezone: "Etc/UTC"
+chrony_config_server:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+  - 2.pool.ntp.org
+  - 3.pool.ntp.org
 
 
 ################################################################################

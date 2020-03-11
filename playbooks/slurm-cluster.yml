@@ -21,6 +21,9 @@
 # Configure hostnames, /etc/hosts
 - include: hosts.yml
 
+# Configure Chrony (NTP) sync
+- include: chrony-client.yml
+
 # Install NVIDIA driver
 - include: nvidia-driver.yml
 

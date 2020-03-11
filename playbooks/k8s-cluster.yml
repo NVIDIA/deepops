@@ -29,6 +29,9 @@
   tags:
     - bootstrap
 
+# Configure Chrony (NTP) sync
+- include: chrony-client.yml
+
 # Install the OpenShift API libraries required by the GPU plugin
 - include: bootstrap-openshift.yml
 
