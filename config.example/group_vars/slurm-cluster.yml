@@ -12,3 +12,14 @@ slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 #slurm_install_pyxis: yes
 slurm_controller_host: "{{ groups['slurm-master'][0] }}"
 slurm_compute_hosts: "{{ groups['slurm-node'] }}"
+
+################################ 
+### Open OnDemand            ###
+################################ 
+httpd_listen_addr_port:
+  - 9090
+httpd_use_rewrites: false
+node_uri: /node
+rnode_uri: /rnode
+servername: '{{ ansible_fqdn }}'
+httpd_port: 9090

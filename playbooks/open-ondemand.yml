@@ -1,6 +1,26 @@
 ---
 - hosts: slurm-master
   become: yes
+  vars:
+    nfs_exports:
+      - path: /home
+        options: "*(rw,sync,no_root_squash)"
+  roles:
+    - { role: nfs, nfs_is_server: yes }
+
+- hosts: slurm-node
+  become: yes
+  vars:
+    nfs_mounts:
+      - mountpoint: /home
+        server: '{{ groups["slurm-master"][0] }}'
+        path: /home
+        options: async,vers=3
+  roles:
+    - { role: nfs, nfs_is_client: yes }
+
+- hosts: slurm-master
+  become: yes
   roles:
     - ood-ansible
   vars:
