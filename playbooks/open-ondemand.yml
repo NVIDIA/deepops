@@ -4,6 +4,7 @@
   roles:
     - ood-ansible
   vars:
+    user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
     ood_source_version: "v1.7.6"
     cluster_config_dir: /etc/ood/config/clusters.d
     ood_desktops_dir: /etc/ood/config/apps/bc_desktop
@@ -94,7 +95,7 @@
     - name: create .htpasswd entries
       htpasswd:
         path: /etc/apache2/.htpasswd
-        name: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
+        name: "{{ user }}"
         password: 'deepops'
         create: yes
       tags:
@@ -111,6 +112,25 @@
         service: apache2
         state: restarted
       when: mod_install.changed
+      tags:
+        - configure
+    - name: create ssh key pair for default user
+      openssh_keypair:
+        path: "/home/{{ user }}/.ssh/id_rsa"
+        owner: "{{ user }}"
+      tags:
+        - configure
+    - name: get ssh pub key
+      slurp:
+        src: "/home/{{ user }}/.ssh/id_rsa.pub"
+      register: user_pub_key
+      tags:
+        - configure
+    - name: set ssh authorized key
+      authorized_key:
+        user: "{{ user }}"
+        state: present
+        key: "{{ user_pub_key['content'] | b64decode }}"
       tags:
         - configure
 
