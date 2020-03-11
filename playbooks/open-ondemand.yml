@@ -18,7 +18,7 @@
         metadata:
           title: "NVIDIA DeepOps Cluster"
         login:
-          host: "localhost"
+          host: "{{ ansible_fqdn }}"
         job:
           adapter: "slurm"
           cluster: "deepops"
@@ -83,6 +83,132 @@
         block: |
           {{ ood_frontpage_config }}
         create: yes
+      tags:
+        - configure
+
+- hosts: slurm-master
+  become: yes
+  vars:
+    ood_codeserver_app_dir: /var/www/ood/apps/sys/bc_osc_codeserver
+    ood_codeserver_app_form: |
+      ---
+      cluster: "deepops"
+      form:
+        - bc_num_gpus
+        - bc_num_hours
+        - working_dir
+      attributes:
+        working_dir:
+          label: "Working Directory"
+          data-filepicker: true
+          data-target-file-type: dirs  # Valid values are: files, dirs, or both
+          readonly: false
+          help: "Select your project directory; defaults to $HOME"
+        bc_num_gpus:
+          label: "Number of GPUs"
+          value: 1
+    ood_codeserver_app_manifest: |
+      ---
+      name: VS Code Server
+      category: Interactive Apps
+      subcategory: Servers
+      role: batch_connect
+      description: |
+        This app will launch a [VS Code] instance using [Code Server] on a GPU node
+
+        [VS Code]: https://code.visualstudio.com/
+        [Code Server]: https://coder.com/
+    ood_codeserver_app_submit: |
+      ---
+      batch_connect:
+        template: "basic"
+      script:
+        native:
+          - "--gpus=<%= bc_num_gpus.blank? ? 1 : bc_num_gpus.to_i %>"
+          - "--cpus-per-gpu=4"
+          - "--mem-per-gpu=16G"
+    ood_codeserver_app_script: |
+      #!/usr/bin/env bash
+      <%-
+          # Ensure that code-server always starts up in either a user defined directory or the home directory
+          working_dir = Pathname.new(context.working_dir)
+          if ! working_dir.exist? || working_dir.to_s.empty?
+              working_dir = Pathname.new(ENV['HOME'])
+          elsif working_dir.file?
+              working_dir = working_dir.parent
+          end
+      %>
+
+      # Setup environment
+      CODE_SERVER="${CODE_SERVER:-/usr/local/bin/code-server}"
+      CODE_SERVER_DATAROOT="$HOME/.local/share/bc_osc_codeserver"
+
+
+      # Ensure a dataroot for Code Server
+      mkdir -p "$CODE_SERVER_DATAROOT/extensions"
+
+      # Expose the password to the server
+      export PASSWORD="$password"
+
+      # VSCode complains that system git is too old
+      #module load git
+
+      #
+      # Start Code Server
+      #
+      echo $CODE_SERVER
+
+      # An arbitrary path...
+      $CODE_SERVER \
+          --auth=password \
+          --port="$port" \
+          --disable-telemetry \
+          --extra-extensions-dir="$CODE_SERVER_DATAROOT/extensions" \
+          --user-data-dir="$CODE_SERVER_DATAROOT" \
+          "<%= working_dir.to_s %>"
+  tasks:
+    - name: remove old config
+      file:
+        path: "{{ ood_codeserver_app_dir }}/{{ item }}"
+        state: absent
+      with_items:
+        - form.yml
+        - manifest.yml
+        - submit.yml.erb
+        - template/script.sh.erb
+      tags:
+        - configure
+    - name: configure vs code app form
+      blockinfile:
+        path: "{{ ood_codeserver_app_dir }}/form.yml"
+        block: |
+          {{ ood_codeserver_app_form }}
+        create: yes
+      tags:
+        - configure
+    - name: configure vs code app manifest
+      blockinfile:
+        path: "{{ ood_codeserver_app_dir }}/manifest.yml"
+        block: |
+          {{ ood_codeserver_app_manifest }}
+        create: yes
+      tags:
+        - configure
+    - name: configure vs code app submit
+      blockinfile:
+        path: "{{ ood_codeserver_app_dir }}/submit.yml.erb"
+        block: |
+          {{ ood_codeserver_app_submit }}
+        create: yes
+      tags:
+        - configure
+    - name: configure vs code app script
+      blockinfile:
+        path: "{{ ood_codeserver_app_dir }}/template/script.sh.erb"
+        block: |
+          {{ ood_codeserver_app_script }}
+        create: yes
+        mode: 0755
       tags:
         - configure
 
