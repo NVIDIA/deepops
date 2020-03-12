@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: "{{ hostlist | default('all') }}"
   become: true
   become_method: sudo
   tasks:
@@ -12,7 +12,7 @@
         path: /etc/systemd/system/docker.service.d/docker-override.conf
         state: absent
 
-- hosts: all
+- hosts: "{{ hostlist | default('all') }}"
   become: true
   become_method: sudo
   roles:
