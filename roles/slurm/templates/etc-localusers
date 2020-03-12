@@ -1,5 +1,5 @@
 root
-{{ ansible_env.USER }}
+{{ ansible_ssh_user }}
 {% for user in slurm_allow_ssh_user %}
 {{ user }}
 {% endfor %}
