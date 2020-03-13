@@ -4,12 +4,22 @@
   roles:
     - name: facts
 
+# Set root SSH key to allow SSH/ansible when no slurm job running for ansible user
+- hosts: slurm-node
+  become: yes
+  tasks:
+    - name: Add SSH public key to root user authorized keys
+      authorized_key:
+        user: root
+        state: present
+        key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+
 - hosts: slurm-master
   become: yes
   roles:
     - name: slurm
       vars:
-        user: "{{ ansible_env.USER | default(ansible_env.SUDO_USER) }}"
+        user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
         is_controller: yes
 
 - hosts: slurm-node
@@ -17,5 +27,5 @@
   roles:
     - name: slurm
       vars:
-        user: "{{ ansible_env.USER | default(ansible_env.SUDO_USER) }}"
+        user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
         is_compute: yes
