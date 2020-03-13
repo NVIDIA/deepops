@@ -38,7 +38,6 @@ chrony_config_server:
   - 2.pool.ntp.org
   - 3.pool.ntp.org
 
-
 ################################################################################
 # SOFTWARE                                                                     #
 ################################################################################
@@ -119,6 +118,7 @@ gpu_clock_lock: "1507,1507"
 ################################################################################
 # Docker configuration
 # Playbook: docker, nvidia-docker, k8s-cluster
+# 
 # For supported Docker versions, see: kubespray/roles/container-engine/docker/vars/*
 docker_version: '18.09'
 docker_dns_servers_strict: no
