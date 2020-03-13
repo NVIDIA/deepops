@@ -113,6 +113,16 @@ function install_dependencies() {
       echo "To provision Ceph storage, run: ./scripts/k8s_deploy_rook.sh"
       exit 1
   fi
+  
+  # Proxies
+  if [ ${http_proxy} -o ${https_proxy} -o ${no_proxy} ]; then
+      echo "Proxy detected. This could cause problems with a default Kubeflow installation."
+      echo "Refer to the workaround here: https://github.com/kubeflow/kfctl/issues/237"
+      echo "After applying the workaround run: KUBEFLOW_PROXY_WORKAROUND=true ./${0}"
+      if [ -z ${KUBEFLOW_PROXY_WORKAROUND} ]; then
+          exit 1
+      fi
+  fi
 }
 
 
