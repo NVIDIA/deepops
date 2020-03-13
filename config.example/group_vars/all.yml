@@ -146,6 +146,17 @@ enroot_environ_config_files:
     content: |
       OMPI_MCA_btl_tcp_if_exclude=lo,docker0,ib0,ib1,ib2,ib3
 
+################################################################################
+# Singularity                                                                  #
+################################################################################
+# Singularity target version
+singularity_version: "3.5.3"
+singularity_conf_path: "/etc/singularity/singularity.conf"
+bind_paths:
+  - /mnt/shared
+golang_install_dir: '/opt/go/{{ golang_version }}'
+golang_gopath: /opt/go/packages
+
 
 ################################################################################
 # AUTH                                                                         #
