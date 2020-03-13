@@ -34,7 +34,7 @@ nfs_mounts:
 # Open OnDemand                                                                #
 ################################################################################
 install_open_ondemand: yes
-ood_install_linuxhost_adapter: no
+ood_install_linuxhost_adapter: yes
 
 servername: '{{ ansible_fqdn }}'
 httpd_port: 9090
