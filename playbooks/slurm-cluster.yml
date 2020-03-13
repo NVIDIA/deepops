@@ -35,5 +35,12 @@
   tags:
   - install_docker
 
+# Install software
+- include: software.yml
+
 # Install Slurm
 - include: slurm.yml
+
+# Install Open OnDemand
+- include: open-ondemand.yml
+  when: install_open_ondemand

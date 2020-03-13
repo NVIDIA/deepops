@@ -1,0 +1,9 @@
+---
+- include: server.yml
+  when: ood_is_server
+
+- include: client.yml
+  when: ood_is_client
+
+- include: linuxhost-adapter.yml
+  when: ood_is_server and ood_install_linuxhost_adapter

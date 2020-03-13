@@ -1,0 +1,192 @@
+---
+- name: install dependencies
+  package:
+    name: "{{ ood_master_sw_deps }}"
+    state: present
+  when: ood_master_sw_deps is defined
+
+- name: remove any existing OOD apps we may have modified
+  file:
+    path: "{{ item.value.dest | default(ood_sys_app_dir) }}/{{ item.key }}"
+    state: absent
+  when: ood_install_apps is defined
+  loop: "{{ ood_install_apps | default({}) | dict2items }}"
+
+- name: install Open OnDemand
+  include_role:
+    name: ood-ansible
+
+- name: create clusters dir
+  file:
+    path: "{{ cluster_config_dir }}"
+    state: directory
+  tags:
+    - configure
+
+- name: configure slurm
+  blockinfile:
+    path: "{{ cluster_config_dir }}/deepops.yml"
+    block: |
+      {{ ood_slurm_config }}
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK insertion 1"
+  tags:
+    - configure
+
+- name: remove old desktop app config
+  file:
+    path: "{{ ood_desktop_app_dir }}/{{ item }}"
+    state: absent
+  with_items:
+    - form.yml
+      #- manifest.yml
+      #- submit.yml.erb
+      #- template/script.sh.erb
+  tags:
+    - configure
+- name: create desktop app dir
+  file:
+    path: "{{ ood_desktops_dir }}"
+    state: directory
+  tags:
+    - configure
+
+- name: configure desktop
+  blockinfile:
+    path: "{{ ood_desktops_dir }}/deepops.yml"
+    block: |
+      {{ ood_desktop_config }}
+    create: yes
+  tags:
+    - configure
+
+- name: configure desktop app submit
+  blockinfile:
+    path: "{{ ood_desktops_dir }}/submit/deepops_desktop.yml.erb"
+    block: |
+      {{ ood_desktop_app_submit }}
+    create: yes
+  tags:
+    - configure
+
+- name: configure desktop app form
+  blockinfile:
+    path: "{{ ood_desktop_app_dir }}/form.yml"
+    block: |
+      {{ ood_desktop_app_form }}
+    create: yes
+  tags:
+    - configure
+
+- name: configure front page
+  blockinfile:
+    path: "/etc/ood/config/nginx_stage.yml"
+    block: |
+      {{ ood_frontpage_config }}
+    create: yes
+  tags:
+    - configure
+
+- name: install package dependency for htpasswd module
+  package:
+    name: python-passlib
+    state: present
+  tags:
+    - configure
+
+- name: create .htpasswd entries
+  htpasswd:
+    path: /etc/apache2/.htpasswd
+    name: "{{ user }}"
+    password: 'deepops'
+    create: yes
+  tags:
+    - configure
+
+- name: install required apache module
+  apache2_module:
+    state: present
+    name: proxy_wstunnel
+  register: mod_install
+  tags:
+    - configure
+
+- name: restart apache after module install
+  systemd:
+    service: apache2
+    state: restarted
+  when: mod_install.changed
+  tags:
+    - configure
+
+- name: create ssh key pair for default user
+  openssh_keypair:
+    path: "/home/{{ user }}/.ssh/id_rsa"
+    owner: "{{ user }}"
+  tags:
+    - configure
+
+- name: get ssh pub key
+  slurp:
+    src: "/home/{{ user }}/.ssh/id_rsa.pub"
+  register: user_pub_key
+  tags:
+    - configure
+
+- name: set ssh authorized key
+  authorized_key:
+    user: "{{ user }}"
+    state: present
+    key: "{{ user_pub_key['content'] | b64decode }}"
+  tags:
+    - configure
+
+- name: remove old config
+  file:
+    path: "{{ ood_codeserver_app_dir }}/{{ item }}"
+    state: absent
+  with_items:
+    - form.yml
+    - manifest.yml
+    - submit.yml.erb
+    - template/script.sh.erb
+  tags:
+    - configure
+
+- name: configure vs code app form
+  blockinfile:
+    path: "{{ ood_codeserver_app_dir }}/form.yml"
+    block: |
+      {{ ood_codeserver_app_form }}
+    create: yes
+  tags:
+    - configure
+
+- name: configure vs code app manifest
+  blockinfile:
+    path: "{{ ood_codeserver_app_dir }}/manifest.yml"
+    block: |
+      {{ ood_codeserver_app_manifest }}
+    create: yes
+  tags:
+    - configure
+
+- name: configure vs code app submit
+  blockinfile:
+    path: "{{ ood_codeserver_app_dir }}/submit.yml.erb"
+    block: |
+      {{ ood_codeserver_app_submit }}
+    create: yes
+  tags:
+    - configure
+
+- name: configure vs code app script
+  blockinfile:
+    path: "{{ ood_codeserver_app_dir }}/template/script.sh.erb"
+    block: |
+      {{ ood_codeserver_app_script }}
+    create: yes
+    mode: 0755
+  tags:
+    - configure
+

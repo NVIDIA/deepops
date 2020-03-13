@@ -1,0 +1,226 @@
+---
+################################################################################
+# Misc config                                                                  #
+################################################################################
+ood_is_server: no
+ood_is_client: no
+ood_install_linuxhost_adapter: no
+
+ood_master_sw_deps:
+  - liblz4-tool
+  - unzip
+  - websockify
+  - websockify-common
+ood_client_sw_deps:
+  - liblz4-tool
+  - unzip
+  - nmap
+  - websockify
+  - websockify-common
+  - xfce4
+  - xfce4-terminal
+  - xfce4-goodies
+  - gtk3-engines-xfce
+  - jupyter-notebook
+  - dbus-x11
+  - firefox
+  - cuda-nvvp-10-1
+  - nvidia-visual-profiler
+  - htop
+
+################################################################################
+# OOD install                                                                  #
+################################################################################
+user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
+ood_source_version: "v1.7.6"
+cluster_config_dir: /etc/ood/config/clusters.d
+ood_desktops_dir: /etc/ood/config/apps/bc_desktop
+ood_desktop_app_dir: /var/www/ood/apps/sys/bc_desktop
+ood_install_apps:
+  bc_osc_codeserver:
+    repo: https://github.com/OSC/bc_osc_codeserver.git
+    dest: /var/www/ood/apps/sys
+    version: gtc
+ood_slurm_config: |
+  ---
+  v2:
+    metadata:
+      title: "NVIDIA DeepOps Cluster"
+    login:
+      host: "{{ ansible_fqdn }}"
+    job:
+      adapter: "slurm"
+      cluster: "deepops"
+      bin: "/usr/bin"
+      conf: "/etc/slurm/slurm.conf"
+    batch_connect:
+      basic:
+        script_wrapper: |
+          %s
+      vnc:
+        script_wrapper: |
+          export PATH="/opt/TurboVNC/bin:$PATH"
+          export WEBSOCKIFY_CMD="/usr/bin/websockify"
+          %s
+ood_desktop_config: |
+  ---
+  title: "DeepOps Desktop"
+  cluster: "deepops"
+  submit: "submit/deepops_desktop.yml.erb"
+  attributes:
+    desktop: "xfce"
+    bc_queue: null
+    bc_account: null
+    bc_num_gpus:
+      label: "Number of GPUs"
+      value: 1
+ood_desktop_app_form: |
+  ---
+  attributes:
+    desktop: "mate"
+    bc_vnc_idle: 0
+    bc_vnc_resolution:
+      required: true
+    node_type: null
+
+  form:
+    - bc_vnc_idle
+    - desktop
+    - bc_account
+    - bc_num_hours
+    - bc_num_slots
+    - bc_num_gpus
+    - node_type
+    - bc_queue
+    - bc_vnc_resolution
+    - bc_email_on_started
+ood_desktop_app_submit: |
+  ---
+  script:
+    native:
+      - "--gpus=<%= bc_num_gpus.blank? ? 1 : bc_num_gpus.to_i %>"
+      - "--cpus-per-gpu=4"
+      - "--mem-per-gpu=16G"
+ood_frontpage_config: |
+  pun_custom_env:
+    OOD_DASHBOARD_TITLE: "NVIDIA DeepOps Cluster"
+    OOD_BRAND_BG_COLOR: "#76B900"
+    OOD_BRAND_LINK_ACTIVE_BG_COLOR: "#333"
+    OOD_NAVBAR_TYPE: "inverse"
+
+################################################################################
+# Post OOD install config                                                      #
+################################################################################
+ood_codeserver_app_dir: /var/www/ood/apps/sys/bc_osc_codeserver
+ood_codeserver_app_form: |
+  ---
+  cluster: "deepops"
+  form:
+    - bc_num_gpus
+    - bc_num_hours
+    - working_dir
+  attributes:
+    working_dir:
+      label: "Working Directory"
+      data-filepicker: true
+      data-target-file-type: dirs  # Valid values are: files, dirs, or both
+      readonly: false
+      help: "Select your project directory; defaults to $HOME"
+    bc_num_gpus:
+      label: "Number of GPUs"
+      value: 1
+ood_codeserver_app_manifest: |
+  ---
+  name: VS Code Server
+  category: Interactive Apps
+  subcategory: Servers
+  role: batch_connect
+  description: |
+    This app will launch a [VS Code] instance using [Code Server] on a GPU node
+
+    [VS Code]: https://code.visualstudio.com/
+    [Code Server]: https://coder.com/
+ood_codeserver_app_submit: |
+  ---
+  batch_connect:
+    template: "basic"
+  script:
+    native:
+      - "--gpus=<%= bc_num_gpus.blank? ? 1 : bc_num_gpus.to_i %>"
+      - "--cpus-per-gpu=4"
+      - "--mem-per-gpu=16G"
+ood_codeserver_app_script: |
+  #!/usr/bin/env bash
+  <%-
+      # Ensure that code-server always starts up in either a user defined directory or the home directory
+      working_dir = Pathname.new(context.working_dir)
+      if ! working_dir.exist? || working_dir.to_s.empty?
+          working_dir = Pathname.new(ENV['HOME'])
+      elsif working_dir.file?
+          working_dir = working_dir.parent
+      end
+  %>
+
+  # Setup environment
+  CODE_SERVER="${CODE_SERVER:-/usr/local/bin/code-server}"
+  CODE_SERVER_DATAROOT="$HOME/.local/share/bc_osc_codeserver"
+
+
+  # Ensure a dataroot for Code Server
+  mkdir -p "$CODE_SERVER_DATAROOT/extensions"
+
+  # Expose the password to the server
+  export PASSWORD="$password"
+
+  # VSCode complains that system git is too old
+  #module load git
+
+  #
+  # Start Code Server
+  #
+  echo $CODE_SERVER
+
+  # An arbitrary path...
+  $CODE_SERVER \
+      --auth=password \
+      --port="$port" \
+      --disable-telemetry \
+      --extra-extensions-dir="$CODE_SERVER_DATAROOT/extensions" \
+      --user-data-dir="$CODE_SERVER_DATAROOT" \
+      "<%= working_dir.to_s %>"
+
+################################################################################
+# Linuxhost adapter                                                            #
+################################################################################
+singularity_image_dir: /mnt/shared/singularity-images
+ood_linuxhost_adapter_script: |
+  #!/bin/bash
+  set -e
+
+  PAM_UID=$(id -u "${PAM_USER}")
+
+  if [ "${PAM_SERVICE}" = "sshd" -a "${PAM_UID}" -ge 1000 ]; then
+          /usr/bin/systemctl set-property "user-${PAM_UID}.slice" \
+                  MemoryAccounting=true MemoryLimit=64G \
+                  CPUAccounting=true \
+                  CPUQuota=700%
+  fi
+ood_linuxhost_adapter_config: |
+  ---
+  v2:
+    metadata:
+      title: "NVIDIA DeepOps Cluster"
+    login:
+      host: "localhost"
+    job:
+      adapter: "linux_host"
+      submit_host: "localhost"
+      ssh_hosts:
+        - localhost
+      site_timeout: 7200
+      debug: true
+      singularity_bin: /usr/bin/singularity
+      singularity_bindpath: /etc,/media,/mnt,/opt,/run,/srv,/usr,/var,/users
+      singularity_image: {{ singularity_image_dir }}/ubuntu-18.04.simg
+      # Enabling strict host checking may cause the adapter to fail if the user's known_hosts does not have all the roundrobin hosts
+      strict_host_checking: false
