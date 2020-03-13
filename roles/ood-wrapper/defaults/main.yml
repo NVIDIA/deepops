@@ -64,7 +64,7 @@ ood_slurm_config: |
           %s
 ood_desktop_config: |
   ---
-  title: "DeepOps Desktop"
+  title: "NVIDIA DeepOps Desktop"
   cluster: "deepops"
   submit: "submit/deepops_desktop.yml.erb"
   attributes:
@@ -209,7 +209,8 @@ ood_linuxhost_adapter_config: |
   ---
   v2:
     metadata:
-      title: "NVIDIA DeepOps Cluster"
+      title: "NVIDIA DeepOps Cluster Login Node"
+      hidden: true
     login:
       host: "localhost"
     job:

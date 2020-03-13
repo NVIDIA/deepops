@@ -5,7 +5,7 @@
     state: present
   when: ood_master_sw_deps is defined
 
-- name: remove any existing OOD apps we may have modified
+- name: remove any existing OOD apps installed by ansible
   file:
     path: "{{ item.value.dest | default(ood_sys_app_dir) }}/{{ item.key }}"
     state: absent
