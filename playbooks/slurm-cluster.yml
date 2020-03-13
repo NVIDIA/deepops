@@ -8,16 +8,6 @@
 - include: bootstrap-ssh.yml
 - include: bootstrap-sudo.yml
 
-# Set root SSH key to allow SSH/ansible when no slurm job running for ansible user
-- hosts: all
-  become: true
-  tasks:
-    - name: Add SSH public key to root user authorized keys
-      authorized_key:
-        user: root
-        state: present
-        key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
-
 # Configure hostnames, /etc/hosts
 - include: hosts.yml
 
@@ -40,6 +30,9 @@
 
 # Install Slurm
 - include: slurm.yml
+
+# Install Singularity
+- include: singularity.yml
 
 # Install Open OnDemand
 - include: open-ondemand.yml
