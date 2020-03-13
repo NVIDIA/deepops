@@ -20,7 +20,7 @@
 
 - name: configure linuxhost-adapter
   blockinfile:
-    path: "{{ cluster_config_dir }}/linuxhost.yml"
+    path: "{{ ood_cluster_config_dir }}/linuxhost.yml"
     block: |
       {{ ood_linuxhost_adapter_config }}
     create: yes

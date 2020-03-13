@@ -18,72 +18,22 @@
 
 - name: create clusters dir
   file:
-    path: "{{ cluster_config_dir }}"
+    path: "{{ ood_cluster_config_dir }}"
     state: directory
   tags:
     - configure
 
-- name: configure slurm
-  blockinfile:
-    path: "{{ cluster_config_dir }}/deepops.yml"
-    block: |
-      {{ ood_slurm_config }}
-    create: yes
-    marker: "# {mark} ANSIBLE MANAGED BLOCK insertion 1"
-  tags:
-    - configure
-
-- name: remove old desktop app config
-  file:
-    path: "{{ ood_desktop_app_dir }}/{{ item }}"
-    state: absent
-  with_items:
-    - form.yml
-      #- manifest.yml
-      #- submit.yml.erb
-      #- template/script.sh.erb
-  tags:
-    - configure
-- name: create desktop app dir
-  file:
-    path: "{{ ood_desktops_dir }}"
-    state: directory
-  tags:
-    - configure
-
-- name: configure desktop
-  blockinfile:
-    path: "{{ ood_desktops_dir }}/deepops.yml"
-    block: |
-      {{ ood_desktop_config }}
-    create: yes
-  tags:
-    - configure
-
-- name: configure desktop app submit
-  blockinfile:
-    path: "{{ ood_desktops_dir }}/submit/deepops_desktop.yml.erb"
-    block: |
-      {{ ood_desktop_app_submit }}
-    create: yes
-  tags:
-    - configure
-
-- name: configure desktop app form
-  blockinfile:
-    path: "{{ ood_desktop_app_dir }}/form.yml"
-    block: |
-      {{ ood_desktop_app_form }}
-    create: yes
+- name: configure slurm cluster connector
+  template:
+    src: cluster.yml.j2
+    dest: "{{ ood_cluster_config_dir }}/{{ ood_cluster_name }}.yml"
   tags:
     - configure
 
 - name: configure front page
-  blockinfile:
+  template:
+    src: nginx_stage.yml.j2
     path: "/etc/ood/config/nginx_stage.yml"
-    block: |
-      {{ ood_frontpage_config }}
-    create: yes
   tags:
     - configure
 
@@ -141,6 +91,46 @@
   tags:
     - configure
 
+- name: remove old desktop app config
+  file:
+    path: "{{ ood_desktop_app_dir }}/{{ item }}"
+    state: absent
+  with_items:
+    - form.yml
+      #- manifest.yml
+      #- submit.yml.erb
+      #- template/script.sh.erb
+  tags:
+    - configure
+
+- name: create desktop app dir
+  file:
+    path: "{{ ood_desktops_dir }}"
+    state: directory
+  tags:
+    - configure
+
+- name: configure desktop
+  template:
+    src: desktop.yml.j2
+    path: "{{ ood_desktops_dir }}/{{ ood_cluster_name }}.yml"
+  tags:
+    - configure
+
+- name: configure desktop app submit
+  template:
+    src: desktop-submit.yml.erb.j2
+    path: "{{ ood_desktops_dir }}/submit/{{ ood_cluster_name }}_desktop.yml.erb"
+  tags:
+    - configure
+
+- name: configure desktop app form
+  template:
+    src: desktop-form.yml.j2
+    path: "{{ ood_desktop_app_dir }}/form.yml"
+  tags:
+    - configure
+
 - name: remove old config
   file:
     path: "{{ ood_codeserver_app_dir }}/{{ item }}"
@@ -154,39 +144,30 @@
     - configure
 
 - name: configure vs code app form
-  blockinfile:
+  template:
+    src: bc_osc_codeserver/form.yml.j2
     path: "{{ ood_codeserver_app_dir }}/form.yml"
-    block: |
-      {{ ood_codeserver_app_form }}
-    create: yes
   tags:
     - configure
 
 - name: configure vs code app manifest
-  blockinfile:
+  template:
+    src: bc_osc_codeserver/manifest.yml.j2
     path: "{{ ood_codeserver_app_dir }}/manifest.yml"
-    block: |
-      {{ ood_codeserver_app_manifest }}
-    create: yes
   tags:
     - configure
 
 - name: configure vs code app submit
-  blockinfile:
+  template:
+    src: bc_osc_codeserver/submit.yml.erb.j2
     path: "{{ ood_codeserver_app_dir }}/submit.yml.erb"
-    block: |
-      {{ ood_codeserver_app_submit }}
-    create: yes
   tags:
     - configure
 
 - name: configure vs code app script
-  blockinfile:
+  template:
+    src: bc_osc_codeserver/script.sh.erb.j2
     path: "{{ ood_codeserver_app_dir }}/template/script.sh.erb"
-    block: |
-      {{ ood_codeserver_app_script }}
-    create: yes
     mode: 0755
   tags:
     - configure
-
