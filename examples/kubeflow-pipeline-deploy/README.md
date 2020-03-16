@@ -44,8 +44,6 @@ python3 trtis.py
 
 1. Deploy Kuberenetes following [the DeepOps Kubernetes deployment guide](../../docs/kubernetes-cluster.md)
 2. Deploy Kubeflow following [the DeepOps Kubeflow deployment guide](../../docs/kubeflow.md)
-3. Configure and deploy an NFS server using the 
-
 3. Uncomment the below three lines in `config/group_vars/all.yml
 ```sh
 # NFS Server
@@ -83,12 +81,17 @@ python3 trtis.py
 ```
 
 8. Upload the Generated trtis.py.tar.gz file to pipeline page
+![upload](kubeflow-pipelines-0.PNG)
+![view](kubeflow-pipelines-1.PNG)
 
 9. Create a run of that pipeline using the following parameters:
 
 * nfs_server = \<IP address of management server\>
 * nfs_export_path = /export/shared
 * models_dir_path = models
+
+![execute](kubeflow-pipelines-2.PNG)
+![configure](kubeflow-pipelines-3.PNG)
 
 10. Connect to your management server and run the [example client](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/client_example.html#section-getting-the-client-examples).
 ```sh
