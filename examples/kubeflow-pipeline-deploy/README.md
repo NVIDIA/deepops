@@ -13,9 +13,9 @@ This Kubeflow pipeline is will deploy a TensorRT Inference Server into the Kuber
 ### NFS Layout
 
 The Pipeline expects the root of the NFS mount to have the following three directories:
-* <nfs>/results # For saved & final models
-* <nfs>/data # For data
-* <nfs>/checkpoints # For model checkpoints
+* \<nfs\>/results # For saved & final models
+* \<nfs\>/data # For data
+* \<nfs\>/checkpoints # For model checkpoints
 
 ### Example models:
 
@@ -86,7 +86,7 @@ python3 trtis.py
 
 9. Create a run of that pipeline using the following parameters:
 
-* nfs_server = <IP address of management server>
+* nfs_server = \<IP address of management server\>
 * nfs_export_path = /export/shared
 * models_dir_path = models
 
