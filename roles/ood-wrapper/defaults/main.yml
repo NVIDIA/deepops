@@ -1,8 +1,9 @@
 ---
 ood_source_version: "v1.7.6"
+ood_config_dir: /etc/ood/config
 
 # Cluster configuration
-ood_cluster_config_dir: /etc/ood/config/clusters.d
+ood_cluster_config_dir: '{{ ood_config_dir }}/clusters.d'
 ood_cluster_title: "NVIDIA DeepOps Cluster"
 ood_cluster_name: "deepops"         # has to match Slurm cluster name
 ood_install_linuxhost_adapter: yes
@@ -14,6 +15,14 @@ ood_install_apps:
     dest: /var/www/ood/apps/sys
     version: gtc
 
+# OOD front page config
+ood_frontpage_config : |
+  pun_custom_env:
+    OOD_DASHBOARD_TITLE: "NVIDIA DeepOps Cluster"
+    OOD_BRAND_BG_COLOR: "#76B900"
+    OOD_BRAND_LINK_ACTIVE_BG_COLOR: "#333"
+    OOD_NAVBAR_TYPE: "inverse"
+
 # Virtual Desktop app configuration
 ood_desktops_dir: /etc/ood/config/apps/bc_desktop
 ood_desktop_app_title: "NVIDIA DeepOps Desktop"
@@ -21,9 +30,9 @@ ood_desktop_app_dir: /var/www/ood/apps/sys/bc_desktop
 
 # VS Code Server app configuration
 ood_codeserver_app_dir: /var/www/ood/apps/sys/bc_osc_codeserver
-ood_codeserver_app_def-gpus: 1
-ood_codeserver_app_cpus-per-gpu: 4
-ood_codeserver_app_mem-per-gpu: 16G
+ood_codeserver_app_def_gpus: 1
+ood_codeserver_app_cpus_per_gpu: 4
+ood_codeserver_app_mem_per_gpu: 16G
 
 # Linuxhost adapter configuration
 singularity_image_dir: /mnt/shared/singularity-images
@@ -83,6 +92,9 @@ ood_client_sw_deps:
   - cuda-nvvp-10-1
   - nvidia-visual-profiler
   - htop
+
+ood_url_turbovnc_deb: https://downloads.sourceforge.net/project/turbovnc/2.2.3/turbovnc_2.2.3_amd64.deb
+ood_url_codeserver_src: https://github.com/cdr/code-server/releases/download/2.1698/code-server2.1698-vsc1.41.1-linux-x86_64.tar.gz
 
 ood_is_server: no
 ood_is_client: no
