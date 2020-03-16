@@ -153,8 +153,9 @@ enroot_environ_config_files:
 # Singularity target version
 singularity_version: "3.5.3"
 singularity_conf_path: "/etc/singularity/singularity.conf"
-bind_paths:
-  - /mnt/shared
+bind_paths: []
+  # example:
+  #- /mnt/shared
 golang_install_dir: '/opt/go/{{ golang_version }}'
 golang_gopath: /opt/go/packages
 
