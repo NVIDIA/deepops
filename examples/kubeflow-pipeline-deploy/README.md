@@ -1,6 +1,8 @@
 # NGC TensorRT Inference Server Kubeflow Pipeline
 
-This Kubeflow pipeline is will deploy a TensorRT Inference Server into the Kubernetes cluster. Models are specified and will from an NFS server.
+This Kubeflow pipeline will deploy a TensorRT Inference Server into a Kubernetes cluster. Models are contained within and models directory in an NFS server.
+
+This pipeline aids in the development and testing of end-to-end AI workloads. At the end of an AI training job, this pipeline can be executed to deploy a new TensorRT Inference Server. This will expose a new endpoint that can be integrated into other components of that application running in QA and development environments.
 
 ## Overview
 
