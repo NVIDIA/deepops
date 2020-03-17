@@ -13,6 +13,7 @@ elif [ -d "$(pwd)/config" ] ; then
     config_dir="$(pwd)/config"
 fi
 
+MONITORING_DOMAIN="${MONITORING_DOMAIN:-nip.io}" # Domain name to use when ingress is configured
 HELM_CHARTS_REPO_STABLE="${HELM_CHARTS_REPO_STABLE:-https://kubernetes-charts.storage.googleapis.com}"
 ingress_name="nginx-ingress"
 
@@ -71,10 +72,10 @@ fi
 NGINX_INGRESS_APP_NAME="${ingress_name}" ./scripts/k8s_deploy_ingress.sh
 
 # Determine correct IP for ingress URL
-ingress_ip_string="$(echo ${master_ip} | tr '.' '-').nip.io"
+ingress_ip_string="$(echo ${master_ip} | tr '.' '-').${MONITORING_DOMAIN}"
 if kubectl describe service -l "app=${ingress_name},component=controller" | grep 'LoadBalancer Ingress' >/dev/null 2>&1; then
     lb_ip="$(kubectl describe service -l "app=${ingress_name},component=controller" | grep 'LoadBalancer Ingress' | awk '{print $3}')"
-    ingress_ip_string="$(echo ${lb_ip} | tr '.' '-').nip.io"
+    ingress_ip_string="$(echo ${lb_ip} | tr '.' '-').${MONITORING_DOMAIN}"
     echo "Using load balancer url: ${ingress_ip_string}"
 fi
 
