@@ -29,7 +29,7 @@ DGXie uses docker-compose to build and run. The `containers/dgxie/docker-compose
 If the default HTTP_PORT or machines.json file have not been changed, the below curl call should verify that the PXE API is responding:
 
 ```sh
-curl localhost:13360/v1/boot/d8:c4:97:00:00:00
+curl localhost:13370/v1/boot/d8:c4:97:00:00:00
 ```
 
 ## PXE booting the DGX
