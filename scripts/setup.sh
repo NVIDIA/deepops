@@ -64,6 +64,8 @@ case "$ID" in
             as_user "pip3 install ansible==${ANSIBLE_VERSION}"
             # Install netaddr
             as_user 'pip3 install netaddr'
+            # Install python mysql client library
+            as_user 'pip3 install PyMySQL'
         fi
 
         # Ensure Jinja2 is updated
@@ -166,6 +168,8 @@ case "$ID" in
             as_user "pip3 install ansible==${ANSIBLE_VERSION}"
             # Install netaddr
             as_user 'pip3 install netaddr' >/dev/null
+            # Install python mysql client library
+            as_user 'pip3 install PyMySQL'
         fi
 
         # Check Ansible version and install with pip
