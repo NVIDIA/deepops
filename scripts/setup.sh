@@ -144,7 +144,7 @@ case "$ID" in
         # Install pip
         if ! which ${PIP} >/dev/null 2>&1; then
             echo "Installing pip..."
-            as_sudo 'apt-get -y install python3-pip python2-pip' >/dev/null
+            as_sudo 'apt-get -y install python3-pip python-pip' >/dev/null
         fi
         ${PIP} --version
 
