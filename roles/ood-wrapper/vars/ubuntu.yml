@@ -1,3 +1,5 @@
+install_from_src: true
+
 ood_master_sw_deps:
   - liblz4-tool
   - unzip

@@ -20,6 +20,10 @@
     ood_build_dir: "/tmp/ood-build"
     ood_source_dir: "{{ ood_build_dir }}/ondemand"
 
+- name: enable httpd listen port in SELinux
+  command: semanage port -m -t http_port_t -p tcp {{ httpd_port }}
+  when: ansible_os_family == 'RedHat'
+
 - name: install Open OnDemand
   include_role:
     name: ood-ansible
@@ -67,6 +71,9 @@
     state: present
     name: proxy_wstunnel
   register: mod_install
+  environment:
+    PATH: /opt/rh/httpd24/root/usr/sbin
+    LD_LIBRARY_PATH: /opt/rh/httpd24/root/usr/lib64
   tags:
     - configure
 

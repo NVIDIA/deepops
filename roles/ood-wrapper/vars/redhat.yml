@@ -1,20 +1,18 @@
+install_from_src: false
+
 ood_master_sw_deps:
   - lz4-devel
   - unzip
-  - websockify
-  - websockify-common
+  - python-websockify
 
 ood_client_sw_deps:
-  - liblz4-tool
+  - lz4-devel
   - unzip
   - nmap
-  - websockify
-  - websockify-common
-  - xfce4
-  - xfce4-terminal
-  - xfce4-goodies
-  - gtk3-engines-xfce
-  - jupyter-notebook
+  - python-websockify
+  - '@xfce4'
+  - python2-jupyter-core
+  - python3-jupyter-core
   - dbus-x11
   - firefox
   - cuda-nvvp-10-1

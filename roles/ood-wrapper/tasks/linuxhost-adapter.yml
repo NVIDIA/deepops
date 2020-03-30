@@ -40,5 +40,7 @@
   args:
     chdir: "{{ singularity_image_dir }}"
     creates: "{{ singularity_image_dir }}/ubuntu-18.04.simg"
+  environment:
+    PATH: /usr/local/bin/singularity
   tags:
     - linuxhost-adapter
