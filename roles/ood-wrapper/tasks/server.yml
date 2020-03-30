@@ -16,12 +16,13 @@
   file:
     path: "{{ ood_source_dir }}"
     state: absent
-  vars:
-    ood_build_dir: "/tmp/ood-build"
-    ood_source_dir: "{{ ood_build_dir }}/ondemand"
 
 - name: enable httpd listen port in SELinux
   command: semanage port -m -t http_port_t -p tcp {{ httpd_port }}
+  when: ansible_os_family == 'RedHat'
+
+- name: set httpd to permissive in SELinux
+  command: semanage permissive -a httpd_t
   when: ansible_os_family == 'RedHat'
 
 - name: install Open OnDemand
@@ -59,12 +60,21 @@
 
 - name: create .htpasswd entries
   htpasswd:
-    path: /etc/apache2/.htpasswd
+    path: "{{ ood_htpasswd_file }}"
     name: "{{ user }}"
-    password: 'deepops'
+    password: "{{ ood_default_password }}"
     create: yes
   tags:
     - configure
+
+- name: install required apache module
+  apache2_module:
+    state: present
+    name: proxy_wstunnel
+  register: mod_install
+  tags:
+    - configure
+  when: ansible_distribution == 'Ubuntu'
 
 - name: install required apache module
   apache2_module:
@@ -76,10 +86,11 @@
     LD_LIBRARY_PATH: /opt/rh/httpd24/root/usr/lib64
   tags:
     - configure
+  when: ansible_os_family == 'RedHat'
 
 - name: restart apache after module install
   systemd:
-    service: apache2
+    service: "{{ ood_apache_service_name }}"
     state: restarted
   when: mod_install.changed
   tags:

@@ -6,7 +6,11 @@ ood_config_dir: /etc/ood/config
 ood_cluster_config_dir: '{{ ood_config_dir }}/clusters.d'
 ood_cluster_title: "NVIDIA DeepOps Cluster"
 ood_cluster_name: "deepops"         # has to match Slurm cluster name
+ood_default_password: "deepops"
 ood_install_linuxhost_adapter: yes
+
+ood_build_dir: "/tmp/ood-build"
+ood_source_dir: "{{ ood_build_dir }}/ondemand"
 
 # List of extra OOD "apps" to install
 ood_install_apps:
