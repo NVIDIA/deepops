@@ -5,6 +5,13 @@
   with_items: "{{ slurm_build_deps }}"
   when: ansible_distribution == 'Ubuntu'
 
+- name: install build dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ slurm_build_deps }}"
+  when: ansible_os_family == 'RedHat'
+
 - name: remove slurm packages
   apt:
     name: "{{ item }}"
@@ -15,13 +22,6 @@
     - slurmdbd
     - slurmd
   when: ansible_distribution == 'Ubuntu'
-
-- name: install build dependencies
-  yum:
-    name: "{{ item }}"
-    state: present
-  with_items: "{{ slurm_build_deps }}"
-  when: ansible_os_family == 'RedHat'
 
 - name: remove slurm packages
   yum:
