@@ -353,7 +353,7 @@ NCCL Latency comparision (NCCL ring topology):
 
 
 NCCL Bandwidth comparision (NCCL ring topology): 
-![alt text](https://github.com/yangatgithub/deepops/blob/roce_perf/docs/nccl_latency_ring.PNG "NCCL bandwidth, ring")
+![alt text](https://github.com/yangatgithub/deepops/blob/roce_perf/docs/nccl_bandwidth_ring.PNG "NCCL bandwidth, ring")
 
    > Note: The baremetal results are overlaping with Kubernetes SRIOV+RoCE because the number is almost identical.
 
