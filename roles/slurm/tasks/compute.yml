@@ -107,7 +107,7 @@
 - name: update /etc/pam.d/sshd
   lineinfile:
     path: /etc/pam.d/sshd
-    line: "account sufficient /usr/lib/pam_slurm.so"
+    line: "account sufficient {{ slurm_pam_lib_dir }}/pam_slurm.so"
     insertafter: "PAM configuration for the Secure Shell service"
     state: present
   tags:
