@@ -1,6 +1,12 @@
 epel_baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"
 epel_gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
 
+slurm_version: 19.05.6
+slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
+slurm_build_dir: /tmp/slurm-build
+slurm_config_dir: /etc/slurm
+slurm_install_prefix: /usr
+
 slurm_pkg_url: "https://github.com/DeepOps/slurm/releases/download/"
 slurm_xenial_deb: slurm_19.05.0-xenial_amd64.deb
 slurm_bionic_deb: slurm_19.05.0-bionic_amd64.deb

@@ -1,0 +1,143 @@
+---
+- name: install build dependencies
+  apt:
+    name: "{{ item }}"
+  with_items: "{{ slurm_build_deps }}"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: remove slurm packages
+  apt:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - slurm-wlm
+    - slurmctld
+    - slurmdbd
+    - slurmd
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install build dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ slurm_build_deps }}"
+  when: ansible_os_family == 'RedHat'
+
+- name: remove slurm packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - slurm
+  when: ansible_os_family == 'RedHat'
+
+- name: make build directory
+  file:
+    path: "{{ slurm_build_dir }}"
+    state: directory
+
+- name: download source
+  unarchive:
+    src: "{{ slurm_src_url }}"
+    remote_src: yes
+    dest: "{{ slurm_build_dir }}"
+    extra_opts:
+      - --strip-components=1
+
+- name: uninstall old version
+  command: make -j uninstall
+  args:
+    chdir: "{{ slurm_build_dir }}"
+  ignore_errors: yes
+  tags:
+    - uninstall
+
+- name: clean src dir
+  command: make distclean
+  args:
+    chdir: "{{ slurm_build_dir }}"
+  ignore_errors: yes
+
+- name: configure
+  command: "./configure --prefix={{ slurm_install_prefix }} --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --without-shared-libslurm"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+
+- name: build
+  shell: "make -j$(nproc) > build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+
+- name: build contrib
+  shell: "make -j$(nproc) contrib >> build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+
+- name: install
+  shell: "make -j$(nproc) install >> build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+
+- name: install contrib
+  shell: "make -j$(nproc) install-contrib >> build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+
+- name: build pam_slurm_adopt
+  shell: "make -j$(nproc) >> ../../build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}/contribs/pam_slurm_adopt"
+
+- name: install pam_slurm_adopt
+  shell: "make -j$(nproc) install >> ../../build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}/contribs/pam_slurm_adopt"
+
+- name: copy service files
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+    remote_src: yes
+  args:
+    chdir: "{{ slurm_build_dir }}"
+  with_items:
+    - slurmctld.service
+    - slurmdbd.service
+  when: is_controller
+
+- name: copy service files
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+    remote_src: yes
+  args:
+    chdir: "{{ slurm_build_dir }}"
+  with_items:
+    - slurmd.service
+  when: is_compute
+
+- name: restart munge
+  service:
+    name: munge
+    state: restarted
+
+- name: restart slurmd
+  service:
+    name: slurmd
+    state: restarted
+    enabled: yes
+  when: is_compute
+
+- name: restart slurmdbd
+  service:
+    name: slurmdbd
+    state: restarted
+    enabled: yes
+  when: is_controller
+
+- name: restart slurmctld
+  service:
+    name: slurmctld
+    state: restarted
+    enabled: yes
+  when: is_controller

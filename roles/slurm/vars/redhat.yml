@@ -1,0 +1,30 @@
+---
+slurm_pam_lib_dir: /lib64/security
+
+slurm_build_deps:
+  - "@Development Tools"
+  - munge-devel
+  - munge-libs
+  - readline-devel
+  - openssl
+  - openssl-devel
+  - perl-ExtUtils-MakeMaker
+  - mariadb-devel
+  - mariadb-libs
+  - pam-devel 
+  - libcurl-devel
+  - hwloc
+  - lua
+  - lua-devel
+  - hwloc-devel
+  - freeipmi-devel
+  - numactl
+  - numactl-devel
+  - rrdtool-devel
+  - ncurses-devel
+  - libibmad
+  - libibumad
+  - man2html
+  - python
+  - ruby-devel
+  - wget
