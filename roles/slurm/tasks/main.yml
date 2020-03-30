@@ -24,48 +24,6 @@
 - include: build.yml
   tags: build
 
-  #- name: install slurm (xenial)
-  #  when: ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] == '16'
-  #  apt:
-  #    deb: "{{ slurm_pkg_url }}/{{ slurm_pkg_tag }}/{{ item }}"
-  #  with_items:
-  #    - "{{ slurm_xenial_deb }}"
-  #  notify:
-  #    - restart slurmd
-  #    - restart slurmdbd
-  #    - restart slurmctld
-  #  register: install_slurm_xenial
-  #
-  #- name: install slurm (bionic)
-  #  when: (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] == '18')
-  #  apt:
-  #    deb: "{{ slurm_pkg_url }}/{{ slurm_pkg_tag }}/{{ item }}"
-  #  with_items:
-  #    - "{{ slurm_bionic_deb }}"
-  #  notify:
-  #    - restart slurmd
-  #    - restart slurmdbd
-  #    - restart slurmctld
-  #  register: install_slurm_bionic
-  #
-  #- name: install slurm (RHEL/CentOS)
-  #  yum:
-  #    name: "{{ slurm_pkg_url }}/{{ slurm_pkg_tag }}/{{ item }}"
-  #    state: present
-  #  with_items:
-  #    - "{{ slurm_rhel_rpm }}"
-  #  notify:
-  #    - restart slurmd
-  #    - restart slurmdbd
-  #    - restart slurmctld
-  #  when: ansible_os_family == "RedHat"
-  #  register: install_slurm_rhel
-  #
-  #- name: Check for supported OS
-  #  fail:
-  #    msg: OS not supported for slurm packaging
-  #  when: (install_slurm_xenial is skipped) and (install_slurm_bionic is skipped) and (install_slurm_rhel is skipped)
-
 - name: create slurm user home
   file:
    path: "{{ slurm_user_home }}"

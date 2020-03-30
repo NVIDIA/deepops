@@ -7,13 +7,6 @@ slurm_build_dir: /tmp/slurm-build
 slurm_config_dir: /etc/slurm
 slurm_install_prefix: /usr
 
-slurm_pkg_url: "https://github.com/DeepOps/slurm/releases/download/"
-slurm_xenial_deb: slurm_19.05.0-xenial_amd64.deb
-slurm_bionic_deb: slurm_19.05.0-bionic_amd64.deb
-slurm_rhel_rpm: slurm-19.05.0_7-1.x86_64.rpm
-
-slurm_pkg_tag: v1.5
-
 slurm_cluster_name: deepops
 slurm_username: slurm
 slurm_password: ReplaceWithASecurePasswordInTheVault
