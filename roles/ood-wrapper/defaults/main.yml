@@ -31,12 +31,15 @@ ood_frontpage_config : |
 ood_desktops_dir: /etc/ood/config/apps/bc_desktop
 ood_desktop_app_title: "NVIDIA DeepOps Desktop"
 ood_desktop_app_dir: /var/www/ood/apps/sys/bc_desktop
+ood_desktop_app_def_gpus: 1
+ood_desktop_app_cpus_per_gpu: 2
+ood_desktop_app_mem_per_gpu: 4G
 
 # VS Code Server app configuration
 ood_codeserver_app_dir: /var/www/ood/apps/sys/bc_osc_codeserver
 ood_codeserver_app_def_gpus: 1
-ood_codeserver_app_cpus_per_gpu: 4
-ood_codeserver_app_mem_per_gpu: 16G
+ood_codeserver_app_cpus_per_gpu: 2
+ood_codeserver_app_mem_per_gpu: 4G
 
 # Linuxhost adapter configuration
 singularity_image_dir: /mnt/shared/singularity-images
