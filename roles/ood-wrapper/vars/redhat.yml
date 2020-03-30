@@ -12,8 +12,9 @@ ood_client_sw_deps:
   - python-websockify
   - '@xfce4'
   - python2-jupyter-core
-  - python3-jupyter-core
+  - python2-jupyroot
+  - python36-jupyter-core
+  - python36-jupyroot
   - dbus-x11
   - firefox
   - cuda-nvvp-10-1
-  - nvidia-visual-profiler
