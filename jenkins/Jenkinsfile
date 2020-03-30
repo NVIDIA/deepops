@@ -16,6 +16,11 @@ pipeline {
             bash -x ./.jenkins-scripts/munge-files.sh
           '''
 
+          echo "Vagrant Up"
+          sh '''
+            bash -x ./.jenkins-scripts/vagrant-up.sh
+          '''
+
           echo "Cluster Up"
           sh '''
             bash -x ./.jenkins-scripts/test-cluster-up.sh

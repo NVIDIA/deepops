@@ -20,6 +20,11 @@ pipeline {
             bash -x ./.jenkins-scripts/munge-files.sh
           '''
 
+          echo "Vagrant Up"
+          sh '''
+            bash -x ./.jenkins-scripts/vagrant-up.sh
+          '''
+
           echo "Cluster Up - Multiple GPU & MGMT Nodes"
           sh '''
             bash -x ./.jenkins-scripts/test-cluster-up.sh
@@ -98,6 +103,11 @@ pipeline {
           echo "Munge files for testing"
           sh '''
             bash -x ./.jenkins-scripts/munge-files.sh
+          '''
+
+          echo "Vagrant Up"
+          sh '''
+            bash -x ./.jenkins-scripts/vagrant-up.sh
           '''
 
           echo "Cluster Up - Multiple GPU & MGMT Nodes"
