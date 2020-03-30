@@ -1,5 +1,7 @@
 install_from_src: false
 
+ood_url_turbovnc_pkg: https://downloads.sourceforge.net/project/turbovnc/2.2.4/turbovnc-2.2.4.x86_64.rpm
+
 ood_master_sw_deps:
   - lz4-devel
   - unzip

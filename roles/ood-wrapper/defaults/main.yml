@@ -70,7 +70,6 @@ ood_linuxhost_adapter_config: |
       strict_host_checking: false
 
 ###
-ood_url_turbovnc_deb: https://downloads.sourceforge.net/project/turbovnc/2.2.3/turbovnc_2.2.3_amd64.deb
 ood_url_codeserver_src: https://github.com/cdr/code-server/releases/download/2.1698/code-server2.1698-vsc1.41.1-linux-x86_64.tar.gz
 
 ood_is_server: no
