@@ -6,9 +6,9 @@
 - src: unxnn.users
   version: '78fd08ca86678d00da376eaac909d22e1022a020'
 
-- src: https://github.com/lukeyeager/ansible-role-hosts.git
-  version: '711ba98571f068a8bc6739fa1055ac38fc931010'
-  name: lukeyeager.hosts
+- src: https://github.com/DeepOps/ansible-role-hosts.git
+  version: '8311d6ecfe39b665a06d1fc55502c6916e9ab5ce'
+  name: DeepOps.hosts
 
 - src: geerlingguy.ntp
   version: "1.6.3"
