@@ -357,9 +357,9 @@ NCCL Bandwidth comparision (NCCL ring topology):
 
    > Note: The baremetal results are overlaping with Kubernetes SRIOV+RoCE because the number is almost identical.
 
-### Test hangs / timeouts
+### Troubleshoot 
 
-   NCCL tests ususally runs pretty fast and can finish in a few minutes once the job is launched and pod is running, but in rare case it may hangs in which case the launching pod stays in "running" states for extended long period of time. you can "describe" the pod or check the running log of the pod to get further information. Also it's helpful to enable NCCL debug information with " " parameters when you launch the job. 
+   NCCL tests ususally runs pretty fast and can finish in a few minutes once the job is launched and pod is running, but in case you run into any problem that you want to troubleshoot, for example, if the job launching pod stays in "running" state for extended period of time or shows "error" status, you can "describe" the pod or check the running log of the pod to get further information. Also it's helpful to enable NCCL debug information when you launch the job. 
 
 
    ```sh
