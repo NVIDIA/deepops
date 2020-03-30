@@ -349,13 +349,13 @@ add switch PFC, ECN configuration
    Additioanl tests are performed to compare the performance on multi-node baremetal servers and non-RoCE kubernetes pods. For multi-node baremetal server NCCL testing, we follow the documentations on those sites to install and compile NCCL and Open MPI:  https://github.com/NVIDIA/nccl and https://www.open-mpi.org/. For non-RoCE Kubernetes pods testing, we simiply deattached the SRIOV/RoCE interfaces from Kubernetes job file so NCCL will run over traditional IP sockets. We run multiple tests in each scenarios to eliminates the outliers and the results show SRIOV with RoCE in Kubernetes can delivery the same performance as in baremetal servers.
 
 NCCL Latency comparision (NCCL ring topology): 
-![alt text](https://raw.githubusercontent.com/NVIDIA/deepops/master/docs/nccl_latency_ring.PNG "NCCL latency, ring")
+![alt text](https://github.com/yangatgithub/deepops/blob/roce_perf/docs/nccl_latency_ring.PNG "NCCL latency, ring")
 
-   > Note: The baremetal latency is overlaping with Kubernetes SRIOV+RoCE because the number is almost identical.
 
 NCCL Bandwidth comparision (NCCL ring topology): 
-![alt text](https://raw.githubusercontent.com/NVIDIA/deepops/master/docs/nccl_bandwidth_ring.PNG "NCCL bandwidth, ring")
+![alt text](https://github.com/yangatgithub/deepops/blob/roce_perf/docs/nccl_latency_ring.PNG "NCCL bandwidth, ring")
 
+   > Note: The baremetal results are overlaping with Kubernetes SRIOV+RoCE because the number is almost identical.
 
 ### Test hangs / timeouts
 
