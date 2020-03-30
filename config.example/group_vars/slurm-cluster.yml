@@ -12,3 +12,6 @@ slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 #slurm_install_pyxis: yes
 slurm_controller_host: "{{ groups['slurm-master'][0] }}"
 slurm_compute_hosts: "{{ groups['slurm-node'] }}"
+
+# Ensure hosts file generation only runs across slurm cluster
+hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
