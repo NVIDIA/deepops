@@ -12,3 +12,12 @@ slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 #slurm_install_pyxis: yes
 slurm_controller_host: "{{ groups['slurm-master'][0] }}"
 slurm_compute_hosts: "{{ groups['slurm-node'] }}"
+
+# Slurm configuration is auto-generated from templates in the `slurm` role.
+# If you want to override any of these files with custom config files, please
+# set the following vars to the absolute path of your custom files.
+#
+#slurm_conf_template: "/path/to/slurm.conf"
+#slurm_cgroup_conf_template: "/path/to/cgroup.conf"
+#slurm_gres_conf_template: "/path/to/gres.conf"
+#slurm_dbd_conf_template: "/path/to/slurmdbd.conf"
