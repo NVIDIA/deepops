@@ -49,13 +49,6 @@
     - prolog
     - epilog
 
-- name: copy slurmdbd service file
-  copy:
-    src: "{{ item }}"
-    dest: "/etc/systemd/system/{{ item }}"
-  with_items:
-    - slurmd.service
-
 - name: copy shared scripts
   copy:
     src: "{{ item }}"
