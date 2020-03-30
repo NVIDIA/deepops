@@ -16,6 +16,12 @@ ood_client_sw_deps:
   - nmap
   - python-websockify
   - '@xfce4'
+  - xfce4-session
+  - xfce4-settings
+  - xfce4-terminal
+  - xfdesktop
+  - gtk-xfce-engine
+  - gtk2-engines
   - python2-jupyter-core
   - python2-jupyroot
   - python36-jupyter-core
