@@ -69,9 +69,7 @@ pipeline {
 
           echo "Set up Slurm"
           sh '''
-            pwd
-            cd virtual
-            ./scripts/setup_slurm.sh
+            bash -x ./.jenkins-scripts/test-setup-slurm.sh
           '''
 
           echo "Test Slurm"
@@ -154,9 +152,7 @@ pipeline {
 
           echo "Set up Slurm"
           sh '''
-            pwd
-            cd virtual
-            ./scripts/setup_slurm.sh
+            bash -x ./.jenkins-scripts/test-setup-slurm.sh
           '''
 
           echo "Test Slurm"
