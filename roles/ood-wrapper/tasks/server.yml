@@ -1,0 +1,200 @@
+---
+- name: install dependencies
+  package:
+    name: "{{ ood_master_sw_deps }}"
+    state: present
+  when: ood_master_sw_deps is defined
+
+- name: remove any existing OOD apps installed by ansible
+  file:
+    path: "{{ item.value.dest | default(ood_sys_app_dir) }}/{{ item.key }}"
+    state: absent
+  when: ood_install_apps is defined
+  loop: "{{ ood_install_apps | default({}) | dict2items }}"
+
+- name: remove build dir
+  file:
+    path: "{{ ood_source_dir }}"
+    state: absent
+
+- name: enable httpd listen port in SELinux
+  command: semanage port -m -t http_port_t -p tcp {{ httpd_port }}
+  when: ansible_os_family == 'RedHat'
+
+- name: set httpd to permissive in SELinux
+  command: semanage permissive -a httpd_t
+  when: ansible_os_family == 'RedHat'
+
+- name: install Open OnDemand
+  include_role:
+    name: ood-ansible
+
+- name: create clusters dir
+  file:
+    path: "{{ ood_cluster_config_dir }}"
+    state: directory
+  tags:
+    - configure
+
+- name: configure slurm cluster connector
+  template:
+    src: cluster.yml.j2
+    dest: "{{ ood_cluster_config_dir }}/{{ ood_cluster_name }}.yml"
+  tags:
+    - configure
+
+- name: configure front page
+  blockinfile:
+    path: "{{ ood_config_dir }}/nginx_stage.yml"
+    block : |
+      {{ ood_frontpage_config }}
+  tags:
+    - configure
+
+- name: install package dependency for htpasswd module
+  package:
+    name: python-passlib
+    state: present
+  tags:
+    - configure
+
+- name: create .htpasswd entries
+  htpasswd:
+    path: "{{ ood_htpasswd_file }}"
+    name: "{{ user }}"
+    password: "{{ ood_default_password }}"
+    create: yes
+  tags:
+    - configure
+
+- name: install required apache module
+  apache2_module:
+    state: present
+    name: proxy_wstunnel
+  register: mod_install
+  tags:
+    - configure
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install required apache module
+  apache2_module:
+    state: present
+    name: proxy_wstunnel
+  register: mod_install
+  environment:
+    PATH: /opt/rh/httpd24/root/usr/sbin
+    LD_LIBRARY_PATH: /opt/rh/httpd24/root/usr/lib64
+  tags:
+    - configure
+  when: ansible_os_family == 'RedHat'
+
+- name: restart apache after module install
+  systemd:
+    service: "{{ ood_apache_service_name }}"
+    state: restarted
+  when: mod_install.changed
+  tags:
+    - configure
+
+- name: create ssh key pair for default user
+  openssh_keypair:
+    path: "/home/{{ user }}/.ssh/id_rsa"
+    owner: "{{ user }}"
+  tags:
+    - configure
+
+- name: get ssh pub key
+  slurp:
+    src: "/home/{{ user }}/.ssh/id_rsa.pub"
+  register: user_pub_key
+  tags:
+    - configure
+
+- name: set ssh authorized key
+  authorized_key:
+    user: "{{ user }}"
+    state: present
+    key: "{{ user_pub_key['content'] | b64decode }}"
+  tags:
+    - configure
+
+- name: remove old desktop app config
+  file:
+    path: "{{ ood_desktop_app_dir }}/{{ item }}"
+    state: absent
+  with_items:
+    - form.yml
+      #- manifest.yml
+      #- submit.yml.erb
+      #- template/script.sh.erb
+  tags:
+    - configure
+
+- name: create desktop app dir
+  file:
+    path: "{{ ood_desktops_dir }}/submit"
+    state: directory
+  tags:
+    - configure
+
+- name: configure desktop
+  template:
+    src: desktop.yml.j2
+    dest: "{{ ood_desktops_dir }}/{{ ood_cluster_name }}.yml"
+  tags:
+    - configure
+
+- name: configure desktop app submit
+  template:
+    src: desktop-submit.yml.erb.j2
+    dest: "{{ ood_desktops_dir }}/submit/{{ ood_cluster_name }}_desktop.yml.erb"
+  tags:
+    - configure
+
+- name: configure desktop app form
+  template:
+    src: desktop-form.yml.j2
+    dest: "{{ ood_desktop_app_dir }}/form.yml"
+  tags:
+    - configure
+
+- name: remove old config
+  file:
+    path: "{{ ood_codeserver_app_dir }}/{{ item }}"
+    state: absent
+  with_items:
+    - form.yml
+    - manifest.yml
+    - submit.yml.erb
+    - template/script.sh.erb
+  tags:
+    - configure
+
+- name: configure vs code app form
+  template:
+    src: bc_osc_codeserver/form.yml.j2
+    dest: "{{ ood_codeserver_app_dir }}/form.yml"
+  tags:
+    - configure
+
+- name: configure vs code app manifest
+  template:
+    src: bc_osc_codeserver/manifest.yml.j2
+    dest: "{{ ood_codeserver_app_dir }}/manifest.yml"
+  tags:
+    - configure
+
+- name: configure vs code app submit
+  template:
+    src: bc_osc_codeserver/submit.yml.erb.j2
+    dest: "{{ ood_codeserver_app_dir }}/submit.yml.erb"
+  tags:
+    - configure
+
+- name: configure vs code app script
+  template:
+    src: bc_osc_codeserver/script.sh.erb.j2
+    dest: "{{ ood_codeserver_app_dir }}/template/script.sh.erb"
+    mode: 0755
+  tags:
+    - configure

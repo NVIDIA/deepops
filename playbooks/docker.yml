@@ -11,13 +11,15 @@
       file:
         path: /etc/systemd/system/docker.service.d/docker-override.conf
         state: absent
+      tags:
+        - docker
 
 - hosts: "{{ hostlist | default('all') }}"
   become: true
   become_method: sudo
   roles:
     - { role: kubespray-defaults }
-    - { role: "../kubespray/roles/container-engine/docker" }
+    - { role: "../kubespray/roles/container-engine/docker", tags: docker }
   environment: "{{proxy_env if proxy_env is defined else {}}}"
   vars:
     # override deprecated dockerproject repo; old docker repo broken as of 03.04.2020

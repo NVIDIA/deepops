@@ -1,9 +1,12 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: dcgm-exporter
   namespace: monitoring
 spec:
+  selector:
+    matchLabels:
+      app: dcgm-exporter
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 1

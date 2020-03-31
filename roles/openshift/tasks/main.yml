@@ -13,7 +13,6 @@
   file:
     path: "{{ deepops_dir }}"
     state: directory
-  when: ansible_distribution == 'Ubuntu'
 
 - name: install openshift python client for k8s_raw module
   pip:
