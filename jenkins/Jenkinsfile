@@ -1,5 +1,9 @@
 pipeline {
   agent any
+  environment {
+    DEEPOPS_FULL_INSTALL = ''
+    DEEPOPS_VAGRANT_OS = 'ubuntu'
+  }
   stages {
     stage('Stop Any Old Builds') {
       steps {
