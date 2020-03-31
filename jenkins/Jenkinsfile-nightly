@@ -22,7 +22,7 @@ pipeline {
 
           echo "Vagrant Up"
           sh '''
-            bash -x ./.jenkins-scripts/vagrant-up.sh
+            bash -x ./.jenkins-scripts/vagrant-startup.sh
           '''
 
           echo "Cluster Up - MGMT Nodes"
@@ -105,7 +105,7 @@ pipeline {
 
           echo "Vagrant Up - Multi-Nodes"
           sh '''
-            bash -x ./.jenkins-scripts/vagrant-up.sh
+            bash -x ./.jenkins-scripts/vagrant-startup.sh
           '''
 
           echo "Cluster Up - Multi-Nodes"

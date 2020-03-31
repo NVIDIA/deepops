@@ -18,7 +18,7 @@ pipeline {
 
           echo "Vagrant Up"
           sh '''
-            bash -x ./.jenkins-scripts/vagrant-up.sh
+            bash -x ./.jenkins-scripts/vagrant-startup.sh
           '''
 
           echo "Cluster Up"
