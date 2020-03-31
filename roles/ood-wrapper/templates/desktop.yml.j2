@@ -1,0 +1,11 @@
+---
+title: "{{ ood_desktop_app_title }}"
+cluster: "{{ ood_cluster_name }}"
+submit: "submit/{{ ood_cluster_name }}_desktop.yml.erb"
+attributes:
+  desktop: "xfce"
+  bc_queue: null
+  bc_account: null
+  bc_num_gpus:
+    label: "Number of GPUs"
+    value: 1

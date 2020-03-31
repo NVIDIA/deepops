@@ -1,0 +1,37 @@
+---
+- name: install dependencies
+  package:
+    name: "{{ ood_client_sw_deps }}"
+    state: present
+  when: ood_client_sw_deps is defined
+
+- name: install turbovnc
+  apt:
+    deb: "{{ ood_url_turbovnc_pkg }}"
+  tags:
+    - vnc
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install turbovnc
+  yum:
+    name: "{{ ood_url_turbovnc_pkg }}"
+    state: present
+  tags:
+    - vnc
+  when: ansible_os_family == 'RedHat'
+
+- name: install codeserver
+  unarchive:
+    src: "{{ ood_url_codeserver_src }}"
+    remote_src: yes
+    dest: /usr/local/bin
+    exclude:
+      - README.md
+      - LICENSE.txt
+      - ThirdPartyNotices.txt
+    creates: /usr/local/bin/code-server
+    mode: 0755
+    extra_opts:
+      - --strip-components=1
+  tags:
+    - codeserver

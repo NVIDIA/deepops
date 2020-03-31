@@ -45,3 +45,12 @@
 
 - src: unxnn.chrony
   version: 'c95f84431c8c3ed693e88b35c87edf792fcf152f'
+
+- src: https://github.com/OSC/ood-ansible.git
+  version: 'a56783750d5e61f0d099a2b294d9f050d194f293'
+
+- src: gantsign.golang
+  version: 2.3.0
+
+- src: lecorguille.singularity
+  version: 1.2.0
