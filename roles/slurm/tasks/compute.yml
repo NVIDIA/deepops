@@ -95,20 +95,13 @@
   tags:
     - localusers
 
-- name: update /etc/pam.d/sshd
-  lineinfile:
+- name: setup /etc/pam.d/sshd
+  blockinfile:
     path: /etc/pam.d/sshd
-    line: "account required pam_listfile.so item=user sense=allow file=/etc/localusers"
-    insertafter: "PAM configuration for the Secure Shell service"
-    state: present
+    block: |
+      -account sufficient pam_listfile.so item=user sense=allow file=/etc/localusers
+      -account required {{ slurm_pam_lib_dir }}/pam_slurm_adopt.so
+    insertafter: EOF
+    marker: "# {mark} ANSIBLE MANAGED BLOCK (ansible-role-slurm)"
   tags:
-    - test
-
-- name: update /etc/pam.d/sshd
-  lineinfile:
-    path: /etc/pam.d/sshd
-    line: "account sufficient {{ slurm_pam_lib_dir }}/pam_slurm.so"
-    insertafter: "PAM configuration for the Secure Shell service"
-    state: present
-  tags:
-    - test
+    - config
