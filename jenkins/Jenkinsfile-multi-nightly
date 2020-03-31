@@ -74,7 +74,7 @@ pipeline {
 
           echo "Test Slurm"
           sh '''
-            bash -x ./.jenkins-scripts/test-slurm-job.sh
+            timeout 60 bash -x ./.jenkins-scripts/test-slurm-job.sh
           '''
 
           echo "Reset repo and unmunge files"
@@ -157,7 +157,7 @@ pipeline {
 
           echo "Test Slurm"
           sh '''
-            bash -x ./.jenkins-scripts/test-slurm-job.sh
+            timeout 60 bash -x ./.jenkins-scripts/test-slurm-job.sh
           '''
         }
       }
