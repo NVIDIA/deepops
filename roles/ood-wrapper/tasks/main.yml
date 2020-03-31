@@ -1,0 +1,20 @@
+---
+- name: gather os specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+      - "{{ ansible_distribution|lower }}.yml"
+      - "{{ ansible_os_family|lower }}.yml"
+      paths:
+      - ../vars
+      skip: true
+  tags: vars
+
+- include: server.yml
+  when: ood_is_server
+
+- include: client.yml
+  when: ood_is_client
+
+- include: linuxhost-adapter.yml
+  when: ood_is_server and ood_install_linuxhost_adapter

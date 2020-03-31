@@ -1,0 +1,46 @@
+---
+- name: configure PAM
+  lineinfile:
+    path: "/etc/pam.d/systemd-user-slice"
+    line: "session     required      pam_exec.so type=open_session /etc/security/limits.sh"
+    mode: 0644
+    create: yes
+  tags:
+    - linuxhost-adapter
+
+- name: configure script
+  blockinfile:
+    path: "/etc/security/limits.sh"
+    block: |
+      {{ ood_linuxhost_adapter_script }}
+    mode: 0755
+    create: yes
+  tags:
+    - linuxhost-adapter
+
+- name: configure linuxhost-adapter
+  blockinfile:
+    path: "{{ ood_cluster_config_dir }}/linuxhost.yml"
+    block: |
+      {{ ood_linuxhost_adapter_config }}
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK insertion 2"
+  tags:
+    - linuxhost-adapter
+
+- name: create singularity image directory
+  file:
+    path: "{{ singularity_image_dir }}"
+    state: directory
+  tags:
+    - linuxhost-adapter
+
+- name: pull singularity image
+  command: singularity pull --name ubuntu-18.04.simg docker://ubuntu:18.04
+  args:
+    chdir: "{{ singularity_image_dir }}"
+    creates: "{{ singularity_image_dir }}/ubuntu-18.04.simg"
+  environment:
+    PATH: /usr/local/bin:/usr/local/sbin:/sbin:/bin:/usr/sbin:/usr/bin:/opt/go/1.14/bin:/opt/go/packages/bin:/root/bin
+  tags:
+    - linuxhost-adapter

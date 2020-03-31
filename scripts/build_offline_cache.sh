@@ -21,8 +21,8 @@ if ! which ruby; then
     exit 1
 fi
 
-if ! which python36; then
-    echo "python36 needed for Kubespray, please install"
+if ! which python3.6; then
+    echo "python3.6 needed for Kubespray, please install"
     exit 1
 fi
 
@@ -56,14 +56,12 @@ HELM_DEST_DIR="${HELM_DEST_DIR:-${DEST_DIR}/helm}"
 
 HELM_STABLE_CHARTS_URL="${HELM_STABLE_CHARTS_URL:-https://kubernetes-charts.storage.googleapis.com}"
 HELM_ROOK_CHARTS_URL="${HELM_ROOK_CHARTS_URL:-https://charts.rook.io/master}"
-HELM_COREOS_CHARTS_URL="${HELM_COREOS_CHARTS_URL:-https://s3-eu-west-1.amazonaws.com/coreos-charts/stable}"
 HELM_JUPYTER_CHARTS_URL="${HELM_JUPYTER_CHARTS_URL:-https://jupyterhub.github.io/helm-chart}"
 
 mkdir -p "${HELM_DEST_DIR}/mirror"
 pushd "${HELM_DEST_DIR}"
 get_all_helm_tgzs "${HELM_STABLE_CHARTS_URL}"
 get_all_helm_tgzs "${HELM_ROOK_CHARTS_URL}"
-get_all_helm_tgzs "${HELM_COREOS_CHARTS_URL}"
 get_all_helm_tgzs "${HELM_JUPYTER_CHARTS_URL}"
 popd
 

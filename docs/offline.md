@@ -74,6 +74,11 @@ The primary difference between an "offline" build and an "online" one is what up
 In order to build DeepOps on a network without access to the Internet, you have to ensure that the Ansible playbooks and other scripts used to set up the cluster know where to find the software they need to install.
 We do this by overriding a collection of Ansible variables and environment variables used by DeepOps to control the download locations.
 
+### Considerations for configuring DeepOps
+
+- If building an offline Slurm cluster, please configure `hosts_network_interface` in the DeepOps configuration to specify the primary network interface on your offline hosts.
+    This will ensure that the cluster `/etc/hosts` file uses the correct IP addresses for your nodes.
+
 ### Specifying mirror locations
 
 1. Edit `config/offline_repo_vars.yml` file to specify your repository mirror locations for Ansible.

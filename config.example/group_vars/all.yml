@@ -19,6 +19,7 @@
       # https_proxy: '{{ https_proxy }}'
       # no_proxy: '{{ no_proxy }}'
 
+
 ################################################################################
 # NETWORK                                                                      #
 ################################################################################
@@ -119,6 +120,7 @@ gpu_clock_lock: "1507,1507"
 ################################################################################
 # Docker configuration
 # Playbook: docker, nvidia-docker, k8s-cluster
+# 
 # For supported Docker versions, see: kubespray/roles/container-engine/docker/vars/*
 docker_version: '18.09'
 docker_dns_servers_strict: no
@@ -145,6 +147,17 @@ enroot_environ_config_files:
   - filename: 50-mpi.env
     content: |
       OMPI_MCA_btl_tcp_if_exclude=lo,docker0,ib0,ib1,ib2,ib3
+
+# Singularity configuration
+# Playbook: singularity, slurm-cluster
+# Singularity target version
+singularity_version: "3.5.3"
+singularity_conf_path: "/etc/singularity/singularity.conf"
+bind_paths: []
+  # example:
+  #- /mnt/shared
+golang_install_dir: '/opt/go/{{ golang_version }}'
+golang_gopath: /opt/go/packages
 
 
 ################################################################################

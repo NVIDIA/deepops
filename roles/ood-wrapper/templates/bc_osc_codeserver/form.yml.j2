@@ -1,0 +1,15 @@
+cluster: "{{ ood_cluster_name }}"
+form:
+  - bc_num_gpus
+  - bc_num_hours
+  - working_dir
+attributes:
+  working_dir:
+    label: "Working Directory"
+    data-filepicker: true
+    data-target-file-type: dirs  # Valid values are: files, dirs, or both
+    readonly: false
+    help: "Select your project directory; defaults to $HOME"
+  bc_num_gpus:
+    label: "Number of GPUs"
+    value: 1
