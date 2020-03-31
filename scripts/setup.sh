@@ -5,6 +5,7 @@
 
 # DeepOps branch to setup
 DEEPOPS_TAG="${1:-master}"
+JENKINS="${JENKINS:-}" # Used to signal we are in a Jenkins testing environment and need virtualenv
 
 . /etc/os-release
 
