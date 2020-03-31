@@ -1,0 +1,2 @@
+---
+user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"

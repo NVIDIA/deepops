@@ -1,0 +1,83 @@
+---
+ood_source_version: "v1.7.6"
+ood_config_dir: /etc/ood/config
+
+# Cluster configuration
+ood_cluster_config_dir: '{{ ood_config_dir }}/clusters.d'
+ood_cluster_title: "NVIDIA DeepOps Cluster"
+ood_cluster_name: "deepops"         # has to match Slurm cluster name
+ood_default_password: "deepops"
+ood_install_linuxhost_adapter: yes
+
+ood_build_dir: "/tmp/ood-build"
+ood_source_dir: "{{ ood_build_dir }}/ondemand"
+
+# List of extra OOD "apps" to install
+ood_install_apps:
+  bc_osc_codeserver:
+    repo: https://github.com/OSC/bc_osc_codeserver.git
+    dest: /var/www/ood/apps/sys
+    version: gtc
+
+# OOD front page config
+ood_frontpage_config : |
+  pun_custom_env:
+    OOD_DASHBOARD_TITLE: "NVIDIA DeepOps Cluster"
+    OOD_BRAND_BG_COLOR: "#76B900"
+    OOD_BRAND_LINK_ACTIVE_BG_COLOR: "#333"
+    OOD_NAVBAR_TYPE: "inverse"
+
+# Virtual Desktop app configuration
+ood_desktops_dir: /etc/ood/config/apps/bc_desktop
+ood_desktop_app_title: "NVIDIA DeepOps Desktop"
+ood_desktop_app_dir: /var/www/ood/apps/sys/bc_desktop
+ood_desktop_app_def_gpus: 1
+ood_desktop_app_cpus_per_gpu: 2
+ood_desktop_app_mem_per_gpu: 4G
+
+# VS Code Server app configuration
+ood_codeserver_app_dir: /var/www/ood/apps/sys/bc_osc_codeserver
+ood_codeserver_app_def_gpus: 1
+ood_codeserver_app_cpus_per_gpu: 2
+ood_codeserver_app_mem_per_gpu: 4G
+
+# Linuxhost adapter configuration
+singularity_image_dir: /mnt/shared/singularity-images
+ood_linuxhost_adapter_script: |
+  #!/bin/bash
+  set -e
+
+  PAM_UID=$(id -u "${PAM_USER}")
+
+  if [ "${PAM_SERVICE}" = "sshd" -a "${PAM_UID}" -ge 1000 ]; then
+          /usr/bin/systemctl set-property "user-${PAM_UID}.slice" \
+                  MemoryAccounting=true MemoryLimit=64G \
+                  CPUAccounting=true \
+                  CPUQuota=700%
+  fi
+ood_linuxhost_adapter_config: |
+  ---
+  v2:
+    metadata:
+      title: "NVIDIA DeepOps Cluster Login Node"
+      hidden: true
+    login:
+      host: "localhost"
+    job:
+      adapter: "linux_host"
+      submit_host: "localhost"
+      ssh_hosts:
+        - localhost
+      site_timeout: 7200
+      debug: true
+      singularity_bin: /usr/bin/singularity
+      singularity_bindpath: /etc,/media,/mnt,/opt,/run,/srv,/usr,/var,/users
+      singularity_image: {{ singularity_image_dir }}/ubuntu-18.04.simg
+      # Enabling strict host checking may cause the adapter to fail if the user's known_hosts does not have all the roundrobin hosts
+      strict_host_checking: false
+
+###
+ood_url_codeserver_src: https://github.com/cdr/code-server/releases/download/2.1698/code-server2.1698-vsc1.41.1-linux-x86_64.tar.gz
+
+ood_is_server: no
+ood_is_client: no

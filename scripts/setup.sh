@@ -67,6 +67,8 @@ case "$ID" in
             as_user "${PIP} install netaddr"
             # Install ruamel.yaml
             as_user "${PIP} install ruamel.yaml"
+            # Install python mysql client library
+            as_user "${PIP} install PyMySQL"
         fi
 
         # Ensure Jinja2 is updated
@@ -169,6 +171,8 @@ case "$ID" in
             as_user "${PIP} install ansible==${ANSIBLE_VERSION}"
             # Install netaddr
             as_user "${PIP} install netaddr" >/dev/null
+            # Install python mysql client library
+            as_user "${PIP} install PyMySQL"
         fi
 
         # Check Ansible version and install with pip
