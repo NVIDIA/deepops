@@ -26,5 +26,6 @@ slurm_build_deps:
   - libibumad
   - man2html
   - python
+  - python3
   - ruby-devel
   - wget
