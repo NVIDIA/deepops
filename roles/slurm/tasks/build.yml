@@ -17,11 +17,13 @@
     name: "{{ item }}"
     state: absent
   with_items:
+    - slurm
     - slurm-wlm
     - slurmctld
     - slurmdbd
     - slurmd
   when: ansible_distribution == 'Ubuntu'
+  ignore_errors: yes
 
 - name: remove slurm packages
   yum:
@@ -30,6 +32,7 @@
   with_items:
     - slurm
   when: ansible_os_family == 'RedHat'
+  ignore_errors: yes
 
 - name: make build directory
   file:
