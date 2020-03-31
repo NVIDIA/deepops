@@ -28,7 +28,7 @@ pipeline {
 
           echo "Verify we can run a GPU job"
           sh '''
-            bash -x ./.jenkins-scripts/run-gpu-job.sh
+            timeout 500 bash -x ./.jenkins-scripts/run-gpu-job.sh
           '''
 
           echo "Verify ingress config"
@@ -43,7 +43,7 @@ pipeline {
 
           echo "Test Slurm"
           sh '''
-            bash -x ./.jenkins-scripts/test-slurm-job.sh
+            timeout 60 bash -x ./.jenkins-scripts/test-slurm-job.sh
           '''
         }
       }
