@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 source .jenkins-scripts/jenkins-common.sh
 
 cd virtual || exit 1

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -ex
 set -ex
 source .jenkins-scripts/jenkins-common.sh
 

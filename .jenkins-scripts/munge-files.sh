@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 source .jenkins-scripts/jenkins-common.sh
 
 # comment in for pci passthrough (and change bus according to local hw setup - `lspci -nnk | grep NVIDIA`)
