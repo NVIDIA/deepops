@@ -17,37 +17,37 @@ pipeline {
         lock(resource: null, label: 'gpu', quantity: 1, variable: 'GPUDATA') {
           echo "Munge files for testing"
           sh '''
-            ./.jenkins-scripts/munge-files.sh
+            bash -x ./.jenkins-scripts/munge-files.sh
           '''
 
           echo "Vagrant Up"
           sh '''
-            ./.jenkins-scripts/vagrant-startup.sh
+            bash -x ./.jenkins-scripts/vagrant-startup.sh
           '''
 
           echo "Cluster Up"
           sh '''
-            ./.jenkins-scripts/test-cluster-up.sh
+            bash -x ./.jenkins-scripts/test-cluster-up.sh
           '''
 
           echo "Verify we can run a GPU job"
           sh '''
-            timeout 500 ./.jenkins-scripts/run-gpu-job.sh
+            timeout 500 bash -x ./.jenkins-scripts/run-gpu-job.sh
           '''
 
           echo "Verify ingress config"
           sh '''
-             ./.jenkins-scripts/verify-ingress-config.sh
+             bash -x ./.jenkins-scripts/verify-ingress-config.sh
           '''
 
           echo "Set up Slurm"
           sh '''
-            ./.jenkins-scripts/test-setup-slurm.sh
+            bash -x ./.jenkins-scripts/test-setup-slurm.sh
           '''
 
           echo "Test Slurm"
           sh '''
-            timeout 60 ./.jenkins-scripts/test-slurm-job.sh
+            timeout 60 bash -x ./.jenkins-scripts/test-slurm-job.sh
           '''
         }
       }
