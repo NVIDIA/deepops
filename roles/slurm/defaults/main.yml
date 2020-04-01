@@ -52,3 +52,5 @@ slurm_clear_old_prolog_epilog: false
 
 # Disable clearing of shared memory when user login shell exits
 slurm_fix_shm: true
+
+slurm_force_rebuild: no
