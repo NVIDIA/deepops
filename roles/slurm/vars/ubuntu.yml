@@ -10,3 +10,9 @@ slurm_build_deps:
   - python-minimal
   - ruby-dev
   - wget
+
+slurm_pmix_deps:
+  - libev-dev
+  - libevent-dev
+
+slurm_hwloc_deps: []

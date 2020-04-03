@@ -29,3 +29,9 @@ slurm_build_deps:
   - python3
   - ruby-devel
   - wget
+
+slurm_pmix_deps:
+  - libev-devel
+  - libevent-devel
+
+slurm_hwloc_deps: []

@@ -21,6 +21,14 @@
 
 - include: munge.yml
 
+- include: hwloc.yml
+  tags: hwloc
+  when: slurm_include_hwloc
+
+- include: pmix.yml
+  tags: pmix
+  when: slurm_include_pmix
+
 - include: build.yml
   tags: build
 
