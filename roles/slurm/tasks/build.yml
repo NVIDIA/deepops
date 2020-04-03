@@ -32,6 +32,8 @@
 - name: default to building slurm
   set_fact:
     slurm_build: yes
+    slurm_upgrade: no
+    slurm_downgrade: no
 
 - name: check installed slurm version
   shell: "{{ slurm_install_prefix }}/bin/sinfo --version | awk '{print $2}'"
@@ -42,6 +44,16 @@
   set_fact:
     slurm_build: no
   when: sinfo_version.stdout == slurm_version and not slurm_force_rebuild
+
+- name: upgrade?
+  set_fact:
+    slurm_upgrade: yes
+  when: sinfo_version.stdout is version(slurm_version, '<')
+
+- name: downgrade?
+  set_fact:
+    slurm_downgrade: yes
+  when: sinfo_version.stdout is version(slurm_version, '>')
 
 - name: going to rebuild slurm?
   debug:
