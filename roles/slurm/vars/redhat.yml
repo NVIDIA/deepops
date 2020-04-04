@@ -34,4 +34,9 @@ slurm_pmix_deps:
   - libev-devel
   - libevent-devel
 
-slurm_hwloc_deps: []
+slurm_hwloc_deps:
+  - "@Development Tools"
+slurm_openblas_deps:
+  - "@Development Tools"
+slurm_openmpi_deps:
+  - "@Development Tools"

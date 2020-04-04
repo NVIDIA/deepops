@@ -1,0 +1,90 @@
+---
+- name: default to building openblas
+  set_fact:
+    openblas_build: yes
+
+- name: check installed openblas version
+  shell: "grep ^version {{ openblas_install_prefix }}/lib/pkgconfig/openblas.pc | cut -d= -f2"
+  register: openblas_info_version
+  ignore_errors: yes
+
+- name: don't build openblas if it's already installed, unless forced
+  set_fact:
+    openblas_build: no
+  when: openblas_info_version.stdout == openblas_version and not openblas_force_rebuild
+
+- name: install openblas build dependencies
+  apt:
+    name: "{{ item }}"
+  with_items: "{{ slurm_openblas_deps }}"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install openblas build dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ slurm_openblas_deps }}"
+  when: ansible_os_family == 'RedHat'
+
+- name: remove openblas packages
+  apt:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - libopenblas-base
+    - libopenblas-dev
+  when: ansible_distribution == 'Ubuntu'
+  ignore_errors: yes
+
+- name: remove openblas packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - openblas-devel
+    - openblas
+  when: ansible_os_family == 'RedHat'
+  ignore_errors: yes
+
+- name: make openblas build directory
+  file:
+    path: "{{ openblas_build_dir }}"
+    state: directory
+  when: openblas_build
+
+- name: download openblas source
+  unarchive:
+    src: "{{ openblas_src_url }}"
+    remote_src: yes
+    dest: "{{ openblas_build_dir }}"
+    extra_opts:
+      - --strip-components=1
+  when: openblas_build
+
+- name: uninstall old openblas version
+  command: "make PREFIX={{ openblas_install_prefix }} -j uninstall"
+  args:
+    chdir: "{{ openblas_build_dir }}"
+  ignore_errors: yes
+  when: openblas_build
+  tags:
+    - uninstall
+
+- name: clean openblas src dir
+  command: make distclean
+  args:
+    chdir: "{{ openblas_build_dir }}"
+  ignore_errors: yes
+  when: openblas_build
+
+- name: build openblas
+  shell: "make PREFIX={{ openblas_install_prefix }} -j$(nproc) > build.log 2>&1"
+  args:
+    chdir: "{{ openblas_build_dir }}"
+  when: openblas_build
+
+- name: install openblas
+  shell: "make PREFIX={{ openblas_install_prefix }} -j$(nproc) install >> build.log 2>&1"
+  args:
+    chdir: "{{ openblas_build_dir }}"
+  when: openblas_build

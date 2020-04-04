@@ -15,4 +15,9 @@ slurm_pmix_deps:
   - libev-dev
   - libevent-dev
 
-slurm_hwloc_deps: []
+slurm_hwloc_deps:
+  - build-essential
+slurm_openblas_deps:
+  - build-essential
+slurm_openmpi_deps:
+  - build-essential

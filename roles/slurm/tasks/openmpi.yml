@@ -1,0 +1,97 @@
+---
+- name: default to building openmpi
+  set_fact:
+    openmpi_build: yes
+
+- name: check installed openmpi version
+  shell: "{{ openmpi_install_prefix }}/bin/ompi_info | grep 'Open MPI:' | awk '{print $3}'"
+  register: openmpi_info_version
+  ignore_errors: yes
+
+- name: don't build openmpi if it's already installed, unless forced
+  set_fact:
+    openmpi_build: no
+  when: openmpi_info_version.stdout == pmix_version and not pmix_force_rebuild
+
+- name: install openmpi build dependencies
+  apt:
+    name: "{{ item }}"
+  with_items: "{{ slurm_openmpi_deps }}"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install openmpi build dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ slurm_openmpi_deps }}"
+  when: ansible_os_family == 'RedHat'
+
+- name: remove openmpi packages
+  apt:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - openmpi-bin
+    - openmpi-common
+    - libopenmpi-dev
+  when: ansible_distribution == 'Ubuntu'
+  ignore_errors: yes
+
+- name: remove openmpi packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - openmpi
+    - openmpi-devel
+  when: ansible_os_family == 'RedHat'
+  ignore_errors: yes
+
+- name: make openmpi build directory
+  file:
+    path: "{{ openmpi_build_dir }}"
+    state: directory
+  when: openmpi_build
+
+- name: download openmpi source
+  unarchive:
+    src: "{{ openmpi_src_url }}"
+    remote_src: yes
+    dest: "{{ openmpi_build_dir }}"
+    extra_opts:
+      - --strip-components=1
+  when: openmpi_build
+
+- name: uninstall old openmpi version
+  command: make -j uninstall
+  args:
+    chdir: "{{ openmpi_build_dir }}"
+  ignore_errors: yes
+  when: openmpi_build
+  tags:
+    - uninstall
+
+- name: clean openmpi src dir
+  command: make distclean
+  args:
+    chdir: "{{ openmpi_build_dir }}"
+  ignore_errors: yes
+  when: openmpi_build
+
+- name: configure openmpi
+  command: "./configure --prefix={{ openmpi_install_prefix }}"
+  args:
+    chdir: "{{ openmpi_build_dir }}"
+  when: openmpi_build
+
+- name: build openmpi
+  shell: "make -j$(nproc) > build.log 2>&1"
+  args:
+    chdir: "{{ openmpi_build_dir }}"
+  when: openmpi_build
+
+- name: install openmpi
+  shell: "make -j$(nproc) install >> build.log 2>&1"
+  args:
+    chdir: "{{ openmpi_build_dir }}"
+  when: openmpi_build

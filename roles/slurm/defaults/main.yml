@@ -7,8 +7,11 @@ slurm_build_dir: /tmp/slurm-build
 slurm_config_dir: /etc/slurm
 slurm_install_prefix: /usr
 
+slurm_hpl: no
 slurm_include_hwloc: yes
 slurm_include_pmix: yes
+slurm_include_openblas: yes
+slurm_include_openmpi: yes
 
 slurm_cluster_name: deepops
 slurm_username: slurm
@@ -66,7 +69,20 @@ pmix_force_rebuild: no
 
 hwloc_version: 2.2.0
 hwloc_tag: v2.2
-hwloc_src_url: "https://download.open-mpi.org/release/hwloc/{{ hwloc_tag }}/hwloc-{{ hwloc_version }}.tar.bz2"
+hwloc_src_url: "https://download.open-mpi.org/release/hwloc/{{ hwloc_tag }}/hwloc-{{ hwloc_version }}.tar.gz"
 hwloc_build_dir: /tmp/hwloc-build
 hwloc_install_prefix: '{{ slurm_install_prefix }}'
 hwloc_force_rebuild: no
+
+openblas_version: 0.3.9
+openblas_src_url: "https://github.com/xianyi/OpenBLAS/archive/v{{ openblas_version }}.tar.gz"
+openblas_build_dir: /tmp/openblas-build
+openblas_install_prefix: '{{ slurm_install_prefix }}'
+openblas_force_rebuild: no
+
+openmpi_version: 4.0.3
+openmpi_tag: v4.0
+openmpi_src_url: "https://download.open-mpi.org/release/open-mpi/{{ openmpi_tag }}/openmpi-{{ openmpi_version }}.tar.bz2"
+openmpi_build_dir: /tmp/openmpi-build
+openmpi_install_prefix: '{{ slurm_install_prefix }}'
+openmpi_force_rebuild: no
