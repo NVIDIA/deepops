@@ -6,3 +6,4 @@ prometheus_enabled: yes
 
 prometheus_cfg_scrape_interval: 15s
 prometheus_cfg_endpoint_dir: "{{ prometheus_config_dir }}/endpoints"
+prometheus_cfg_port: "9070"
