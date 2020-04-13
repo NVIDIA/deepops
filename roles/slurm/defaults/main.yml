@@ -10,8 +10,8 @@ slurm_install_prefix: /usr
 slurm_hpl: no
 slurm_include_hwloc: yes
 slurm_include_pmix: yes
-slurm_include_openblas: yes
-slurm_include_openmpi: yes
+slurm_include_openblas: no
+slurm_include_openmpi: no
 
 slurm_cluster_name: deepops
 slurm_username: slurm

@@ -23,22 +23,22 @@
 
 - include: hwloc.yml
   tags: hwloc
-  when: slurm_include_hwloc and slurm_hpl
+  when: slurm_include_hwloc or slurm_hpl
 
 - include: pmix.yml
   tags: pmix
-  when: slurm_include_pmix and slurm_hpl
+  when: slurm_include_pmix or slurm_hpl
 
 - include: build.yml
   tags: build
 
 - include: openblas.yml
   tags: openblas
-  when: slurm_include_openblas and slurm_hpl
+  when: slurm_include_openblas or slurm_hpl
 
 - include: openmpi.yml
   tags: openmpi
-  when: slurm_include_openmpi and slurm_hpl
+  when: slurm_include_openmpi or slurm_hpl
 
 - name: create slurm user home
   file:
