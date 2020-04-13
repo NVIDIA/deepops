@@ -31,6 +31,16 @@
 # Install Slurm
 - include: slurm.yml
 
+# Install monitoring tools
+- include: prometheus.yml hostlist=slurm-master
+  when: slurm_enable_monitoring
+- include: grafana.yml hostlist=slurm-master
+  when: slurm_enable_monitoring
+- include: prometheus-slurm-exporter.yml hostlist=slurm-master
+  when: slurm_enable_monitoring
+- include: nvidia-dcgm-exporter.yml hostlist=slurm-node
+  when: slurm_enable_monitoring
+
 # Install Singularity
 - include: singularity.yml
 

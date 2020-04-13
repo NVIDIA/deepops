@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: "{{ hostlist | default('all') }}"
   become: true
   become_method: sudo
   tasks:
@@ -14,7 +14,7 @@
       tags:
         - docker
 
-- hosts: all
+- hosts: "{{ hostlist | default('all') }}"
   become: true
   become_method: sudo
   roles:
