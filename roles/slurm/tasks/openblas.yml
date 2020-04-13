@@ -39,7 +39,7 @@
 - name: remove openblas packages
   yum:
     name: "{{ item }}"
-    state: present
+    state: absent
   with_items:
     - openblas-devel
     - openblas

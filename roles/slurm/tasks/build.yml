@@ -46,7 +46,7 @@
 - name: remove slurm packages
   yum:
     name: "{{ item }}"
-    state: present
+    state: absent
   with_items:
     - slurm
   when: ansible_os_family == 'RedHat'
