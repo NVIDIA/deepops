@@ -8,4 +8,4 @@ scrape_configs:
         - {{ prometheus_cfg_endpoint_dir }}/*.yml
   - job_name: 'prometheus'
     static_configs:
-      - targets: ['localhost:{{ prometheus_cfg_port }}']
+      - targets: ['localhost:9090']
