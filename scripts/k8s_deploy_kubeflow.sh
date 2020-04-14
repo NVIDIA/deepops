@@ -23,12 +23,12 @@ export KFCTL_FILE=kfctl_v1.0.1-0-gf3edb9b_linux.tar.gz # https://github.com/kube
 export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.0.1/${KFCTL_FILE}"
 
 # Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
-export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/a0f129168c2b58a6ee6700b6914ef8448769a963/kfdef/kfctl_istio_dex.v1.0.1.yaml"
-export CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.0.1.yaml" # https://github.com/kubeflow/manifests/releases/tag/v1.0.1
+export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/a0f129168c2b58a6ee6700b6914ef8448769a963/kfdef/kfctl_istio_dex.v1.0.1.yaml"
+export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.0.1.yaml" # https://github.com/kubeflow/manifests/releases/tag/v1.0.1
 
 # Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
-export NO_AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/d6b267e80b71007f95501eb92d4b961b9dab50f8/kfdef/kfctl_k8s_istio.v1.0.1.yaml"
-export NO_AUTH_CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.v1.0.1.yaml" # https://github.com/kubeflow/manifests/releases/tag/v1.0.1
+export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/d6b267e80b71007f95501eb92d4b961b9dab50f8/kfdef/kfctl_k8s_istio.v1.0.1.yaml"
+export CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.v1.0.1.yaml" # https://github.com/kubeflow/manifests/releases/tag/v1.0.1
 
 
 function help_me() {
@@ -37,8 +37,8 @@ function help_me() {
   echo "-p    Print out the connection info for Kubeflow"
   echo "-d    Delete Kubeflow from your system (skipping the CRDs and istio-system namespace that may have been installed with Kubeflow"
   echo "-D    Full Delete Kubeflow from your system along with all Kubeflow CRDs the istio-system namespace. WARNING, do not use this option if other components depend on istio."
-  echo "-x    Install Kubeflow without multi-user auth (this option is deprecated)"
-  echo "-c    Specify a different Kubeflow config to install with"
+  echo "-x    Install Kubeflow with multi-user auth (this utilizes Dex, the default is no multi-user auth)."
+  echo "-c    Specify a different Kubeflow config to install with (this option is deprecated)"
   echo "-w    Wait for Kubeflow homepage to respond"
 }
 
@@ -56,8 +56,8 @@ function get_opts() {
         KUBEFLOW_WAIT=true
         ;;
       x)
-	CONFIG_URI=${NO_AUTH_CONFIG_URI}
-	CONFIG_FILE=${NO_AUTH_CONFIG_FILE}
+	CONFIG_URI=${AUTH_CONFIG_URI}
+	CONFIG_FILE=${AUTH_CONFIG_FILE}
         ;;
       d)
         KUBEFLOW_DELETE=true
