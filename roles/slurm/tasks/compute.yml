@@ -5,8 +5,6 @@
     name: "{{ item }}"
     state: present
   with_items:
-    - hwloc
-    - hwloc-devel
     - psmisc
     - numactl
   when: ansible_os_family == "RedHat"
