@@ -19,6 +19,17 @@
     gpgkey: "{{ epel_gpgkey }}"
   when: ansible_os_family == "RedHat"
 
+- name: configure alternative library path
+  template:
+    src: ld-slurm.conf.j2
+    dest: /etc/ld.so.conf.d/slurm.conf
+    mode: 0644
+  register: updated_slurm_ld
+
+- name: update ld cache
+  command: ldconfig
+  when: updated_slurm_ld
+
 - include: munge.yml
 
 - include: hwloc.yml
