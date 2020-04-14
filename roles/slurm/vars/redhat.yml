@@ -5,38 +5,25 @@ slurm_build_deps:
   - "@Development Tools"
   - munge-devel
   - munge-libs
-  - readline-devel
-  - openssl
-  - openssl-devel
-  - perl-ExtUtils-MakeMaker
-  - mariadb-devel
-  - mariadb-libs
-  - pam-devel 
-  - libcurl-devel
-  - hwloc
-  - lua
-  - lua-devel
-  - hwloc-devel
-  - freeipmi-devel
-  - numactl
-  - numactl-devel
-  - rrdtool-devel
-  - ncurses-devel
-  - libibmad
-  - libibumad
-  - man2html
-  - python
   - python3
-  - ruby-devel
-  - wget
+  - readline-devel
+  - mariadb-devel
+  - numactl-devel
+  - pam-devel
+  - http-parser-devel
+  - json-c-devel
+  - perl-ExtUtils-MakeMaker
 
 slurm_pmix_deps:
+  - "@Development Tools"
   - libev-devel
   - libevent-devel
 
 slurm_hwloc_deps:
   - "@Development Tools"
+
 slurm_openblas_deps:
   - "@Development Tools"
+
 slurm_openmpi_deps:
   - "@Development Tools"

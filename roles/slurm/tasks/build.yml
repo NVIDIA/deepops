@@ -4,7 +4,7 @@
     slurm_build: yes
 
 - name: check installed slurm version
-  shell: /usr/bin/sinfo --version | awk '{print $2}'
+  shell: "{{ slurm_install_prefix }}/bin/sinfo --version | awk '{print $2}'"
   register: sinfo_version
   ignore_errors: yes
 
@@ -20,6 +20,8 @@
 - name: install build dependencies
   apt:
     name: "{{ item }}"
+    state: present
+    update_cache: yes
   with_items: "{{ slurm_build_deps }}"
   when: ansible_distribution == 'Ubuntu'
 
@@ -27,6 +29,7 @@
   yum:
     name: "{{ item }}"
     state: present
+    update_cache: yes
   with_items: "{{ slurm_build_deps }}"
   when: ansible_os_family == 'RedHat'
 

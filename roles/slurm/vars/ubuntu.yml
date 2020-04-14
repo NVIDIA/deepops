@@ -12,12 +12,15 @@ slurm_build_deps:
   - wget
 
 slurm_pmix_deps:
+  - build-essential
   - libev-dev
   - libevent-dev
 
 slurm_hwloc_deps:
   - build-essential
+
 slurm_openblas_deps:
   - build-essential
+
 slurm_openmpi_deps:
   - build-essential

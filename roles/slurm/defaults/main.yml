@@ -5,7 +5,7 @@ slurm_version: 19.05.6
 slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
 slurm_build_dir: /tmp/slurm-build
 slurm_config_dir: /etc/slurm
-slurm_install_prefix: /usr
+slurm_install_prefix: /usr/local
 
 slurm_hpl: no
 slurm_include_hwloc: yes
