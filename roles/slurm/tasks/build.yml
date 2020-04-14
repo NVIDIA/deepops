@@ -87,7 +87,7 @@
   when: slurm_build
 
 - name: configure
-  command: "./configure --prefix={{ slurm_install_prefix }} --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --without-shared-libslurm"
+  command: "./configure {{ slurm_configure_flags }}"
   args:
     chdir: "{{ slurm_build_dir }}"
   when: slurm_build

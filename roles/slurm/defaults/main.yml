@@ -6,6 +6,7 @@ slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar
 slurm_build_dir: /tmp/slurm-build
 slurm_config_dir: /etc/slurm
 slurm_install_prefix: /usr/local
+slurm_configure_flags:  '--disable-dependency-tracking --disable-debug --disable-x11 --enable-really-no-cray --enable-salloc-kill-cmd --with-hdf5=no --prefix={{ slurm_install_prefix }} --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --without-shared-libslurm --without-rpath'
 
 slurm_hpl: no
 slurm_include_hwloc: yes
@@ -86,3 +87,4 @@ openmpi_src_url: "https://download.open-mpi.org/release/open-mpi/{{ openmpi_tag 
 openmpi_build_dir: /tmp/openmpi-build
 openmpi_install_prefix: '{{ slurm_install_prefix }}'
 openmpi_force_rebuild: no
+openmpi_configure_flags: '--disable-dependency-tracking --disable-getpwuid --prefix={{ openmpi_install_prefix }} --with-pmix=internal'

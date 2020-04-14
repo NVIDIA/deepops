@@ -79,7 +79,7 @@
   when: openmpi_build
 
 - name: configure openmpi
-  command: "./configure --prefix={{ openmpi_install_prefix }}"
+  command: "./configure {{ openmpi_configure_flags }}"
   args:
     chdir: "{{ openmpi_build_dir }}"
   when: openmpi_build
