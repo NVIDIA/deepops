@@ -38,9 +38,9 @@ install_open_ondemand: yes
 ood_install_linuxhost_adapter: yes
 
 servername: '{{ ansible_fqdn }}'
-httpd_port: 9090
+httpd_port: 9050
 httpd_listen_addr_port:
-  - 9090
+  - 9050
 httpd_use_rewrites: false
 node_uri: /node
 rnode_uri: /rnode
