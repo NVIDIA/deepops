@@ -22,8 +22,5 @@ slurm_pmix_deps:
 slurm_hwloc_deps:
   - "@Development Tools"
 
-slurm_openblas_deps:
-  - "@Development Tools"
-
 slurm_openmpi_deps:
   - "@Development Tools"

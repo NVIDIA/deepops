@@ -8,10 +8,8 @@ slurm_config_dir: /etc/slurm
 slurm_install_prefix: /usr/local
 slurm_configure:  './configure --prefix={{ slurm_install_prefix }} --disable-dependency-tracking --disable-debug --disable-x11 --enable-really-no-cray --enable-salloc-kill-cmd --with-hdf5=no --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --without-shared-libslurm --without-rpath'
 
-slurm_hpl: no
 slurm_include_hwloc: yes
 slurm_include_pmix: yes
-slurm_include_openblas: no
 
 slurm_cluster_name: deepops
 slurm_username: slurm
@@ -75,9 +73,3 @@ hwloc_build_dir: /tmp/hwloc-build
 hwloc_install_prefix: "{{ slurm_install_prefix }}"
 hwloc_configure: "./configure --prefix={{ hwloc_install_prefix }} --enable-static --disable-cairo --disable-libxml2 --enable-netloc --enable-plugins"
 hwloc_force_rebuild: no
-
-openblas_version: 0.3.9
-openblas_src_url: "https://github.com/xianyi/OpenBLAS/archive/v{{ openblas_version }}.tar.gz"
-openblas_build_dir: /tmp/openblas-build
-openblas_install_prefix: "{{ slurm_install_prefix }}"
-openblas_force_rebuild: no
