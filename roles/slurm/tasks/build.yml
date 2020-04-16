@@ -87,7 +87,7 @@
   when: slurm_build
 
 - name: configure
-  command: "./configure {{ slurm_configure_flags }}"
+  command: "{{ slurm_configure }}"
   args:
     chdir: "{{ slurm_build_dir }}"
   when: slurm_build

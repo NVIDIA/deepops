@@ -28,7 +28,7 @@
 
 - name: update ld cache
   command: ldconfig
-  when: updated_slurm_ld
+  when: updated_slurm_ld.changed
 
 - include: munge.yml
 
@@ -46,10 +46,6 @@
 - include: openblas.yml
   tags: openblas
   when: slurm_include_openblas or slurm_hpl
-
-- include: openmpi.yml
-  tags: openmpi
-  when: slurm_include_openmpi or slurm_hpl
 
 - name: create slurm user home
   file:

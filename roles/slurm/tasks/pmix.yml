@@ -80,7 +80,7 @@
   when: pmix_build
 
 - name: configure pmix
-  command: "./configure --prefix={{ pmix_install_prefix }}"
+  command: "{{ pmix_configure }}"
   args:
     chdir: "{{ pmix_build_dir }}"
   when: pmix_build

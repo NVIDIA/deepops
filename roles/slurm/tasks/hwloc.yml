@@ -80,7 +80,7 @@
   when: hwloc_build
 
 - name: configure hwloc
-  command: "./configure --prefix={{ hwloc_install_prefix }}"
+  command: "{{ hwloc_configure }}"
   args:
     chdir: "{{ hwloc_build_dir }}"
   when: hwloc_build

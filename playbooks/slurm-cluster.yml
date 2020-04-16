@@ -31,6 +31,9 @@
 # Install Slurm
 - include: slurm.yml
 
+# Install OpenMPI
+- include: openmpi.yml
+
 # Install Singularity
 - include: singularity.yml
 
