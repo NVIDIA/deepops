@@ -5,7 +5,6 @@
 # Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
 slurm_version: 20.02.1
 slurm_install_prefix: /usr/local
-#slurm_hpl: no
 #slurm_user_home: /local/slurm
 slurm_manage_gpus: true
 #slurm_cluster_name: deepops
