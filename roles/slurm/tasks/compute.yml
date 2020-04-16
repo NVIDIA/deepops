@@ -1,6 +1,14 @@
 ---
 
 - name: install dependencies
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - numactl
+  when: ansible_os_family == "Debian"
+
+- name: install dependencies
   yum:
     name: "{{ item }}"
     state: present
