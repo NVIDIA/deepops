@@ -69,7 +69,7 @@ pmix_configure: "./configure --prefix={{ pmix_install_prefix }} --with-hwloc={{ 
 pmix_force_rebuild: no
 
 hwloc_version: 2.2.0
-hwloc_tag: v2.2
+hwloc_tag: "v{{ hwloc_version.split('.')[0] }}.{{ hwloc_version.split('.')[1] }}"
 hwloc_src_url: "https://download.open-mpi.org/release/hwloc/{{ hwloc_tag }}/hwloc-{{ hwloc_version }}.tar.gz"
 hwloc_build_dir: /tmp/hwloc-build
 hwloc_install_prefix: "{{ slurm_install_prefix }}"
