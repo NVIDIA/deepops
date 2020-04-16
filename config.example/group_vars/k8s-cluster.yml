@@ -1,6 +1,9 @@
 ansible_become: true
 kubeadm_enabled: true
 kube_api_anonymous_auth: true
+kube_kubeadm_apiserver_extra_args:
+  service-account-issuer: "kubernetes.default.svc"
+  service-account-signing-key-file: "/etc/kubernetes/ssl/sa.key"
 # Set to false due to kubespray bug: https://github.com/kubernetes-sigs/kubespray/issues/5059
 kubectl_localhost: false
 kubeconfig_localhost: true
