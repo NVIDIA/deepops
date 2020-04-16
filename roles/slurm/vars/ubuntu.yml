@@ -18,6 +18,3 @@ slurm_pmix_deps:
 
 slurm_hwloc_deps:
   - build-essential
-
-slurm_openmpi_deps:
-  - build-essential
