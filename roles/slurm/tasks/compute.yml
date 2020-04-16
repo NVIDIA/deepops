@@ -6,7 +6,7 @@
     state: present
   with_items:
     - numactl
-  when: ansible_os_family == "Debian"
+  when: ansible_distribution == 'Ubuntu'
 
 - name: install dependencies
   yum:
