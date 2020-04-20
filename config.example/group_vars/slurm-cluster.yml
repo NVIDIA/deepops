@@ -1,3 +1,6 @@
+################################################################################
+# Slurm                                                                        #
+################################################################################
 # Slurm job scheduler configuration
 # Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
 #slurm_user_home: /local/slurm
@@ -12,3 +15,32 @@ slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 #slurm_install_pyxis: yes
 slurm_controller_host: "{{ groups['slurm-master'][0] }}"
 slurm_compute_hosts: "{{ groups['slurm-node'] }}"
+slurm_enable_monitoring: true
+
+################################################################################
+# NFS                                                                          #
+################################################################################
+# Export /home from the Slurm login node by default
+# A shared directory is required by Open OnDemand
+nfs_exports:
+  - path: /home
+    options: "*(rw,sync,no_root_squash)"
+nfs_mounts:
+  - mountpoint: /home
+    server: '{{ groups["slurm-master"][0] }}'
+    path: /home
+    options: async,vers=3
+
+################################################################################
+# Open OnDemand                                                                #
+################################################################################
+install_open_ondemand: yes
+ood_install_linuxhost_adapter: yes
+
+servername: '{{ ansible_fqdn }}'
+httpd_port: 9050
+httpd_listen_addr_port:
+  - 9050
+httpd_use_rewrites: false
+node_uri: /node
+rnode_uri: /rnode

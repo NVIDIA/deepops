@@ -1,0 +1,28 @@
+---
+# playbook for create NetworkAttachmentDefinition for Kubernetes Mellanox RDMA Device plugin in SRIOV mode
+# #
+# # Author: Vitaliy Razinkov <vitaliyra@mellanox.com>
+# #
+- name: Create netattdef
+  vars:
+    config_json: |
+      cniVersion: "0.3.1"
+      type: "sriov"
+      spoofChk: "off"
+      name: "{{ item.network_name }}"
+      vlan: {{ item.vlan_id |int }}
+      ipam:
+        type: "dhcp"
+  k8s:
+    state: present
+    definition:
+      apiVersion: "k8s.cni.cncf.io/v1"
+      kind: NetworkAttachmentDefinition
+      metadata:
+        name: "{{ item.network_name }}"
+        namespace: default
+        annotations:
+          k8s.v1.cni.cncf.io/resourceName: "intel.com/{{ item.res_name }}"
+      spec:
+        config: "{{ config_json | from_yaml | to_nice_json }}"
+  run_once: true

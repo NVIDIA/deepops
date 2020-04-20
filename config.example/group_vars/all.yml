@@ -7,6 +7,20 @@
 #
 
 ################################################################################
+# PROXY
+################################################################################
+# Proxy Variables needed for scripts, ansible, etc.
+# http_proxy: http://10.0.2.5:3128
+# https_proxy: http://10.0.2.5:3128
+# no_proxy: localhost,cluster.local,127.0.0.1,::1,10.0.2.10,10.0.2.20,10.0.2.30
+
+# proxy_env:
+      # http_proxy: '{{ http_proxy }}'
+      # https_proxy: '{{ https_proxy }}'
+      # no_proxy: '{{ no_proxy }}'
+
+
+################################################################################
 # NETWORK                                                                      #
 ################################################################################
 # DNS config
@@ -15,10 +29,15 @@
 #dns_config_search: [example.com]
 
 # NTP configuration
-# Playbook: ntp-client
-#chrony_timezone: "America/Los_Angeles"
-#chrony_config_server:
-#  - 0.pool.ntp.org
+# Playbook: chrony-client
+chrony_service_state: "started"
+chrony_service_enabled: "yes"
+chrony_timezone: "Etc/UTC"
+chrony_config_server:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+  - 2.pool.ntp.org
+  - 3.pool.ntp.org
 
 
 ################################################################################
@@ -99,12 +118,14 @@ gpu_clock_lock: "1507,1507"
 ################################################################################
 # CONTAINER RUNTIME                                                            #
 ################################################################################
-# Docker config
-# Playbook: docker, nvidia-docker
-docker_daemon_json:
-  # Docker's default subnet is 172.17.0.0/16
-  # Pick a smaller subnet, which is also less likely to conflict with corporate addresses.
-  bip: 192.168.99.1/24
+# Docker configuration
+# Playbook: docker, nvidia-docker, k8s-cluster
+# 
+# For supported Docker versions, see: kubespray/roles/container-engine/docker/vars/*
+docker_version: '18.09'
+docker_dns_servers_strict: no
+docker_storage_options: -s overlay2
+#docker_options: "--bip=192.168.99.1/24"
 
 # Enroot configuration
 # Playbook: slurm-perf, slurm-perf-cluster
@@ -126,6 +147,17 @@ enroot_environ_config_files:
   - filename: 50-mpi.env
     content: |
       OMPI_MCA_btl_tcp_if_exclude=lo,docker0,ib0,ib1,ib2,ib3
+
+# Singularity configuration
+# Playbook: singularity, slurm-cluster
+# Singularity target version
+singularity_version: "3.5.3"
+singularity_conf_path: "/etc/singularity/singularity.conf"
+bind_paths: []
+  # example:
+  #- /mnt/shared
+golang_install_dir: '/opt/go/{{ golang_version }}'
+golang_gopath: /opt/go/packages
 
 
 ################################################################################

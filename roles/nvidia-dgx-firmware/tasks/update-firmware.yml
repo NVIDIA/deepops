@@ -1,0 +1,50 @@
+---
+
+- include: check-firmware.yml
+
+- name: Check if force update requested
+  set_fact:
+    force_parameter: '-f'
+  when: force_update
+
+- name: Update firmware if required
+  block:
+    - name: Update firmware if required
+      command: "docker run --rm -ti --privileged -v /:/hostfs -e auto=1 -e COLUMNS=200 -e LINES=300 {{ firmware_update_repo }}:{{ firmware_update_tag }} set_flags AUTO=1 update_fw {{ force_parameter }} {{ target_fw }}"
+      register: update_output
+      when:
+        - "'no' in firmware_versions.stdout"
+      failed_when: "'fail' in update_output.stdout"
+  rescue:
+    - name: Show failure message
+      debug:
+        var: update_output.stdout
+    - include: transfer-logs.yml
+
+- name: Reboot if necessary
+  shell: sleep 2 && /sbin/shutdown -r now "Reboot required"
+  async: 1
+  poll: 0
+  when: " 'no' in firmware_versions.stdout and 'reboot required: yes' in update_output.stdout"
+  changed_when: False
+
+- name: Wait for server to reboot
+  wait_for_connection:
+    delay=15
+    timeout={{ reboot_timeout }}
+  when: " 'no' in firmware_versions.stdout and 'reboot required: yes' in update_output.stdout"
+
+- name: Ensure firmware was updated and everything is up-to-date. Skip if force update was used.
+  block:
+    - include: check-firmware.yml
+    - name: "Ensure all fw versions are up-to-date after the update - skip if force update was used or specific target fw was updated"
+      debug:
+        msg: ""
+      failed_when: "'no' in firmware_versions.stdout"
+  when: "target_fw == 'all' and force_parameter == '' and not 'fail' in update_output.stdout"
+  rescue:
+    - name: Show debug information for firmware update mismatch
+      debug:
+        var: firmware_versions.stdout
+    - include: transfer-logs.yml
+

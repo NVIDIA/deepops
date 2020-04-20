@@ -12,14 +12,16 @@ Set up a virtual cluster with DeepOps. Useful for...
 
 The host machine should have enough resources to fufill the minimum VM needs...
 
-Total: 6 vCPU, 20 GB RAM, 96 GB Storage
+Total: 8 vCPU, 22 GB RAM, 96 GB Storage
 * virtual-login01: 2 vCPU, 2GB RAM and 32GB Storage
-* virtual-mgmt01: 2 vCPU, 2GB RAM and 32GB Storage
+* virtual-mgmt01: 4 vCPU, 4GB RAM and 32GB Storage
 * virtual-gpu01: 2 vCPU, 16GB RAM and 32GB Storage
+
+If deploying kubeflow or another resource-intensive application in this environment, more vCPU, RAM, and storage resouces must be allocated to virtual-mgmt01 especially.
 
 ### Operating System Requirements
 
-* Ubuntu 16.04 (or greater)
+* Ubuntu 18.04 (or greater)
 * CentOS 7.6 (or greater)
 
 Running DeepOps virtually assumes that the host machine's OS is an approved OS. If this is not the case, the scripts used in the steps below may be modified to work with a different OS.

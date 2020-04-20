@@ -1,7 +1,0 @@
----
-
-- name: Remove firmware container image
-  command: "docker rmi -f {{ firmware_update_container }}"
-  ignore_errors: yes
-  changed_when: False
-

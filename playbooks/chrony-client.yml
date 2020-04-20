@@ -5,7 +5,7 @@
   tasks:
     - name: Configure Chrony client
       include_role:
-        name: unxnn.chrony
+        name: DeepOps.chrony
 
     - name: Set timezone
       shell: "timedatectl set-timezone {{ chrony_timezone }}"

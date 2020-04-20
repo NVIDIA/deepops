@@ -10,11 +10,11 @@ deepops_mirror_host: "specify-ip-here"
 # Port numbers below assume that the mirrors are configured using the defaults
 # in the offline-repo-mirrors Ansible role.
 
-deepops_docker_mirror: "{{ deepops_mirror_host }}:5000"
-deepops_yum_mirror: "http://{{ deepops_mirror_host }}:8001"
-deepops_charts_mirror: "http://{{ deepops_mirror_host }}:8002"
-deepops_pypi_mirror: "http://{{ deepops_mirror_host }}:8003"
-deepops_misc_mirror: "http://{{ deepops_mirror_host }}:8004"
+deepops_docker_mirror: "{{ deepops_mirror_host }}:{{ docker_local_registry_port }}"
+deepops_yum_mirror: "http://{{ deepops_mirror_host }}:{{ yum_mirror_port }}"
+deepops_charts_mirror: "http://{{ deepops_mirror_host }}:{{ helm_port }}"
+deepops_pypi_mirror: "http://{{ deepops_mirror_host }}:{{ pip_port }}"
+deepops_misc_mirror: "http://{{ deepops_mirror_host }}:{{ nginx_misc_port }}"
 
 # Individual software sources are specified below. If there are particular
 # objects which are not present at one of the mirrors defined above, or if

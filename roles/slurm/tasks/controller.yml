@@ -61,14 +61,6 @@
     - /var/spool/slurm/ctld
     - /var/log/slurm
 
-- name: copy slurmdbd service file
-  copy:
-    src: "{{ item }}"
-    dest: "/etc/systemd/system/{{ item }}"
-  with_items:
-    - slurmdbd.service
-    - slurmctld.service
-
 - name: copy configuration files
   template:
     src: "{{ item }}"

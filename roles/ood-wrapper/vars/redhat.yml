@@ -1,0 +1,31 @@
+install_from_src: false
+
+ood_apache_service_name: httpd24-httpd.service
+ood_htpasswd_file: /opt/rh/httpd24/root/etc/httpd/.htpasswd
+
+ood_url_turbovnc_pkg: https://downloads.sourceforge.net/project/turbovnc/2.2.4/turbovnc-2.2.4.x86_64.rpm
+
+ood_master_sw_deps:
+  - lz4-devel
+  - unzip
+  - python-websockify
+
+ood_client_sw_deps:
+  - lz4-devel
+  - unzip
+  - nmap
+  - python-websockify
+  - '@xfce4'
+  - xfce4-session
+  - xfce4-settings
+  - xfce4-terminal
+  - xfdesktop
+  - gtk-xfce-engine
+  - gtk2-engines
+  - python2-jupyter-core
+  - python2-jupyroot
+  - python36-jupyter-core
+  - python36-jupyroot
+  - dbus-x11
+  - firefox
+  - cuda-nvvp-10-1

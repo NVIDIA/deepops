@@ -36,6 +36,15 @@ Instructions for deploying a GPU cluster with Kubernetes
    
    # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
    ```
+
+   Note that as part of the kubernetes deployment process, the default behavior is to also deploy the [NVIDIA k8s-device-plugin](https://github.com/NVIDIA/k8s-device-plugin) for GPU support. The [GPU Operator](https://github.com/NVIDIA/gpu-operator) is an alternative deployment method, which will deploy the device plugin and leverage driver containers within kubernetes. To enable the GPU Operator in DeepOps...
+
+   ```sh
+   vi config/group_vars/k8s-cluster.yml
+
+   # set: deepops_gpu_operator_enabled: true
+   ```
+
 4. Verify the configuration
 
    ```sh
@@ -185,13 +194,11 @@ More information on this topic may be found in the [Kubespray docs](https://gith
 Sometimes a cluster will get into a bad state - perhaps one where certs are misconfigured or different across nodes. When this occurs it's often helpful to completely reset the cluster. To accomplish this, run the `remove-node.yml` playbook for all k8s nodes...
 
 ```sh
-# NOTE: If SSH requires a password, add: `-k`
-# NOTE: If sudo on remote machine requires a password, add: `-K`
-# NOTE: If SSH user is different than current user, add: `-u ubuntu`
-ansible-playbook kubespray/remove-node.yml --extra-vars "node=k8s-cluster"
+# NOTE: Explicitly list ALL nodes in the cluster. Do not use an ansible group name such as k8s-cluster.
+ansible-playbook kubespray/remove-node.yml --extra-vars "node=nodename0,nodename1,<...>"
 ```
 
-> NOTE: There is also a Kubespray `reset.yml` playbook, but this does not do a complete tear-down of the cluster.
+> NOTE: There is also a Kubespray `reset.yml` playbook, but this does not do a complete tear-down of the cluster. Certificates and other artifacts might persist on each host, leading to a problematic redeployment in the future. The `remove-node.yml` playbook runs `reset.yml` as part of the process.
 
 ### Upgrading the Cluster
 
