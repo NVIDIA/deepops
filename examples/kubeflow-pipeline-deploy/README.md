@@ -1,8 +1,8 @@
-# NGC TensorRT Inference Server Kubeflow Pipeline
+# NGC Triton Inference Server Kubeflow Pipeline
 
-This Kubeflow pipeline will deploy a TensorRT Inference Server into a Kubernetes cluster. Models are contained within and models directory in an NFS server.
+This Kubeflow pipeline will deploy a Triton Inference Server into a Kubernetes cluster. Models are contained within and models directory in an NFS server.
 
-This pipeline aids in the development and testing of end-to-end AI workloads. At the end of an AI training job, this pipeline can be executed to deploy a new TensorRT Inference Server. This will expose a new endpoint that can be integrated into other components of that application running in QA and development environments.
+This pipeline aids in the development and testing of end-to-end AI workloads. At the end of an AI training job, this pipeline can be executed to deploy a new Triton Inference Server. This will expose a new endpoint that can be integrated into other components of that application running in QA and development environments.
 
 ## Overview
 
@@ -21,7 +21,7 @@ The Pipeline expects the root of the NFS mount to have the following three direc
 
 ### Example models:
 
-To download models that will work out of the box see [the TensorRT Inference Serve guid](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/run.html#example-model-repository)
+To download models that will work out of the box see [the Triton Inference Server guide](https://docs.nvidia.com/deeplearning/sdk/triton-inference-server-master-branch-guide/docs/run.html#example-model-repository)
 
 ### Usage
 
@@ -34,12 +34,12 @@ To download models that will work out of the box see [the TensorRT Inference Ser
 
 * nfs_server, The NFS server. This can be an IP address or a hostname (such as nfs-server-01).
 * nfs_export_path, the path to mount on the nfs server (the default configure the built-in DeepOps NFS server deployment is /export/shared).
-* models_dir_path, the path to the TRTIS models directory on the NFS mount (such as resnet50_netdef)
+* models_dir_path, the path to the TRITON models directory on the NFS mount (such as resnet50_netdef)
 
 ### Compiling
 
 ```sh
-python3 trtis.py
+python3 triton.py
 ```
 
 ## Quickstart
@@ -69,9 +69,9 @@ mkdir -p /export/shared/data
 mkdir -p /export/shared/checkpoints
 ```
 
-6. Download pretrained models (see the [guide](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/run.html#example-model-repository) for more up-to-date steps).
+6. Download pretrained models (see the [guide](https://docs.nvidia.com/deeplearning/sdk/triton-inference-server-master-branch-guide/docs/run.html#example-model-repository)
 ```sh
-git clone -b r20.03 https://github.com/NVIDIA/tensorrt-inference-server.git 
+git clone -b v1.12.0 https://github.com/NVIDIA/triton-inference-server.git
 bash docs/examples/fetch_models.sh
 cp -r docs/examples/model_repository/ /export/shared/results/models
 ```
@@ -79,10 +79,10 @@ cp -r docs/examples/model_repository/ /export/shared/results/models
 7. Compile the pipeline with `kfp`.
 ```sh
 pip3 install kfp
-python3 trtis.py
+python3 triton.py
 ```
 
-8. Upload the Generated trtis.py.tar.gz file to pipeline page
+8. Upload the Generated triton.py.tar.gz file to pipeline page
 ![upload](kubeflow-pipelines-0.PNG)
 ![view](kubeflow-pipelines-1.PNG)
 
@@ -95,7 +95,7 @@ python3 trtis.py
 ![execute](kubeflow-pipelines-2.PNG)
 ![configure](kubeflow-pipelines-3.PNG)
 
-10. Connect to your management server and run the [example client](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/client_example.html#section-getting-the-client-examples).
+10. Connect to your management server and run the [example client](https://docs.nvidia.com/deeplearning/sdk/triton-inference-server-master-branch-guide/docs/client_example.html#section-getting-the-client-examples)
 ```sh
-docker run -it --rm  tensorrtserver_client /workspace/install/bin/image_client -m resnet50_netdef images/mug.jpg
+docker run -it --rm tritonserver_client /workspace/install/bin/image_client -m resnet50_netdef images/mug.jpg
 ```
