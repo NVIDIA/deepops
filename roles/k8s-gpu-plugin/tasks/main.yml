@@ -1,23 +1,20 @@
 ---
-- name: install virtualenv
-  apt:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - "virtualenv"
-    - "python-setuptools"
-  when: ansible_distribution == 'Ubuntu'
+- name: pull GPU device plugin file
+  get_url:
+    url: "{{ nvidia_k8s_device_plugin_def }}"
+    dest: "{{ nvidia_k8s_device_plugin_file }}"
+    mode: 0755
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
 
-- name: create location for python virtual env
-  file:
-    path: "{{ deepops_dir }}"
-    state: directory
-  when: ansible_distribution == 'Ubuntu'
+- name: get contents of device plugin definition
+  command: "cat {{ nvidia_k8s_device_plugin_file }}"
+  register: nvidia_k8s_device_plugin_contents
 
 - name: create GPU device plugin
   k8s:
     state: present
-    definition: "{{ lookup('url', nvidia_k8s_device_plugin_def, split_lines=False) }}"
+    ## definition: "{{ lookup('file', nvidia_k8s_device_plugin_file, split_lines=False) }}"
+    definition: "{{ nvidia_k8s_device_plugin_contents.stdout }}"
   run_once: true
   environment:
     PYTHONHOME: '{{ deepops_venv }}'
@@ -26,6 +23,7 @@
 - name: create GPU device plugin
   k8s:
     state: present
-    definition: "{{ lookup('url', nvidia_k8s_device_plugin_def, split_lines=False) }}"
+    ## definition: "{{ lookup('file', nvidia_k8s_device_plugin_file, split_lines=False) }}"
+    definition: "{{ nvidia_k8s_device_plugin_contents.stdout }}"
   run_once: true
   when: ansible_os_family == 'RedHat'

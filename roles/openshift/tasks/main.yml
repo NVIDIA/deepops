@@ -7,21 +7,28 @@
     - "virtualenv"
     - "python-setuptools"
   when: ansible_distribution == 'Ubuntu'
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
 
-- name: create location for python virtual env
+- name: create location for deepops files
   file:
     path: "{{ deepops_dir }}"
     state: directory
-  when: ansible_distribution == 'Ubuntu'
 
 - name: install openshift python client for k8s_raw module
   pip:
     name: openshift
     virtualenv: "{{ deepops_venv }}"
   when: ansible_distribution == 'Ubuntu'
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
+- name: install epel-release for CentOS
+  yum:
+    name: epel-release
+  when: ansible_distribution == "CentOS"
 
   # TODO: Verify that RHEL  does not require venv
 - name: install openshift python client for k8s_raw module
   yum:
     name: python2-openshift
   when: ansible_os_family == 'RedHat'
+  environment: "{{proxy_env if proxy_env is defined else {}}}"

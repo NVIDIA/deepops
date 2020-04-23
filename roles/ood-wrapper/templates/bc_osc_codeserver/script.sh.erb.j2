@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+<%-
+    # Ensure that code-server always starts up in either a user defined directory or the home directory
+    working_dir = Pathname.new(context.working_dir)
+    if ! working_dir.exist? || working_dir.to_s.empty?
+        working_dir = Pathname.new(ENV['HOME'])
+    elsif working_dir.file?
+        working_dir = working_dir.parent
+    end
+%>
+
+# Setup environment
+CODE_SERVER="${CODE_SERVER:-/usr/local/bin/code-server}"
+CODE_SERVER_DATAROOT="$HOME/.local/share/bc_osc_codeserver"
+
+# Ensure a dataroot for Code Server
+mkdir -p "$CODE_SERVER_DATAROOT/extensions"
+
+# Expose the password to the server
+export PASSWORD="$password"
+
+# VSCode complains that system git is too old
+#module load git
+
+#
+# Start Code Server
+#
+echo $CODE_SERVER
+
+# An arbitrary path...
+$CODE_SERVER \
+    --auth=password \
+    --port="$port" \
+    --disable-telemetry \
+    --extra-extensions-dir="$CODE_SERVER_DATAROOT/extensions" \
+    --user-data-dir="$CODE_SERVER_DATAROOT" \
+    "<%= working_dir.to_s %>"

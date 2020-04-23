@@ -19,6 +19,14 @@ if [ "${DEEPOPS_OFFLINE}" -ne 0 ]; then
 	ansible_extra_args="-e "@${VIRT_DIR}/config/offline_repo_vars.yml" --skip-tags configure_docker_repo -vv"
 fi
 
+# Use ansible install in virtualenv
+# NOTE: Added here because this script is also called from Jenkinsfile and not just cluster_up.sh
+if [ -d env ] ; then
+    . env/bin/activate
+else
+    echo "WARNING: virtual env not detected, using system python install"
+fi
+
 # Configure Slurm cluster
 ansible-playbook \
 	-i "${VIRT_DIR}/config/inventory" \

@@ -1,7 +1,0 @@
----
-
-- include: load-image.yml
-- include: update-firmware.yml
-  vars:
-    force_parameter: ''
-- include: clean.yml

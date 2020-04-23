@@ -1,5 +1,9 @@
 pipeline {
   agent any
+  environment {
+    DEEPOPS_FULL_INSTALL = ''
+    DEEPOPS_VAGRANT_OS = 'ubuntu'
+  }
   stages {
     stage('Stop Any Old Builds') {
       steps {
@@ -16,6 +20,11 @@ pipeline {
             bash -x ./.jenkins-scripts/munge-files.sh
           '''
 
+          echo "Vagrant Up"
+          sh '''
+            bash -x ./.jenkins-scripts/vagrant-startup.sh
+          '''
+
           echo "Cluster Up"
           sh '''
             bash -x ./.jenkins-scripts/test-cluster-up.sh
@@ -23,7 +32,7 @@ pipeline {
 
           echo "Verify we can run a GPU job"
           sh '''
-            bash -x ./.jenkins-scripts/run-gpu-job.sh
+            timeout 500 bash -x ./.jenkins-scripts/run-gpu-job.sh
           '''
 
           echo "Verify ingress config"
@@ -33,14 +42,12 @@ pipeline {
 
           echo "Set up Slurm"
           sh '''
-            pwd
-            cd virtual
-            ./scripts/setup_slurm.sh
+            bash -x ./.jenkins-scripts/test-setup-slurm.sh
           '''
 
           echo "Test Slurm"
           sh '''
-            bash -x ./.jenkins-scripts/test-slurm-job.sh
+            timeout 60 bash -x ./.jenkins-scripts/test-slurm-job.sh
           '''
         }
       }

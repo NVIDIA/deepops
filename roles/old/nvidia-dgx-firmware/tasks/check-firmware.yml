@@ -1,6 +1,0 @@
----
-
-- name: Check firmware version
-  command: "docker run --rm --privileged  -v /:/hostfs {{ firmware_update_container }} show_version"
-  register: firmware_versions
-  changed_when: "'no' in firmware_versions.stdout"

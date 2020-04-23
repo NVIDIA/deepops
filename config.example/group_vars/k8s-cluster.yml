@@ -9,8 +9,6 @@ kubectl_localhost: false
 kubeconfig_localhost: true
 helm_enabled: true
 tiller_node_selectors: "node-role.kubernetes.io/master=''"
-docker_dns_servers_strict: no
-docker_storage_options: -s overlay2
 
 artifacts_dir: "{{ inventory_dir }}/artifacts"
 
@@ -22,28 +20,14 @@ kubelet_flexvolumes_plugins_dir: /usr/libexec/kubernetes/kubelet-plugins/volume/
 # Docker configuration.
 deepops_gpu_operator_enabled: false
 
-# NVIDIA Docker Configuration
-# Setting reference: https://docs.nvidia.com/deeplearning/dgx/user-guide/index.html
-docker_daemon_json:
-  bip: 192.168.99.1/24
-  default-shm-size: 1G
-  default-ulimits:
-    memlock:
-      name: memlock
-      hard: -1
-      soft: -1
-    stack:
-      name: stack
-      hard: 67108864
-      soft: 67108864
-  default-runtime: nvidia
-  runtimes:
-    nvidia:
-      path: /usr/bin/nvidia-container-runtime
-      runtimeArgs: []
-
 # When set to true, enables the PodSecurityPolicy admission controller and
 # defines two policies: privileged (applying to all resources in kube-system
 # namespace and kubelet) and restricted (applying all other namespaces).
 # Addons deployed in kube-system namespaces are handled.
 #podsecuritypolicy_enabled: false
+
+# kubespray v2.12.2 deploys dashboard 1.10.1 which is no longer supported in k8s 1.16
+# https://github.com/kubernetes/dashboard/issues/4401#issuecomment-540476478
+dashboard_enabled: true
+dashboard_image_tag: "v2.0.0-rc5"
+dashboard_image_repo: "kubernetesui/dashboard"

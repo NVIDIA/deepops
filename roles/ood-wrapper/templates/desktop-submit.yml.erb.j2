@@ -1,0 +1,6 @@
+---
+script:
+  native:
+    - "--gpus=<%= bc_num_gpus.blank? ? {{ ood_desktop_app_def_gpus }} : bc_num_gpus.to_i %>"
+    - "--cpus-per-gpu={{ ood_desktop_app_cpus_per_gpu }}"
+    - "--mem-per-gpu={{ ood_desktop_app_mem_per_gpu }}"

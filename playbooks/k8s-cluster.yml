@@ -29,14 +29,35 @@
   tags:
     - bootstrap
 
+# Configure Chrony (NTP) sync
+- include: chrony-client.yml
+
 # Install the OpenShift API libraries required by the GPU plugin
 - include: bootstrap-openshift.yml
+  tags:
+    - bootstrap
+
+# Install 'sshpass' program for: https://github.com/ansible/ansible/issues/56629
+- hosts: all
+  gather_facts: true
+  tasks:
+    - name: install sshpass
+      package:
+        name: sshpass
+        state: present
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  tags:
+    - bootstrap
 
 # Install Kubernetes
 # for configuration, see: config/group_vars/k8s-cluster.yml
 - include: ../kubespray/cluster.yml
   tags:
     - k8s
+  vars:
+    # override deprecated dockerproject repo; old docker repo broken as of 03.04.2020
+    dockerproject_rh_repo_base_url: 'https://download.docker.com/linux/centos/7/$basearch/stable'
+    dockerproject_rh_repo_gpgkey: 'https://download.docker.com/linux/centos/gpg'
 
 # Disable swap (required for k8s), kubespray method doesn't quite cut it
 - hosts: all
@@ -177,3 +198,5 @@
       run_once: true
   tags:
     - local
+
+

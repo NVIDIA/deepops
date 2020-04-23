@@ -6,7 +6,7 @@ ROOT_DIR="${SCRIPT_DIR}/.."
 CONFIG_DIR="${ROOT_DIR}/config"
 
 # Specify credentials for the default user.
-# TODO: Add support for this, Kubeflow user/pass now needs to be hashed and added to the CONFIG
+# TODO: Dynamically sed/hash these value into the CONFIG, these are currently not used
 export KUBEFLOW_USER_EMAIL="${KUBEFLOW_USER_EMAIL:-admin@kubeflow.org}"
 export KUBEFLOW_PASSWORD="${KUBEFLOW_PASSWORD:-12341234}"
 

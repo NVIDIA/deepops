@@ -4,7 +4,15 @@
   gather_facts: False
   tasks:
     # Fortunately, python is a dependency of yum. So RedHat systems always have it.
-    - name: install python
+    - name: install python (no proxy)
       raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
       register: output
       changed_when: output.stdout != ""
+      when: proxy_env is not defined
+
+    - name: install python (using proxy)
+      raw: test -e /usr/bin/python || (https_proxy="{{ https_proxy }}" http_proxy="{{ http_proxy }}" apt -y update && https_proxy="{{ https_proxy }}" http_proxy="{{ http_proxy }}" apt install -y python-minimal)
+      register: output
+      changed_when: output.stdout != ""
+      when: proxy_env is defined
+
