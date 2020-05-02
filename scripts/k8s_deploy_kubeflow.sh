@@ -19,16 +19,16 @@ export KFCTL="${KFCTL:-${CONFIG_DIR}/kfctl}"
 export KUBEFLOW_DEL_SCRIPT="${KF_DIR}/deepops-delete-kubeflow.sh"
 
 # Download URLs and versions # XXX: kfctl introcuded a version mismatch, this is naming only
-export KFCTL_FILE=kfctl_v1.0.1-0-gf3edb9b_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.0.1
-export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.0.1/${KFCTL_FILE}"
+export KFCTL_FILE=kfctl_v1.0.2-0-ga476281_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.0.2
+export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.0.2/${KFCTL_FILE}"
 
 # Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
-export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/a0f129168c2b58a6ee6700b6914ef8448769a963/kfdef/kfctl_istio_dex.v1.0.1.yaml"
-export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.0.1.yaml" # https://github.com/kubeflow/manifests/releases/tag/v1.0.1
+export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/55d1a9c84ca796f9a098bbeec406acbdcfa6aebe/kfdef/kfctl_istio_dex.v1.0.2.yaml"
+export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.0.2.yaml" # https://github.com/kubeflow/manifests/releases/tag/v1.0.2
 
 # Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
-export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/d6b267e80b71007f95501eb92d4b961b9dab50f8/kfdef/kfctl_k8s_istio.v1.0.1.yaml"
-export CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.v1.0.1.yaml" # https://github.com/kubeflow/manifests/releases/tag/v1.0.1
+export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/55d1a9c84ca796f9a098bbeec406acbdcfa6aebe/kfdef/kfctl_k8s_istio.v1.0.2.yaml"
+export CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.v1.0.2.yaml" # https://github.com/kubeflow/manifests/releases/tag/v1.0.2
 
 
 function help_me() {
