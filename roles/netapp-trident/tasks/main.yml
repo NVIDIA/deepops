@@ -1,0 +1,124 @@
+---
+# tasks file for netapp-trident role
+
+- name: Install pip
+  package:
+    name:
+      - python3
+      - python3-pip
+    state: present
+
+- name: Install python dependencies
+  pip:
+    name:
+      - openshift>=0.6
+      - PyYAML>=3.11
+    executable: pip3
+
+- name: Download and extract Trident installer
+  unarchive:
+    src: https://github.com/NetApp/trident/releases/download/v20.04.0/trident-installer-20.04.0.tar.gz
+    dest: /root
+    remote_src: yes
+
+- name: Create Trident namespace
+  k8s:
+    state: present
+    kind: Namespace
+    name: trident
+    wait: yes
+  run_once: true
+
+- name: Create TridentProvisioner CRD (K8s version >= 1.16)
+  k8s:
+    state: present
+    src: /root/trident-installer/deploy/crds/trident.netapp.io_tridentprovisioners_crd_post1.16.yaml
+    wait: yes
+  when: k8s_version >= 1.16
+  run_once: true
+
+- name: Create TridentProvisioner CRD (K8s version < 1.16)
+  k8s:
+    state: present
+    src: /root/trident-installer/deploy/crds/trident.netapp.io_tridentprovisioners_crd_pre1.16.yaml
+    wait: yes
+  when: k8s_version < 1.16
+  run_once: true
+
+- name: Deploy Trident operator resources
+  k8s:
+    state: present
+    src: /root/trident-installer/deploy/bundle.yaml
+    wait: yes
+  run_once: true
+
+- name: Create TridentProvisioner CR
+  k8s:
+    state: present
+    src: /root/trident-installer/deploy/crds/tridentprovisioner_cr.yaml
+    wait: yes
+  run_once: true
+
+- name: Wait until trident-csi Deployment exists
+  k8s_info:
+    kind: Deployment
+    namespace: trident
+    name: trident-csi
+  register: deployment_trident_csi
+  until: deployment_trident_csi.resources | length == 1
+  retries: 24
+  delay: 5
+  run_once: true
+
+- name: Pause for 10 seconds
+  pause:
+    seconds: 10
+
+- name: Wait until trident-csi Deployment is ready
+  k8s_info:
+    kind: Deployment
+    namespace: trident
+    name: trident-csi
+  register: deployment_trident_csi
+  until: deployment_trident_csi.resources[0].status.availableReplicas == 1
+  retries: 24
+  delay: 5
+  run_once: true
+
+- name: Copy backend config file(s) to control node
+  template:
+    src: backend.j2
+    dest: /root/trident-installer/backend-{{ item.backendName }}.json
+  with_items: "{{ backends_to_create }}"
+  when: create_backends == true
+  run_once: true
+
+- name: Create Trident backend(s)
+  command: /root/trident-installer/tridentctl -n trident create backend -f /root/trident-installer/backend-{{ item.backendName }}.json
+  with_items: "{{ backends_to_create }}"
+  when: create_backends == true
+  run_once: true
+
+- name: Create NetApp StorageClass(es)
+  k8s:
+    state: present
+    definition: "{{ item }}"
+  with_items: "{{ storageClasses_to_create }}"
+  when: create_StorageClasses == true
+  run_once: true
+
+- name: Fetch tridentctl from control node
+  fetch:
+    src: /root/trident-installer/tridentctl
+    dest: "{{ tridentctl_copy_to_directory }}"
+    flat: yes
+  when: copy_tridentctl_to_localhost == true
+  run_once: true
+
+- name: Make tridentctl on localhost executable
+  delegate_to: localhost
+  become: false
+  file:
+    path: "{{ tridentctl_copy_to_directory }}/tridentctl"
+    mode: '0755'
+  when: copy_tridentctl_to_localhost == true
