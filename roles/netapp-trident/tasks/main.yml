@@ -1,12 +1,21 @@
 ---
 # tasks file for netapp-trident role
 
-- name: Install pip
+- name: Install pip (Ubuntu)
   package:
     name:
-      - python3
+      - python-pip
       - python3-pip
     state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install pip (Red Hat / CentOs)
+  package:
+    name:
+      - python2-pip
+      - python3-pip
+    state: present
+  when: ansible_os_family == "RedHat"
 
 - name: Install python dependencies
   pip:

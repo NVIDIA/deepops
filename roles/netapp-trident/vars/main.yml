@@ -1,4 +1,0 @@
----
-# vars file for netapp-trident role
-
-ansible_python_interpreter: python3
