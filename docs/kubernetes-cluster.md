@@ -120,34 +120,34 @@ Deploy NetApp Trident for services that require persistent storage (such as Kube
 
 1. Set configuration parameters.
 
-```sh
-vi config/group_vars/netapp-trident.yml
-```
+   ```sh
+   vi config/group_vars/netapp-trident.yml
+   ```
 
 2. Deploy Trident using Ansible.
 
-```sh
-# NOTE: If SSH requires a password, add: `-k`
-# NOTE: If sudo on remote machine requires a password, add: `-K`
-# NOTE: If SSH user is different than current user, add: `-u ubuntu`
-ansible-playbook -l k8s-cluster playbooks/netapp-trident.yml
-```
+   ```sh
+   # NOTE: If SSH requires a password, add: `-k`
+   # NOTE: If sudo on remote machine requires a password, add: `-K`
+   # NOTE: If SSH user is different than current user, add: `-u ubuntu`
+   ansible-playbook -l k8s-cluster playbooks/netapp-trident.yml
+   ```
 
 3. Verify that Trident is running.
 
-```sh
-./tridenctl -n trident version
-```
+   ```sh
+   ./tridenctl -n trident version
+   ```
 
-Output of the above command should be:
+   Output of the above command should be:
 
-```sh
-+----------------+----------------+
-| SERVER VERSION | CLIENT VERSION |
-+----------------+----------------+
-| 20.04.0        | 20.04.0        |
-+----------------+----------------+
-```
+   ```sh
+   +----------------+----------------+
+   | SERVER VERSION | CLIENT VERSION |
+   +----------------+----------------+
+   | 20.04.0        | 20.04.0        |
+   +----------------+----------------+
+   ```
 
 ### Monitoring
 
