@@ -136,7 +136,7 @@ Deploy NetApp Trident for services that require persistent storage (such as Kube
 3. Verify that Trident is running.
 
    ```sh
-   ./tridenctl -n trident version
+   ./tridentctl -n trident version
    ```
 
    Output of the above command should be:
