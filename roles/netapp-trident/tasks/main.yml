@@ -8,6 +8,12 @@
       - python3-pip
     state: present
   when: ansible_os_family == "Debian"
+  
+- name: Install epel-release (Red Hat / CentOS)
+  package:
+    name: epel-release
+    state: present
+  when: ansible_os_family == "RedHat"
 
 - name: Install pip (Red Hat / CentOS)
   package:
