@@ -32,40 +32,36 @@
     state: present
     src: /root/trident-installer/deploy/crds/trident.netapp.io_tridentprovisioners_crd_post1.16.yaml
     wait: yes
-  when: k8s_version >= 1.16
   run_once: true
   environment:
     PYTHONHOME: '{{ deepops_venv }}'
-  when: ansible_distribution == 'Ubuntu'
+  when: k8s_version >= 1.16 and ansible_distribution == 'Ubuntu'
 
 - name: Create TridentProvisioner CRD (K8s version >= 1.16) (Red Hat / CentOS)
   k8s:
     state: present
     src: /root/trident-installer/deploy/crds/trident.netapp.io_tridentprovisioners_crd_post1.16.yaml
     wait: yes
-  when: k8s_version >= 1.16
   run_once: true
-  when: ansible_os_family == 'RedHat'
+  when: k8s_version >= 1.16 and ansible_os_family == 'RedHat'
 
 - name: Create TridentProvisioner CRD (K8s version < 1.16) (Ubuntu)
   k8s:
     state: present
     src: /root/trident-installer/deploy/crds/trident.netapp.io_tridentprovisioners_crd_pre1.16.yaml
     wait: yes
-  when: k8s_version < 1.16
   run_once: true
   environment:
     PYTHONHOME: '{{ deepops_venv }}'
-  when: ansible_distribution == 'Ubuntu'
+  when: k8s_version < 1.16 and ansible_distribution == 'Ubuntu'
 
 - name: Create TridentProvisioner CRD (K8s version < 1.16) (Red Hat / CentOS)
   k8s:
     state: present
     src: /root/trident-installer/deploy/crds/trident.netapp.io_tridentprovisioners_crd_pre1.16.yaml
     wait: yes
-  when: k8s_version < 1.16
   run_once: true
-  when: ansible_os_family == 'RedHat'
+  when: k8s_version < 1.16 and ansible_os_family == 'RedHat'
 
 - name: Deploy Trident operator resources (Ubuntu)
   k8s:
@@ -178,20 +174,18 @@
     state: present
     definition: "{{ item }}"
   with_items: "{{ storageClasses_to_create }}"
-  when: create_StorageClasses == true
   run_once: true
   environment:
     PYTHONHOME: '{{ deepops_venv }}'
-  when: ansible_distribution == 'Ubuntu'
+  when: create_StorageClasses == true and ansible_distribution == 'Ubuntu'
 
 - name: Create NetApp StorageClass(es) (Red Hat / CentOS)
   k8s:
     state: present
     definition: "{{ item }}"
   with_items: "{{ storageClasses_to_create }}"
-  when: create_StorageClasses == true
   run_once: true
-  when: ansible_os_family == 'RedHat'
+  when: create_StorageClasses == true and ansible_os_family == 'RedHat'
 
 - name: Fetch tridentctl from control node
   fetch:
