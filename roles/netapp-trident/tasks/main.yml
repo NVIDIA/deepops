@@ -9,7 +9,7 @@
     state: present
   when: ansible_os_family == "Debian"
 
-- name: Install pip (Red Hat / CentOs)
+- name: Install pip (Red Hat / CentOS)
   package:
     name:
       - python2-pip
@@ -22,7 +22,6 @@
     name:
       - openshift>=0.6
       - PyYAML>=3.11
-    executable: pip3
 
 - name: Download and extract Trident installer
   unarchive:
