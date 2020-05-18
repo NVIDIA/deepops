@@ -1,42 +1,6 @@
 ---
 # tasks file for netapp-trident role
 
-- name: Install pip (Ubuntu)
-  package:
-    name:
-      - python-pip
-      - python3-pip
-    state: present
-  when: ansible_os_family == "Debian"
-  
-- name: Install epel-release (Red Hat / CentOS)
-  package:
-    name: epel-release
-    state: present
-  when: ansible_os_family == "RedHat"
-
-- name: Install pip (Red Hat / CentOS)
-  package:
-    name:
-      - python2-pip
-      - python3-pip
-    state: present
-  when: ansible_os_family == "RedHat"
-  
-- name: Upgrade pip (Red Hat / CentOS)
-  pip:
-    name:
-      - pip
-      - setuptools
-    state: latest
-  when: ansible_os_family == "RedHat"
-
-- name: Install python dependencies
-  pip:
-    name:
-      - openshift>=0.6
-      - PyYAML>=3.11
-
 - name: Download and extract Trident installer
   unarchive:
     src: https://github.com/NetApp/trident/releases/download/v20.04.0/trident-installer-20.04.0.tar.gz
