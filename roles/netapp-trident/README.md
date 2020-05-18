@@ -19,7 +19,7 @@ See defaults/main.yml, vars/main.yml
 Dependencies
 ------------
 
-Python modules: openshift (must be installed on target host)
+Roles: openshift (https://github.com/mboglesby/deepops/tree/master/roles/openshift)
 
 Example Playbooks
 ----------------
