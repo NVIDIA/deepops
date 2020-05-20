@@ -12,8 +12,6 @@ nfs_exports:
 
 # For virtual cluster, ensure hosts file correctly uses private network
 hosts_network_interface: "eth1"
-hosts_add_ansible_managed_hosts_groups:
-- "slurm-cluster"
 
 # Ensure vagrant user has SSH access after pam_slurm for debugging
 slurm_allow_ssh_user:

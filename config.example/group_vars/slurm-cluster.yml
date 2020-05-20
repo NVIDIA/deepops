@@ -17,6 +17,10 @@ slurm_controller_host: "{{ groups['slurm-master'][0] }}"
 slurm_compute_hosts: "{{ groups['slurm-node'] }}"
 slurm_enable_monitoring: true
 
+# Ensure hosts file generation only runs across slurm cluster
+hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
+
+
 ################################################################################
 # NFS                                                                          #
 ################################################################################
