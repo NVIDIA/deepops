@@ -3,6 +3,14 @@
   become: true
   become_method: sudo
   tasks:
+    - name: Bugfix for https://github.com/kubernetes-sigs/kubespray/issues/6160 (Ubuntu)
+      set_fact:
+        docker_package_info: "{{ ubuntu_docker_pkg_info }}"
+      when: ansible_distribution == 'Ubuntu'
+    - name: Bugfix for https://github.com/kubernetes-sigs/kubespray/issues/6160 (RedHat)
+      set_fact:
+        docker_package_info: "{{ redhat_docker_pkg_info }}"
+      when: ansible_os_family == 'RedHat'
     - name: include default kubespray vars required for set_facts tasks
       include_vars: ../kubespray/roles/kubespray-defaults/defaults/main.yaml
     - name: include kubespray task to set facts required for docker role
