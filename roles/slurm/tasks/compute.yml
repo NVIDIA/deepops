@@ -64,18 +64,32 @@
   include: prolog_epilog.yml
   when: slurm_enable_prolog_epilog
 
-- name: copy configuration files
+- name: configure slurm.conf
   template:
-    src: "{{ item }}"
-    dest: "/etc/slurm/{{ item }}"
-  with_items:
-    - slurm.conf
-    - cgroup.conf
-    - gres.conf
+    src: "{{ slurm_conf_template }}"
+    dest: "/etc/slurm/slurm.conf"
   notify:
-    - restart slurmd
+  - restart slurmd
   tags:
-    - config
+  - config
+
+- name: configure cgroup.conf
+  template:
+    src: "{{ slurm_cgroup_conf_template }}"
+    dest: "/etc/slurm/cgroup.conf"
+  notify:
+  - restart slurmd
+  tags:
+  - config
+
+- name: configure gres.conf
+  template:
+    src: "{{ slurm_gres_conf_template }}"
+    dest: "/etc/slurm/gres.conf"
+  notify:
+  - restart slurmd
+  tags:
+  - config
 
 - name: start slurmd
   systemd:

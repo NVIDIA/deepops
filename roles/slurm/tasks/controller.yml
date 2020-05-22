@@ -61,18 +61,23 @@
     - /var/spool/slurm/ctld
     - /var/log/slurm
 
-- name: copy configuration files
+- name: configure slurm.conf
   template:
-    src: "{{ item }}"
-    dest: "/etc/slurm/{{ item }}"
-  with_items:
-    - slurm.conf
-    - slurmdbd.conf
+    src: "{{ slurm_conf_template }}"
+    dest: "/etc/slurm/slurm.conf"
   notify:
-    - restart slurmdbd
-    - restart slurmctld
+  - restart slurmctld
   tags:
-    - config
+  - config
+
+- name: configure slurmdbd.conf
+  template:
+    src: "{{ slurm_dbd_conf_template }}"
+    dest: "/etc/slurm/slurmdbd.conf"
+  notify:
+  - restart slurmdbd
+  tags:
+  - config
 
 - name: start slurmdbd
   systemd:
