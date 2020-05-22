@@ -1,12 +1,11 @@
 epel_baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"
 epel_gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
 
-slurm_pkg_url: "https://github.com/DeepOps/slurm/releases/download/"
-slurm_xenial_deb: slurm_19.05.0-xenial_amd64.deb
-slurm_bionic_deb: slurm_19.05.0-bionic_amd64.deb
-slurm_rhel_rpm: slurm-19.05.0_7-1.x86_64.rpm
-
-slurm_pkg_tag: v1.5
+slurm_version: 19.05.6
+slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
+slurm_build_dir: /tmp/slurm-build
+slurm_config_dir: /etc/slurm
+slurm_install_prefix: /usr
 
 slurm_cluster_name: deepops
 slurm_username: slurm
@@ -62,3 +61,5 @@ slurm_clear_old_prolog_epilog: false
 
 # Disable clearing of shared memory when user login shell exits
 slurm_fix_shm: true
+
+slurm_force_rebuild: no

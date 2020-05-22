@@ -3,7 +3,7 @@
 - include: nvidia-driver.yml
 - include: nvidia-docker.yml
 
-- hosts: all
+- hosts:  "{{ hostlist | default('all') }}"
   become: yes
   tasks:
     - name: install custom facts module

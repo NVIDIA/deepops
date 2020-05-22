@@ -3,8 +3,9 @@
 - src: dev-sec.ssh-hardening
   version: "6.1.3"
 
-- src: unxnn.users
-  version: '78fd08ca86678d00da376eaac909d22e1022a020'
+- src: https://github.com/DeepOps/ansible-role-users
+  name: DeepOps.users
+  version: 'e67df1db28bf099aa06d0ab250478963532b4d29'
 
 - src: https://github.com/DeepOps/ansible-role-hosts.git
   version: '8311d6ecfe39b665a06d1fc55502c6916e9ab5ce'
@@ -17,7 +18,7 @@
   version: "v5.2.6"
 
 - src: nvidia.nvidia_driver
-  version: "v1.2.0"
+  version: "v1.2.1"
 
 - src: nvidia.nvidia_docker
   version: "v1.2.1"
@@ -43,8 +44,9 @@
 - src: https://github.com/DeepOps/ansible-maas.git
   name: ansible-maas
 
-- src: unxnn.chrony
-  version: 'c95f84431c8c3ed693e88b35c87edf792fcf152f'
+- src: https://github.com/DeepOps/ansible-role-chrony
+  name: DeepOps.chrony
+  version: 'c9022153036dfdde4e2b313aecde4a46cd6f6687'
 
 - src: https://github.com/OSC/ood-ansible.git
   version: 'a56783750d5e61f0d099a2b294d9f050d194f293'

@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: "{{ hostlist | default('all') }}"
   become: true
   tasks:
     - name: Check for DGX packages

@@ -1,0 +1,157 @@
+---
+- name: default to building slurm
+  set_fact:
+    slurm_build: yes
+
+- name: check installed slurm version
+  shell: /usr/bin/sinfo --version | awk '{print $2}'
+  register: sinfo_version
+  ignore_errors: yes
+
+- name: don't build slurm if it's already installed, unless forced
+  set_fact:
+    slurm_build: no
+  when: sinfo_version.stdout == slurm_version and not slurm_force_rebuild
+
+- name: going to rebuild slurm?
+  debug:
+    msg: "Rebuild Slurm? {{ slurm_build }}"
+
+- name: install build dependencies
+  apt:
+    name: "{{ item }}"
+  with_items: "{{ slurm_build_deps }}"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install build dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ slurm_build_deps }}"
+  when: ansible_os_family == 'RedHat'
+
+- name: remove slurm packages
+  apt:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - slurm
+    - slurm-wlm
+    - slurmctld
+    - slurmdbd
+    - slurmd
+  when: ansible_distribution == 'Ubuntu'
+  ignore_errors: yes
+
+- name: remove slurm packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - slurm
+  when: ansible_os_family == 'RedHat'
+  ignore_errors: yes
+
+- name: make build directory
+  file:
+    path: "{{ slurm_build_dir }}"
+    state: directory
+  when: slurm_build
+
+- name: download source
+  unarchive:
+    src: "{{ slurm_src_url }}"
+    remote_src: yes
+    dest: "{{ slurm_build_dir }}"
+    extra_opts:
+      - --strip-components=1
+  when: slurm_build
+
+- name: uninstall old version
+  command: make -j uninstall
+  args:
+    chdir: "{{ slurm_build_dir }}"
+  ignore_errors: yes
+  when: slurm_build
+  tags:
+    - uninstall
+
+- name: clean src dir
+  command: make distclean
+  args:
+    chdir: "{{ slurm_build_dir }}"
+  ignore_errors: yes
+  when: slurm_build
+
+- name: configure
+  command: "./configure --prefix={{ slurm_install_prefix }} --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --without-shared-libslurm"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+  when: slurm_build
+
+- name: build
+  shell: "make -j$(nproc) > build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+  when: slurm_build
+
+- name: build contrib
+  shell: "make -j$(nproc) contrib >> build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+  when: slurm_build
+
+- name: install
+  shell: "make -j$(nproc) install >> build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+  when: slurm_build
+  notify:
+    - restart slurmd
+    - restart slurmdbd
+    - restart slurmctld
+
+- name: install contrib
+  shell: "make -j$(nproc) install-contrib >> build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+  when: slurm_build
+  notify:
+    - restart slurmd
+    - restart slurmdbd
+    - restart slurmctld
+
+- name: build pam_slurm_adopt
+  shell: "make -j$(nproc) >> ../../build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}/contribs/pam_slurm_adopt"
+  when: slurm_build
+
+- name: install pam_slurm_adopt
+  shell: "make -j$(nproc) install >> ../../build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}/contribs/pam_slurm_adopt"
+  when: slurm_build
+  notify:
+    - restart slurmd
+    - restart slurmdbd
+    - restart slurmctld
+
+- name: copy service files
+  copy:
+    src: "{{ slurm_build_dir }}/etc/{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+    remote_src: yes
+  with_items:
+    - slurmctld.service
+    - slurmdbd.service
+  when: is_controller and slurm_build
+
+- name: copy service files
+  copy:
+    src: "{{ slurm_build_dir }}/etc/{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+    remote_src: yes
+  with_items:
+    - slurmd.service
+  when: is_compute and slurm_build
