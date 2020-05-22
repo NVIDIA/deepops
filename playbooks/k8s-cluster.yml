@@ -49,6 +49,17 @@
   tags:
     - bootstrap
 
+- hosts: all
+  tasks:
+    - name: Bugfix for https://github.com/kubernetes-sigs/kubespray/issues/6160 (Ubuntu)
+      set_fact:
+        docker_package_info: "{{ ubuntu_docker_pkg_info }}"
+      when: ansible_distribution == 'Ubuntu'
+    - name: Bugfix for https://github.com/kubernetes-sigs/kubespray/issues/6160 (RedHat)
+      set_fact:
+        docker_package_info: "{{ redhat_docker_pkg_info }}"
+      when: ansible_os_family == 'RedHat'
+
 # Install Kubernetes
 # for configuration, see: config/group_vars/k8s-cluster.yml
 - include: ../kubespray/cluster.yml
