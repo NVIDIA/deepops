@@ -1,0 +1,26 @@
+{
+    "version": 1,
+    "storageDriverName": "{{ item.storageDriverName }}",
+    "backendName": "{{ item.backendName }}",
+    "managementLIF": "{{ item.managementLIF }}",
+    "dataLIF": "{{ item.dataLIF }}",
+    "svm": "{{ item.svm }}",
+    "username": "{{ item.username }}",
+    "password": "{{ item.password }}",
+    "storagePrefix": "{{ item.storagePrefix }}",
+    "limitAggregateUsage": "{{ item.limitAggregateUsage }}",
+    "limitVolumeSize": "{{ item.limitVolumeSize }}",
+    "nfsMountOptions": "{{ item.nfsMountOptions }}",
+    "defaults": {
+        "spaceReserve": "{{ item.defaults.spaceReserve }}",
+        "snapshotPolicy": "{{ item.defaults.snapshotPolicy }}",
+        "snapshotReserve": "{{ item.defaults.snapshotReserve }}",
+        "splitOnClone": "{{ item.defaults.splitOnClone }}",
+        "encryption": "{{ item.defaults.encryption }}",
+        "unixPermissions": "{{ item.defaults.unixPermissions }}",
+        "snapshotDir": "{{ item.defaults.snapshotDir }}",
+        "exportPolicy": "{{ item.defaults.exportPolicy }}",
+        "securityStyle": "{{ item.defaults.securityStyle }}",
+        "tieringPolicy": "{{ item.defaults.tieringPolicy }}"
+    }
+}

@@ -1,0 +1,94 @@
+---
+# defaults file for netapp-trident role
+
+# Kubernetes version
+# Note: Do not include patch version, e.g. provide value of 1.16, not 1.16.7.
+# Note: Versions 1.14 and above are supported when deploying Trident with DeepOps.
+#   If you are using an earlier version, you must deploy Trident manually.
+k8s_version: 1.16
+
+# Denotes whether or not to create new backends after deploying trident
+# For more info, refer to: https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/operator-install.html#creating-a-trident-backend
+create_backends: false
+
+# List of backends to create
+# For more info on parameter values, refer to: https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/operations/tasks/backends/ontap.html
+# Note: Parameters other than those listed below are not avaible when creating a backend via DeepOps
+#   If you wish to use other parameter values, you must create your backend manually.
+backends_to_create:
+  - backendName: ontap-flexvol
+    storageDriverName: ontap-nas # only 'ontap-nas' and 'ontap-nas-flexgroup' are supported when creating a backend via DeepOps
+    managementLIF: 10.61.188.40
+    dataLIF: 192.168.200.41
+    svm: ai221_data
+    username: admin
+    password: NetApp!23
+    storagePrefix: trident
+    limitAggregateUsage: ""
+    limitVolumeSize: ""
+    nfsMountOptions: ""
+    defaults:
+      spaceReserve: none
+      snapshotPolicy: none
+      snapshotReserve: 0
+      splitOnClone: false
+      encryption: false
+      unixPermissions: 777
+      snapshotDir: true
+      exportPolicy: default
+      securityStyle: unix
+      tieringPolicy: none
+  - backendName: ontap-flexgroup
+    storageDriverName: ontap-nas-flexgroup # only 'ontap-nas' and 'ontap-nas-flexgroup' are supported when creating a backend via DeepOps
+    managementLIF: 10.61.188.40
+    dataLIF: 192.168.200.41
+    svm: ai221_data
+    username: admin
+    password: NetApp!23
+    storagePrefix: trident
+    limitAggregateUsage: ""
+    limitVolumeSize: ""
+    nfsMountOptions: ""
+    defaults:
+      spaceReserve: none
+      snapshotPolicy: none
+      snapshotReserve: 0
+      splitOnClone: false
+      encryption: false
+      unixPermissions: 777
+      snapshotDir: true
+      exportPolicy: default
+      securityStyle: unix
+      tieringPolicy: none
+  # Add additional backends as needed
+
+# Denotes whether or not to create new StorageClasses for your NetApp storage
+# For more info, refer to: https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/operator-install.html#creating-a-storage-class
+create_StorageClasses: false
+
+# List of StorageClasses to create
+# Note: Each item in the list should be an actual K8s StorageClass definition in yaml format
+# For more info on StorageClass definitions, refer to https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/concepts/objects.html#kubernetes-storageclass-objects.
+storageClasses_to_create:
+  - apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: ontap-flexvol
+      annotations:
+        storageclass.kubernetes.io/is-default-class: "true"
+    provisioner: csi.trident.netapp.io
+    parameters:
+      backendType: "ontap-nas"
+  - apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: ontap-flexgroup
+    provisioner: csi.trident.netapp.io
+    parameters:
+      backendType: "ontap-nas-flexgroup"
+  # Add additional StorageClasses as needed
+
+# Denotes whether or not to copy tridenctl binary to localhost
+copy_tridentctl_to_localhost: true
+# Directory that tridentctl will be copied to on localhost
+tridentctl_copy_to_directory: ./
