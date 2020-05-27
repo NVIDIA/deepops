@@ -1,0 +1,70 @@
+---
+# Tasks file for roce_backend role
+# Supported OS: Ubuntu 18.04
+# # Install Mellanox OFED and VF activation
+- name: MOFED installation
+  include_tasks: mofed-install.yaml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - roce_host
+
+# Activate VF for relevant PF
+- name: checking the Mellanox OFED is installed
+  stat:
+    path: /usr/bin/ofed_info
+  register: ofed_present
+  tags:
+    - roce_host
+
+- name: Create the file, if it does not present
+  file:
+    path: /etc/rc.local
+    state: touch
+    mode: 0755
+  when: ofed_present.stat.exists
+  register: f
+  changed_when: f.diff.before.state == "absent"
+  tags:
+    - roce_host
+
+- name: Add first line to /etc/rc.local
+  lineinfile:
+    path: /etc/rc.local
+    regexp: '^#!/bin/sh -e'
+    state: present
+    line: '#!/bin/sh -e'
+    insertbefore: BOF
+  when: ofed_present.stat.exists
+  tags:
+    - roce_host
+
+- name: Add last line to /etc/rc.local
+  lineinfile:
+    path: /etc/rc.local
+    regexp: '^exit 0'
+    state: present
+    line: 'exit 0'
+    insertafter: EOF
+  when: ofed_present.stat.exists
+  tags:
+    - roce_host
+
+- include_tasks: vf-activate.yaml
+  with_items: "{{ sriov_resources }}"
+  when: ofed_present.stat.exists
+  tags:
+    - roce_host
+
+
+#Install Python modules
+
+- name: Install PIP
+  apt:
+    name:
+      - python-pip
+      - python-setuptools
+    state: latest
+    update_cache: true
+  tags:
+    - roce_host
+

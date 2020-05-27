@@ -1,0 +1,36 @@
+---
+- name: Check MLNX NIC's
+  shell: lspci | grep Mellanox | awk '{print $1}' | wc -l
+  register: check_mlnx_adapter
+
+- name: MOFED install
+  block:
+    - name: check availability of Mellanox OFED
+      stat:
+        path: /usr/bin/ofed_info
+      register: ofed_installed
+    - name: Check Mellanox OFED version
+      shell: /usr/bin/ofed_info -n
+      register: current_mofed_version
+      when: ofed_installed.stat.exists
+    - name: Mellanox OFED version
+      debug:
+        msg: "Mellanox OFED version - {{ current_mofed_version.stdout }}"
+      when: ofed_installed.stat.exists  
+    - name: Download and install Mellanox OFED
+      shell: |
+        cd /tmp
+        rm -f /tmp/{{ mofed_file_name }}
+        wget http://content.mellanox.com/ofed/{{ mofed_site_place }}/{{ mofed_file_name }}
+        mkdir -p /mnt/iso
+        mount -o loop /tmp/{{ mofed_file_name }} /mnt/iso
+        /mnt/iso/mlnxofedinstall --all -q
+      args:
+        executable: /bin/bash
+        warn: no
+      when: (ofed_installed.stat.exists == False) or (mofed_version not in current_mofed_version.stdout)
+      register: install_mofed
+    - name: Reboot host after installtion mellanox OFED
+      reboot:
+      when: install_mofed.changed
+  when: check_mlnx_adapter.stdout|int > 0

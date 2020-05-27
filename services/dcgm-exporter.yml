@@ -1,9 +1,12 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: dcgm-exporter
   namespace: monitoring
 spec:
+  selector:
+    matchLabels:
+      app: dcgm-exporter
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 1
@@ -68,11 +71,11 @@ spec:
           name: metrics
         resources:
           requests:
-            memory: 30Mi
-            cpu: 100m
-          limits:
-            memory: 50Mi
+            memory: 60Mi
             cpu: 200m
+          limits:
+            memory: 100Mi
+            cpu: 400m
         volumeMounts:
         - name: proc
           readOnly:  true

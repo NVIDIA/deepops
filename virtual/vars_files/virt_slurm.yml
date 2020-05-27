@@ -11,5 +11,9 @@ nfs_exports:
   options: "*(rw,sync)"
 
 # For virtual cluster, ensure hosts file correctly uses private network
-hosts_add_default_ipv4: false
 hosts_network_interface: "eth1"
+
+# Ensure vagrant user has SSH access after pam_slurm for debugging
+slurm_allow_ssh_user:
+- "vagrant"
+- "root"

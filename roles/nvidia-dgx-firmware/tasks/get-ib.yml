@@ -1,0 +1,23 @@
+---
+- name: get hostname
+  shell: hostname
+  register: hostname
+
+- name: check mlxconfig
+  become: yes
+  shell: "mlxconfig query  | egrep -e Device\\|LINK_TYPE_P1\\|LINK_TYPE_P2"
+  register: mlx_config
+  ignore_errors: yes
+
+- name: check ibstat
+  become: yes
+  shell: "ibstat | egrep -e mlx\\|Link"
+  register: ibstat
+  ignore_errors: yes
+
+- name: save actual hostname
+  shell: echo "{{ hostname.stdout }}" >> "{{ fw_dir }}/{{ inventory_hostname }}.log"
+- name: save mlx_config
+  shell: echo "{{ mlx_config.stdout }}" >> "{{ fw_dir }}/{{ inventory_hostname }}.log"
+- name: save ibstat
+  shell: echo "{{ ibstat.stdout }}" >> "{{ fw_dir }}/{{ inventory_hostname }}.log"

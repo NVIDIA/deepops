@@ -1,0 +1,16 @@
+---
+- name: Run NVSM human-readable health show
+  shell: "nvsm show health > {{ fw_dir }}/nvsm-show-health.log"
+  become: yes
+  ignore_errors: yes
+
+- name: Run NVSM dump health
+  shell: "nvsm dump health"
+  become: yes
+  ignore_errors: yes
+
+- name: Run quick DCGM diagnostic
+  shell: "dcgmi diag -r 1 > {{ fw_dir }}/dcgm_diag_1.log"
+  become: yes
+  ignore_errors: yes
+

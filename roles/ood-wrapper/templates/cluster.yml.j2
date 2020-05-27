@@ -1,0 +1,20 @@
+---
+v2:
+  metadata:
+    title: "{{ ood_cluster_title }}"
+  login:
+    host: "{{ ansible_fqdn }}"
+  job:
+    adapter: "slurm"
+    cluster: "{{ ood_cluster_name }}"
+    bin: "/usr/bin"
+    conf: "/etc/slurm/slurm.conf"
+  batch_connect:
+    basic:
+      script_wrapper: |
+        %s
+    vnc:
+      script_wrapper: |
+        export PATH="/opt/TurboVNC/bin:$PATH"
+        export WEBSOCKIFY_CMD="/usr/bin/websockify"
+        %s

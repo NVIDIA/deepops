@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: "{{ hostlist | default('all') }}"
   become: true
   tasks:
     - name: Check for DGX packages
@@ -24,3 +24,4 @@
       when:
         - ansible_local['gpus']['count']
         - is_dgx.stat.exists == False
+  environment: "{{proxy_env if proxy_env is defined else{}}}"

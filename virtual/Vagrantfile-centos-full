@@ -70,6 +70,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end 
     gpu.vm.box = BOX_IMAGE
     gpu.vm.network :private_network, ip: "10.0.0.7"
-  en
+  end
 
 end

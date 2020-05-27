@@ -1,3 +1,6 @@
+################################################################################
+# Slurm                                                                        #
+################################################################################
 # Slurm job scheduler configuration
 # Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
 #slurm_user_home: /local/slurm
@@ -12,3 +15,45 @@ slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 #slurm_install_pyxis: yes
 slurm_controller_host: "{{ groups['slurm-master'][0] }}"
 slurm_compute_hosts: "{{ groups['slurm-node'] }}"
+slurm_enable_monitoring: true
+
+# Ensure hosts file generation only runs across slurm cluster
+hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
+
+
+# Slurm configuration is auto-generated from templates in the `slurm` role.
+# If you want to override any of these files with custom config files, please
+# set the following vars to the absolute path of your custom files.
+#
+#slurm_conf_template: "/path/to/slurm.conf"
+#slurm_cgroup_conf_template: "/path/to/cgroup.conf"
+#slurm_gres_conf_template: "/path/to/gres.conf"
+#slurm_dbd_conf_template: "/path/to/slurmdbd.conf"
+
+################################################################################
+# NFS                                                                          #
+################################################################################
+# Export /home from the Slurm login node by default
+# A shared directory is required by Open OnDemand
+nfs_exports:
+  - path: /home
+    options: "*(rw,sync,no_root_squash)"
+nfs_mounts:
+  - mountpoint: /home
+    server: '{{ groups["slurm-master"][0] }}'
+    path: /home
+    options: async,vers=3
+
+################################################################################
+# Open OnDemand                                                                #
+################################################################################
+install_open_ondemand: no
+ood_install_linuxhost_adapter: yes
+
+servername: '{{ ansible_fqdn }}'
+httpd_port: 9050
+httpd_listen_addr_port:
+  - 9050
+httpd_use_rewrites: false
+node_uri: /node
+rnode_uri: /rnode

@@ -7,8 +7,9 @@ sed -i -e "s/#BUS-GPU01.*/v.pci :bus => '$BUS01', :slot => '0x00', :function => 
 sed -i -e "s/#BUS-GPU02.*/v.pci :bus => '$BUS02', :slot => '0x00', :function => '0x0'/g" virtual/Vagrant* # This is a no-op if not full-install
 
 echo "modify CPU and RAM requirements"
-git grep -lz "v.cpus = 2" virtual/ | xargs -0 sed -i -e "s/v.cpus = 2/v.cpus = 4/g"
-git grep -lz "v.memory = 2048" virtual/ | xargs -0 sed -i -e "s/v.memory = 2048/v.memory = 16384/g"
+git grep -lz "v.cpus = 2" virtual/ | xargs -0 sed -i -e "s/v.cpus = 2/v.cpus = 4/g" # login01
+git grep -lz "v.memory = 2048" virtual/ | xargs -0 sed -i -e "s/v.memory = 2048/v.memory = 16384/g" # login01
+git grep -lz "v.memory = 4096" virtual/ | xargs -0 sed -i -e "s/v.memory = 4096/v.memory = 16384/g" # mgmt01
 
 # We append the index of GPU01 to each IP address to ensure uniqueness across the 4 GPU Node
 # This allows us to assign IP addresses from 10.0.x.[1-24] before breaking.

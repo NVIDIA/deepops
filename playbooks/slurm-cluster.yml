@@ -8,18 +8,11 @@
 - include: bootstrap-ssh.yml
 - include: bootstrap-sudo.yml
 
-# Set root SSH key to allow SSH/ansible when no slurm job running for ansible user
-- hosts: all
-  become: true
-  tasks:
-    - name: Add SSH public key to root user authorized keys
-      authorized_key:
-        user: root
-        state: present
-        key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
-
 # Configure hostnames, /etc/hosts
 - include: hosts.yml
+
+# Configure Chrony (NTP) sync
+- include: chrony-client.yml
 
 # Install NVIDIA driver
 - include: nvidia-driver.yml
@@ -32,5 +25,27 @@
   tags:
   - install_docker
 
+# Install software
+- include: software.yml
+
 # Install Slurm
 - include: slurm.yml
+
+# Install monitoring tools
+- include: prometheus.yml hostlist=slurm-master
+  when: slurm_enable_monitoring
+- include: grafana.yml hostlist=slurm-master
+  when: slurm_enable_monitoring
+- include: prometheus-slurm-exporter.yml hostlist=slurm-master
+  when: slurm_enable_monitoring
+- include: prometheus-node-exporter.yml hostlist=slurm-node
+  when: slurm_enable_monitoring
+- include: nvidia-dcgm-exporter.yml hostlist=slurm-node
+  when: slurm_enable_monitoring
+
+# Install Singularity
+- include: singularity.yml
+
+# Install Open OnDemand
+- include: open-ondemand.yml
+  when: install_open_ondemand

@@ -1,0 +1,17 @@
+---
+# This playbook updates the firwmware on DGX nodes
+# Refer to the README in roles/nvidia-dgx-firmware for more info
+# NOTE: forcing use of the paramiko ssh plugin since running fw
+# update container with interactive `-it` flag requires tty and
+# ansible ssh flakes out in `auto` mode.
+
+- hosts: all
+  become: yes
+  connection: paramiko_ssh
+  tasks:
+    - name: Include NVIDIA DGX Firmware role
+      include_role:
+        name: nvidia-dgx-firmware
+      vars:
+        run_diagnostics: false
+        update_firmware: true
