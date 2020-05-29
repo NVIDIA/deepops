@@ -7,7 +7,7 @@ metadata:
 spec:
   cephVersion:
     # For the latest ceph images, see https://hub.docker.com/r/ceph/ceph/tags
-    image: ceph/ceph:v14.2
+    image: ceph/ceph:v15.2.2
   dataDirHostPath: /var/lib/rook
   mon:
     count: 3
@@ -16,7 +16,7 @@ spec:
     enabled: true
   storage:
     useAllNodes: true
-    useAllDevices: false
+    useAllDevices: true
     directories:
       - path: /var/lib/rook
     config:
@@ -39,14 +39,25 @@ metadata:
    name: rook-ceph-block
    annotations:
      storageclass.kubernetes.io/is-default-class: "true"
-provisioner: ceph.rook.io/block
+# based on https://rook.io/docs/rook/master/ceph-block.html
+provisioner: rook-ceph.rbd.csi.ceph.com
 parameters:
-  blockPool: replicapool
-  # The value of "clusterNamespace" MUST be the same as the one in which your rook cluster exist
-  clusterNamespace: rook-ceph
-  # Specify the filesystem type of the volume. If not specified, it will use `ext4`.
-  fstype: xfs
-# Optional, default reclaimPolicy is "Delete". Other options are: "Retain", "Recycle" as documented in https://kubernetes.io/docs/concepts/storage/storage-classes/
+  # clusterID is the namespace where the rook cluster is running
+  clusterID: rook-ceph
+  # Ceph pool into which the RBD image shall be created
+  pool: replicapool
+  # RBD image format. Defaults to "2".
+  imageFormat: "2"
+  # RBD image features. Available for imageFormat: "2". CSI RBD currently supports only `layering` feature.
+  imageFeatures: layering
+  # The secrets contain Ceph admin credentials.
+  csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+  csi.storage.k8s.io/provisioner-secret-namespace: rook-ceph
+  csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+  csi.storage.k8s.io/node-stage-secret-namespace: rook-ceph
+  # Specify the filesystem type of the volume. Default is "ext4"
+  csi.storage.k8s.io/fstype: xfs
+  # Default is "Delete", https://kubernetes.io/docs/concepts/storage/storage-classes/
 reclaimPolicy: Retain
 ---
 apiVersion: apps/v1

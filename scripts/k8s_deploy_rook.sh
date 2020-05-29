@@ -6,7 +6,7 @@
 # `helm upgrade --namespace rook-ceph rook-ceph rook-release/rook-ceph --version v0.9.0-174.g3b14e51`
 
 HELM_ROOK_CHART_REPO="${HELM_ROOK_CHART_REPO:-https://charts.rook.io/release}"
-HELM_ROOK_CHART_VERSION="${HELM_ROOK_CHART_VERSION:-v1.1.1}"
+HELM_ROOK_CHART_VERSION="${HELM_ROOK_CHART_VERSION:-v1.3.4}"
 
 ./scripts/install_helm.sh
 
