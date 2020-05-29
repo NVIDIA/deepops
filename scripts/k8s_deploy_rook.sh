@@ -6,7 +6,9 @@
 # `helm upgrade --namespace rook-ceph rook-ceph rook-release/rook-ceph --version v0.9.0-174.g3b14e51`
 
 HELM_ROOK_CHART_REPO="${HELM_ROOK_CHART_REPO:-https://charts.rook.io/release}"
-HELM_ROOK_CHART_VERSION="${HELM_ROOK_CHART_VERSION:-v1.1.1}"
+
+# Always use the latest unless any specific reason for a particular release
+#HELM_ROOK_CHART_VERSION="${HELM_ROOK_CHART_VERSION:-v1.1.1}"
 
 ./scripts/install_helm.sh
 
@@ -16,7 +18,7 @@ helm repo add rook-release "${HELM_ROOK_CHART_REPO}"
 # We need to dynamically set up Helm args, so let's use an array
 helm_install_args=("--namespace" "rook-ceph"
                    "--name" "rook-ceph"
-		   "--version" "${HELM_ROOK_CHART_VERSION}"
+#		   "--version" "${HELM_ROOK_CHART_VERSION}"
 )
 
 # Use an alternate image if set
