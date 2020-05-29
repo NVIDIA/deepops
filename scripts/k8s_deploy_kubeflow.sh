@@ -27,8 +27,8 @@ export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/55d
 export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.0.2.yaml" # https://github.com/kubeflow/manifests/releases/tag/v1.0.2
 
 # Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
-export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/55d1a9c84ca796f9a098bbeec406acbdcfa6aebe/kfdef/kfctl_k8s_istio.v1.0.2.yaml"
-export CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.v1.0.2.yaml" # https://github.com/kubeflow/manifests/releases/tag/v1.0.2
+export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/928cf483361730121ac18bc4d0e7a9c129f15ee2/kfdef/kfctl_k8s_istio.yaml"
+export CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.yaml" #  Not v1.0.2 due to https://github.com/kubeflow/manifests/issues/991
 
 
 function help_me() {
