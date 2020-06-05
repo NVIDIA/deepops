@@ -1,0 +1,1 @@
+sm_files_path: "{{ sm_prefix }}/easybuild_files"

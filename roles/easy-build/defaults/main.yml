@@ -1,0 +1,2 @@
+eb_tmp_dir: /tmp/easybuild
+eb_bootstrap_url: 'https://raw.githubusercontent.com/easybuilders/easybuild-framework/49533e6ef8f3ca27f984eeb212e157874cae9183/easybuild/scripts/bootstrap_eb.py'

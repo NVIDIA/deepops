@@ -3,6 +3,8 @@
 ################################################################################
 # Slurm job scheduler configuration
 # Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
+slurm_version: 20.02.1
+slurm_install_prefix: /usr/local
 #slurm_user_home: /local/slurm
 slurm_manage_gpus: true
 #slurm_cluster_name: deepops
@@ -16,6 +18,19 @@ slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 slurm_controller_host: "{{ groups['slurm-master'][0] }}"
 slurm_compute_hosts: "{{ groups['slurm-node'] }}"
 slurm_enable_monitoring: true
+
+# Ensure hosts file generation only runs across slurm cluster
+hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
+
+
+# Slurm configuration is auto-generated from templates in the `slurm` role.
+# If you want to override any of these files with custom config files, please
+# set the following vars to the absolute path of your custom files.
+#
+#slurm_conf_template: "/path/to/slurm.conf"
+#slurm_cgroup_conf_template: "/path/to/cgroup.conf"
+#slurm_gres_conf_template: "/path/to/gres.conf"
+#slurm_dbd_conf_template: "/path/to/slurmdbd.conf"
 
 ################################################################################
 # NFS                                                                          #
@@ -34,7 +49,7 @@ nfs_mounts:
 ################################################################################
 # Open OnDemand                                                                #
 ################################################################################
-install_open_ondemand: yes
+install_open_ondemand: no
 ood_install_linuxhost_adapter: yes
 
 servername: '{{ ansible_fqdn }}'
