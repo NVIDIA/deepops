@@ -55,11 +55,17 @@ slurm_oversubscribe: "NO"
 # Default: <not included>
 # slurm_default_job_timelimit: 
 
-# Use the provided prolog/epilog
+# Set up prolog and epilog
 slurm_enable_prolog_epilog: true
 
 # Useful to delete old files (e.g. from previous versions of deepops)
 slurm_clear_old_prolog_epilog: false
+
+# Fileglob patterns used to copy prolog and epilog files
+prolog_d_fileglob: "prolog.d/*"
+prolog_parts_fileglob: "prolog-parts.d/*"
+epilog_d_fileglob: "epilog.d/*"
+epilog_parts_fileglob: "epilog-parts.d/*"
 
 # Disable clearing of shared memory when user login shell exits
 slurm_fix_shm: true

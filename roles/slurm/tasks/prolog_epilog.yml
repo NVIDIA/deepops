@@ -62,7 +62,7 @@
   tags:
     - epilog
 
-- name: copy prologs
+- name: copy prolog.d/
   copy:
     src: "{{ item }}"
     dest: /etc/slurm/prolog.d/
@@ -70,11 +70,11 @@
     group: slurm
     mode: 0755
   with_fileglob:
-    - prolog.d/*
+    - "{{ prolog_d_fileglob }}"
   tags:
     - prolog
 
-- name: copy prologs
+- name: copy prolog-parts.d/
   copy:
     src: "{{ item }}"
     dest: /etc/slurm/prolog-parts.d/
@@ -82,11 +82,11 @@
     group: slurm
     mode: 0755
   with_fileglob:
-    - prolog-parts.d/*
+    - "{{ prolog_parts_fileglob }}"
   tags:
     - prolog
 
-- name: copy epilogs
+- name: copy epilog.d/
   copy:
     src: "{{ item }}"
     dest: /etc/slurm/epilog.d/
@@ -94,11 +94,11 @@
     group: slurm
     mode: 0755
   with_fileglob:
-    - epilog.d/*
+    - "{{ epilog_d_fileglob }}"
   tags:
     - epilog
 
-- name: copy epilogs
+- name: copy epilog-parts.d/
   copy:
     src: "{{ item }}"
     dest: /etc/slurm/epilog-parts.d/
@@ -106,6 +106,6 @@
     group: slurm
     mode: 0755
   with_fileglob:
-    - epilog-parts.d/*
+    - "{{ epilog_parts_fileglob }}"
   tags:
     - epilog
