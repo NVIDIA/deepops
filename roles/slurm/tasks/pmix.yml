@@ -1,0 +1,98 @@
+---
+- name: default to building pmix
+  set_fact:
+    pmix_build: yes
+
+- name: check installed pmix version
+  shell: "{{ pmix_install_prefix }}/bin/pmix_info --version | grep PMIX: | awk '{print $2}'"
+  register: pmix_info_version
+  ignore_errors: yes
+
+- name: don't build pmix if it's already installed, unless forced
+  set_fact:
+    pmix_build: no
+  when: pmix_info_version.stdout == pmix_version and not pmix_force_rebuild
+
+- name: install pmix build dependencies
+  apt:
+    name: "{{ item }}"
+  with_items: "{{ slurm_pmix_deps }}"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install pmix build dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ slurm_pmix_deps }}"
+  when: ansible_os_family == 'RedHat'
+
+- name: remove pmix packages
+  apt:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - pmix
+    - libpmix-dev
+    - libpmix5
+  when: ansible_distribution == 'Ubuntu'
+  ignore_errors: yes
+
+- name: remove pmix packages
+  yum:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - pmix-devel
+    - pmix-libs
+    - pmix
+  when: ansible_os_family == 'RedHat'
+  ignore_errors: yes
+
+- name: make pmix build directory
+  file:
+    path: "{{ pmix_build_dir }}"
+    state: directory
+  when: pmix_build
+
+- name: download pmix source
+  unarchive:
+    src: "{{ pmix_src_url }}"
+    remote_src: yes
+    dest: "{{ pmix_build_dir }}"
+    extra_opts:
+      - --strip-components=1
+  when: pmix_build
+
+- name: uninstall old pmix version
+  command: make -j uninstall
+  args:
+    chdir: "{{ pmix_build_dir }}"
+  ignore_errors: yes
+  when: pmix_build
+  tags:
+    - uninstall
+
+- name: clean pmix src dir
+  command: make distclean
+  args:
+    chdir: "{{ pmix_build_dir }}"
+  ignore_errors: yes
+  when: pmix_build
+
+- name: configure pmix
+  command: "{{ pmix_configure }}"
+  args:
+    chdir: "{{ pmix_build_dir }}"
+  when: pmix_build
+
+- name: build pmix
+  shell: "make -j$(nproc) > build.log 2>&1"
+  args:
+    chdir: "{{ pmix_build_dir }}"
+  when: pmix_build
+
+- name: install pmix
+  shell: "make -j$(nproc) install >> build.log 2>&1"
+  args:
+    chdir: "{{ pmix_build_dir }}"
+  when: pmix_build

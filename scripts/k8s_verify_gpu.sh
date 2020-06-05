@@ -29,9 +29,8 @@ done
 echo "total_gpus=$total_gpus"
 
 echo "Creating/Deleting sandbox Namespace"
-if !(kubectl get ns | grep ${CLUSTER_VERIFY_NS} >/dev/null);then
-        kubectl create ns ${CLUSTER_VERIFY_NS} > /dev/null
-fi
+kubectl delete ns ${CLUSTER_VERIFY_NS} > /dev/null 2>&1
+kubectl create ns ${CLUSTER_VERIFY_NS} > /dev/null 2>&1
 
 echo "updating test yml"
 sed -i "s/.*DYNAMIC_PARALLELISM.*/  parallelism: ${total_gpus} # DYNAMIC_PARALLELISM/g" $TESTS_DIR/cluster-gpu-test-job.yml

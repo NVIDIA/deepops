@@ -1,0 +1,98 @@
+---
+- name: default to building hwloc
+  set_fact:
+    hwloc_build: yes
+
+- name: check installed hwloc version
+  shell: "{{ hwloc_install_prefix }}/bin/hwloc-info --version | awk '{print $2}'"
+  register: hwloc_info_version
+  ignore_errors: yes
+
+- name: don't build hwloc if it's already installed, unless forced
+  set_fact:
+    hwloc_build: no
+  when: hwloc_info_version.stdout == hwloc_version and not hwloc_force_rebuild
+
+- name: install hwloc build dependencies
+  apt:
+    name: "{{ item }}"
+  with_items: "{{ slurm_hwloc_deps }}"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install hwloc build dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ slurm_hwloc_deps }}"
+  when: ansible_os_family == 'RedHat'
+
+- name: remove hwloc packages
+  apt:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - hwloc
+    - libhwloc-dev
+    - libhwloc5
+  when: ansible_distribution == 'Ubuntu'
+  ignore_errors: yes
+
+- name: remove hwloc packages
+  yum:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - hwloc-devel
+    - hwloc-libs
+    - hwloc
+  when: ansible_os_family == 'RedHat'
+  ignore_errors: yes
+
+- name: make hwloc build directory
+  file:
+    path: "{{ hwloc_build_dir }}"
+    state: directory
+  when: hwloc_build
+
+- name: download hwloc source
+  unarchive:
+    src: "{{ hwloc_src_url }}"
+    remote_src: yes
+    dest: "{{ hwloc_build_dir }}"
+    extra_opts:
+      - --strip-components=1
+  when: hwloc_build
+
+- name: uninstall old hwloc version
+  command: make -j uninstall
+  args:
+    chdir: "{{ hwloc_build_dir }}"
+  ignore_errors: yes
+  when: hwloc_build
+  tags:
+    - uninstall
+
+- name: clean hwloc src dir
+  command: make distclean
+  args:
+    chdir: "{{ hwloc_build_dir }}"
+  ignore_errors: yes
+  when: hwloc_build
+
+- name: configure hwloc
+  command: "{{ hwloc_configure }}"
+  args:
+    chdir: "{{ hwloc_build_dir }}"
+  when: hwloc_build
+
+- name: build hwloc
+  shell: "make -j$(nproc) > build.log 2>&1"
+  args:
+    chdir: "{{ hwloc_build_dir }}"
+  when: hwloc_build
+
+- name: install hwloc
+  shell: "make -j$(nproc) install >> build.log 2>&1"
+  args:
+    chdir: "{{ hwloc_build_dir }}"
+  when: hwloc_build

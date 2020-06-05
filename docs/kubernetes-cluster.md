@@ -100,6 +100,8 @@ Run the following script to create an administrative user and print out the dash
 
 ### Persistent Storage
 
+#### Ceph Cluster
+
 Deploy a Ceph cluster running on Kubernetes for services that require persistent storage (such as Kubeflow):
 
 ```sh
@@ -111,6 +113,41 @@ Poll the Ceph status by running:
 ```sh
 ./scripts/ceph_poll.sh
 ```
+
+#### NetApp Trident
+
+Deploy NetApp Trident for services that require persistent storage (such as Kubeflow). Note that you must have a NetApp storage system/instance in order to use Trident to provision persistent storage.
+
+1. Set configuration parameters.
+
+   ```sh
+   vi config/group_vars/netapp-trident.yml
+   ```
+
+2. Deploy Trident using Ansible.
+
+   ```sh
+   # NOTE: If SSH requires a password, add: `-k`
+   # NOTE: If sudo on remote machine requires a password, add: `-K`
+   # NOTE: If SSH user is different than current user, add: `-u ubuntu`
+   ansible-playbook -l k8s-cluster playbooks/netapp-trident.yml
+   ```
+
+3. Verify that Trident is running.
+
+   ```sh
+   ./tridentctl -n trident version
+   ```
+
+   Output of the above command should be:
+
+   ```sh
+   +----------------+----------------+
+   | SERVER VERSION | CLIENT VERSION |
+   +----------------+----------------+
+   | 20.04.0        | 20.04.0        |
+   +----------------+----------------+
+   ```
 
 ### Monitoring
 

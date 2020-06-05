@@ -1,0 +1,49 @@
+#
+# install software modules using EasyBuild:
+#
+---
+- name: "ubuntu pre-install tasks"
+  include_tasks: ubuntu-pre-install.yml
+  when: ansible_distribution == 'Ubuntu'
+
+- name: "redhat family pre-install tasks"
+  include_tasks: redhat-pre-install.yml
+  when: ansible_os_family == 'RedHat'
+
+- name: "download default easy-configs if needed"
+  git:
+    repo: "{{ sm_files_url }}"
+    dest: "{{ sm_files_path }}"
+    update: yes
+  when: sm_install_default
+
+- name: "check the sm_files_path is reachable"
+  stat:
+    path: "{{ sm_files_path }}"
+  register: eb_path
+
+- name: "find the list of the easybuild files"
+  find:
+    paths: "{{ sm_files_path }}"
+    file_type: file
+    patterns: "*.eb"
+    recurse: no
+  register: eb_meta
+  when: eb_path.stat.isdir is defined and eb_path.stat.isdir
+
+- name: "extract the list of easybuild file paths"
+  vars:
+    eb_files: []
+  set_fact:
+    eb_files: "{{ eb_files + [item.path] }}"
+  with_items: "{{ eb_meta.files }}"
+
+- name: "install the selected easybuild modules"
+  shell: |  
+    . /etc/profile.d/z00_lmod.sh && 
+    . /etc/profile.d/z01_eb.sh   && 
+    eb --parallel=16 "{{ item }}" --robot
+  with_items:
+    - "{{ eb_files | sort() }}"
+  args:
+    executable: /bin/bash

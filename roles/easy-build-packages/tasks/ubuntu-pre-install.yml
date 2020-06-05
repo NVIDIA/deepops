@@ -1,0 +1,13 @@
+#
+# install software modules using EasyBuild:
+#
+---
+- name: "install depending software"
+  become: true
+  apt:
+    name:
+      - libssl-dev
+      - build-essential
+      - libsysfs-dev
+      - libibverbs-dev
+
