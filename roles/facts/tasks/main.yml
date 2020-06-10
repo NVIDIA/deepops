@@ -2,12 +2,12 @@
 - name: apt install pciutils
   apt: name=pciutils update_cache=yes
   when: ansible_os_family == 'Debian'
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
 
 - name: yum install pciutils
   yum: name=pciutils update_cache=yes
   when: ansible_os_family == 'RedHat'
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
 
 - name: create fact directory
   file:
