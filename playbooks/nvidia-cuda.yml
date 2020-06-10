@@ -16,7 +16,7 @@
         name: nvidia.nvidia_driver
       when:
         - ansible_local['gpus']['count']
-        - not is_dgx.stat.exists
+        - is_dgx.stat.exists == False
 
     - name: install nvidia cuda toolkit
       package:
