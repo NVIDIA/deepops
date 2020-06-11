@@ -109,12 +109,14 @@
 - include: nvidia-driver.yml
   tags:
     - nvidia
+    - nvidia_driver
   when: deepops_gpu_operator_enabled | default('false') | bool == false
 
 # Install NVIDIA container runtime on GPU servers
 - include: nvidia-docker.yml
   tags:
     - nvidia
+    - nvidia_docker
   when: deepops_gpu_operator_enabled | default('false') | bool == false
 
 # Install k8s GPU device plugin

@@ -22,6 +22,9 @@
 
 # Install NVIDIA driver
 - include: nvidia-driver.yml
+  tags:
+  - nvidia
+  - nvidia_driver
 
 # Install Docker and configure for NVIDIA
 - include: docker.yml
@@ -30,6 +33,8 @@
 - include: nvidia-docker.yml
   tags:
   - install_docker
+  - nvidia
+  - nvidia_docker
 
 # Ensure that DKMS modules are installed and running
 - hosts: slurm-node
