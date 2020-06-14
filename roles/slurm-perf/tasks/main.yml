@@ -39,11 +39,11 @@
   vars:
     default_config: "{{ lookup('template', 'etc/slurm/slurm.conf.defaults') }}"
     user_config: "{{ slurm_config | default('') }}"
+  notify:
+    - restart slurmctld
+    - restart slurmdbd
+    - restart slurmd
   tags: config
-  #notify:
-  #  - restart slurmctld
-  #  - restart slurmdbd
-  #  - restart slurmd
 
 - include: controller.yml
   when: slurm_node_is_controller

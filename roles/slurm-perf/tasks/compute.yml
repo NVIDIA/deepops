@@ -17,7 +17,6 @@
 - name: configure slurmd for pmix
   blockinfile:
     path: /etc/default/slurmd
-    create: yes
     block: |
       PMIX_MCA_ptl=^usock
       PMIX_MCA_psec=none
@@ -34,7 +33,6 @@
     mode: 0755
   with_items:
     - "{{ slurm_log_dir }}"
-    - "{{ slurm_spool_dir }}"
 
 - name: copy files to {{ slurm_sysconf_dir }}
   template:
