@@ -13,31 +13,56 @@
 - name: shared packages
   apt:
     name:
+      - libssl-dev
+      - libncurses5-dev
+      - liblz4-1
+      - libmunge-dev
+      - libmariadb-dev
+      - libevent-dev
+      - libhwloc-dev
+      - libnuma1
+      - hwloc
+      - libhwloc-dev
+      - zlibc
+      - zlib1g-dev
       - munge
       - pciutils
+      - zlib1g
+      - libpam0g-dev
   notify:
     - restart munge
 
-- name: packages for client nodes
-  apt:
-    name:
-      - "{{ slurm_client_package_name }}"
-  when: slurm_node_is_client
+- name: install pmix (bionic)
+  when: (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] == '18')
+  apt: 
+    deb: "{{ pmix_pkg_url }}/{{ pmix_pkg_tag }}/{{ item }}"
+  with_items:
+    - "{{ pmix_bionic_deb }}"
+  register: install_pmix_bionic
 
 - name: packages for control node
   apt:
     name:
-      - "{{ slurmdbd_package_name }}"
-      - "{{ slurmctld_package_name }}"
       - mariadb-server
       - python-mysqldb
       - python3-mysqldb
   when: slurm_node_is_controller
 
+- name: install slurm (bionic)
+  when: (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] == '18')
+  apt:
+    deb: "{{ slurm_pkg_url }}/{{ slurm_pkg_tag }}/{{ item }}"
+  with_items:
+    - "{{ slurm_bionic_deb }}"
+  register: install_slurm_bionic
+      #notify:
+      #- restart slurmd
+      #- restart slurmdbd
+      #- restart slurmctld
+
 - name: packages for compute nodes
   apt:
     name:
-      - "{{ slurmd_package_name }}"
       - "{{ slurm_pam_package_name }}"
       - numactl
   when: slurm_node_is_compute

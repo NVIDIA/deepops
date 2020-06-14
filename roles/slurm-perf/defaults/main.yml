@@ -10,10 +10,19 @@ slurmctld_package_name: slurmctld
 slurmdbd_package_name: slurmdbd
 slurmd_package_name: slurmd
 
+
+slurm_pkg_url: "/mnt/shared/local-mirror/slurm"
+slurm_bionic_deb: slurm_19.05.0-bionic_amd64.deb
+slurm_pkg_tag: v1.5
+
+pmix_pkg_url: "/mnt/shared/local-mirror/pmix"
+pmix_bionic_deb: pmix_3.1.4-bionic_amd64.deb
+pmix_pkg_tag: v1.5
+
 # package paths
-slurm_log_dir: /var/log/slurm-llnl
-slurm_spool_dir: /var/lib/slurm-llnl
-slurm_sysconf_dir: /etc/slurm-llnl
+slurm_log_dir: /var/log/slurm
+slurm_spool_dir: /var/lib/slurm
+slurm_sysconf_dir: /etc/slurm
 
 # pam
 slurm_pam_package_name: libpam-slurm
@@ -21,7 +30,7 @@ slurm_pam_lib: pam_slurm.so
 
 # pyxis
 slurm_install_pyxis: yes
-slurm_pyxis_tarball_url: https://github.com/NVIDIA/pyxis/archive/v0.2.0.tar.gz
+slurm_pyxis_tarball_url: https://github.com/NVIDIA/pyxis/archive/v0.4.0.tar.gz
 
 # these variables will probably match up with inventory groups
 slurm_node_is_controller: no  # install slurmctld
