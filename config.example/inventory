@@ -59,7 +59,7 @@ slurm-node
 [nfs-server]
 #login01
 
-[nfs-clients:children]
+[nfs-client:children]
 #slurm-node
 
 ######
