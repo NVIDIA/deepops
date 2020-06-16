@@ -1,5 +1,5 @@
 ---
-- hosts: {{ hostlist | default('all') }}
+- hosts: "{{ hostlist | default('all') }}"
   become: yes
   roles:
     - { role: nfs, nfs_is_server: yes }
