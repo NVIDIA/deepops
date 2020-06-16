@@ -54,15 +54,6 @@ slurm-master
 slurm-node
 
 ######
-# NFS
-######
-[nfs-server]
-#login01
-
-[nfs-client:children]
-#slurm-node
-
-######
 # SSH connection configuration
 ######
 [all:vars]
