@@ -39,11 +39,6 @@
   with_items: "{{ eb_meta.files }}"
 
 - name: "install the selected easybuild modules"
-  shell: |  
-    . /etc/profile.d/z00_lmod.sh && 
-    . /etc/profile.d/z01_eb.sh   && 
-    eb --parallel=16 "{{ item }}" --robot
+  shell: /bin/bash -ilc 'module load EasyBuild && eb --parallel=16 "{{ item }}" --robot'
   with_items:
     - "{{ eb_files | sort() }}"
-  args:
-    executable: /bin/bash

@@ -1,0 +1,4 @@
+---
+lmod_sys_cfg_file: /etc/bash.bashrc
+lmod_sys_lib_dir: /usr/lib/aarch64-linux-gnu/lua
+

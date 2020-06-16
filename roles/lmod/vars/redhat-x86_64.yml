@@ -1,0 +1,4 @@
+---
+lmod_sys_cfg_file: /etc/csh.cshrc
+lmod_sys_lib_dir: /usr/lib/x86_64-redhat-linux6e/lua
+

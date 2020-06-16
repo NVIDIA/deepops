@@ -1,0 +1,3 @@
+---
+lmod_sys_cfg_file: "{{ hostvars[inventory_hostname]['lmod_sys_cfg_file'] }}"
+
