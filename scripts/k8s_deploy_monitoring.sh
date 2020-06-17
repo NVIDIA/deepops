@@ -14,6 +14,7 @@ elif [ -d "$(pwd)/config" ] ; then
 fi
 
 HELM_CHARTS_REPO_STABLE="${HELM_CHARTS_REPO_STABLE:-https://kubernetes-charts.storage.googleapis.com}"
+HELM_PROMETHEUS_CHART_VERSION="${HELM_PROMETHEUS_CHART_VERSION:-8.15.0}"
 ingress_name="nginx-ingress"
 
 case "$1" in
@@ -84,6 +85,7 @@ echo "Deploying monitoring stack..."
 if ! helm status prometheus-operator >/dev/null 2>&1 ; then
     helm install \
         stable/prometheus-operator \
+        --version "${HELM_PROMETHEUS_CHART_VERSION}" \
         --name prometheus-operator \
         --namespace monitoring \
         --values ${config_dir}/helm/monitoring.yml \
