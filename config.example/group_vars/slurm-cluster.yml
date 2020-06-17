@@ -59,3 +59,10 @@ httpd_listen_addr_port:
 httpd_use_rewrites: false
 node_uri: /node
 rnode_uri: /rnode
+
+################################################################################
+# Set GPU Clocks Adjustment Permission                                                                #
+################################################################################
+set_gpu_clocks: no
+
+
