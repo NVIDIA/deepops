@@ -2,9 +2,9 @@
 - hosts: slurm-node
   become: true
   tasks:
-   # - name: install custom facts
-   #   include_role:
-   #     name: facts
+    - name: install custom facts
+      include_role:
+        name: facts
 
     - name: set GPU clocks permissions
       command: nvidia-smi -acp UNRESTRICTED

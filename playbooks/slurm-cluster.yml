@@ -58,4 +58,5 @@
 
 #Set Permisions to adjust GPU Clocks speeds
 - include: gpu-clocks.yml
-  when: set_gpu_clocks
+  when: allow_user_set_gpu_clocks
+

@@ -61,8 +61,8 @@ node_uri: /node
 rnode_uri: /rnode
 
 ################################################################################
-# Set GPU Clocks Adjustment Permission                                                                #
+# Allow the User Permision to Set GPU Clocks                                    #
 ################################################################################
-set_gpu_clocks: no
+allow_user_set_gpu_clocks: no
 
 
