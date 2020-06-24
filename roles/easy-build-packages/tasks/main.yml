@@ -39,6 +39,6 @@
   with_items: "{{ eb_meta.files }}"
 
 - name: "install the selected easybuild modules"
-  shell: /bin/bash -ilc 'module load EasyBuild && eb --parallel=16 "{{ item }}" --robot'
+  shell: /bin/bash -ilc 'module load EasyBuild && eb --prefix={{ sm_prefix }} --parallel=16 "{{ item }}" --robot'
   with_items:
     - "{{ eb_files | sort() }}"
