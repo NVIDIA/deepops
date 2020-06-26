@@ -1,0 +1,15 @@
+---
+- hosts: slurm-node
+  become: true
+  tasks:
+    - name: install custom facts
+      include_role:
+        name: facts
+
+    - name: set GPU clocks permissions
+      command: nvidia-smi -acp UNRESTRICTED
+      changed_when: false
+      when:
+        - ansible_local['gpus']['count']
+  environment: "{{proxy_env if proxy_env is defined else{}}}"
+

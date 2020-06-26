@@ -55,3 +55,8 @@
 # Install Open OnDemand
 - include: open-ondemand.yml
   when: install_open_ondemand
+
+#Set Permisions to adjust GPU Clocks speeds
+- include: gpu-clocks.yml
+  when: allow_user_set_gpu_clocks
+
