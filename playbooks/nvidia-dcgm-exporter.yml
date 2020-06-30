@@ -1,7 +1,15 @@
 ---
 - include: docker.yml
+  tags:
+    - docker
 - include: nvidia-driver.yml
+  tags:
+    - nvidia
+    - nvidia_driver
 - include: nvidia-docker.yml
+  tags:
+    - nvidia
+    - nvidia_docker
 
 - hosts:  "{{ hostlist | default('all') }}"
   become: yes
