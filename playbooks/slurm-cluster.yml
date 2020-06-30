@@ -16,14 +16,9 @@
 
 # Install NVIDIA driver
 - include: nvidia-driver.yml
-  tags:
-  - nvidia
-  - nvidia_driver
 
 # Install NVIDIA CUDA Toolkit
 - include: nvidia-cuda.yml
-  tags:
-  - nvidia
 
 # Install Docker and configure for NVIDIA
 - include: docker.yml
@@ -32,8 +27,6 @@
 - include: nvidia-docker.yml
   tags:
   - install_docker
-  - nvidia
-  - nvidia_docker
 
 # Install software
 - include: software.yml
