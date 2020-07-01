@@ -86,6 +86,7 @@ def nvidia_driver(debug, dry_run):
             )
         )
         return
+    run_deepops_setup()
     try:
         run_ansible_playbook("playbooks/nvidia-driver.yml", inv_file)
     except AnsibleFailedError:
@@ -119,6 +120,7 @@ def nvidia_docker(debug, dry_run):
             )
         )
         return
+    run_deepops_setup()
     run_ansible_playbook("playbooks/docker.yml", inv_file)
     run_ansible_playbook("playbooks/nvidia-docker.yml", inv_file)
 
@@ -135,7 +137,7 @@ def kubespray_install(debug, dry_run):
             "machine. Are you sure you want to continue?"
         ):
             return 1
-
+        run_deepops_setup()
     host_groups = make_host_groups_for_local(
         added_groups=["kube-master", "etcd", "kube-node"]
     )
@@ -174,6 +176,7 @@ def slurm_install(debug, dry_run):
             "machine. Are you sure you want to continue?"
         ):
             return 1
+        run_deepops_setup()
 
     host_groups = make_host_groups_for_local(
         added_groups=["slurm-master", "slurm-node"]
