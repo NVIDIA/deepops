@@ -196,7 +196,7 @@ def slurm_install(debug, dry_run):
 
     try:
         run_ansible_playbook(
-            "playbooks/slurm-cluster.yml", inv_file, extra_vars_file=vars_file,
+            "playbooks/slurm-cluster.yml", inv_file, extra_vars_file=vars_file
         )
     except AnsibleFailedError:
         click.echo(
