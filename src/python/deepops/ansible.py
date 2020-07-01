@@ -28,7 +28,7 @@ def make_host_groups_for_local(hostname=None, added_groups=[]):
 def make_ansible_inventory_file(host_groups=None):
     if not host_groups:
         host_groups = make_host_groups_for_local()
-    fd, fname = mkstemp(dir="%s/config".format(local_repo_path()))
+    fd, fname = mkstemp(dir="{}/config".format(local_repo_path()))
     with open(fname, "w") as f:
         for g in sorted(host_groups.keys()):
             f.write("[{}]\n".format(g))
