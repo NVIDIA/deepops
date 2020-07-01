@@ -12,18 +12,11 @@ with open("README.rst") as readme_file:
 with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
-requirements = [
-    "Click>=7.0",
-    "PyYAML",
-]
+requirements = ["Click>=7.0", "PyYAML"]
 
-setup_requirements = [
-    "pytest-runner",
-]
+setup_requirements = ["pytest-runner"]
 
-test_requirements = [
-    "pytest>=3",
-]
+test_requirements = ["pytest>=3"]
 
 setup(
     author="DeepOps Devs",
@@ -41,7 +34,7 @@ setup(
         "Programming Language :: Python :: 3.8",
     ],
     description="DeepOps CLI Installer",
-    entry_points={"console_scripts": ["deepops=deepops.cli:main",],},
+    entry_points={"console_scripts": ["deepops=deepops.cli:main"]},
     install_requires=requirements,
     license="BSD license",
     long_description=readme + "\n\n" + history,
