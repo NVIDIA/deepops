@@ -6,7 +6,6 @@ from __future__ import absolute_import
 import sys
 import click
 import os
-import json
 
 from .repo import clone_repo, local_repo_path
 from .deps import run_deepops_setup
