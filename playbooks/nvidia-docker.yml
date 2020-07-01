@@ -1,6 +1,9 @@
 ---
 - hosts: "{{ hostlist | default('all') }}"
   become: true
+  tags:
+  - nvidia
+  - nvidia_docker
   tasks:
     - name: install custom facts module
       include_role:
