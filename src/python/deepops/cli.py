@@ -161,6 +161,7 @@ def slurm_extra_vars():
         "slurm_enable_prolog_epilog": False,
         "slurm_clear_old_prolog_epilog": True,
         "slurm_allow_ssh_user": [os.environ["USER"]],
+        "slurm_build_dir": "/opt/deepops/slurm-build",
     }
 
 
