@@ -148,7 +148,7 @@
   with_items:
     - slurmctld.service
     - slurmdbd.service
-  when: is_controller and slurm_build
+  when: is_controller
 
 - name: copy service files
   copy:
@@ -157,4 +157,4 @@
     remote_src: yes
   with_items:
     - slurmd.service
-  when: is_compute and slurm_build
+  when: is_compute
