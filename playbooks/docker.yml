@@ -2,9 +2,11 @@
 - hosts: "{{ hostlist | default('all') }}"
   become: true
   become_method: sudo
+  vars_files:
+    # include kubespray-defaults here so that we can set the facts using the
+    # kubespray 0040-set_facts.yml tasks
+    - ../kubespray/roles/kubespray-defaults/defaults/main.yaml
   tasks:
-    - name: include default kubespray vars required for set_facts tasks
-      include_vars: ../kubespray/roles/kubespray-defaults/defaults/main.yaml
     - name: include kubespray task to set facts required for docker role
       include: ../kubespray/roles/kubernetes/preinstall/tasks/0040-set_facts.yml
     - name: remove docker overrides from DGX OS

@@ -39,6 +39,11 @@ chrony_config_server:
   - 2.pool.ntp.org
   - 3.pool.ntp.org
 
+# Enable docker iptables
+# If this isn't set, containers won't have access to the outside net
+# See https://github.com/kubernetes-sigs/kubespray/issues/2002
+docker_iptables_enabled: true
+
 
 ################################################################################
 # SOFTWARE                                                                     #
