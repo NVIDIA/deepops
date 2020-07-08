@@ -9,17 +9,7 @@ prometheus:
       kubernetes.io/ingress.class: "nginx"
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/rewrite-target: /
-  server:
-    persistentVolume:
-      enabled: true
   prometheusSpec:
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          accessModes: ["ReadWriteOnce"]
-          resources:
-            requests:
-              storage: 10Gi
     nodeSelector:
       node-role.kubernetes.io/master: ""
   service:
