@@ -585,9 +585,9 @@ metadata:
   annotations:
     volume.alpha.kubernetes.io/storage-class: default
 spec:
-  storageClassName: rook-ceph-block
+  storageClassName: ""
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 2Gi
+      storage: 10Gi
