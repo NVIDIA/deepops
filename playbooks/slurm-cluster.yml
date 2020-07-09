@@ -61,5 +61,5 @@
   when: allow_user_set_gpu_clocks
 
 # Install Enroot and Pyxis
-- include: pyxis
+- include: pyxis.yml
   when: slurm_install_enroot and slurm_install_pyxis
