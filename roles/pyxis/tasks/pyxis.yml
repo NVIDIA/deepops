@@ -27,6 +27,16 @@
     - restart slurmd
   tags: pyxis
 
+# TODO: remove this task when the following PR is approved:
+#       https://github.com/NVIDIA/pyxis/pull/20/files
+- name: symlink pyxis include dir
+  file:
+    src: "/usr/local/include/slurm"
+    dest: "/usr/include/slurm"
+    state: link
+    force: yes
+  tags: pyxis
+
 # Needed for 17.11, but not for 19.05. Doesn't hurt either way.
 - name: copy top-level plugstack file
   template:
