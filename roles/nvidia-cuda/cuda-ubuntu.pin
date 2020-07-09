@@ -1,0 +1,3 @@
+Package: *
+Pin: release l=NVIDIA CUDA
+Pin-Priority: 600

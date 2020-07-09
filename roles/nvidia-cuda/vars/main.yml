@@ -1,0 +1,2 @@
+_ubuntu_repo_dir: "{{ ansible_distribution | lower }}{{ ansible_distribution_version | replace('.', '') }}/{{ ansible_architecture }}"
+_rhel_repo_dir: "rhel{{ ansible_distribution_major_version }}/{{ ansible_architecture }}"
