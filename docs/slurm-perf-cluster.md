@@ -11,10 +11,10 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    These packages have been installed and tested with the following Linux distributions and hardware platforms:
 
-   * [NVIDIA DGX OS 4.1 or greater](https://docs.nvidia.com/dgx/dgx-os-server-release-notes/index.html#dgx-os-server-sw-versions)
-   * DGX-1
-   * Non-blocking InfiniBand switches with DGX-1s [configured in InfiniBand mode](https://docs.nvidia.com/dgx/dgx1-user-guide/configuring-managing-dgx1.html#switching-from-ethernet-to-infiniband).
-   * Persistent network storage with [RAID cache](https://docs.nvidia.com/dgx/bp-dgx/storage.html#storage-nfs-cache-deep-learning) configured on DGX-1s
+   * [NVIDIA DGX OS 4.4 or greater](https://docs.nvidia.com/dgx/dgx-os-server-release-notes/index.html#dgx-os-server-sw-versions)
+   * DGX A100
+   * Non-blocking InfiniBand switches with the DGX A100s [configured in InfiniBand mode](https://docs.nvidia.com/dgx/dgx1-user-guide/configuring-managing-dgx1.html#switching-from-ethernet-to-infiniband).
+   * Persistent network storage with [RAID cache](https://docs.nvidia.com/dgx/bp-dgx/storage.html#storage-nfs-cache-deep-learning) configured on DGX A100s
 
 ## Requirements
 
@@ -108,39 +108,11 @@ High-Performance Multi-Node Cluster Deployment Guide
    ansible all -m raw -a "hostname"
    ```
 
-6. Edit the NFS configuration
-
-   Update the NFS configuration.
-
-   DeepOps configures NFS for sharing data and models across the cluster of nodes. NFS, or some sort of shared storage is important for multi-node deployments so that training data is accessible from all nodes.
-
-   ```sh
-   # Comment in the `nfs_exports` and `nfs_mounts` sections of `config/group_vars/all.yml`
-   # Modify configuration as necessary to fit the environment, or just use the defaults
-   vi config/group_vars/all.yml
-   ```
-
-7. Configure NFS across your cluster
-
-   Run the nfs playbooks.
-
-   > Note: This step can be skipped if NFS is already configured
-
-   ```sh
-   # NOTE: If SSH user is different than current user, add: `-u <user>`
-
-   # create the NFS server (if not using an existing NFS server)
-   ansible-playbook playbooks/nfs-server.yml
-
-   # mount the NFS shares to the clients
-   ansible-playbook playbooks/nfs-client.yml
-   ```
-
-8. Deploy optimized Slurm software using Ansible
+6. Deploy optimized Slurm software using Ansible
 
    Run the cluster playbook.
 
-   The `slurm-perf-cluster.yml` playbook bootstraps the cluster, configures NFS, installs/optimizes Slurm, and runs a quick system [validation test](#performance-validation).
+   The `slurm-perf-cluster.yml` playbook bootstraps the cluster, configures NFS, installs Slurm, and installs enroot+pyxis. It completes by running a quick system [validation test](#performance-validation).
 
    ```sh
    # NOTE: If SSH user is different than current user, add: `-u <user>`
