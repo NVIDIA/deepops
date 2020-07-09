@@ -61,8 +61,16 @@ node_uri: /node
 rnode_uri: /rnode
 
 ################################################################################
-# Allow the User Permision to Set GPU Clocks                                    #
+# Allow the User Permision to Set GPU Clocks                                   #
 ################################################################################
 allow_user_set_gpu_clocks: no
 
-
+################################################################################
+# Enroot & Pyxis                                                               #
+################################################################################
+slurm_install_enroot: no
+slurm_install_pyxis: no
+enroot_deb_packages:
+  - 'https://github.com/NVIDIA/enroot/releases/download/v3.1.0/enroot_3.1.0-1_amd64.deb'
+  - 'https://github.com/NVIDIA/enroot/releases/download/v3.1.0/enroot+caps_3.1.0-1_amd64.deb'
+slurm_pyxis_tarball_url: https://github.com/NVIDIA/pyxis/archive/v0.7.0.tar.gz
