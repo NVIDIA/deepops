@@ -1,0 +1,7 @@
+---
+- hosts: slurm-cluster
+  become: yes
+  roles:
+    - name: facts
+    - name: ansible-role-enroot
+    - name: pyxis
