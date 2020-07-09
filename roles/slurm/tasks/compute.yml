@@ -60,6 +60,7 @@
 - name: configure slurmd for pmix
   blockinfile:
     path: "{{ slurm_sysconf_dir }}/slurmd"
+    create: yes
     block: |
       PMIX_MCA_ptl=^usock
       PMIX_MCA_psec=none
