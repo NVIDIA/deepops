@@ -1,4 +1,6 @@
 ---
+# Install NVIDIA CUDA (and driver if present)
+
 - hosts: all
   become: true
   tasks:
@@ -17,17 +19,18 @@
       when:
         - ansible_local['gpus']['count']
         - is_dgx.stat.exists == False
+      tags:
+      - nvidia_driver
 
     - name: install nvidia cuda toolkit
-      package:
-        name: "{{ cuda_version | default('cuda') }}"
-        state: present
-      when:
-        - ansible_local['gpus']['count']
+      include_role:
+        name: nvidia-cuda
 
     - name: test nvidia-smi
       command: nvidia-smi
       changed_when: false
       when:
         - ansible_local['gpus']['count']
+      tags:
+      - nvidia_driver
   environment: "{{ proxy_env if proxy_env is defined else{} }}"
