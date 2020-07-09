@@ -1,3 +1,4 @@
 slurm_install_pyxis: yes
 slurm_config_dir: /etc/slurm
+slurm_sysconf_dir: /etc/sysconfig
 slurm_pyxis_tarball_url: https://github.com/NVIDIA/pyxis/archive/v0.7.0.tar.gz

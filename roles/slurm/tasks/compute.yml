@@ -50,7 +50,7 @@
     - /etc/slurm
     - /etc/slurm/shared
     - /etc/slurm/shared/bin
-    - /etc/default/slurmd
+    - "{{ slurm_sysconf_dir }}"
     - /var/log/slurm
     - /var/spool/slurm/d
   tags:
@@ -59,7 +59,7 @@
 
 - name: configure slurmd for pmix
   blockinfile:
-    path: /etc/default/slurmd
+    path: "{{ slurm_sysconf_dir }}/slurmd"
     block: |
       PMIX_MCA_ptl=^usock
       PMIX_MCA_psec=none
