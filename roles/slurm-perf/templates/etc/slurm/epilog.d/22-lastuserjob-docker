@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-set -ex
-
-getent group docker >/dev/null || exit 0  # docker not installed
-
-gpasswd -d "$SLURM_JOB_USER" docker >/dev/null || true

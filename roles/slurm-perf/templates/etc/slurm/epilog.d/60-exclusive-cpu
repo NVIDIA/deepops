@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-set -ex
-
-command -v cpupower >/dev/null || exit 0
-
-cpupower frequency-info | grep -e "governors: Not Available" && exit 0
-cpupower frequency-set -g powersave >/dev/null

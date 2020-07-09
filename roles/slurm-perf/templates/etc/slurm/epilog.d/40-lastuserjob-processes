@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-set -ex
-
-if [ "$SLURM_JOB_USER" != root ]; then
-    if killall -9 -u "$SLURM_JOB_USER" ; then
-        logger -s -t slurm-epilog 'Killed residual user processes'
-    fi
-fi
