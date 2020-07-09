@@ -7,5 +7,23 @@
     slurm_install_enroot: yes
     slurm_install_pyxis: yes
 
+# Ensure that DKMS modules are installed and running
+- hosts: slurm-node
+  become: true
+  tasks:
+    - name: Autoinstall DKMS modules
+      command: dkms autoinstall
+
+# Ensure that nv_peer_mem is loaded
+- hosts: slurm-node
+  become: true
+  tasks:
+    - name: Modprobe nv_peer_mem
+      modprobe:
+        name: nv_peer_mem
+        state: present
+  tags:
+    - modprobe_nv_peer_mem
+
 # Validate NCCL connectivity between all nodes in the cluster via enroot/pxysis/slurm
 - include: slurm-validation.yml
