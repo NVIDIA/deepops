@@ -41,7 +41,7 @@
 - name: copy top-level plugstack file
   template:
     src: etc/slurm/plugstack.conf
-    dest: "{{ slurm_sysconf_dir }}/"
+    dest: "{{ slurm_config_dir }}/"
   notify:
     - restart slurmctld
     - restart slurmd
@@ -50,7 +50,7 @@
 - name: copy pyxis plugstack file
   template:
     src: etc/slurm/plugstack.conf.d/pyxis.conf
-    dest: "{{ slurm_sysconf_dir }}/plugstack.conf.d/"
+    dest: "{{ slurm_config_dir }}/plugstack.conf.d/"
   notify:
     - restart slurmctld
     - restart slurmd
