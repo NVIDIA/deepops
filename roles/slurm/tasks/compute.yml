@@ -40,6 +40,17 @@
       reboot:
   when: update_grub.changed and ansible_os_family == "RedHat"
 
+- name: configure slurmd for pmix
+  blockinfile:
+    path: /etc/default/slurmd
+    block: |
+      PMIX_MCA_ptl=^usock
+      PMIX_MCA_psec=none
+      PMIX_SYSTEM_TMPDIR=/var/empty
+      PMIX_MCA_gds=hash
+  notify: restart slurmd
+  tags: config
+
 - name: create slurm directories
   file:
     path: "{{ item }}"
