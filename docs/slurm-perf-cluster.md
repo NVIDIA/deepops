@@ -108,7 +108,35 @@ High-Performance Multi-Node Cluster Deployment Guide
    ansible all -m raw -a "hostname"
    ```
 
-6. Deploy optimized Slurm software using Ansible
+6. Edit the NFS configuration
+
+   Update the NFS configuration.
+
+   DeepOps configures NFS for sharing data and models across the cluster of nodes. NFS, or some sort of shared storage is important for multi-node deployments so that training data is accessible from all nodes.
+
+   ```sh
+   # Comment in the `nfs_exports` and `nfs_mounts` sections of `config/group_vars/all.yml`
+   # Modify configuration as necessary to fit the environment, or just use the defaults
+   vi config/group_vars/all.yml
+   ```
+
+7. Configure NFS across your cluster
+
+   Run the nfs playbooks.
+
+   > Note: This step can be skipped if NFS is already configured
+
+   ```sh
+   # NOTE: If SSH user is different than current user, add: `-u <user>`
+
+   # create the NFS server (if not using an existing NFS server)
+   ansible-playbook playbooks/nfs-server.yml
+
+   # mount the NFS shares to the clients
+   ansible-playbook playbooks/nfs-clients.yml
+   ```
+
+8. Deploy optimized Slurm software using Ansible
 
    Run the cluster playbook.
 
