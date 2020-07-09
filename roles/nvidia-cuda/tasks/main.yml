@@ -11,3 +11,11 @@
   package:
     name: "{{ cuda_version | default('cuda') }}"
     state: present
+
+- name: add profile script to set environment for toolkit
+  copy:
+    src: "cuda-vars.sh"
+    dest: "/etc/profile.d/cuda-vars.sh"
+    owner: "root"
+    group: "root"
+    mode: "0644"
