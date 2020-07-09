@@ -133,7 +133,7 @@ High-Performance Multi-Node Cluster Deployment Guide
    ansible-playbook playbooks/nfs-server.yml
 
    # mount the NFS shares to the clients
-   ansible-playbook playbooks/nfs-clients.yml
+   ansible-playbook playbooks/nfs-client.yml
    ```
 
 8. Deploy optimized Slurm software using Ansible
