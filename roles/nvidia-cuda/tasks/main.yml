@@ -1,0 +1,13 @@
+---
+- name: ubuntu install tasks
+  include_tasks: install-ubuntu.yml
+  when: ansible_distribution == 'Ubuntu'
+
+- name: redhat family install tasks
+  include_tasks: install-redhat.yml
+  when: ansible_os_family == 'RedHat'
+
+- name: install cuda
+  package:
+    name: "{{ cuda_version | default('cuda') }}"
+    state: present
