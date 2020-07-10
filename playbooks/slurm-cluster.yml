@@ -78,9 +78,9 @@
   tasks:
     - name: Autoinstall DKMS modules
       command: dkms autoinstall
-  when:
-    - ansible_local['gpus']['count']
-    - is_dgx.stat.exists == False
+      when:
+        - ansible_local['gpus']['count']
+        - is_dgx.stat.exists == True
   tags:
     - dkms-autoinstall
 
@@ -92,8 +92,8 @@
       modprobe:
         name: nv_peer_mem
         state: present
-  when:
-    - ansible_local['gpus']['count']
-    - is_dgx.stat.exists == False
+      when:
+        - ansible_local['gpus']['count']
+        - is_dgx.stat.exists == True
   tags:
     - modprobe_nv_peer_mem
