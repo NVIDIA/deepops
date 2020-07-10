@@ -17,5 +17,5 @@
 
 - name: RedHat | install cuda
   package:
-    name: "{{ cuda_version | default('cuda') }}"
+    name: "{{ cuda_version}}"
     state: present

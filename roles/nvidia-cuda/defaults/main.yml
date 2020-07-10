@@ -1,8 +1,6 @@
 ---
 # 'cuda' is the generic package and will pull the latest version
-# For a specific toolkit version, use e.g. cuda-11-0 or cuda-10-2.
-# Default is to install the latest version
-cuda_version: "cuda"
+cuda_version: "cuda-toolkit-11-0"
 
 # DGX-specific versions
 cuda_dgx_1_version: "cuda-toolkit-10-1"
@@ -10,7 +8,9 @@ cuda_dgx_2_version: "cuda-toolkit-10-1"
 cuda_dgx_a100_version: "cuda-toolkit-11-0"
 
 # To install a specific CUDA package on DGX, define cuda_dgx_override.
-#cuda_dgx_override_version: "cuda-toolkit-11-0"
+# We override DGX version separately because DGX OS may release at a different
+# cadence than the toolkit repository.
+#cuda_dgx_override_version: "{{ cuda_version }}"
 
 # Should we install the /etc/profile.d/cuda-vars.sh script that will put
 # the CUDA toolkit binaries and libraries in the default environment?
