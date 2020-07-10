@@ -10,8 +10,20 @@
 
 - hosts: slurm-cluster
   become: yes
+  tasks:
+    - set_fact:
+        enroot_environ_config_files:
+        - filename: 50-mellanox.env
+          content: |
+            MELLANOX_VISIBLE_DEVICES=all
+        - filename: 50-mpi.env
+          content: |
+            OMPI_MCA_btl_tcp_if_exclude=lo,docker0,ib0,ib1,ib2,ib3
+      when: when: ansible_product_name is search("DGX")
+
+- hosts: slurm-cluster
+  become: yes
   roles:
-    - name: facts
     - name: ansible-role-enroot
     - name: pyxis
       vars:
