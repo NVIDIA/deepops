@@ -18,5 +18,5 @@
         user: "{{ ansible_env.USER | default(ansible_env.SUDO_USER) }}"
         is_controller: (slurm_node_is_controller | default(False))
         is_compute: (slurm_node_is_compute | default(False))
-        slurm_install_enroot: yes
-        slurm_install_pyxis: yes
+        slurm_install_enroot: true
+        slurm_install_pyxis: true

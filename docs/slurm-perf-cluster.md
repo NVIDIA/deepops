@@ -144,7 +144,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    ```sh
    # NOTE: If SSH user is different than current user, add: `-u <user>`
-   ansible-playbook playbooks/slurm-cluster.yml -e "slurm_install_enroot=yes" -e "slurm_install_pyxis=yes"
+   ansible-playbook playbooks/slurm-cluster.yml -e "slurm_install_enroot=true slurm_install_pyxis=true"
    ```
 
 ## Performance Validation

@@ -62,7 +62,11 @@
 
 # Install Enroot and Pyxis
 - include: pyxis.yml
-  when: slurm_install_enroot and slurm_install_pyxis
+  when:
+    - slurm_install_enroot
+    - slurm_install_pyxis
+  tags:
+    - pyxis
 
 - hosts: slurm-node
   become: true
