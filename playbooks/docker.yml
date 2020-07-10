@@ -15,6 +15,7 @@
         state: absent
       tags:
         - docker
+      when: docker_override_dgx
 
 - hosts: "{{ hostlist | default('all') }}"
   become: true
@@ -25,6 +26,9 @@
     dockerproject_rh_repo_gpgkey: 'https://download.docker.com/linux/centos/gpg'
     fallback_ips: []
   roles:
-    - { role: kubespray-defaults }
-    - { role: "../kubespray/roles/container-engine/docker", tags: docker }
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+    - role: kubespray-defaults
+      when: ansible_product_name is not search("DGX") or docker_override_dgx
+    - role: "../kubespray/roles/container-engine/docker"
+      tags: docker
+      when: ansible_product_name is not search("DGX") or docker_override_dgx
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
