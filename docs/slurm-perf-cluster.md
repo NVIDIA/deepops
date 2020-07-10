@@ -267,7 +267,7 @@ High-Performance Multi-Node Cluster Deployment Guide
    sudo scontrol update nodename=<node_names> state=idle
 
    # run the test again
-   srun -N <num_nodes> --mpi=pmi2 --container-image=deepops/nccl-tests all_reduce_perf -b 1M -e 512M -f 2 -g <num_gpus_per_node>
+   srun -N <num_nodes> --mpi=pmix --exclusive --container-image=deepops/deepops/nccl-tests-tf20.06-ubuntu18.04 --ntasks-per-node=8 -G <num_nodes x num_gpus_per_node> all_reduce_perf -b 1M -e 4G -f 2 -g <num_gpus_per_node>
    ```
 
 ### Performance validation test results are suboptimal
@@ -287,7 +287,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    ```sh
    # from the slurm login node
-   $ NCCL_DEBUG=INFO srun -N <num_nodes> --mpi=pmi2 --container-image=deepops/nccl-tests all_reduce_perf -b 1M -e 512M -f 2 -g <num_gpus_per_node>
+   $ NCCL_DEBUG=INFO srun -N <num_nodes> --mpi=pmix --exclusive --container-image=deepops/deepops/nccl-tests-tf20.06-ubuntu18.04 --ntasks-per-node=8 -G <num_nodes x num_gpus_per_node> all_reduce_perf -b 1M -e 4G -f 2 -g <num_gpus_per_node>
 
    # examine the output, looking for any mention of `GDRDMA`
    # for example: `NET/IB/0/GDRDMA`
