@@ -133,6 +133,8 @@ docker_version: '18.09'
 docker_dns_servers_strict: no
 docker_storage_options: -s overlay2
 #docker_options: "--bip=192.168.99.1/24"
+# Install DeepOps version of Docker on DGX
+docker_override_dgx: false
 
 # Enroot configuration
 # Playbook: slurm-perf, slurm-perf-cluster
