@@ -140,18 +140,18 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    Run the cluster playbook.
 
-   The `slurm-perf-cluster.yml` playbook bootstraps the cluster, configures NFS, installs Slurm, and installs enroot+pyxis. It completes by running a quick system [validation test](#performance-validation).
+   The `slurm-cluster.yml` playbook bootstraps the cluster, configures NFS, builds slurm & dependencies, and installs it. With the additional variables `slurm_install_enroot` and `slurm_install_pyxis`, it also installs enroot and pyxis.
 
    ```sh
    # NOTE: If SSH user is different than current user, add: `-u <user>`
-   ansible-playbook playbooks/slurm-perf-cluster.yml
+   ansible-playbook playbooks/slurm-cluster.yml -e "slurm_install_enroot=yes" -e "slurm_install_pyxis=yes"
    ```
 
 ## Performance Validation
 
    The `slurm-validation.yml` playbook connects to the login node and executes the NCCL tests against all nodes and GPUs. This checks both the correctness and the performance of the cluster. For a full explanation of what these tests do and what the [results mean](https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md) see the official [NCCL Tests documentation](https://github.com/NVIDIA/nccl-tests).
 
-   This playbook can be run standalone, but is also run as the last step in the `slurm-perf-cluster.yml`. To run standalone...
+   This playbook can be run standalone, but is also run as the last step in the `slurm-cluster.yml`. To run standalone...
 
    ```sh
    # Verify Slurm connectivity across all nodes
