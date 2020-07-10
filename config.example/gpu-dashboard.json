@@ -1271,7 +1271,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(node_network_transmit_bytes_total{instance=\"$hostname:9100\",device=~\"enp.*\"}[$__interval]))",
+          "expr": "sum(rate(node_network_transmit_bytes_total{instance=\"$hostname:9100\",device=~\"en.*\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
           "interval": ".5m",
@@ -1280,7 +1280,7 @@
           "refId": "B"
         },
         {
-          "expr": "sum(rate(node_network_receive_bytes_total{instance=\"$hostname:9100\",device=~\"enp.*\"}[$__interval]))",
+          "expr": "sum(rate(node_network_receive_bytes_total{instance=\"$hostname:9100\",device=~\"en.*\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -2431,7 +2431,7 @@
         "multi": false,
         "name": "hostname",
         "options": [],
-        "query": "query_result(label_replace(go_info{instance=~\".*:9100\"}, \"instance\", \"$1\", \"instance\", \"(.*):9100.*\"))",
+        "query": "query_result(label_replace(DCGM_FI_DEV_POWER_USAGE{instance=~\".*:9400\"}, \"instance\", \"$1\", \"instance\", \"(.*):9400.*\"))",
         "refresh": 1,
         "regex": "/.*instance=\"([^\"]*).*/",
         "skipUrlSync": false,
