@@ -1,7 +1,20 @@
 ---
 # 'cuda' is the generic package and will pull the latest version
-# For a specific toolkit version, use e.g. cuda-11-0 or cuda-10-2
-cuda_version: cuda
+# For a specific toolkit version, use e.g. cuda-11-0 or cuda-10-2.
+# Default is to install the latest version
+cuda_version: "cuda"
+
+# DGX-specific versions
+cuda_dgx_1_version: "cuda-toolkit-10-1"
+cuda_dgx_2_version: "cuda-toolkit-10-1"
+cuda_dgx_a100_version: "cuda-toolkit-11-0"
+
+# To install a specific CUDA package on DGX, define cuda_dgx_override.
+#cuda_dgx_override_version: "cuda-toolkit-11-0"
+
+# Should we install the /etc/profile.d/cuda-vars.sh script that will put
+# the CUDA toolkit binaries and libraries in the default environment?
+cuda_toolkit_add_profile_script: yes
 
 # RedHat family
 nvidia_driver_rhel_epel_repo_baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"
