@@ -151,7 +151,7 @@ enroot_environ_config_files: []
 enroot_environ_config_files_dgx:
   - filename: 50-mellanox.env
     content: |
-      MELLANOX_VISIBLE_DEVICES=none
+      MELLANOX_VISIBLE_DEVICES=all
   - filename: 50-mpi.env
     content: |
       OMPI_MCA_btl_tcp_if_exclude=lo,docker0,ib0,ib1,ib2,ib3
