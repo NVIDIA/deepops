@@ -68,36 +68,7 @@
   tags:
     - pyxis
 
-- hosts: slurm-node
-  become: true
-  tasks:
-    - name: Check for DGX packages
-      stat:
-        path: /etc/dgx-release
-      register: is_dgx
-
-# Ensure that DKMS modules are installed and running
-- hosts: slurm-node
-  become: true
-  tasks:
-    - name: Autoinstall DKMS modules
-      command: dkms autoinstall
-      when:
-        - ansible_local['gpus']['count']
-        - is_dgx.stat.exists == True
-  tags:
-    - dkms-autoinstall
-
 # Ensure that nv_peer_mem is loaded
-- hosts: slurm-node
-  become: true
-  tasks:
-    - name: Modprobe nv_peer_mem
-      modprobe:
-        name: nv_peer_mem
-        state: present
-      when:
-        - ansible_local['gpus']['count']
-        - is_dgx.stat.exists == True
+- include: nvidia-peer-memory.yml
   tags:
-    - modprobe_nv_peer_mem
+    - nvidia-peer-memory
