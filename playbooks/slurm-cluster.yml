@@ -17,19 +17,17 @@
 # Install NVIDIA driver
 - include: nvidia-driver.yml
 
-# Install Docker and configure for NVIDIA
-- include: docker.yml
-  tags:
-  - install_docker
-- include: nvidia-docker.yml
-  tags:
-  - install_docker
+# Install NVIDIA CUDA Toolkit
+- include: nvidia-cuda.yml
 
 # Install software
 - include: software.yml
 
 # Install Slurm
 - include: slurm.yml
+
+# Install OpenMPI
+- include: openmpi.yml
 
 # Install monitoring tools
 - include: prometheus.yml hostlist=slurm-master
@@ -49,3 +47,8 @@
 # Install Open OnDemand
 - include: open-ondemand.yml
   when: install_open_ondemand
+
+#Set Permisions to adjust GPU Clocks speeds
+- include: gpu-clocks.yml
+  when: allow_user_set_gpu_clocks
+

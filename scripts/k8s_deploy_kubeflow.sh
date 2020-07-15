@@ -18,17 +18,17 @@ export KF_DIR="${KF_DIR:-${CONFIG_DIR}/kubeflow-install}"
 export KFCTL="${KFCTL:-${CONFIG_DIR}/kfctl}"
 export KUBEFLOW_DEL_SCRIPT="${KF_DIR}/deepops-delete-kubeflow.sh"
 
-# Download URLs and versions
-export KFCTL_FILE=kfctl_v1.0-rc.1-0-g963c787_linux.tar.gz
-export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.0-rc.1/${KFCTL_FILE}"
+# Download URLs and versions # XXX: kfctl introcuded a version mismatch, this is naming only
+export KFCTL_FILE=kfctl_v1.0.2-0-ga476281_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.0.2
+export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.0.2/${KFCTL_FILE}"
 
 # Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
-export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/b37bad9eded2c47c54ce1150eb9e6edbfb47ceda/kfdef/kfctl_existing_arrikto.0.7.1.yaml"
-export CONFIG_FILE="${KF_DIR}/kfctl_existing_arrikto.0.7.1.yaml"
+export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/55d1a9c84ca796f9a098bbeec406acbdcfa6aebe/kfdef/kfctl_istio_dex.v1.0.2.yaml"
+export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.0.2.yaml" # https://github.com/kubeflow/manifests/releases/tag/v1.0.2
 
 # Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
-export NO_AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/v0.7-branch/kfdef/kfctl_k8s_istio.0.7.0.yaml"
-export NO_AUTH_CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.0.7.0.yaml"
+export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/928cf483361730121ac18bc4d0e7a9c129f15ee2/kfdef/kfctl_k8s_istio.yaml"
+export CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.yaml" #  Not v1.0.2 due to https://github.com/kubeflow/manifests/issues/991
 
 
 function help_me() {
@@ -37,14 +37,14 @@ function help_me() {
   echo "-p    Print out the connection info for Kubeflow"
   echo "-d    Delete Kubeflow from your system (skipping the CRDs and istio-system namespace that may have been installed with Kubeflow"
   echo "-D    Full Delete Kubeflow from your system along with all Kubeflow CRDs the istio-system namespace. WARNING, do not use this option if other components depend on istio."
-  echo "-x    Install Kubeflow without multi-user auth (this option is deprecated)"
-  echo "-c    Specify a different Kubeflow config to install with"
+  echo "-x    Install Kubeflow with multi-user auth (this utilizes Dex, the default is no multi-user auth)."
+  echo "-c    Specify a different Kubeflow config to install with (this option is deprecated)"
   echo "-w    Wait for Kubeflow homepage to respond"
 }
 
 
 function get_opts() {
-  while getopts "hpwc:xdD" option; do
+  while getopts "hpwc:xdDZ" option; do
     case $option in
       p)
         KUBEFLOW_PRINT=true
@@ -56,9 +56,8 @@ function get_opts() {
         KUBEFLOW_WAIT=true
         ;;
       x)
-	CONFIG_URI=${NO_AUTH_CONFIG_URI}
-	CONFIG_FILE=${NO_AUTH_CONFIG_FILE}
-	SKIP_LB=true
+	CONFIG_URI=${AUTH_CONFIG_URI}
+	CONFIG_FILE=${AUTH_CONFIG_FILE}
         ;;
       d)
         KUBEFLOW_DELETE=true
@@ -67,6 +66,10 @@ function get_opts() {
         KUBEFLOW_DELETE=true
         KUBEFLOW_FULL_DELETE=true
         ;;
+      Z)
+	# This is a dangerous command and is not included in the help
+	KUBEFLOW_EXTRA_FULL_DELETE=true
+	;;
       h)
         help_me
         exit 1
@@ -180,8 +183,11 @@ function tear_down() {
   kubectl delete ns ${namespaces}
 
   # There is an issues in the kfctl delete command that does not properly clean up and leaves NSs in a terminating state, this is a bit hacky but resolves it
-  # echo "Removing finalizers from all namespaces: ${namespaces}"
-  # fix_terminating_ns ${namespaces}
+  if [ "${KUBEFLOW_EXTRA_FULL_DELETE}" == "true" ]; then
+    sleep 10 # Give the other deletion steps proper time to cleanup
+    echo "Removing finalizers from all namespaces: ${namespaces}"
+    fix_terminating_ns ${namespaces}
+  fi
 
   if [ "${KUBEFLOW_FULL_DELETE}" == "true" ]; then
     # These should probably be deleted by kfctl, but they are not

@@ -39,6 +39,11 @@ chrony_config_server:
   - 2.pool.ntp.org
   - 3.pool.ntp.org
 
+# Enable docker iptables
+# If this isn't set, containers won't have access to the outside net
+# See https://github.com/kubernetes-sigs/kubespray/issues/2002
+docker_iptables_enabled: true
+
 
 ################################################################################
 # SOFTWARE                                                                     #
@@ -108,6 +113,8 @@ users:
 # NVIDIA                                                                       #
 ################################################################################
 # NVIDIA GPU configuration
+# Playbook: nvidia-cuda
+cuda_version: cuda-toolkit-11-0
 # Playbook: nvidia-set-gpu-clocks
 # Resets the Gpu clocks to the default values. (see the `--reset-gpu-clocks` flag in nvidia-smi for more)
 gpu_clock_reset: no
@@ -126,6 +133,8 @@ docker_version: '18.09'
 docker_dns_servers_strict: no
 docker_storage_options: -s overlay2
 #docker_options: "--bip=192.168.99.1/24"
+# Install DeepOps version of Docker on DGX
+docker_override_dgx: false
 
 # Enroot configuration
 # Playbook: slurm-perf, slurm-perf-cluster
@@ -211,6 +220,17 @@ maas_single_node_install: true
 
 maas_kvm: false
 
+################################################################################
+# SOFTWARE MODULES (SM)                                                        #
+################################################################################
+sm_prefix: /sw                                 # has to be in a shared location
+sm_module_root: "{{ sm_prefix }}/modules"
+sm_module_path: "{{ sm_module_root }}/all"
+sm_software_path: "{{ sm_prefix }}/software"
+sm_files_path: "{{ sm_prefix }}/easybuild_files"
+# need to put this in github/DeepOps
+sm_files_url: "https://github.com/DeepOps/easybuild_files.git" 
+sm_install_default: true         
 
 ################################################################################
 # Misc.                                                                        #
@@ -226,3 +246,7 @@ deepops_dir: /opt/deepops
 # Directory for python virtualenv
 # Roles: K8s GPU operator, GPU plugin, OpenShift/K8s
 deepops_venv: '{{ deepops_dir }}/venv'
+
+# OpenMPI
+# Playbook: openmpi
+openmpi_version: 4.0.3

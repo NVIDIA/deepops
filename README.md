@@ -16,7 +16,7 @@ Check out the [video tutorial](https://drive.google.com/file/d/1RNLQYlgJqE8JMv0n
 
 ## Releases
 
-Latest release: [DeepOps 20.02 Release](https://github.com/NVIDIA/deepops/releases/tag/20.02)
+Latest release: [DeepOps 20.06 Release](https://github.com/NVIDIA/deepops/releases/tag/20.06)
 
 It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally functional but may change significantly between releases.
 
@@ -33,7 +33,6 @@ DeepOps currently supports the following Linux distributions:
 * NVIDIA DGX OS 4
 * Ubuntu 18.04 LTS
 * CentOS 7
-* Red Hat Enterprise Linux 7
 
 ### Kubernetes
 

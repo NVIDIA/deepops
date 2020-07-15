@@ -23,93 +23,14 @@ spec:
       nodeSelector:
         hardware-type: NVIDIAGPU
       containers:
-      - image: quay.io/prometheus/node-exporter:v0.18.1
-        args:
-        - "--web.listen-address=0.0.0.0:9101"
-        - "--path.procfs=/host/proc"
-        - "--path.sysfs=/host/sys"
-        - "--collector.textfile.directory=/run/prometheus"
-        - "--no-collector.arp"
-        - "--no-collector.bcache"
-        - "--no-collector.bonding"
-          #- "--no-collector.boottime"
-        - "--no-collector.conntrack"
-        - "--no-collector.cpu"
-        - "--no-collector.diskstats"
-        - "--no-collector.edac"
-        - "--no-collector.entropy"
-          #- "--no-collector.exec"
-        - "--no-collector.filefd"
-        - "--no-collector.filesystem"
-        - "--no-collector.hwmon"
-        - "--no-collector.infiniband"
-        - "--no-collector.ipvs"
-        - "--no-collector.loadavg"
-        - "--no-collector.mdadm"
-        - "--no-collector.meminfo"
-          #- "--no-collector.netclass"
-        - "--no-collector.netdev"
-        - "--no-collector.netstat"
-        - "--no-collector.nfs"
-        - "--no-collector.nfsd"
-        - "--no-collector.sockstat"
-        - "--no-collector.stat"
-        - "--no-collector.time"
-        - "--no-collector.timex"
-        - "--no-collector.uname"
-        - "--no-collector.vmstat"
-        - "--no-collector.wifi"
-        - "--no-collector.xfs"
-        - "--no-collector.zfs"
-        name: node-exporter
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: 65534
-        ports:
-        - containerPort: 9101
-          hostPort: 9101
-          name: metrics
-        resources:
-          requests:
-            memory: 60Mi
-            cpu: 200m
-          limits:
-            memory: 100Mi
-            cpu: 400m
-        volumeMounts:
-        - name: proc
-          readOnly:  true
-          mountPath: /host/proc
-        - name: sys
-          readOnly: true
-          mountPath: /host/sys
-        - name: collector-textfiles
-          readOnly: true
-          mountPath: /run/prometheus
-      - image: nvcr.io/nvidia/k8s/dcgm-exporter:1.4.6
+      - image: nvidia/dcgm-exporter:1.7.2 # TODO: Update to use nvcr.io when available
         name: nvidia-dcgm-exporter
         securityContext:
           runAsNonRoot: false
           runAsUser: 0
-        volumeMounts:
-        - name: collector-textfiles
-          mountPath: /run/prometheus
       tolerations:
         - effect: NoSchedule
           operator: Exists
-      volumes:
-      - name: proc
-        hostPath:
-          path: /proc
-      - name: sys
-        hostPath:
-          path: /sys
-      - name: collector-textfiles
-        emptyDir:
-          medium: Memory
-      - name: dcgm-docker-hook
-        hostPath:
-          path: /usr/share/containers/docker/hooks.d
 ---
 apiVersion: v1
 kind: Service
@@ -124,7 +45,7 @@ metadata:
 spec:
   ports:
   - name: scrape
-    port: 9101
+    port: 9400
     protocol: TCP
   selector:
     app: dcgm-exporter

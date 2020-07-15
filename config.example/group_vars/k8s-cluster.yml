@@ -1,6 +1,9 @@
 ansible_become: true
 kubeadm_enabled: true
 kube_api_anonymous_auth: true
+kube_kubeadm_apiserver_extra_args:
+  service-account-issuer: "kubernetes.default.svc"
+  service-account-signing-key-file: "/etc/kubernetes/ssl/sa.key"
 # Set to false due to kubespray bug: https://github.com/kubernetes-sigs/kubespray/issues/5059
 kubectl_localhost: false
 kubeconfig_localhost: true
@@ -28,3 +31,8 @@ deepops_gpu_operator_enabled: false
 dashboard_enabled: true
 dashboard_image_tag: "v2.0.0-rc5"
 dashboard_image_repo: "kubernetesui/dashboard"
+
+# kubespray v2.13.1 deploys helm v3.1.2 which causes breaking changes in various
+# helm-deployable scripts
+# https://github.com/kubernetes-sigs/kubespray/pull/5503
+helm_version: "v2.16.1"

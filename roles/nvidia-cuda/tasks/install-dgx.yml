@@ -1,0 +1,18 @@
+---
+- name: DGX | Install CUDA on DGX-1
+  package:
+    name: "{{ cuda_dgx_override_version | default(cuda_dgx_1_version) }}"
+    state: present
+  when: ansible_product_name is search("DGX-1")
+
+- name: DGX | Install CUDA on DGX-2
+  package:
+    name: "{{ cuda_dgx_override_version | default(cuda_dgx_2_version) }}"
+    state: present
+  when: ansible_product_name is search("DGX-2")
+
+- name: DGX | Install CUDA on DGX A100
+  package:
+    name: "{{ cuda_dgx_override_version | default(cuda_dgx_a100_version) }}"
+    state: present
+  when: ansible_product_name is search("DGXA100")

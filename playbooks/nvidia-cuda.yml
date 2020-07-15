@@ -1,0 +1,36 @@
+---
+# Install NVIDIA CUDA (and driver if present)
+
+- hosts: all
+  become: true
+  tasks:
+    - name: Check for DGX packages
+      stat:
+        path: /etc/dgx-release
+      register: is_dgx
+
+    - name: install custom facts
+      include_role:
+        name: facts
+
+    - name: install nvidia driver
+      include_role:
+        name: nvidia.nvidia_driver
+      when:
+        - ansible_local['gpus']['count']
+        - is_dgx.stat.exists == False
+      tags:
+      - nvidia_driver
+
+    - name: install nvidia cuda toolkit
+      include_role:
+        name: nvidia-cuda
+
+    - name: test nvidia-smi
+      command: nvidia-smi
+      changed_when: false
+      when:
+        - ansible_local['gpus']['count']
+      tags:
+      - nvidia_driver
+  environment: "{{ proxy_env if proxy_env is defined else{} }}"

@@ -1,0 +1,4 @@
+---
+openmpi_deps:
+  - build-essential
+  - libnuma-dev

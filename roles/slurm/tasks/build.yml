@@ -4,7 +4,7 @@
     slurm_build: yes
 
 - name: check installed slurm version
-  shell: /usr/bin/sinfo --version | awk '{print $2}'
+  shell: "{{ slurm_install_prefix }}/bin/sinfo --version | awk '{print $2}'"
   register: sinfo_version
   ignore_errors: yes
 
@@ -20,6 +20,8 @@
 - name: install build dependencies
   apt:
     name: "{{ item }}"
+    state: present
+    update_cache: yes
   with_items: "{{ slurm_build_deps }}"
   when: ansible_distribution == 'Ubuntu'
 
@@ -27,6 +29,7 @@
   yum:
     name: "{{ item }}"
     state: present
+    update_cache: yes
   with_items: "{{ slurm_build_deps }}"
   when: ansible_os_family == 'RedHat'
 
@@ -46,7 +49,7 @@
 - name: remove slurm packages
   yum:
     name: "{{ item }}"
-    state: present
+    state: absent
   with_items:
     - slurm
   when: ansible_os_family == 'RedHat'
@@ -84,7 +87,7 @@
   when: slurm_build
 
 - name: configure
-  command: "./configure --prefix={{ slurm_install_prefix }} --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --without-shared-libslurm"
+  command: "{{ slurm_configure }}"
   args:
     chdir: "{{ slurm_build_dir }}"
   when: slurm_build

@@ -1,40 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_PROMETHEUS",
-      "label": "prometheus",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "5.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": "5.0.0"
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "5.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "singlestat",
-      "name": "Singlestat",
-      "version": "5.0.0"
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -51,12 +15,11 @@
   "editable": false,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": null,
-  "iteration": 1532624261866,
   "links": [],
   "panels": [
     {
       "collapsed": false,
+      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -75,13 +38,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 6,
         "x": 0,
         "y": 1
       },
+      "hiddenSeries": false,
       "id": 21,
       "legend": {
         "avg": false,
@@ -96,6 +67,9 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -131,6 +105,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "System Load",
       "tooltip": {
@@ -163,7 +138,11 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
@@ -171,13 +150,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 8,
         "x": 6,
         "y": 1
       },
+      "hiddenSeries": false,
       "id": 24,
       "legend": {
         "avg": false,
@@ -192,6 +179,9 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "connected",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -202,9 +192,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "dcgm_power_usage{instance=\"$hostname:9101\"}",
+          "expr": "DCGM_FI_DEV_POWER_USAGE{instance=\"$hostname:9400\"}",
           "format": "time_series",
           "hide": false,
+          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "GPU {{gpu}}",
           "refId": "A"
@@ -212,6 +203,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "GPU Power Usage",
       "tooltip": {
@@ -244,7 +236,11 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "cacheTimeout": null,
@@ -256,6 +252,12 @@
         "#d44a3a"
       ],
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "watt",
       "gauge": {
         "maxValue": 2400,
@@ -307,9 +309,11 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(dcgm_power_usage{instance=\"$hostname:9101\"})",
+          "expr": "sum(DCGM_FI_DEV_POWER_USAGE{instance=\"$hostname:9400\"})",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
+          "legendFormat": "",
           "refId": "A"
         }
       ],
@@ -332,13 +336,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 7,
         "x": 17,
         "y": 1
       },
+      "hiddenSeries": false,
       "id": 35,
       "legend": {
         "avg": false,
@@ -353,6 +365,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -363,7 +378,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(dcgm_nvlink_bandwidth_total{instance=\"$hostname:9101\"}[$__interval]))",
+          "expr": "sum(rate(DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL{instance=\"$hostname:9400\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -374,6 +389,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "NVLINK Bandwidth",
       "tooltip": {
@@ -406,7 +422,11 @@
           "min": null,
           "show": false
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
@@ -414,13 +434,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 6,
         "x": 0,
         "y": 6
       },
+      "hiddenSeries": false,
       "id": 46,
       "legend": {
         "avg": false,
@@ -435,6 +463,9 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "connected",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -468,6 +499,7 @@
           "expr": "node_memory_Cached_bytes{instance=\"$hostname:9100\"}",
           "format": "time_series",
           "hide": false,
+          "interval": "",
           "intervalFactor": 2,
           "legendFormat": "Cached",
           "refId": "C"
@@ -485,6 +517,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "System Memory Usage",
       "tooltip": {
@@ -517,7 +550,11 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
@@ -525,13 +562,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 8,
         "x": 6,
         "y": 6
       },
+      "hiddenSeries": false,
       "id": 25,
       "legend": {
         "avg": false,
@@ -546,6 +591,9 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "connected",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -556,9 +604,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "dcgm_gpu_temp{instance=\"$hostname:9101\"}",
+          "expr": "DCGM_FI_DEV_GPU_TEMP{instance=\"$hostname:9400\"}",
           "format": "time_series",
           "hide": false,
+          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "GPU {{gpu}}",
           "refId": "A"
@@ -566,6 +615,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "GPU Temperature",
       "tooltip": {
@@ -598,7 +648,11 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "cacheTimeout": null,
@@ -611,6 +665,12 @@
       ],
       "datasource": "$datasource",
       "description": "GPU Shutdown Temp           : 90 C\nGPU Slowdown Temp           : 87 C\nGPU Max Operating Temp      : 83 C",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "celsius",
       "gauge": {
         "maxValue": 90,
@@ -662,9 +722,11 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(dcgm_gpu_temp{instance=\"$hostname:9101\"})",
+          "expr": "avg(DCGM_FI_DEV_GPU_TEMP{instance=\"$hostname:9400\"})",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
+          "legendFormat": "",
           "refId": "A"
         }
       ],
@@ -687,13 +749,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 7,
         "x": 17,
         "y": 6
       },
+      "hiddenSeries": false,
       "id": 36,
       "legend": {
         "avg": false,
@@ -708,6 +778,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -723,17 +796,19 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(dcgm_pcie_tx_throughput{instance=\"$hostname:9101\"}[$__interval]))",
+          "expr": "sum(rate(DCGM_FI_DEV_PCIE_TX_THROUGHPUT{instance=\"$hostname:9400\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
+          "interval": "",
           "intervalFactor": 2,
           "legendFormat": "Tx",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(dcgm_pcie_rx_throughput{instance=\"$hostname:9101\"}[$__interval]))",
+          "expr": "sum(rate(DCGM_FI_DEV_PCIE_RX_THROUGHPUT{instance=\"$hostname:9400\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
+          "interval": "",
           "intervalFactor": 2,
           "legendFormat": "Rx",
           "refId": "B"
@@ -741,6 +816,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "PCIe Throughput",
       "tooltip": {
@@ -773,7 +849,11 @@
           "min": null,
           "show": false
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "cacheTimeout": null,
@@ -785,6 +865,12 @@
         "#d44a3a"
       ],
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "percentunit",
       "gauge": {
         "maxValue": 1,
@@ -836,23 +922,11 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "collectd_df_df_complex{exported_instance=\"$hostname\",df=\"root\",type=\"free\"} / (collectd_df_df_complex{exported_instance=\"$hostname\",df=\"root\",type=\"free\"} + collectd_df_df_complex{exported_instance=\"$hostname\",df=\"root\",type=\"used\"})",
+          "expr": "(sum(node_filesystem_size_bytes{device!=\"rootfs\",instance=\"$hostname:9100\"}) - sum(node_filesystem_avail_bytes{device!=\"rootfs\",instance=\"$hostname:9100\"})) / sum(node_filesystem_size_bytes{device!=\"rootfs\",instance=\"$hostname:9100\"})",
           "format": "time_series",
-          "hide": true,
-          "intervalFactor": 1,
-          "refId": "A"
-        },
-        {
-          "expr": "collectd_df_df_complex{exported_instance=\"$hostname\",df=\"root\",type=\"free\"}",
-          "format": "time_series",
-          "hide": true,
-          "intervalFactor": 1,
-          "refId": "B"
-        },
-        {
-          "expr": "(sum(node_filesystem_size{device!=\"rootfs\",instance=\"$hostname:9100\"}) - sum(node_filesystem_free{device!=\"rootfs\",instance=\"$hostname:9100\"})) / sum(node_filesystem_size{device!=\"rootfs\",instance=\"$hostname:9100\"})",
-          "format": "time_series",
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "C"
         }
       ],
@@ -879,6 +953,12 @@
         "#d44a3a"
       ],
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "percent",
       "gauge": {
         "maxValue": 100,
@@ -927,12 +1007,14 @@
         "lineColor": "rgb(31, 120, 193)",
         "show": false
       },
-      "tableColumn": "",
+      "tableColumn": "{instance=\"$hostname:9100\", job=\"cluster\", module=\"node-exporter\"}",
       "targets": [
         {
-          "expr": "((node_memory_MemTotal{instance=\"$hostname:9100\"} - node_memory_MemFree{instance=\"$hostname:9100\"}  - node_memory_Buffers{instance=\"$hostname:9100\"} - node_memory_Cached{instance=\"$hostname:9100\"}) / node_memory_MemTotal{instance=\"$hostname:9100\"}) * 100",
+          "expr": "((node_memory_MemTotal_bytes{instance=\"$hostname:9100\"} - node_memory_MemFree_bytes{instance=\"$hostname:9100\"}  - node_memory_Buffers_bytes{instance=\"$hostname:9100\"} - node_memory_Cached_bytes{instance=\"$hostname:9100\"}) / node_memory_MemTotal_bytes{instance=\"$hostname:9100\"}) * 100",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 2,
+          "legendFormat": "",
           "refId": "A"
         }
       ],
@@ -955,13 +1037,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 8,
         "x": 6,
         "y": 11
       },
+      "hiddenSeries": false,
       "id": 57,
       "legend": {
         "avg": false,
@@ -976,6 +1066,9 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "connected",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -986,9 +1079,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "dcgm_gpu_utilization{instance=\"$hostname:9101\"}",
+          "expr": "DCGM_FI_DEV_GPU_UTIL{instance=\"$hostname:9400\"}",
           "format": "time_series",
           "hide": false,
+          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "GPU {{gpu}}",
           "refId": "A"
@@ -996,6 +1090,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "GPU Utilization",
       "tooltip": {
@@ -1028,7 +1123,11 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "cacheTimeout": null,
@@ -1041,6 +1140,12 @@
       ],
       "datasource": "$datasource",
       "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "percent",
       "gauge": {
         "maxValue": 100,
@@ -1092,9 +1197,11 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(dcgm_gpu_utilization{instance=\"$hostname:9101\"})",
+          "expr": "avg(DCGM_FI_DEV_GPU_UTIL{instance=\"$hostname:9400\"})",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
+          "legendFormat": "",
           "refId": "A"
         }
       ],
@@ -1117,13 +1224,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 7,
         "x": 17,
         "y": 11
       },
+      "hiddenSeries": false,
       "id": 37,
       "legend": {
         "avg": false,
@@ -1138,6 +1253,9 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -1156,8 +1274,8 @@
           "expr": "sum(rate(node_network_transmit_bytes_total{instance=\"$hostname:9100\",device=~\"en.*\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
-          "interval": "",
-          "intervalFactor": 10,
+          "interval": ".5m",
+          "intervalFactor": 2,
           "legendFormat": "Transmit",
           "refId": "B"
         },
@@ -1166,14 +1284,15 @@
           "format": "time_series",
           "hide": false,
           "instant": false,
-          "interval": "",
-          "intervalFactor": 10,
+          "interval": ".5m",
+          "intervalFactor": 2,
           "legendFormat": "Receive",
           "refId": "A"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Ethernet Throughput",
       "tooltip": {
@@ -1206,7 +1325,11 @@
           "min": null,
           "show": false
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
@@ -1214,13 +1337,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 6,
         "x": 0,
         "y": 16
       },
+      "hiddenSeries": false,
       "id": 38,
       "legend": {
         "avg": false,
@@ -1235,6 +1366,9 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "connected",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -1250,7 +1384,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(node_disk_bytes_read{instance=\"$hostname:9100\"}[$__interval])",
+          "expr": "rate(node_disk_read_bytes_total{instance=\"$hostname:9100\"}[$__interval])",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -1260,7 +1394,7 @@
           "refId": "E"
         },
         {
-          "expr": "rate(node_disk_bytes_written{instance=\"$hostname:9100\"}[$__interval])",
+          "expr": "rate(node_disk_written_bytes_total{instance=\"$hostname:9100\"}[$__interval])",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -1282,6 +1416,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Disk Throughput",
       "tooltip": {
@@ -1314,7 +1449,11 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
@@ -1322,13 +1461,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 8,
         "x": 6,
         "y": 16
       },
+      "hiddenSeries": false,
       "id": 39,
       "legend": {
         "avg": false,
@@ -1343,6 +1490,9 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "connected",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -1353,9 +1503,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "dcgm_mem_copy_utilization{instance=\"$hostname:9101\"}",
+          "expr": "DCGM_FI_DEV_MEM_COPY_UTIL{instance=\"$hostname:9400\"}",
           "format": "time_series",
           "hide": false,
+          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "GPU {{gpu}}",
           "refId": "A"
@@ -1363,6 +1514,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "GPU Mem Cpy Utilization",
       "tooltip": {
@@ -1395,7 +1547,11 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "cacheTimeout": null,
@@ -1408,6 +1564,12 @@
       ],
       "datasource": "$datasource",
       "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "percent",
       "gauge": {
         "maxValue": 100,
@@ -1459,9 +1621,11 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(dcgm_mem_copy_utilization{instance=\"$hostname:9101\"})",
+          "expr": "avg(DCGM_FI_DEV_MEM_COPY_UTIL{instance=\"$hostname:9400\"})",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
+          "legendFormat": "",
           "refId": "A"
         }
       ],
@@ -1484,13 +1648,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 7,
         "x": 17,
         "y": 16
       },
+      "hiddenSeries": false,
       "id": 41,
       "legend": {
         "avg": false,
@@ -1505,6 +1677,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -1520,7 +1695,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(node_infiniband_port_data_transmitted_bytes{instance=\"$hostname:9100\"}[$__interval]))",
+          "expr": "sum(rate(node_infiniband_port_data_transmitted_bytes_total{instance=\"$hostname:9100\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -1529,7 +1704,7 @@
           "refId": "B"
         },
         {
-          "expr": "sum(rate(node_infiniband_port_data_received_bytes{instance=\"$hostname:9100\"}[$__interval]))",
+          "expr": "sum(rate(node_infiniband_port_data_received_bytes_total{instance=\"$hostname:9100\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -1541,6 +1716,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Infiniband Throughput",
       "tooltip": {
@@ -1573,7 +1749,11 @@
           "min": null,
           "show": false
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "cacheTimeout": null,
@@ -1585,6 +1765,12 @@
         "#d44a3a"
       ],
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "hertz",
       "gauge": {
         "maxValue": 100,
@@ -1665,6 +1851,12 @@
         "#d44a3a"
       ],
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "hertz",
       "gauge": {
         "maxValue": 100,
@@ -1741,13 +1933,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 8,
         "x": 6,
         "y": 21
       },
+      "hiddenSeries": false,
       "id": 42,
       "legend": {
         "avg": false,
@@ -1762,6 +1962,9 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "connected",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -1772,9 +1975,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "dcgm_fb_used{instance=\"$hostname:9101\"}/(dcgm_fb_used{instance=\"$hostname:9101\"}+dcgm_fb_free{instance=\"$hostname:9101\"})",
+          "expr": "DCGM_FI_DEV_FB_USED{instance=\"$hostname:9400\"}/(DCGM_FI_DEV_FB_USED{instance=\"$hostname:9400\"}+DCGM_FI_DEV_FB_FREE{instance=\"$hostname:9400\"})",
           "format": "time_series",
           "hide": false,
+          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "GPU {{gpu}}",
           "refId": "A"
@@ -1782,6 +1986,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "GPU Mem Usage",
       "tooltip": {
@@ -1815,7 +2020,11 @@
           "min": null,
           "show": false
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "cacheTimeout": null,
@@ -1827,6 +2036,12 @@
         "#d44a3a"
       ],
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "watt",
       "gauge": {
         "maxValue": 3200,
@@ -1875,7 +2090,7 @@
         "lineColor": "rgb(31, 120, 193)",
         "show": false
       },
-      "tableColumn": "",
+      "tableColumn": "node_hwmon_power_average_watt{chip=\"lnxsybus:00_acpi000d:00\", instance=\"$hostname:9100\", job=\"cluster\", module=\"node-exporter\", sensor=\"power1\"}",
       "targets": [
         {
           "expr": "node_hwmon_power_average_watt{instance=\"$hostname:9100\"}",
@@ -1908,13 +2123,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 5,
         "w": 7,
         "x": 17,
         "y": 21
       },
+      "hiddenSeries": false,
       "id": 52,
       "legend": {
         "avg": false,
@@ -1929,6 +2152,9 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -1948,6 +2174,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "System Power Draw",
       "tooltip": {
@@ -1980,7 +2207,11 @@
           "min": null,
           "show": false
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "cacheTimeout": null,
@@ -1992,6 +2223,12 @@
         "#d44a3a"
       ],
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "hertz",
       "gauge": {
         "maxValue": 100,
@@ -2043,9 +2280,11 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(dcgm_sm_clock{instance=\"$hostname:9101\"}*1000000)",
+          "expr": "avg(DCGM_FI_DEV_SM_CLOCK{instance=\"$hostname:9400\"}*1000000)",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
+          "legendFormat": "",
           "refId": "A"
         }
       ],
@@ -2072,6 +2311,12 @@
         "#d44a3a"
       ],
       "datasource": "$datasource",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "hertz",
       "gauge": {
         "maxValue": 100,
@@ -2123,9 +2368,11 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(dcgm_memory_clock{instance=\"$hostname:9101\"}*1000000)",
+          "expr": "avg(DCGM_FI_DEV_MEM_CLOCK{instance=\"$hostname:9400\"}*1000000)",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
+          "legendFormat": "",
           "refId": "A"
         }
       ],
@@ -2144,7 +2391,7 @@
     }
   ],
   "refresh": "30s",
-  "schemaVersion": 16,
+  "schemaVersion": 25,
   "style": "dark",
   "tags": [
     "cluster",
@@ -2171,17 +2418,23 @@
       },
       {
         "allValue": null,
-        "current": {},
+        "current": {
+          "selected": true,
+          "text": "$hostname",
+          "value": "$hostname"
+        },
         "datasource": "$datasource",
+        "definition": "",
         "hide": 0,
         "includeAll": false,
         "label": "server",
         "multi": false,
         "name": "hostname",
         "options": [],
-        "query": "query_result(label_replace(go_info{instance=~\".*:9101\"}, \"instance\", \"$1\", \"instance\", \"(.*):9101.*\"))",
+        "query": "query_result(label_replace(DCGM_FI_DEV_POWER_USAGE{instance=~\".*:9400\"}, \"instance\", \"$1\", \"instance\", \"(.*):9400.*\"))",
         "refresh": 1,
         "regex": "/.*instance=\"([^\"]*).*/",
+        "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],
@@ -2192,12 +2445,11 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {
     "refresh_intervals": [
-      "5s",
       "10s",
       "30s",
       "1m",
@@ -2223,5 +2475,5 @@
   "timezone": "browser",
   "title": "GPU Nodes",
   "uid": "syl6zhqkz",
-  "version": 22
+  "version": 1
 }

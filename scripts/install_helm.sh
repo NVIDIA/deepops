@@ -40,7 +40,7 @@ if ! type helm >/dev/null 2>&1 ; then
     chmod +x /tmp/get_helm.sh
     #sed -i 's/sudo//g' /tmp/get_helm.sh
     mkdir -p ${HELM_INSTALL_DIR}
-    HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v2.14.3 /tmp/get_helm.sh
+    HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v2.16.1 /tmp/get_helm.sh # Should match: config/group_vars/k8s-cluster.yml:helm_version:
 fi
 
 # We need to dynamically set up Helm args, so let's use an array

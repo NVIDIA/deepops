@@ -1,0 +1,8 @@
+---
+openmpi_version: 4.0.3
+openmpi_tag: "v{{ openmpi_version.split('.')[0] }}.{{ openmpi_version.split('.')[1] }}"
+openmpi_src_url: "https://download.open-mpi.org/release/open-mpi/{{ openmpi_tag }}/openmpi-{{ openmpi_version }}.tar.bz2"
+openmpi_build_dir: /tmp/openmpi-build
+openmpi_install_prefix: /usr/local
+openmpi_configure: "./configure --prefix={{ openmpi_install_prefix }} --disable-dependency-tracking --disable-getpwuid --with-pmix=internal"
+openmpi_force_rebuild: no

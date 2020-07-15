@@ -1,11 +1,13 @@
 epel_baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"
 epel_gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
 
-slurm_version: 19.05.6
+slurm_version: 20.02.1
 slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
 slurm_build_dir: /tmp/slurm-build
 slurm_config_dir: /etc/slurm
-slurm_install_prefix: /usr
+slurm_install_prefix: /usr/local
+slurm_configure:  './configure --prefix={{ slurm_install_prefix }} --disable-dependency-tracking --disable-debug --disable-x11 --enable-really-no-cray --enable-salloc-kill-cmd --with-hdf5=no --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --without-shared-libslurm --without-rpath --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}'
+slurm_force_rebuild: no
 
 slurm_cluster_name: deepops
 slurm_username: slurm
@@ -62,4 +64,19 @@ slurm_clear_old_prolog_epilog: false
 # Disable clearing of shared memory when user login shell exits
 slurm_fix_shm: true
 
-slurm_force_rebuild: no
+slurm_include_hwloc: yes
+hwloc_version: 2.2.0
+hwloc_tag: "v{{ hwloc_version.split('.')[0] }}.{{ hwloc_version.split('.')[1] }}"
+hwloc_src_url: "https://download.open-mpi.org/release/hwloc/{{ hwloc_tag }}/hwloc-{{ hwloc_version }}.tar.gz"
+hwloc_build_dir: /tmp/hwloc-build
+hwloc_install_prefix: /opt/deepops/hwloc
+hwloc_configure: "./configure --prefix={{ hwloc_install_prefix }} --enable-static --disable-cairo --disable-libxml2 --enable-netloc --enable-plugins"
+hwloc_force_rebuild: no
+
+slurm_include_pmix: yes
+pmix_version: 3.1.5
+pmix_src_url: "https://github.com/openpmix/openpmix/releases/download/v{{ pmix_version }}/pmix-{{ pmix_version }}.tar.bz2"
+pmix_build_dir: /tmp/pmix-build
+pmix_install_prefix: /opt/deepops/pmix
+pmix_configure: "./configure --prefix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}"
+pmix_force_rebuild: no
