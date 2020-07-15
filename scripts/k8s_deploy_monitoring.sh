@@ -132,7 +132,7 @@ function setup_prom_monitoring() {
 function setup_gpu_monitoring() {
     # Create GPU Dashboard config map
     if ! kubectl -n monitoring get configmap kube-prometheus-grafana-gpu >/dev/null 2>&1 ; then
-        kubectl create configmap kube-prometheus-grafana-gpu --from-file=${config_dir}/gpu-dashboard.json -n monitoring
+        kubectl create configmap kube-prometheus-grafana-gpu --from-file=${ROOT_DIR}/files/dashboards/gpu-dashboard.json -n monitoring
         kubectl -n monitoring label configmap kube-prometheus-grafana-gpu grafana_dashboard=1
     fi
 
