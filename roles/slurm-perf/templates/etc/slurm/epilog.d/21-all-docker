@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-set -ex
-
-command -v docker >/dev/null || exit 0  # docker not installed
-
-docker system prune --force --volumes

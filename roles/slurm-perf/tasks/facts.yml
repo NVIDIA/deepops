@@ -1,9 +1,0 @@
----
-- name: setup node-local facts
-  template:
-    src: etc/ansible/facts.d/slurm_node_config.fact
-    dest: /etc/ansible/facts.d/
-    mode: 0755
-  notify: regather local facts
-
-- meta: flush_handlers
