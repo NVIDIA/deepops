@@ -9,7 +9,7 @@
     - name: install custom facts module
       include_role:
         name: facts
-    - name: set compute fact
+    - name: set GPU fact
       set_fact:
         has_gpus: true
       when: ansible_local['gpus']['count']
