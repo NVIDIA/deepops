@@ -149,7 +149,8 @@ enroot_config: |
   ENROOT_RUNTIME_PATH {{ enroot_runtime_path }}
   ENROOT_CACHE_PATH {{ enroot_cache_path }}
   ENROOT_DATA_PATH {{ enroot_data_path }}
-enroot_environ_config_files:
+enroot_environ_config_files: []
+enroot_environ_config_files_dgx:
   - filename: 50-mellanox.env
     content: |
       MELLANOX_VISIBLE_DEVICES=all

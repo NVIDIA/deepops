@@ -1,4 +1,0 @@
----
-_log_dir: /var/log/slurm
-_spool_dir: /var/lib/slurm
-_sysconf_dir: /etc/slurm

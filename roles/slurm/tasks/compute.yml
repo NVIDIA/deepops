@@ -50,11 +50,24 @@
     - /etc/slurm
     - /etc/slurm/shared
     - /etc/slurm/shared/bin
+    - "{{ slurm_sysconf_dir }}"
     - /var/log/slurm
     - /var/spool/slurm/d
   tags:
     - prolog
     - epilog
+
+- name: configure slurmd for pmix
+  blockinfile:
+    path: "{{ slurm_sysconf_dir }}/slurmd"
+    create: yes
+    block: |
+      PMIX_MCA_ptl=^usock
+      PMIX_MCA_psec=none
+      PMIX_SYSTEM_TMPDIR=/var/empty
+      PMIX_MCA_gds=hash
+  notify: restart slurmd
+  tags: config
 
 - name: copy shared scripts
   copy:

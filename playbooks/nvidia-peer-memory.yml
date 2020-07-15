@@ -1,0 +1,31 @@
+---
+- hosts: all
+  become: true
+  tasks:
+
+    - name: Check for DGX packages
+      stat:
+        path: /etc/dgx-release
+      register: is_dgx
+
+    - name: Autoinstall DKMS modules
+      command: dkms autoinstall
+      when:
+        - ansible_local['gpus']['count']
+        - is_dgx.stat.exists == True
+
+    - name: Modprobe nv_peer_mem
+      modprobe:
+        name: nv_peer_mem
+        state: present
+      when:
+        - ansible_local['gpus']['count']
+        - is_dgx.stat.exists == True
+
+    - name: Start nv_peer_mem service
+      service:
+        name: nv_peer_mem
+        state: started
+      when:
+        - ansible_local['gpus']['count']
+        - is_dgx.stat.exists == True

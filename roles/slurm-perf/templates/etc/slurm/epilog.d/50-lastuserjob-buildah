@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-set -ex
-
-command -v buildah >/dev/null || exit 0  # buildah not installed
-
-sed -i "/^${SLURM_JOB_USER}/d" /etc/subuid
-sed -i "/^${SLURM_JOB_USER}/d" /etc/subgid

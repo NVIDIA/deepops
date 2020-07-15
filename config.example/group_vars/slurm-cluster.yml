@@ -14,7 +14,6 @@ slurm_password: ReplaceWithASecurePasswordInTheVault
 slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 #slurm_max_job_timelimit: INFINITE
 #slurm_default_job_timelimit:
-#slurm_install_pyxis: yes
 slurm_controller_host: "{{ groups['slurm-master'][0] }}"
 slurm_compute_hosts: "{{ groups['slurm-node'] }}"
 slurm_enable_monitoring: true
@@ -61,8 +60,16 @@ node_uri: /node
 rnode_uri: /rnode
 
 ################################################################################
-# Allow the User Permision to Set GPU Clocks                                    #
+# Allow the User Permision to Set GPU Clocks                                   #
 ################################################################################
 allow_user_set_gpu_clocks: no
 
-
+################################################################################
+# Enroot & Pyxis                                                               #
+################################################################################
+slurm_install_enroot: true
+slurm_install_pyxis: true
+enroot_deb_packages:
+  - 'https://github.com/NVIDIA/enroot/releases/download/v3.1.0/enroot_3.1.0-1_amd64.deb'
+  - 'https://github.com/NVIDIA/enroot/releases/download/v3.1.0/enroot+caps_3.1.0-1_amd64.deb'
+slurm_pyxis_tarball_url: https://github.com/NVIDIA/pyxis/archive/v0.7.0.tar.gz
