@@ -3,13 +3,23 @@
 - include: nvidia-driver.yml
 - include: nvidia-docker.yml
 
+- hosts: slurm-master
+  tasks:
+    - name: set controller fact
+      set_fact:
+        is_prometheus_server: true
+
 - hosts:  "{{ hostlist | default('all') }}"
   become: yes
   tasks:
     - name: install custom facts module
       include_role:
         name: facts
+    - name: set compute fact
+      set_fact:
+        is_prometheus_client: true
+      when: ansible_local['gpus']['count']
     - name: configure dcgm exporter
       include_role:
         name: nvidia-dcgm-exporter
-      when: ansible_local['gpus']['count'] and (ansible_distribution == "Ubuntu" or ansible_os_family == "RedHat")
+      when: ansible_distribution == "Ubuntu" or ansible_os_family == "RedHat"
