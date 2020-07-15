@@ -6,6 +6,3 @@ node_exporter_enabled: yes
 
 prometheus_config_dir: /etc/prometheus
 prometheus_cfg_endpoint_dir: "{{ prometheus_config_dir }}/endpoints"
-
-is_prometheus_server: no
-is_prometheus_client: no

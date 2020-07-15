@@ -1,18 +1,6 @@
 ---
 - include: docker.yml
 
-- hosts: slurm-master
-  tasks:
-    - name: set controller fact
-      set_fact:
-        is_prometheus_server: true
-
-- hosts: slurm-node
-  tasks:
-    - name: set compute fact
-      set_fact:
-        is_prometheus_client: true
-
 - hosts: "{{ hostlist | default('all') }}"
   become: yes
   tasks:

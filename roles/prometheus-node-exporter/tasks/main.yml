@@ -3,13 +3,11 @@
   file:
     path: "{{ prometheus_config_dir }}"
     state: directory
-  when: is_prometheus_server
 
 - name: create endpoints config dir
   file:
     path: "{{ prometheus_cfg_endpoint_dir }}"
     state: directory
-  when: is_prometheus_server
 
 - name: install config file
   template:
@@ -18,7 +16,6 @@
     owner: root
     group: root
     mode: 0644
-  when: is_prometheus_server
 
 - name: install systemd unit file
   template:
@@ -27,7 +24,6 @@
     owner: root
     group: root
     mode: 0644
-  when: is_prometheus_client
 
 - name: configure service
   systemd:
@@ -36,4 +32,3 @@
     enabled: "{{ node_exporter_enabled }}"
     daemon_reload: yes
   notify: restart node-exporter
-  when: is_prometheus_client
