@@ -1,4 +1,22 @@
 ---
+- name: create config dir
+  file:
+    path: "{{ prometheus_config_dir }}"
+    state: directory
+
+- name: create endpoints config dir
+  file:
+    path: "{{ prometheus_cfg_endpoint_dir }}"
+    state: directory
+
+- name: install config file
+  template:
+    src: templates/dcgm-exporter.yml.j2
+    dest: "{{ prometheus_cfg_endpoint_dir }}/dcgm-exporter.yml"
+    owner: root
+    group: root
+    mode: 0644
+
 - name: install systemd unit file
   template:
     src: templates/docker.dcgm-exporter.service.j2
@@ -6,6 +24,8 @@
     owner: root
     group: root
     mode: 0644
+  when: has_gpus
+  notify: restart dcgm
 
 - name: configure service
   systemd:
@@ -14,3 +34,4 @@
     enabled: "{{ nvidia_dcgm_enabled }}"
     daemon_reload: yes
   notify: restart dcgm
+  when: has_gpus

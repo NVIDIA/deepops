@@ -36,9 +36,9 @@
   when: slurm_enable_monitoring
 - include: prometheus-slurm-exporter.yml hostlist=slurm-master
   when: slurm_enable_monitoring
-- include: prometheus-node-exporter.yml hostlist=slurm-cluster
+- include: prometheus-node-exporter.yml
   when: slurm_enable_monitoring
-- include: nvidia-dcgm-exporter.yml hostlist=slurm-node
+- include: nvidia-dcgm-exporter.yml
   when: slurm_enable_monitoring
 
 # Install Singularity

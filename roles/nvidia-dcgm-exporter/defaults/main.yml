@@ -3,3 +3,8 @@ nvidia_dcgm_prom_dir: "/run/prometheus"
 nvidia_dcgm_svc_name: "docker.dcgm-exporter.service"
 nvidia_dcgm_state: started
 nvidia_dcgm_enabled: yes
+
+prometheus_config_dir: /etc/prometheus
+prometheus_cfg_endpoint_dir: "{{ prometheus_config_dir }}/endpoints"
+
+has_gpus: false

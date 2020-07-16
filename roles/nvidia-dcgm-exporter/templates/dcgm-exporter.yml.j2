@@ -1,0 +1,3 @@
+- targets: [{{ groups['slurm-node'] | zip_longest([], fillvalue=':9400') | map('join') | join(',') }}]
+  labels:
+    module: dcgm-exporter
