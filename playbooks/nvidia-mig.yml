@@ -11,6 +11,7 @@
       - nvidia-fabricmanager
       - nv_peer_mem
       - dcgm
+      - docker
     nv_modules:
       - nv_peer_mem
       - nvidia_uvm
