@@ -2,25 +2,69 @@
 - name: include os specific variables
   include_vars: ubuntu.yml
 
-- name: remove ppa
+# Housekeeping
+- name: register DGX product name
+  command: "dmidecode --string system-product-name"
+  register: dgx_name
+
+- name: register DGX-1 serial number
+  command: "dmidecode --string system-serial-number"
+  register: dgx1_serial
+  when: ansible_product_name is search("DGX-1")
+
+- name: register DGX-2 serial number
+  command: "dmidecode --string chassis-serial-number"
+  register: dgx2_serial
+  when: ansible_product_name is search("DGX-2")
+
+- name: figure out which serial number we ended up with
+  set_fact:
+    dgx_serial: "{{ dgx1_serial.stdout }}"
+  when: dgx1_serial.skipped is not defined
+
+- name: figure out which serial number we ended up with
+  set_fact:
+    dgx_serial: "{{ dgx2_serial.stdout }}"
+  when: dgx2_serial.skipped is not defined
+
+- name: fail if we don't recognize the DGX system
+  fail:
+    msg: "Unknown DGX model: {{ ansible_product_name }}"
+  when: dgx_serial is undefined
+
+- name: update dgx platform file
+  blockinfile:
+    path: /etc/dgx-release
+    create: yes
+    block: |
+      DGX_NAME="DGX Server"
+      DGX_PRETTY_NAME="NVIDIA DGX Server"
+      DGX_SWBUILD_DATE="{{ DGX_SWBUILD_DATE }}"
+      DGX_SWBUILD_VERSION="{{ DGX_SWBUILD_VERSION }}"
+      DGX_COMMIT_ID="{{ DGX_COMMIT_ID }}"
+      DGX_PLATFORM="DGX Server for {{ dgx_name.stdout }}"
+      DGX_SERIAL_NUMBER="{{ dgx_serial }}"
+
+# Repos and installs
+- name: remove ubuntu nvidia driver ppa if installed
   apt_repository:
     repo: ppa:graphics-drivers/ppa
     state: absent
   when: not dgx_full_upgrade
 
-- name: add repo keys
+- name: add DGX repo keys
   apt:
     deb: "{{ nvidia_dgx_ubuntu_gpgkey }}"
   when: not dgx_full_upgrade
 
-- name: add repo
+- name: add DGX repo
   template:
     src: dgx.list.j2
     dest: /etc/apt/sources.list.d/dgx.list
     mode: 0644
   when: not dgx_full_upgrade
 
-- name: install dgx packages
+- name: install DGX-1 packages
   apt:
     name: "{{ item }}"
     state: present
@@ -33,7 +77,7 @@
   notify:
     - restart docker
 
-- name: install dgx packages
+- name: install DGX-2 packages
   apt:
     name: "{{ item }}"
     state: present
@@ -46,6 +90,40 @@
   notify:
     - restart docker
 
+# Post-install stuff from preseed
+- name: add ipmi kernel module at boot
+  lineinfile:
+    path: /etc/modules
+    line: ipmi_devintf
+
+- name: enable openibd service
+  systemd:
+    name: openibd
+    state: started
+    enabled: yes
+
+- name: configure nv peer mem service startup
+  command: /usr/sbin/update-rc.d nv_peer_mem defaults
+
+- name: configure default ubuntu repos
+  template:
+    src: sources.list.j2
+    dest: /etc/apt/sources.list
+    mode: 0644
+
+# setup_data_drive "/dev/sdb1" "dgx1cache"
+- name: create raid directory for raid cache mount point
+  file:
+    path: "{{ cachefilesd_cache_dir }}"
+    state: directory
+    mode: "{{ cachefilesd_cache_dir_mode }}"
+
+- name: configure cachefilesd
+  template:
+    src: cachefilesd.conf.j2
+    dest: /etc/cachefilesd.conf
+
+# OTA upgrade stuff
 - name: install dgx cuda 10.1 repo
   apt:
     name: dgx-bionic-r418+cuda10.1-repo
