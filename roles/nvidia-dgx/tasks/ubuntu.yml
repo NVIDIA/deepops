@@ -50,19 +50,26 @@
   apt_repository:
     repo: ppa:graphics-drivers/ppa
     state: absent
-  when: not dgx_full_upgrade
 
 - name: add DGX repo keys
   apt:
     deb: "{{ nvidia_dgx_ubuntu_gpgkey }}"
-  when: not dgx_full_upgrade
 
 - name: add DGX repo
   template:
     src: dgx.list.j2
     dest: /etc/apt/sources.list.d/dgx.list
     mode: 0644
-  when: not dgx_full_upgrade
+
+- name: update apt cache
+  apt:
+    update_cache: yes
+
+- name: add DGX cuda 10.1 repo
+  apt:
+    name: dgx-bionic-r418+cuda10.1-repo
+    update_cache: yes
+    dpkg_options: "force-confdef,force-confold"
 
 - name: install DGX-1 packages
   apt:
@@ -71,9 +78,7 @@
     update_cache: yes
   with_items:
     - "{{ PKGS_DGX1_ALL }}"
-  when:
-    - ansible_product_name is search("DGX-1")
-    - not dgx_full_upgrade
+  when: ansible_product_name is search("DGX-1")
   notify:
     - restart docker
 
@@ -84,9 +89,7 @@
     update_cache: yes
   with_items:
     - "{{ PKGS_DGX2_ALL }}"
-  when:
-    - ansible_product_name is search("DGX-2")
-    - not dgx_full_upgrade
+  when: ansible_product_name is search("DGX-2")
   notify:
     - restart docker
 
@@ -122,22 +125,3 @@
   template:
     src: cachefilesd.conf.j2
     dest: /etc/cachefilesd.conf
-
-# OTA upgrade stuff
-- name: install dgx cuda 10.1 repo
-  apt:
-    name: dgx-bionic-r418+cuda10.1-repo
-    update_cache: yes
-    dpkg_options: "force-confdef,force-confold"
-  when: dgx_full_upgrade
-
-- name: perform OTA upgrade to latest release (this takes a while)
-  apt:
-    upgrade: full
-    update_cache: yes
-    dpkg_options: "force-confdef,force-confold"
-  when: dgx_full_upgrade
-
-- name: reboot after full OTA upgrade
-  reboot:
-  when: dgx_full_upgrade

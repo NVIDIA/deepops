@@ -15,3 +15,9 @@
 - name: configure raid array
   include_tasks: configure-raid.yml
   when: dgx_configure_raid_array
+
+- name: perform full OS upgrade on Ubuntu
+  include_tasks: ubuntu-upgrade.yml
+  when:
+    - dgx_full_upgrade
+    - ansible_distribution == 'Ubuntu'

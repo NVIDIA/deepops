@@ -1,6 +1,6 @@
-DGX_SWBUILD_DATE: 2020-03-04
-DGX_SWBUILD_VERSION: 4.4.0
-DGX_COMMIT_ID: ee09ebc
+DGX_SWBUILD_DATE: 2020-06-24
+DGX_SWBUILD_VERSION: 4.5.0
+DGX_COMMIT_ID: ee0e5c1
 
 dgx_extra_packages:
   - dgx-ast-modeset
@@ -81,7 +81,7 @@ PKGS_DRIVER:
 PKGS_DGX1_DGX2:
   - dgx-ipmisol
   - nvsm-cli
-  - mlnx-pxe-setup
+    #- mlnx-pxe-setup
 
 PKGS_KVM_ONLY:
   - parted
