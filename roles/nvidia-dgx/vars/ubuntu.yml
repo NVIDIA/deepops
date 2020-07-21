@@ -123,6 +123,8 @@ PKGS_DGXA100_ONLY:
   - nv-common-apis
   - nv-env-paths
   - nvgpu-services-list
+  - nvidia-peer-memory
+  - nvidia-peer-memory-dkms
 
 PKGS_MELLANOX:
   - dapl2-utils
