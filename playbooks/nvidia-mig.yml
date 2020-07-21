@@ -1,0 +1,108 @@
+---
+# Enable/disable MIG mode
+# run with tags --enable or --disable
+- hosts: all
+  become: yes
+
+  vars:
+    nv_services:
+      - nvsm
+      - nvidia-persistenced
+      - nvidia-fabricmanager
+      - nv_peer_mem
+      - dcgm
+      - docker
+    nv_modules:
+      - nv_peer_mem
+      - nvidia_uvm
+      - nvidia_drm
+      - nvidia_modeset
+      - nvidia
+
+  tasks:
+    # Check for MIG-capable devices
+    - name: check for MIG capable devices
+      command: nvidia-smi --query-gpu=pci.bus_id,mig.mode.current --format=csv,noheader
+      register: has_mig
+
+    # Pre-tasks
+    - name: stop system services
+      systemd:
+        state: stopped
+        enabled: no
+        name: "{{ item }}"
+      with_items: "{{ nv_services }}"
+      tags: enable, disable, never
+    - name: unload drivers
+      modprobe:
+        state: absent
+        name: "{{ item }}"
+      with_items: "{{ nv_modules }}"
+      tags: enable, disable, never
+
+    # Manage MIG
+    - name: enable MIG mode
+      command: nvidia-smi -mig 1
+      tags: enable, never
+    - name: disable MIG mode
+      command: nvidia-smi -mig 0
+      tags: disable, never
+
+    # Post-tasks
+    - name: wait for MIG stuff to settle down and nvidia-persistenced to start again
+      pause:
+        seconds: 20
+      tags: enable, disable, never
+    - name: stop system services
+      systemd:
+        state: stopped
+        enabled: no
+        name: "{{ item }}"
+      with_items: "{{ nv_services }}"
+      tags: enable, disable, never
+    - name: unload drivers
+      modprobe:
+        state: absent
+        name: "{{ item }}"
+      with_items: "{{ nv_modules }}"
+      tags: enable, disable, never
+    - name: start fabric manager
+      systemd:
+        state: started
+        name: nvidia-fabricmanager
+      tags: enable, disable, never
+    - name: stop nvidia-persistenced again
+      systemd:
+        state: stopped
+        name: nvidia-persistenced
+      tags: enable, disable, never
+    - name: reset GPUs
+      command: nvidia-smi --gpu-reset
+      tags: enable, disable, never
+    - name: load drivers
+      modprobe:
+        state: present
+        name: "{{ item }}"
+      with_items: "{{ nv_modules }}"
+      ignore_errors: true
+      tags: enable, disable, never
+    - name: start system services
+      systemd:
+        state: started
+        enabled: yes
+        name: "{{ item }}"
+      with_items: "{{ nv_services }}"
+      ignore_errors: true
+      tags: enable, disable, never
+
+    # Permissions
+    - name: grant user permissions to manage MIG instances
+      file:
+        path: "{{ item }}"
+        owner: root
+        group: root
+        mode: '0444'
+      with_items:
+        - /proc/driver/nvidia/capabilities/mig/config
+        - /proc/driver/nvidia/capabilities/mig/monitor
+      tags: enable, never
