@@ -81,7 +81,6 @@ PKGS_DRIVER:
   - nvidia-modprobe
 
 PKGS_DGX1_DGX2:
-  - dgx-ipmisol
   - nvsm
   - nvsm-cli
 

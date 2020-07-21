@@ -2,6 +2,10 @@
 - name: include os specific variables
   include_vars: ubuntu.yml
 
+- name: include DGXA100 specific variables
+  include_vars: dgxa100.yml
+  when: ansible_product_name is search("DGXA100")
+
 # Housekeeping
 - name: register DGX product name
   command: "dmidecode --string system-product-name"
@@ -128,6 +132,12 @@
     update_cache: yes
   with_items:
     - "{{ dgx_extra_packages }}"
+
+- name: add DGX IPMI SOL package
+  apt:
+    name: dgx-ipmisol
+    state: present
+  when: dgx_name is search("DGX")
  
 # Post-install stuff from preseed
 - name: add ipmi kernel module at boot
@@ -178,10 +188,3 @@
   template:
     src: cachefilesd.conf.j2
     dest: /etc/cachefilesd.conf
-
-# Misc stuff
-- name: remove DGX IPMI SOL package if it might break things
-  apt:
-    name: dgx-ipmisol
-    state: absent
-  when: dgx_name is search("VMware")
