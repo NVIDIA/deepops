@@ -17,6 +17,11 @@
   register: dgx2_serial
   when: ansible_product_name is search("DGX-2")
 
+- name: register DGXA100 serial number
+  command: "dmidecode --string chassis-serial-number"
+  register: dgxa100_serial
+  when: ansible_product_name is search("DGXA100")
+
 - name: figure out which serial number we ended up with
   set_fact:
     dgx_serial: "{{ dgx1_serial.stdout }}"
@@ -26,6 +31,11 @@
   set_fact:
     dgx_serial: "{{ dgx2_serial.stdout }}"
   when: dgx2_serial.skipped is not defined
+
+- name: figure out which serial number we ended up with
+  set_fact:
+    dgx_serial: "{{ dgxa100_serial.stdout }}"
+  when: dgxa100_serial.skipped is not defined
 
 - name: fail if we don't recognize the DGX system
   fail:
@@ -71,6 +81,13 @@
     update_cache: yes
     dpkg_options: "force-confdef,force-confold"
 
+- name: add DGXA100 repo
+  apt:
+    name: dgx-bionic-4.99-repo
+    update_cache: yes
+    dpkg_options: "force-confdef,force-confold"
+  when: ansible_product_name is search("DGXA100")
+
 - name: install DGX-1 packages
   apt:
     name: "{{ item }}"
@@ -93,6 +110,25 @@
   notify:
     - restart docker
 
+- name: install DGXA100 packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - "{{ PKGS_DGXA100_ALL }}"
+  when: ansible_product_name is search("DGXA100")
+  notify:
+    - restart docker
+
+- name: install extra DGX packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - "{{ dgx_extra_packages }}"
+ 
 # Post-install stuff from preseed
 - name: add ipmi kernel module at boot
   lineinfile:
@@ -114,6 +150,23 @@
     dest: /etc/apt/sources.list
     mode: 0644
 
+- name: enable nvidia fabricmanager
+  systemd:
+    name: nvidia-fabricmanager
+    state: started
+    enabled: yes
+  when: ansible_product_name is search("DGXA100")
+
+- name: disable srp services
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  when: ansible_product_name is search("DGXA100")
+  with_items:
+    - srp_daemon
+    - srptools
+
 # setup_data_drive "/dev/sdb1" "dgx1cache"
 - name: create raid directory for raid cache mount point
   file:
@@ -125,3 +178,10 @@
   template:
     src: cachefilesd.conf.j2
     dest: /etc/cachefilesd.conf
+
+# Misc stuff
+- name: remove DGX IPMI SOL package if it might break things
+  apt:
+    name: dgx-ipmisol
+    state: absent
+  when: dgx_name is search("VMware")
