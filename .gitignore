@@ -11,3 +11,7 @@
 /galaxy-roles/
 /k8s-config/
 /kubectl
+/src/python/.eggs
+/src/python/build
+/src/python/*.egg-info
+/src/python/dist
