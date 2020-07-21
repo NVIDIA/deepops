@@ -147,6 +147,13 @@ function stand_up() {
   # Initialize and apply the Kubeflow project using the specified config. We do this in two steps to allow a chance to customize the config
   cd ${KF_DIR}
   ${KFCTL} build -V -f ${CONFIG_URI}
+
+  # Occassionally the kfctl will fail, if this occurs halt all installation
+  if [ $? != 0 ]; then
+    echo -e "\nDeepOps ERROR: Failure building Kubeflow Manifest at ${CONFIG_URI} in ${KF_DIR}"
+     exit 1
+  fi
+
   sed -i '/metadata:.*/a\  ClusterName: cluster.local' ${CONFIG_FILE} # BUGFIX: Need to add the ClusterName for proper deletion:https://github.com/kubeflow/kubeflow/issues/4815
 
   # Update Kubeflow with the NGC containers and NVIDIA configurations
