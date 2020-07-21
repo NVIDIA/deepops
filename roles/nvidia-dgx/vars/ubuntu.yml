@@ -239,12 +239,9 @@ PKGS_DGX2_ALL:
 PKGS_DGXA100_ALL:
   - "{{ PKGS_NONVM }}"
   - "{{ PKGS_COMMON }}"
-    #- "{{ PKGS_DRIVER }}"
-    #- "{{ PKGS_KVM_DGX2 }}"
   - "{{ PKGS_DGX1_DGX2 }}"
   - "{{ PKGS_DGX2_ONLY }}"
   - "{{ PKGS_DGXA100_ONLY }}"
-    #- "{{ PKGS_MELLANOX }}"
   - "{{ PKGS_MLNX_UPDATER }}"
   - "{{ PKGS_DOCKER }}"
   - "{{ PKGS_DGXA100_CONFIG }}"
