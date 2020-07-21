@@ -149,7 +149,8 @@ function stand_up() {
   ${KFCTL} build -V -f ${CONFIG_URI}
 
   # Update Kubeflow with the NGC containers and NVIDIA configurations
-  ${SCRIPT_DIR}/update_kubeflow_config.py
+  # BUG: Commented out until NGC containers add Kubeflow support, see https://github.com/NVIDIA/deepops/tree/master/containers/ngc
+  # ${SCRIPT_DIR}/update_kubeflow_config.py
 
   # XXX: Add potential CONFIG customizations here before applying
   ${KFCTL} apply -V -f ${CONFIG_FILE}
