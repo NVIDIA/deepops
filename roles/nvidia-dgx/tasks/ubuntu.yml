@@ -6,6 +6,12 @@
   include_vars: dgxa100.yml
   when: ansible_product_name is search("DGXA100")
 
+- name: install dmidecode
+  apt:
+    name: dmidecode
+    state: present
+    update_cache: yes
+
 # Housekeeping
 - name: register DGX product name
   command: "dmidecode --string system-product-name"
