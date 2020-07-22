@@ -142,7 +142,7 @@ function stand_up() {
 
   # Make cleanup scripts first in case deployment fails
   # TODO: This kfctl delete seems to be failing due to a Kubeflow config bug
-  echo "cd ${KF_DIR} && ${KFCTL} delete -V -f ${CONFIG_FILE} --delete_storage; cd && sudo rm -rf ${KF_DIR}" > ${KUBEFLOW_DEL_SCRIPT}
+  echo "cd ${KF_DIR} && ${KFCTL} delete -V -f ${CONFIG_FILE} --force-deletion --delete_storage; cd && sudo rm -rf ${KF_DIR}" > ${KUBEFLOW_DEL_SCRIPT}
   chmod +x ${KUBEFLOW_DEL_SCRIPT}
 
   # Initialize and apply the Kubeflow project using the specified config. We do this in two steps to allow a chance to customize the config
