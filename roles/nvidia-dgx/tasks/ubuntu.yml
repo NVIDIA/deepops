@@ -194,3 +194,19 @@
   template:
     src: cachefilesd.conf.j2
     dest: /etc/cachefilesd.conf
+
+# Misc stuff
+- name: enable and start {{ item }} service
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - nvidia-persistenced
+    - dcgm
+
+- name: restart docker service just in case...
+  systemd:
+    name: docker
+    state: restarted
+    enabled: yes
