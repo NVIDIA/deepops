@@ -19,8 +19,8 @@ export KFCTL="${KFCTL:-${CONFIG_DIR}/kfctl}"
 export KUBEFLOW_DEL_SCRIPT="${KF_DIR}/deepops-delete-kubeflow.sh"
 
 # Download URLs and versions # XXX: kfctl introcuded a version mismatch, this is naming only
-export KFCTL_FILE=kfctl_v1.0.2-0-ga476281_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.0.2
-export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.0.2/${KFCTL_FILE}"
+export KFCTL_FILE=kfctl_v1.1-rc.1-0-g3e61b81_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.1-rc.1
+export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.1-rc.1/${KFCTL_FILE}"
 
 # Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
 export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/55d1a9c84ca796f9a098bbeec406acbdcfa6aebe/kfdef/kfctl_istio_dex.v1.0.2.yaml"
