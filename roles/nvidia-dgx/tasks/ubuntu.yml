@@ -91,6 +91,12 @@
     update_cache: yes
     dpkg_options: "force-confdef,force-confold"
 
+- name: add DGX cuda 11.0 repo
+  apt:
+    name: dgx-bionic-r450+cuda11.0-repo
+    update_cache: yes
+    dpkg_options: "force-confdef,force-confold"
+
 - name: add DGXA100 repo
   apt:
     name: dgx-bionic-4.99-repo
