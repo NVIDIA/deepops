@@ -14,7 +14,7 @@ Currently, only clusters built with DGX-1V-16GB, DGX-1V-32GB, and DGX2 are suppo
 
 ## Getting started
 
-The easiest way to get started is to run launch_experiment_slurm.sh with no options:
+The easiest way to get started is to place the hpl binary in the hpl-burnin directory and run launch_experiment_slurm.sh from it without any options.
 
 ```
 ./launch_experiment_slurm.sh --sys <SYSTEM> --count <NODES_PER_JOBS> 
@@ -72,6 +72,6 @@ Experiments are verified when all jobs are complete.  See the file verify_result
 ./launch_slurm_experiment.py -c 1 -s dgx1v_16G
 ```
 
-## How to create a HPL.dat file for a missing configuration.
+## How to create a HPL.dat file for a generic configuration.
 
 Script to be provided.
