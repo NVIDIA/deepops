@@ -14,7 +14,7 @@ Currently, only clusters built with DGX-1V-16GB, DGX-1V-32GB, and DGX2 are suppo
 
 ## Getting started
 
-The easiest way to get started is to place the hpl binary in the hpl-burnin directory and run launch_experiment_slurm.sh from it without any options.
+First copy the hpl-burnin test directory to the shared home directory of the slurm cluster login node. Then place the hpl binary in the hpl-burnin directory and run launch_experiment_slurm.sh from it without any options.
 
 ```
 ./launch_experiment_slurm.sh --sys <SYSTEM> --count <NODES_PER_JOBS> 
