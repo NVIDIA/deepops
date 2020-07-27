@@ -1,0 +1,4 @@
+tmp
+results
+slurm*.out
+xhpl_cuda-10.1-dyn_mkl-static_ompi-3.1.3_gcc4.8.5_3-12-19b
