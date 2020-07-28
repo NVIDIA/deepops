@@ -16,4 +16,3 @@
   command: restorecon /raid
   when: ansible_os_family == 'RedHat'
   notify: restart cachefilesd
-

@@ -1,8 +1,8 @@
 ---
 - name: Check for DGX
   fail:
-    msg: "Role supports DGX-1 and DGX-2 systems only"
-  when: ansible_product_name is not search("DGX-1") and ansible_product_name is not search("DGX-2")
+    msg: "Role supports DGX systems only"
+  when: ansible_product_name is not search("DGX")
 
 - name: ubuntu tasks
   include_tasks: ubuntu.yml
@@ -15,3 +15,9 @@
 - name: configure raid array
   include_tasks: configure-raid.yml
   when: dgx_configure_raid_array
+
+- name: perform full OS upgrade on Ubuntu
+  include_tasks: ubuntu-upgrade.yml
+  when:
+    - dgx_full_upgrade
+    - ansible_distribution == 'Ubuntu'

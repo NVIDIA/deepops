@@ -1,3 +1,7 @@
+DGX_SWBUILD_DATE: 2020-06-24
+DGX_SWBUILD_VERSION: 4.5.0
+DGX_COMMIT_ID: ee0e5c1
+
 dgx_extra_packages:
   - dgx-ast-modeset
   - dgx-blacklist-acpi-pad
@@ -11,7 +15,6 @@ dgx_extra_packages:
   - dgx-limits
   - dgx-logrotate
   - dgx-persistence-mode
-  - dgx-quickfix-18-11-repo
   - dgx-swap-disable
   - dgx-update-disable
   - dgxserver-ota-update-meta
@@ -23,6 +26,7 @@ PKGS_NONVM:
 
 PKGS_COMMON:
   - dmidecode
+  - python
   - psmisc
   - autoconf
   - automake
@@ -54,31 +58,47 @@ PKGS_COMMON:
   - man-db
   - nvme-cli
   - nfs-common
+  - sysstat
+  - procps
+  - pciutils
+  - net-tools
+  - tcpdump
+  - lsof
+  - iputils-ping
+  - fping
+  - iperf
+  - procps
+  - dnsutils
+  - htop
+  - vlan
+  - rasdaemon
+  - command-not-found
   - dgx-disable-iscsid
 
 PKGS_DRIVER:
-  - nvidia-headless-410
-  - libnvidia-diagnostic-410
+  - nvidia-driver-418
   - nvidia-settings
   - nvidia-modprobe
 
 PKGS_DGX1_DGX2:
-  - vlan
+  - nvsm
+  - nvsm-cli
 
 PKGS_KVM_ONLY:
   - parted
   - dgx-kvm-guest-utils
   - dgx-kvm-guest-ota-update-meta
   - dgx-smartd-disable
+  - qemu-guest-agent
 
 PKGS_KVM_DGX2:
   - datacenter-gpu-manager-fabricmanager
 
 PKGS_DGX2_ONLY:
+  - dgx-nvme-smartd
   - dgx-nvme-core-options
   - dgx2-ota-update-meta
   - dgx-disable-grubedit
-  - dgx-sysmgmt-sw
   - nvidia-acs-disable
   - msecli
   - dgx-enable-nvme-hot-plug
@@ -88,18 +108,23 @@ PKGS_DGX1_ONLY:
   - storcli
   - datacenter-gpu-manager
 
-#PKGS_KVM:
-#  - "{{ PKGS_KVM_DGX2 }}"
-#  - "{{ PKGS_KVM_ONLY }}"
-
-#PKGS_DGX2:
-#  - "{{ PKGS_KVM_DGX2 }}"
-#  - "{{ PKGS_DGX1_DGX2 }}"
-#  - "{{ PKGS_DGX2_ONLY }}"
-
-#PKGS_DGX1:
-#  - "{{ PKGS_DGX1_DGX2 }}"
-#  - "{{ PKGS_DGX1_ONLY }}"
+PKGS_DGXA100_ONLY:
+  - linux-generic-hwe-18.04
+  - linux-tools-generic-hwe-18.04
+  - dgx-a100-ota-update-meta
+  - dgx-crashdump
+  - nvidia-driver-450
+  - nvidia-settings
+  - nvidia-modprobe
+  - nvidia-fabricmanager-450
+  - mlnx-ofed-all
+  - dgx-no-check-pci-config
+  - dgx-conf-cachefilesd
+  - nv-common-apis
+  - nv-env-paths
+  - nvgpu-services-list
+  - nvidia-peer-memory
+  - nvidia-peer-memory-dkms
 
 PKGS_MELLANOX:
   - dapl2-utils
@@ -157,7 +182,6 @@ PKGS_MLNX_UPDATER:
 PKGS_DOCKER:
   - docker-ce
   - dgx-docker-cleanup
-  - dgx-docker-repo
   - dgx-docker-options
   - nvidia-docker2
 
@@ -167,8 +191,19 @@ PKGS_DG_CONFIG:
   - dgx-enable-journaling
   - dgx-disable-recommends
   - dgx-repo
+  - dgx-bionic-r418+cuda10.1-repo
   - dgx-repo-keys
-  - dgx-ipmisol
+  - dgx-motd
+  - dgx-icmp
+
+PKGS_DGXA100_CONFIG:
+  - dgx-raid-config
+  - dgx-enable-journaling
+  - dgx-disable-recommends
+  - dgx-repo
+  - dgx-bionic-r418+cuda10.1-repo
+  - dgx-bionic-4.99-repo
+  - dgx-repo-keys
   - dgx-motd
   - dgx-icmp
 
@@ -180,7 +215,6 @@ PKGS_DGX1_ALL:
   - "{{ PKGS_NONVM }}"
   - "{{ PKGS_COMMON }}"
   - "{{ PKGS_DRIVER }}"
-# - "{{ PKGS_DGX1 }}"
   - "{{ PKGS_DGX1_DGX2 }}"
   - "{{ PKGS_DGX1_ONLY }}"
   - "{{ PKGS_MELLANOX }}"
@@ -193,7 +227,6 @@ PKGS_DGX2_ALL:
   - "{{ PKGS_NONVM }}"
   - "{{ PKGS_COMMON }}"
   - "{{ PKGS_DRIVER }}"
-# - "{{ PKGS_DGX2 }}"
   - "{{ PKGS_KVM_DGX2 }}"
   - "{{ PKGS_DGX1_DGX2 }}"
   - "{{ PKGS_DGX2_ONLY }}"
@@ -203,10 +236,20 @@ PKGS_DGX2_ALL:
   - "{{ PKGS_DG_CONFIG }}"
   - "{{ PKGS_NVHEALTH }}"
 
+PKGS_DGXA100_ALL:
+  - "{{ PKGS_NONVM }}"
+  - "{{ PKGS_COMMON }}"
+  - "{{ PKGS_DGX1_DGX2 }}"
+  - "{{ PKGS_DGX2_ONLY }}"
+  - "{{ PKGS_DGXA100_ONLY }}"
+  - "{{ PKGS_MLNX_UPDATER }}"
+  - "{{ PKGS_DOCKER }}"
+  - "{{ PKGS_DGXA100_CONFIG }}"
+  - "{{ PKGS_NVHEALTH }}"
+
 PKGS_KVM_ALL:
   - "{{ PKGS_COMMON }}"
   - "{{ PKGS_DRIVER }}"
-# - "{{ PKGS_KVM }}"
   - "{{ PKGS_KVM_DGX2 }}"
   - "{{ PKGS_KVM_ONLY }}"
   - "{{ PKGS_KVM_DGX2 }}"
