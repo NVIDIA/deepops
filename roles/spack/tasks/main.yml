@@ -1,0 +1,30 @@
+---
+- name: ensure git is installed
+  package:
+    name: "git"
+    state: "present"
+
+- name: ensure install directory exists
+  file:
+    path: "{{ spack_install_dir }}"
+    owner: "{{ spack_user }}"
+    group: "{{ spack_group }}"
+    mode: "0755"
+    state: "directory"
+
+- name: clone spack repository
+  git:
+    repo: "{{ spack_repo }}"
+    dest: "{{ spack_install_dir }}"
+    version: "{{ spack_version }}"
+
+- name: set up spack profile scripts
+  template:
+    src: "{{ item }}"
+    dest: "/etc/profile.d/{{ item }}"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  with_items:
+  - "z00_spack.sh"
+  - "z00_spack.csh"
