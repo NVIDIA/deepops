@@ -20,6 +20,5 @@ spack_redhat_deps:
 
 spack_build_packages: false
 spack_default_packages:
-- "cuda@11.0.2"
+- "cuda@10.2.89"
 - "openmpi@3.1.6 +cuda +pmi schedulers=auto"
-- "openmpi@4.0.4 +cuda +pmi schedulers=auto"
