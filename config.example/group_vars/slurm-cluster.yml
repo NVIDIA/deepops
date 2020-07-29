@@ -34,15 +34,22 @@ hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
 ################################################################################
 # NFS                                                                          #
 ################################################################################
-# Export /home from the Slurm login node by default
-# A shared directory is required by Open OnDemand
+# Default exports:
+# - /home: shared home directories, needed for Open OnDemand and best practice
+# - /sw:   shared space for software installs, used for Spack or EasyBuild
 nfs_exports:
   - path: /home
+    options: "*(rw,sync,no_root_squash)"
+  - path: /sw
     options: "*(rw,sync,no_root_squash)"
 nfs_mounts:
   - mountpoint: /home
     server: '{{ groups["slurm-master"][0] }}'
     path: /home
+    options: async,vers=3
+  - mountpoint: /sw
+    server: '{{ groups["slurm-master"][0] }}'
+    path: /sw
     options: async,vers=3
 
 ################################################################################
