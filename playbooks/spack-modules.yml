@@ -1,0 +1,5 @@
+---
+- hosts: slurm-master
+  become: yes
+  roles:
+  - spack
