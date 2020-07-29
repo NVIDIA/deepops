@@ -13,9 +13,11 @@
   when: ansible_os_family == "RedHat"
 
 - name: "mkdir software path"
+  become: yes
   file: path={{ sm_software_path }} state=directory
 
 - name: "mkdir module path"
+  become: yes
   file: path={{ sm_module_path }} state=directory 
 
 - name: "configure sh profile"
