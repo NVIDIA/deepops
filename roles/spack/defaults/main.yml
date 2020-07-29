@@ -4,3 +4,22 @@ spack_install_dir: "/sw/spack"
 spack_version: "v0.15.3"
 spack_user: "root"
 spack_group: "root"
+
+spack_ubuntu_deps:
+- "gcc-7"
+- "gfortran-7"
+- "make"
+- "git"
+
+spack_redhat_deps:
+- "gcc"
+- "gcc-c++"
+- "gcc-fortran"
+- "make"
+- "git"
+
+spack_build_packages: false
+spack_default_packages:
+- "cuda@11.0.2"
+- "openmpi@3.1.6 +cuda +pmi schedulers=auto"
+- "openmpi@4.0.4 +cuda +pmi schedulers=auto"
