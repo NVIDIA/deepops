@@ -222,31 +222,6 @@ maas_single_node_install: true
 maas_kvm: false
 
 ################################################################################
-# SOFTWARE MODULES (SM)                                                        #
-#   May be built with either EasyBuild or Spack                                #
-################################################################################
-
-# Note: the sm_prefix must be in an NFS-shared location
-sm_prefix: "/sw"
-
-# Easybuild-specific
-sm_module_root: "{{ sm_prefix }}/modules"
-sm_software_path: "{{ sm_prefix }}/software"
-sm_files_path: "{{ sm_prefix }}/easybuild_files"
-sm_files_url: "https://github.com/DeepOps/easybuild_files.git" 
-sm_install_default: true         
-
-# Spack-specific
-spack_install_dir: "{{ sm_prefix }}/spack"
-spack_build_packages: false
-spack_default_packages:
-- "cuda@10.2.89"
-- "openmpi@3.1.6 +cuda +pmi schedulers=auto"
-
-# Module path should include either Easybuild or Spack
-sm_module_path: "{{ sm_module_root }}/all:{{ spack_install_dir }}/share/spack/modules"
-
-################################################################################
 # Misc.                                                                        #
 ################################################################################
 # Set /etc/rc.local contents
