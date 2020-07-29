@@ -14,6 +14,17 @@
   tags:
     - nfs
 
+- name: ensure statd is enabled
+  service:
+    name: rpc-statd
+    enabled: yes
+    state: started
+  notify:
+  - restart rpcbind
+  - restart nfs
+  tags:
+  - nfs
+
 - name: configure exports
   template:
     src: exports.j2
