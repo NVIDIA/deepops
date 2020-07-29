@@ -72,6 +72,20 @@
       line: 'local root = "{{ sm_software_path }}/EasyBuild/{{ ebsw_version.stdout }}"'
   when: not ebsw_exe.matched
 
+- name: ensure directory ownership is correct for software paths
+  become: yes
+  file:
+    path: "{{ item }}"
+    owner: "{{ ansible_user }}"
+    state: "directory"
+    recurse: yes
+  with_items:
+  - "{{ sm_software_path }}"
+  - "{{ sm_module_root }}"
+  - "{{ sm_files_path }}"
+  - "{{ sm_sources_path }}"
+  - "{{ sm_build_path }}"
+
 - name: "cp EasyBuild software"
   command: cp -R "{{ eb_tmp_dir }}/software/EasyBuild" "{{ sm_software_path }}"
   when: not ebsw_exe.matched

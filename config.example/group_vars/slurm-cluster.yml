@@ -64,8 +64,11 @@ sm_prefix: "/sw"
 sm_module_root: "{{ sm_prefix }}/modules"
 sm_software_path: "{{ sm_prefix }}/software"
 sm_files_path: "{{ sm_prefix }}/easybuild_files"
+sm_sources_path: "{{ sm_prefix }}/sources"
+sm_build_path: "{{ sm_prefix }}/build"
 sm_files_url: "https://github.com/DeepOps/easybuild_files.git"
 sm_install_default: true
+sm_module_path: "{{ sm_module_root }}/all"
 
 # Spack-specific
 spack_install_dir: "{{ sm_prefix }}/spack"
@@ -73,9 +76,6 @@ spack_build_packages: false
 spack_default_packages:
 - "cuda@10.2.89"
 - "openmpi@3.1.6 +cuda +pmi schedulers=auto"
-
-# Module path should include either Easybuild or Spack
-sm_module_path: "{{ sm_module_root }}/all:{{ spack_install_dir }}/share/spack/modules"
 
 ################################################################################
 # Open OnDemand                                                                #

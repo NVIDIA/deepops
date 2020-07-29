@@ -48,10 +48,6 @@ docker_iptables_enabled: true
 ################################################################################
 # SOFTWARE                                                                     #
 ################################################################################
-# Lmod modules
-# Playbook: lmod
-#lmod_modulepath: /shared/modules/all
-
 # Extra software to install or remove
 # Playbook: software
 #software_extra_packages:
