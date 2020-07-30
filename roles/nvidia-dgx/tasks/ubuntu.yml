@@ -145,6 +145,12 @@
   with_items:
     - "{{ dgx_extra_packages }}"
 
+- name: touch grub ipmisol.cfg
+  file:
+    path: /etc/default/grub.d/ipmisol.cfg
+    state: touch
+    mode: u=rw,g=r,o=r
+
 - name: add DGX IPMI SOL package
   apt:
     name: dgx-ipmisol
