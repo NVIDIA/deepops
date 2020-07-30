@@ -1,15 +1,4 @@
 ---
-# Configure a global NFS share across the slurm cluster
-nfs_mounts:
-- mountpoint: "/shared"
-  server: '{{ groups["slurm-master"][0] }}'
-  path: "/shared"
-  options: "nfsvers=3,rw,sync"
-
-nfs_exports:
-- path: "/shared"
-  options: "*(rw,sync)"
-
 # For virtual cluster, ensure hosts file correctly uses private network
 hosts_network_interface: "eth1"
 
