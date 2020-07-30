@@ -88,4 +88,4 @@ nfs_mounts:
 If you want to disable the use of any NFS mounts, or want to configure NFS yourself outside of DeepOps, set the following variables:
 
 * Set `slurm_enable_nfs_server` to `false`
-* Set `slurm_enable_nfs_client_master` to `false`
+* Set `slurm_enable_nfs_client_nodes` to `false`
