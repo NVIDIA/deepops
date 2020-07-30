@@ -6,3 +6,6 @@
 - name: restart nfs
   service: name=nfs-server state=restarted
   when: ansible_os_family == "RedHat"
+
+- name: restart rpcbind
+  service: name=rpcbind state=restarted

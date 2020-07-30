@@ -34,16 +34,48 @@ hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
 ################################################################################
 # NFS                                                                          #
 ################################################################################
-# Export /home from the Slurm login node by default
-# A shared directory is required by Open OnDemand
+# Default exports:
+# - /home: shared home directories, needed for Open OnDemand and best practice
+# - /sw:   shared space for software installs, used for Spack or EasyBuild
 nfs_exports:
   - path: /home
+    options: "*(rw,sync,no_root_squash)"
+  - path: /sw
     options: "*(rw,sync,no_root_squash)"
 nfs_mounts:
   - mountpoint: /home
     server: '{{ groups["slurm-master"][0] }}'
     path: /home
     options: async,vers=3
+  - mountpoint: /sw
+    server: '{{ groups["slurm-master"][0] }}'
+    path: /sw
+    options: async,vers=3
+
+################################################################################
+# SOFTWARE MODULES (SM)                                                        #
+#   May be built with either EasyBuild or Spack                                #
+################################################################################
+
+# Note: the sm_prefix must be in an NFS-shared location
+sm_prefix: "/sw"
+
+# Easybuild-specific
+sm_module_root: "{{ sm_prefix }}/modules"
+sm_software_path: "{{ sm_prefix }}/software"
+sm_files_path: "{{ sm_prefix }}/easybuild_files"
+sm_sources_path: "{{ sm_prefix }}/sources"
+sm_build_path: "{{ sm_prefix }}/build"
+sm_files_url: "https://github.com/DeepOps/easybuild_files.git"
+sm_install_default: true
+sm_module_path: "{{ sm_module_root }}/all"
+
+# Spack-specific
+spack_install_dir: "{{ sm_prefix }}/spack"
+spack_build_packages: false
+spack_default_packages:
+- "cuda@10.2.89"
+- "openmpi@3.1.6 +cuda +pmi schedulers=auto"
 
 ################################################################################
 # Open OnDemand                                                                #
