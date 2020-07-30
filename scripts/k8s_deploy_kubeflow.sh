@@ -36,7 +36,7 @@ function help_me() {
   echo "-h    This message."
   echo "-p    Print out the connection info for Kubeflow"
   echo "-d    Delete Kubeflow from your system (skipping the CRDs and istio-system namespace that may have been installed with Kubeflow"
-  echo "-D    Deprecatedm same as -d. Previouesly 'Full Delete Kubeflow from your system along with all Kubeflow CRDs the istio-system namespace. WARNING, do not use this option if other components depend on istio.'"
+  echo "-D    Deprecated, same as -d. Previously 'Fully Delete Kubeflow from your system along with all Kubeflow CRDs the istio-system namespace. WARNING, do not use this option if other components depend on istio.'"
   echo "-x    Install Kubeflow with multi-user auth (this utilizes Dex, the default is no multi-user auth)."
   echo "-c    Specify a different Kubeflow config to install with (this option is deprecated)"
   echo "-w    Wait for Kubeflow homepage to respond"
