@@ -53,12 +53,10 @@ nfs_mounts:
     options: async,vers=3
 
 # Flags for enable/disable of NFS deployment
-#  - Set up an NFS server on the controller node?
+#  - Set up an NFS server on nfs-server?
 slurm_enable_nfs_server: true
-#  - Mount NFS filesystems on the clients?
+#  - Mount NFS filesystems on nfs-clients?
 slurm_enable_nfs_client_nodes: true
-#  - Mount NFS filesystems on the controller node (only use if not the server)
-slurm_enable_nfs_client_master: "{{ not slurm_enable_nfs_server }}"
 
 ################################################################################
 # SOFTWARE MODULES (SM)                                                        #

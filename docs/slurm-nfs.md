@@ -65,7 +65,7 @@ To configure DeepOps to use your existing server, you should set the following c
 
 * Set `slurm_enable_nfs_server` to `false`
 
-* Set `slurm_enable_nfs_client_master` to `true`
+* Add `slurm-master` to the `[nfs-clients]` section in your Ansible inventory file (`config/inventory`)
 
 * Configure the `nfs_mounts` variable as shown below, repeating the list item for each NFS export
 
@@ -89,4 +89,3 @@ If you want to disable the use of any NFS mounts, or want to configure NFS yours
 
 * Set `slurm_enable_nfs_server` to `false`
 * Set `slurm_enable_nfs_client_master` to `false`
-* Set `slurm_enable_nfs_client_nodes` to `false`
