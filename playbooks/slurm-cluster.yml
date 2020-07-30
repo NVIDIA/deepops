@@ -23,6 +23,14 @@
 # Install software
 - include: software.yml
 
+# Set up NFS filesystem
+- include: nfs-server.yml hostlist=slurm-master
+  when: slurm_enable_nfs_server
+- include: nfs-client.yml hostlist=slurm-node
+  when: slurm_enable_nfs_client_nodes
+- include: nfs-client.yml hostlist=slurm-master
+  when: slurm_enable_nfs_client_master
+
 # Install Slurm
 - include: slurm.yml
 
