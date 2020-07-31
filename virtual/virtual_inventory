@@ -42,12 +42,6 @@ virtual-gpu01
 slurm-master
 slurm-node
 
-[nfs-server:children]
-slurm-master
-
-[nfs-clients:children]
-slurm-node
-
 ######
 # SSH connection configuration
 ######
