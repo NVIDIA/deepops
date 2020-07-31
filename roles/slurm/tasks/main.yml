@@ -5,6 +5,8 @@
   tags: build
   when: slurm_workflow_build
 
+- include: service-files.yml
+
 - include: setup-user.yml
 
 - include: controller.yml
