@@ -343,6 +343,7 @@ elif [ ${KUBEFLOW_WAIT} ]; then
 else
   install_dependencies
   stand_up
+  install_mpi_operator
   get_url
   print_info
 fi
