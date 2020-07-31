@@ -10,6 +10,8 @@ Additionally Kubeflow offers [hyper-parameter tuning](https://github.com/kubeflo
 
 Kubeflow is an [open source project](https://github.com/kubeflow/kubeflow) and is regularly evolving and adding [new features](https://github.com/kubeflow/kubeflow/blob/master/ROADMAP.md).
 
+As part of the Kubeflow installation, the MPI Operator will also be installed. This will add the `MPIJob` CustomResourceDefinition to the cluster, enabling multi-pod or multi-node workloads. See [here](https://github.com/kubeflow/mpi-operator/tree/master/) for details and examples.
+
 ## Installation
 
 Deploy Kubernetes by following the [DeepOps Kubernetes Deployment Guide](kubernetes-cluster.md)

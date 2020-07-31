@@ -19,7 +19,11 @@ export KUBEFLOW_TIMEOUT="${KUBEFLOW_TIMEOUT:-600}"
 # Local files/directories to create and place scripts
 export KF_DIR="${KF_DIR:-${CONFIG_DIR}/kubeflow-install}"
 export KFCTL="${KFCTL:-${CONFIG_DIR}/kfctl}"
+export KUSTOMIZE="${KUSTOMIZE:-${CONFIG_DIR}/kustomize}"
 export KUBEFLOW_DEL_SCRIPT="${KF_DIR}/deepops-delete-kubeflow.sh"
+
+export KUBEFLOW_MPI_DIR="${KUBEFLOW_MPI_DIR:-${KF_DIR}/mpi}"
+export KUBEFLOW_MPI_MANIFESTS_REPO="${KUBEFLOW_MPI_MANIFESTS_REPO:-https://github.com/kubeflow/manifests}"
 
 # Download URLs and versions, note the kfctl version does not always match the manifest/config version, but best-effort should be made to keep their versions close
 export KFCTL_FILE=kfctl_v1.1.0-0-g9a3621e_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.1.0
@@ -130,6 +134,27 @@ function install_dependencies() {
 }
 
 
+function install_mpi_operator() {
+  # Download kustomize, as required by mpi
+  cd ${CONFIG_DIR}
+  curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases |\
+    grep browser_download |\
+    grep linux |\
+    cut -d '"' -f 4 |\
+    grep /kustomize/v |\
+    sort | tail -n 1 |\
+    xargs curl -s -O -L
+  tar xzf ./kustomize_v*_linux_amd64.tar.gz
+  mv kustomize ${KUSTOMIZE}
+
+  mkdir -p ${KUBEFLOW_MPI_DIR}
+  cd ${KUBEFLOW_MPI_DIR}
+  git clone ${KUBEFLOW_MPI_MANIFESTS_REPO}
+  cd manifests/mpi-job/mpi-operator
+  ${KUSTOMIZE} build base | kubectl apply -f -
+}
+
+
 function stand_up() {
   # Download the kfctl binary and move it to the default location
   pushd .
@@ -145,8 +170,9 @@ function stand_up() {
   mkdir ${KF_DIR}
 
   # Make cleanup scripts first in case deployment fails
-  # TODO: This kfctl delete seems to be failing due to a Kubeflow config bug
-  echo "cd ${KF_DIR} && ${KFCTL} delete -V -f ${CONFIG_FILE} --force-deletion --delete_storage; cd && sudo rm -rf ${KF_DIR}" > ${KUBEFLOW_DEL_SCRIPT}
+  # TODO: This kfctl delete seems to be failing occasionally with the cert-manager ns (due to a Kubeflow config bug)
+  # XXX: We manually delete the mpijobs crd because this is currently installed outside of the kfctl apply
+  echo "kubectl delete crd mpijobs.kubeflow.org; cd ${KF_DIR} && ${KFCTL} delete -V -f ${CONFIG_FILE} --force-deletion --delete_storage; cd && sudo rm -rf ${KF_DIR}" > ${KUBEFLOW_DEL_SCRIPT}
   chmod +x ${KUBEFLOW_DEL_SCRIPT}
 
   # Initialize and apply the Kubeflow project using the specified config. We do this in two steps to allow a chance to customize the config
