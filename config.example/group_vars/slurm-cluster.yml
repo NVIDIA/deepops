@@ -32,6 +32,12 @@ hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
 #slurm_dbd_conf_template: "/path/to/slurmdbd.conf"
 
 ################################################################################
+# Optional installs                                                            #
+################################################################################
+slurm_cluster_install_cuda: yes
+slurm_cluster_install_openmpi: yes
+
+################################################################################
 # NFS                                                                          #
 ################################################################################
 # Default exports:
