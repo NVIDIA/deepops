@@ -1,4 +1,34 @@
 ---
+###########################################
+# Install dependencies
+###########################################
+
+- include: setup-role.yml
+
+- name: configure alternative library path
+  template:
+    src: ld-slurm.conf.j2
+    dest: /etc/ld.so.conf.d/slurm.conf
+    mode: 0644
+  register: updated_slurm_ld
+
+- name: update ld cache
+  command: ldconfig
+  when: updated_slurm_ld.changed
+
+- include: munge.yml
+
+- include: hwloc.yml
+  tags: hwloc
+  when: slurm_include_hwloc
+
+- include: pmix.yml
+  tags: pmix
+  when: slurm_include_pmix
+
+###########################################
+# Build Slurm
+###########################################
 - name: default to building slurm
   set_fact:
     slurm_build: yes
