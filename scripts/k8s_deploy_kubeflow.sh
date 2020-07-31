@@ -10,6 +10,9 @@ CONFIG_DIR="${ROOT_DIR}/config"
 export KUBEFLOW_USER_EMAIL="${KUBEFLOW_USER_EMAIL:-admin@kubeflow.org}"
 export KUBEFLOW_PASSWORD="${KUBEFLOW_PASSWORD:-12341234}"
 
+# Poll for these to be available with the -w flag
+KUBEFLOW_POLL_DEPLOYMENTS="${KUBEFLOW_DEPLOYMENTS:-profiles-deployment notebook-controller-deployment centraldashboard ml-pipeline minio mysql metadata-db jupyter-web-app-deployment katib-mysql}"
+
 # Speificy how long to poll for Kubeflow to start
 export KUBEFLOW_TIMEOUT="${KUBEFLOW_TIMEOUT:-600}"
 
@@ -31,15 +34,16 @@ export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/928cf483
 export CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.yaml" #  Not v1.0.2 due to https://github.com/kubeflow/manifests/issues/991
 
 
+
 function help_me() {
   echo "Usage:"
   echo "-h    This message."
-  echo "-p    Print out the connection info for Kubeflow"
-  echo "-d    Delete Kubeflow from your system (skipping the CRDs and istio-system namespace that may have been installed with Kubeflow"
+  echo "-p    Print out the connection info for Kubeflow."
+  echo "-d    Delete Kubeflow from your system (skipping the CRDs and istio-system namespace that may have been installed with Kubeflow."
   echo "-D    Deprecated, same as -d. Previously 'Fully Delete Kubeflow from your system along with all Kubeflow CRDs the istio-system namespace. WARNING, do not use this option if other components depend on istio.'"
   echo "-x    Install Kubeflow with multi-user auth (this utilizes Dex, the default is no multi-user auth)."
-  echo "-c    Specify a different Kubeflow config to install with (this option is deprecated)"
-  echo "-w    Wait for Kubeflow homepage to respond"
+  echo "-c    Specify a different Kubeflow config to install with (this option is deprecated)."
+  echo "-w    Wait for Kubeflow homepage to respond (also polls for various Kubeflow Deployments to have an available status)."
 }
 
 
@@ -207,6 +211,12 @@ function tear_down() {
 
 
 function poll_url() {
+  kubectl wait --for=condition=available --timeout=${KUBEFLOW_TIMEOUT}s -n kubeflow deployments ${KUBEFLOW_POLL_DEPLOYMENTS}
+  if [ "${?}" != "0" ]; then
+    echo "Kubeflow did not complete deployment within ${KUBEFLOW_TIMEOUT} seconds"
+    exit 1
+  fi
+
   # It typically takes ~5 minutes for all pods and services to start, so we poll for ten minutes here
   time=0
   while [ ${time} -lt ${KUBEFLOW_TIMEOUT} ]; do
