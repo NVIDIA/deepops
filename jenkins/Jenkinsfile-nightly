@@ -108,12 +108,12 @@ pipeline {
             bash -x ./.jenkins-scripts/munge-files.sh
           '''
 
-          echo "Vagrant Up - Multi-Nodes"
+          echo "Vagrant Up"
           sh '''
             bash -x ./.jenkins-scripts/vagrant-startup.sh
           '''
 
-          echo "Cluster Up - Multi-Nodes"
+          echo "Cluster Up"
           sh '''
             bash -x ./.jenkins-scripts/test-cluster-up.sh
           '''
@@ -136,6 +136,11 @@ pipeline {
           echo "Test Kubeflow installation"
           sh '''
              timeout 1500 bash -x ./.jenkins-scripts/test-kubeflow.sh
+          '''
+
+          echo "Test Kubeflow pipeline"
+          sh '''
+             timeout 1500 bash -x ./.jenkins-scripts/test-kubeflow-pipeline.sh
           '''
 
           echo "Test Monitoring installation"
