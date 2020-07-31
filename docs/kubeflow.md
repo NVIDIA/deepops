@@ -113,3 +113,7 @@ To correct this issue:
 3. Re-install Rook/ceph: `./scripts/k8s_deploy_rook.sh`
 4. Poll for Ceph to initialize (wait for this script to exit): `./scripts/ceph_poll.sh`
 5. Re-install Kubeflow: `./scripts/k8s_deploy_kubeflow.sh`
+
+## Examples
+
+* [Multinode Kubeflow Pipelines using the NGC TransformerXL example and the MPI Operator.](../examples/k8s-mpi-kubeflow/README.md)
