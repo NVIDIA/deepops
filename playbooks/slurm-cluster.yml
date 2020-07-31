@@ -24,9 +24,13 @@
 - include: software.yml
 
 # Set up NFS filesystem
-- include: nfs-server.yml hostlist=nfs-server
+- include: nfs-server.yml
+  vars:
+    hostlist: "{{ nfs_server_group | default('slurm-master') }}"
   when: slurm_enable_nfs_server
-- include: nfs-client.yml hostlist=nfs-clients
+- include: nfs-client.yml
+  vars:
+    hostlist: "{{ nfs_client_group | default('slurm-node') }}"
   when: slurm_enable_nfs_client_nodes
 
 # Install Slurm
