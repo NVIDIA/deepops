@@ -3,7 +3,7 @@
 
 - include: build.yml
   tags: build
-  when: workflow_build_slurm
+  when: slurm_workflow_build
 
 - include: setup-user.yml
 
