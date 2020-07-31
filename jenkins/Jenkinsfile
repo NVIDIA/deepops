@@ -49,6 +49,11 @@ pipeline {
           sh '''
             timeout 60 bash -x ./.jenkins-scripts/test-slurm-job.sh
           '''
+
+          echo "Test NFS"
+          sh '''
+            timeout 60 bash -x ./.jenkins-scripts/test-slurm-nfs-mount.sh
+          '''
         }
       }
     }
