@@ -2,16 +2,6 @@
 - hosts: slurm-master
   become: yes
   roles:
-    - { role: nfs, nfs_is_server: yes }
-
-- hosts: slurm-node
-  become: yes
-  roles:
-    - { role: nfs, nfs_is_client: yes }
-
-- hosts: slurm-master
-  become: yes
-  roles:
     - {role: ood-wrapper, ood_is_server: yes }
 
 - hosts: slurm-node

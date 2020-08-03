@@ -55,16 +55,6 @@ slurm-master
 slurm-node
 
 ######
-# NFS
-######
-[nfs-server]
-virtual-login01
-
-[nfs-clients]
-virtual-gpu01
-virtual-gpu02
-
-######
 # SSH connection configuration
 ######
 [all:vars]

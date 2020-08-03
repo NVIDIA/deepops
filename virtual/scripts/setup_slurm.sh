@@ -33,17 +33,3 @@ ansible-playbook \
 	-l slurm-cluster \
 	-e "@${VIRT_DIR}/vars_files/virt_slurm.yml" ${ansible_extra_args} \
 	"${ROOT_DIR}/playbooks/slurm-cluster.yml"
-
-# Configure NFS server for /shared
-ansible-playbook \
-	-i "${VIRT_DIR}/config/inventory" \
-	-l slurm-master \
-	-e "@${VIRT_DIR}/vars_files/virt_slurm.yml" ${ansible_extra_args} \
-	"${ROOT_DIR}/playbooks/nfs-server.yml"
-
-# Configure NFS clients for /shared
-ansible-playbook \
-	-i "${VIRT_DIR}/config/inventory" \
-	-l slurm-node \
-	-e "@${VIRT_DIR}/vars_files/virt_slurm.yml" ${ansible_extra_args} \
-	"${ROOT_DIR}/playbooks/nfs-client.yml"

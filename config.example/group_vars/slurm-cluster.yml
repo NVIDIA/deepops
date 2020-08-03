@@ -52,6 +52,16 @@ nfs_mounts:
     path: /sw
     options: async,vers=3
 
+# Flags for enable/disable of NFS deployment
+#  - Set up an NFS server on nfs-server?
+slurm_enable_nfs_server: true
+#  - Mount NFS filesystems on nfs-clients?
+slurm_enable_nfs_client_nodes: true
+
+# Inventory host groups to use for NFS server or clients
+nfs_server_group: "slurm-master"
+nfs_client_group: "slurm-node"
+
 ################################################################################
 # SOFTWARE MODULES (SM)                                                        #
 #   May be built with either EasyBuild or Spack                                #
