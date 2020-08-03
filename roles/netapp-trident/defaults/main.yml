@@ -1,6 +1,10 @@
 ---
 # defaults file for netapp-trident role
 
+# URL of the Trident installer package that you wish to download and use
+trident_version: "20.07.0"
+trident_installer_url: "https://github.com/NetApp/trident/releases/download/v{{ trident_version }}/trident-installer-{{ trident_version }}.tar.gz"
+
 # Kubernetes version
 # Note: Do not include patch version, e.g. provide value of 1.16, not 1.16.7.
 # Note: Versions 1.14 and above are supported when deploying Trident with DeepOps.
