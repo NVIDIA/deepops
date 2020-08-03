@@ -54,11 +54,6 @@ pipeline {
           sh '''
             timeout 60 bash -x ./.jenkins-scripts/test-slurm-nfs-mount.sh
           '''
-
-          echo "Test Spack (minimal)"
-          sh '''
-            timeout 120 bash -x ./.jenkins-scripts/test-spack-minimal.sh
-          '''
         }
       }
     }

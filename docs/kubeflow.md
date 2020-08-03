@@ -10,6 +10,8 @@ Additionally Kubeflow offers [hyper-parameter tuning](https://github.com/kubeflo
 
 Kubeflow is an [open source project](https://github.com/kubeflow/kubeflow) and is regularly evolving and adding [new features](https://github.com/kubeflow/kubeflow/blob/master/ROADMAP.md).
 
+As part of the Kubeflow installation, the MPI Operator will also be installed. This will add the `MPIJob` CustomResourceDefinition to the cluster, enabling multi-pod or multi-node workloads. See [here](https://github.com/kubeflow/mpi-operator/tree/master/) for details and examples.
+
 ## Installation
 
 Deploy Kubernetes by following the [DeepOps Kubernetes Deployment Guide](kubernetes-cluster.md)
@@ -55,12 +57,12 @@ For the most up-to-date usage information run `./scripts/k8s_deploy_kubeflow.sh 
 ./scripts/k8s_deploy_kubeflow.sh -h
 Usage:
 -h    This message.
--p    Print out the connection info for Kubeflow
--d    Delete Kubeflow from your system (skipping the CRDs and istio-system namespace that may have been installed with Kubeflow
--D    Full Delete Kubeflow from your system along with all Kubeflow CRDs the istio-system namespace. WARNING, do not use this option if other components depend on istio.
+-p    Print out the connection info for Kubeflow.
+-d    Delete Kubeflow from your system (skipping the CRDs and istio-system namespace that may have been installed with Kubeflow.
+-D    Deprecated, same as -d. Previously 'Fully Delete Kubeflow from your system along with all Kubeflow CRDs the istio-system namespace. WARNING, do not use this option if other components depend on istio.'
 -x    Install Kubeflow with multi-user auth (this utilizes Dex, the default is no multi-user auth).
--c    Specify a different Kubeflow config to install with (this option is deprecated)
--w    Wait for Kubeflow homepage to respond
+-c    Specify a different Kubeflow config to install with (this option is deprecated).
+-w    Wait for Kubeflow homepage to respond (also polls for various Kubeflow Deployments to have an available status).
 ```
 
 ## Kubeflow Admin
@@ -70,7 +72,7 @@ Usage:
 To uninstall and re-install Kubeflow run:
 
 ```sh
-./scripts/k8s_deploy_kubeflow.sh -D
+./scripts/k8s_deploy_kubeflow.sh -d
 ./scripts/k8s_deploy_kubeflow.sh
 ```
 
