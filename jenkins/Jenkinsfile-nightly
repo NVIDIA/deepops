@@ -169,6 +169,11 @@ pipeline {
           sh '''
             timeout 60  bash -x ./.jenkins-scripts/test-slurm-job.sh
           '''
+
+          echo "Test Spack install (with build)"
+          sh '''
+            timeout 1800 bash -x ./.jenkins-scripts/test-spack-install.sh
+          '''
         }
       }
     }
