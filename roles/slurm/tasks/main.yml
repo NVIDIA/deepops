@@ -19,3 +19,5 @@
   when: is_compute and slurm_fix_shm
 
 - include: undrain.yml
+
+- include: build-cleanup.yml
