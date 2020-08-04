@@ -4,7 +4,9 @@ epel_gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_dist
 slurm_workflow_build: yes
 slurm_version: 20.02.1
 slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
-slurm_build_dir: /tmp/slurm-build
+slurm_build_dir: /opt/deepops/build-slurm
+slurm_build_make_clean: no
+slurm_build_dir_cleanup: no
 slurm_config_dir: /etc/slurm
 slurm_sysconf_dir: /etc/sysconfig
 slurm_install_prefix: /usr/local
