@@ -17,6 +17,10 @@ echo "Show Ansible details"
 echo
 ansible-playbook --version
 
+echo
+echo "Current directory"
+pwd
+
 # Install Spack, but do not install any modules
 echo
 echo "Install Spack"
