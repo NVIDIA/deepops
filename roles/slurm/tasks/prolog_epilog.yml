@@ -18,6 +18,7 @@
     path: "{{ slurm_config_dir }}/{{ item }}"
     state: absent
   with_items:
+    - prolog.sh
     - prolog.d
     - prolog-parts.d
     - prolog-exclusive.d
@@ -29,6 +30,7 @@
     path: "{{ slurm_config_dir }}/{{ item }}"
     state: absent
   with_items:
+    - epilog.sh
     - epilog.d
     - epilog-parts.d
     - epilog-exclusive.d
@@ -45,7 +47,6 @@
     mode: 0755
   with_items:
     - prolog.d/
-    - prolog-parts.d/
   tags:
     - prolog
 
@@ -58,50 +59,43 @@
     mode: 0755
   with_items:
     - epilog.d/
-    - epilog-parts.d/
   tags:
     - epilog
 
-- name: copy prolog.d/
+- name: copy prolog script
+  template:
+    src: etc/slurm/prolog.sh
+    dest: "{{ slurm_config_dir }}/"
+    mode: 0755
+  tags:
+    - prolog
+
+- name: copy prolog parts
   template:
     src: "{{ item }}"
     dest: "{{ slurm_config_dir }}/prolog.d/"
     owner: slurm
     group: slurm
     mode: 0755
-  with_fileglob: "{{ prolog_d_fileglob }}"
+  with_fileglob: "{{ prolog_fileglob }}"
   tags:
     - prolog
 
-- name: copy prolog-parts.d/
+- name: copy epilog script
   template:
-    src: "{{ item }}"
-    dest: "{{ slurm_config_dir }}/prolog-parts.d/"
-    owner: slurm
-    group: slurm
+    src: etc/slurm/epilog.sh
+    dest: "{{ slurm_config_dir }}/"
     mode: 0755
-  with_fileglob: "{{ prolog_parts_fileglob }}"
   tags:
-    - prolog
+    - epilog
 
-- name: copy epilog.d/
+- name: copy epilog parts
   template:
     src: "{{ item }}"
     dest: "{{ slurm_config_dir }}/epilog.d/"
     owner: slurm
     group: slurm
     mode: 0755
-  with_fileglob: "{{ epilog_d_fileglob }}"
-  tags:
-    - epilog
-
-- name: copy epilog-parts.d/
-  template:
-    src: "{{ item }}"
-    dest: "{{ slurm_config_dir }}/epilog-parts.d/"
-    owner: slurm
-    group: slurm
-    mode: 0755
-  with_fileglob: "{{ epilog_parts_fileglob }}"
+  with_fileglob: "{{ epilog_fileglob }}"
   tags:
     - epilog

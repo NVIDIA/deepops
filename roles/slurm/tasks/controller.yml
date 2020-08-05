@@ -57,14 +57,14 @@
     owner: slurm
     mode: 0755
   with_items:
-    - /etc/slurm
+    - "{{ slurm_config_dir }}"
     - /var/spool/slurm/ctld
     - /var/log/slurm
 
 - name: configure slurm.conf
   template:
     src: "{{ slurm_conf_template }}"
-    dest: "/etc/slurm/slurm.conf"
+    dest: "{{ slurm_config_dir }}/slurm.conf"
   notify:
   - restart slurmctld
   tags:
@@ -73,7 +73,7 @@
 - name: configure slurmdbd.conf
   template:
     src: "{{ slurm_dbd_conf_template }}"
-    dest: "/etc/slurm/slurmdbd.conf"
+    dest: "{{ slurm_config_dir }}/slurmdbd.conf"
   notify:
   - restart slurmdbd
   tags:

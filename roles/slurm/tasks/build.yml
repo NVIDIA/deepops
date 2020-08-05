@@ -7,7 +7,7 @@
 
 - name: configure alternative library path
   template:
-    src: ld-slurm.conf.j2
+    src: etc/slurm/ld.so.conf.d/slurm.conf.j2
     dest: /etc/ld.so.conf.d/slurm.conf
     mode: 0644
   register: updated_slurm_ld
