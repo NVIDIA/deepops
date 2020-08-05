@@ -31,7 +31,7 @@
 
 # Configure Chrony (NTP) sync
 - include: chrony-client.yml
-  when: install_chrony
+  when: chrony_install
 
 # Install the OpenShift API libraries required by the GPU plugin
 - include: bootstrap-openshift.yml

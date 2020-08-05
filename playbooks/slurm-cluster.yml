@@ -13,7 +13,7 @@
 
 # Configure Chrony (NTP) sync
 - include: chrony-client.yml
-  when: install_chrony
+  when: chrony_install
 
 # Install NVIDIA driver
 - include: nvidia-driver.yml
