@@ -120,7 +120,7 @@
 
 - name: install /etc/localusers
   template:
-    src: etc/slurm/localusers
+    src: etc/localusers
     dest: "{{ item }}"
     mode: 0600
   with_items:
