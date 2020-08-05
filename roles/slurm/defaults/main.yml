@@ -69,10 +69,15 @@ slurm_enable_prolog_epilog: true
 slurm_clear_old_prolog_epilog: false
 
 # Fileglob patterns used to copy prolog and epilog files
-prolog_d_fileglob: "prolog.d/*"
-prolog_parts_fileglob: "prolog-parts.d/*"
-epilog_d_fileglob: "epilog.d/*"
-epilog_parts_fileglob: "epilog-parts.d/*"
+prolog_d_fileglob:
+  - "prolog.d/*"
+prolog_parts_fileglob:
+  - "prolog-parts.d/*"
+  - "templates/etc/slurm/prolog.d/*"
+epilog_d_fileglob:
+  - "epilog.d/*"
+epilog_parts_fileglob:
+  - "epilog-parts.d/*"
 
 # Disable clearing of shared memory when user login shell exits
 slurm_fix_shm: true
