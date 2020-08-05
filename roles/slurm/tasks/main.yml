@@ -1,61 +1,13 @@
 ---
-- name: gather os specific variables
-  include_vars: "{{ item }}"
-  with_first_found:
-    - files:
-      - "{{ ansible_distribution|lower }}.yml"
-      - "{{ ansible_os_family|lower }}.yml"
-      paths:
-      - ../vars
-      skip: true
-  tags:
-    - always
-
-- name: add epel repo
-  yum_repository:
-    name: epel
-    description: EPEL YUM repo
-    baseurl: "{{ epel_baseurl }}"
-    gpgkey: "{{ epel_gpgkey }}"
-  when: ansible_os_family == "RedHat"
-
-- name: configure alternative library path
-  template:
-    src: ld-slurm.conf.j2
-    dest: /etc/ld.so.conf.d/slurm.conf
-    mode: 0644
-  register: updated_slurm_ld
-
-- name: update ld cache
-  command: ldconfig
-  when: updated_slurm_ld.changed
-
-- include: munge.yml
-
-- include: hwloc.yml
-  tags: hwloc
-  when: slurm_include_hwloc
-
-- include: pmix.yml
-  tags: pmix
-  when: slurm_include_pmix
+- include: setup-role.yml
 
 - include: build.yml
   tags: build
+  when: slurm_workflow_build
 
-- name: create slurm user home
-  file:
-   path: "{{ slurm_user_home }}"
-   recurse: yes
-   state: directory
+- include: service-files.yml
 
-- name: create slurm user
-  user:
-    name: slurm
-    state: present
-    system: yes
-    home: "{{ slurm_user_home }}"
-    uid: "{{ slurm_user_uid }}"
+- include: setup-user.yml
 
 - include: controller.yml
   when: is_controller
@@ -66,16 +18,6 @@
 - include: shmfix.yml
   when: is_compute and slurm_fix_shm
 
-# un-drain nodes that are down due to an unexpected reboot during install
-# sudo scontrol update node=XXX state=idle
-# where XXX are the nodes that have changed and are marked as *down*
-- name: set nodes to idle
-  command: "scontrol update node={{ item }} state=idle"
-  register: undrain_nodes_result
-  ignore_errors: yes
-  with_items:
-    - "{{ groups['slurm-node'] }}"
-  environment:
-    PATH: '{{ slurm_install_prefix }}/bin:{{ ansible_env.PATH }}'
-  tags:
-    - undrain
+- include: undrain.yml
+
+- include: build-cleanup.yml

@@ -20,6 +20,7 @@
 
 # Install NVIDIA CUDA Toolkit
 - include: nvidia-cuda.yml
+  when: slurm_cluster_install_cuda|default(true)
 
 # Install software
 - include: software.yml
@@ -39,6 +40,7 @@
 
 # Install OpenMPI
 - include: openmpi.yml
+  when: slurm_cluster_install_openmpi|default(true)
 
 # Install monitoring tools
 - include: prometheus.yml hostlist=slurm-master

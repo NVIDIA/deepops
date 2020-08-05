@@ -1,0 +1,13 @@
+---
+- name: make clean in build directory after install
+  command: make clean
+  args:
+    chdir: "{{ slurm_build_dir }}"
+  ignore_errors: yes
+  when: slurm_build_make_clean
+
+- name: remove build directory
+  file:
+    path: "{{ slurm_build_dir }}"
+    state: absent
+  when: slurm_build_dir_cleanup

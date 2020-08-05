@@ -1,9 +1,15 @@
 epel_baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"
 epel_gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
 
+slurm_build_dir: /opt/deepops/build/slurm
+hwloc_build_dir: /opt/deepops/build/hwloc
+pmix_build_dir: /opt/deepops/build/pmix
+
+slurm_workflow_build: yes
 slurm_version: 20.02.1
 slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
-slurm_build_dir: /tmp/slurm-build
+slurm_build_make_clean: no
+slurm_build_dir_cleanup: no
 slurm_config_dir: /etc/slurm
 slurm_sysconf_dir: /etc/sysconfig
 slurm_install_prefix: /usr/local
@@ -75,7 +81,6 @@ slurm_include_hwloc: yes
 hwloc_version: 2.2.0
 hwloc_tag: "v{{ hwloc_version.split('.')[0] }}.{{ hwloc_version.split('.')[1] }}"
 hwloc_src_url: "https://download.open-mpi.org/release/hwloc/{{ hwloc_tag }}/hwloc-{{ hwloc_version }}.tar.gz"
-hwloc_build_dir: /tmp/hwloc-build
 hwloc_install_prefix: /opt/deepops/hwloc
 hwloc_configure: "./configure --prefix={{ hwloc_install_prefix }} --enable-static --disable-cairo --disable-libxml2 --enable-netloc --enable-plugins"
 hwloc_force_rebuild: no
@@ -83,7 +88,6 @@ hwloc_force_rebuild: no
 slurm_include_pmix: yes
 pmix_version: 3.1.5
 pmix_src_url: "https://github.com/openpmix/openpmix/releases/download/v{{ pmix_version }}/pmix-{{ pmix_version }}.tar.bz2"
-pmix_build_dir: /tmp/pmix-build
 pmix_install_prefix: /opt/deepops/pmix
 pmix_configure: "./configure --prefix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}"
 pmix_force_rebuild: no
