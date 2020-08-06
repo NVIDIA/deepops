@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex
+set -x
 
 # To destroy the virtual cluster, we just tear down all VMs
 VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
