@@ -70,9 +70,9 @@ slurm_clear_old_prolog_epilog: false
 
 # Fileglob patterns used to copy prolog and epilog files
 prolog_fileglob:
-  - "etc/slurm/prolog.d/*"
+  - "templates/etc/slurm/prolog.d/*"
 epilog_fileglob:
-  - "etc/slurm/epilog.d/*"
+  - "templates/etc/slurm/epilog.d/*"
 
 # Disable clearing of shared memory when user login shell exits
 slurm_fix_shm: true

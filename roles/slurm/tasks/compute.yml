@@ -75,7 +75,7 @@
     dest: "{{ slurm_config_dir }}/shared/bin/"
     mode: 0755
   with_fileglob:
-    - etc/slurm/shared/bin/*
+    - templates/etc/slurm/shared/bin/*
   tags:
     - prolog
     - epilog
