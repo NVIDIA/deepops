@@ -13,31 +13,6 @@
         fail_msg: "GPU Operator is currently only supported on Ubuntu, and not on DGX OS"
         success_msg: "All nodes are on supported OS"
 
-# Install packages required for Ansible Helm module
-- hosts: kube-master
-  become: true
-  tasks:
-    - name: Enable EPEL repo
-      package:
-        name:
-          - epel-release
-        state: present
-      when: ansible_os_family == 'RedHat'
-    - name: Install package dependencies
-      package:
-        name:
-          - python-pip
-          - git
-        state: present
-    - name: Install python dependencies
-      pip:
-        name:
-          - pyhelm
-          - grpcio
-        state: present
-  tags:
-    - always
-
 # Ensure OpenShift packages are installed
 - include: bootstrap-openshift.yml
 
