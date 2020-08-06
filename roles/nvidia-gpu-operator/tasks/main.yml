@@ -11,4 +11,4 @@
   command: helm repo update
 
 - name: install nvidia gpu operator
-  command: helm install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --wait
+  command: helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --wait
