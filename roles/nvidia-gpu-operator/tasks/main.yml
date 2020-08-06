@@ -10,7 +10,7 @@
   command: helm repo update
 
 - name: install nvidia gpu operator
-  command: helm install "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --name "{{ gpu_operator_release_name }}" --wait
+  command: helm install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --wait
 
 #- name: create GPU operator special resource definition (Ubuntu)
 #  k8s:
