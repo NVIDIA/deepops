@@ -1,8 +1,11 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: iso-loader
 spec:
+  selector:
+    matchLabels:
+      app: iso-loader
   replicas: 1
   template:
     metadata:
