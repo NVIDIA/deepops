@@ -117,7 +117,4 @@ allow_user_set_gpu_clocks: no
 ################################################################################
 slurm_install_enroot: true
 slurm_install_pyxis: true
-enroot_deb_packages:
-  - 'https://github.com/NVIDIA/enroot/releases/download/v3.1.0/enroot_3.1.0-1_amd64.deb'
-  - 'https://github.com/NVIDIA/enroot/releases/download/v3.1.0/enroot+caps_3.1.0-1_amd64.deb'
 slurm_pyxis_tarball_url: https://github.com/NVIDIA/pyxis/archive/v0.7.0.tar.gz
