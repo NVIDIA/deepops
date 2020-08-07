@@ -21,6 +21,25 @@ while [ ${time} -lt ${timeout} ]; do
   sleep 15
 done
 
+# Delete Monitoring (this should take ~30 seconds)
+source ./scripts/k8s_deploy_monitoring.sh -d
+
+# Deploy Monitoring without persistent data (this should be faster because containers have already been downloaded)
+source ./scripts/k8s_deploy_monitoring.sh -x
+
+# The deployment script exports the http endpoints, verify it returns a 200
+# It typically takes ~1 minutes for all pods and services to start, so we poll
+timeout=600
+time=0
+while [ ${time} -lt ${timeout} ]; do
+  curl -s --raw -L "${prometheus_url}" && \
+    curl -s --raw -L "${grafana_url}" && \
+    curl -s --raw -L "${alertmanager_url}"  && \
+    echo "Monitoring URLs are all responding" && exit 0
+  let time=$time+15
+  sleep 15
+done
+
 # Monitoring deployment failure
 echo "Monitoring did not come up in time"
 exit 1
