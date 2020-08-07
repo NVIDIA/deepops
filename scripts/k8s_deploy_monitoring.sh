@@ -58,17 +58,17 @@ function get_opts() {
 		NO_PERSIST="true"
                 ;;
             * )
-                # Leave this here to preserve legacy positional args behavior
-                if [ "${1}" == "delete" ]; then
-                    delete_monitoring
-                    exit 0
-                else
-                    help_me
-                    exit 1
-                fi
+                help_me
+                exit 1
                 ;;
         esac
     done
+
+    # Leave this here to preserve legacy positional args behavior
+    if [ "${1}" == "delete" ]; then
+        delete_monitoring
+        exit 0
+    fi
 }
 
 function delete_monitoring() {
