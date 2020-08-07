@@ -7,7 +7,6 @@
 
 - name: copy pyxis source
   unarchive:
-    # FIXME: use debs instead of source tarballs
     src: "{{ slurm_pyxis_tarball_url }}"
     remote_src: yes
     dest: /usr/local/src/pyxis
@@ -15,14 +14,13 @@
       - --strip-components=1
   tags: pyxis
 
-# TODO: remove this task when the following PR is approved:
-#       https://github.com/NVIDIA/pyxis/pull/20/files
-- name: symlink pyxis include dir
-  file:
-    src: "/usr/local/include/slurm"
-    dest: "/usr/include/slurm"
-    state: link
-    force: yes
+- name: clean pyxis source directory
+  command:
+    chdir: /usr/local/src/pyxis
+    argv:
+      - make
+      - clean
+  ignore_errors: true
   tags: pyxis
 
 - name: build pyxis
