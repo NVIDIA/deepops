@@ -262,4 +262,3 @@ zabbix_host_groups:
   - Linux servers
 zabbix_link_templates:
   - Template OS Linux by Zabbix agent
->>>>>>> Zabbix playbook to install server/agent
