@@ -15,6 +15,12 @@ pipeline {
       steps {
         // TODO: ideally lock should work with declared stages
         lock(resource: null, label: 'gpu', quantity: 2, variable: 'GPUDATA') {
+          echo "Reset repo and unmunge files"
+          sh '''
+            git reset --hard
+            rm -rf config
+          '''
+
           echo "Munge files for testing"
           sh '''
             bash -x ./.jenkins-scripts/munge-files.sh
@@ -48,6 +54,11 @@ pipeline {
           echo "Test Kubeflow installation"
           sh '''
              timeout 1500 bash -x ./.jenkins-scripts/test-kubeflow.sh
+          '''
+
+          echo "Test Kubeflow pipeline"
+          sh '''
+             timeout 1500 bash -x ./.jenkins-scripts/test-kubeflow-pipeline.sh
           '''
 
           echo "Test Kubeflow pipeline"
@@ -136,6 +147,11 @@ pipeline {
           echo "Test Kubeflow installation"
           sh '''
              timeout 1500 bash -x ./.jenkins-scripts/test-kubeflow.sh
+          '''
+
+          echo "Test Kubeflow pipeline"
+          sh '''
+             timeout 1500 bash -x ./.jenkins-scripts/test-kubeflow-pipeline.sh
           '''
 
           echo "Test Kubeflow pipeline"
