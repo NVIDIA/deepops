@@ -97,7 +97,7 @@ spack_default_packages:
 ################################################################################
 # NVIDIA HPC SDK                                                               #
 ################################################################################
-slurm_install_hpcsdk: false
+slurm_install_hpcsdk: true
 hpcsdk_version: "2020_207"
 
 # In a Slurm cluster, default to setting up HPC SDK as modules rather than in
