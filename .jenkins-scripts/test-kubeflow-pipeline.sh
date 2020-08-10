@@ -12,7 +12,6 @@ sudo pip3 install kfp
 # Don't wait for katib or a few other things that take longer to initialize
 export KUBEFLOW_DEPLOYMENTS="profiles-deployment centraldashboard ml-pipeline minio mysql metadata-db"
 ./scripts/k8s_deploy_kubeflow.sh -w
-sleep 60 # Do this to allow appropriate "kubeflow initialization" time
 
 kubectl get pods -n kubeflow # Do this for debug purposes
 
