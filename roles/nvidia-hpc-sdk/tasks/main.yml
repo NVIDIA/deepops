@@ -43,6 +43,7 @@
   with_items:
   - "z95_nvhpc.sh"
   - "z95_nvhpc.csh"
+  when: hpcsdk_install_in_path
 
 - name: add profile script to source modules
   template:
