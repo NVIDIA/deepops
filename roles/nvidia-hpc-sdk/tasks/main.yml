@@ -1,0 +1,45 @@
+---
+- name: ensure download and install directories exist
+  file:
+    path: "{{ item }}"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  with_items:
+  - "{{ hpcsdk_temp_dir }}"
+  - "{{ hpcsdk_install_dir }}"
+
+- name: download nvidia hpc sdk
+  get_url:
+    url: "{{ hpcsdk_download_url }}"
+    dest: "{{ hpcsdk_dest_download_path }}"
+    mode: "0444"
+
+- name: extract archive
+  unarchive:
+    src: "{{ hpcsdk_dest_download_path }}"
+    dest: "{{ hpcsdk_temp_dir }}"
+    remote_src: true
+    creates: "{{ hpcsdk_temp_dir }}/{{ hpcsdk_download_name }}/install"
+
+- name: run the installer
+  command: "./install"
+  args:
+    chdir: "{{ hpcsdk_temp_dir }}/{{ hpcsdk_download_name }}"
+  environment:
+    NVHPC_SILENT: "true"
+    NVHPC_INSTALL_DIR: "{{ hpcsdk_install_dir }}"
+    NVHPC_INSTALL_TYPE: "{{ hpcsdk_install_type }}"
+    NVHPC_DEFAULT_CUDA: "{{ hpcsdk_default_cuda }}"
+
+- name: add profile script to source modules
+  template:
+    src: "{{ item }}"
+    dest: "/etc/profile.d/{{ item }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  with_items:
+  - "z95_nvhpc.sh"
+  - "z95_nvhpc.csh"
