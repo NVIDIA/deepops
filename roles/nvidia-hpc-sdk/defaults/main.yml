@@ -8,6 +8,10 @@ hpcsdk_download_url: "https://developer.download.nvidia.com/hpc-sdk/{{ hpcsdk_do
 hpcsdk_install_dir: "/sw/hpc-sdk"
 hpcsdk_install_type: "single"
 hpcsdk_default_cuda: "11.0"
+hpcsdk_version_dir: "20.7"
 
 hpcsdk_temp_dir: "/tmp/hpc-sdk-install"
 hpcsdk_dest_download_path: "{{ hpcsdk_temp_dir }}/nvhpc.tar.gz"
+
+hpcsdk_install_as_modules: false
+hpcsdk_install_in_path: true
