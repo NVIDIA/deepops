@@ -1,4 +1,19 @@
 ---
+- name: install dependencies (ubuntu)
+  apt:
+    name:
+    - "gcc"
+    - "g++"
+    state: present
+  when: ansible_distribution == "Ubuntu"
+
+- name: install dependencies (rhel)
+  yum:
+    name:
+    - "gcc"
+    - "gcc-c++"
+  when: ansible_os_family == "RedHat"
+
 - name: ensure download and install directories exist
   file:
     path: "{{ item }}"
@@ -27,11 +42,17 @@
   command: "./install"
   args:
     chdir: "{{ hpcsdk_temp_dir }}/{{ hpcsdk_download_name }}"
+    creates: "{{ hpcsdk_install_dir }}/Linux_{{ hpcsdk_arch }}/{{ hpcsdk_version_dir }}/compilers/bin/nvc"
   environment:
     NVHPC_SILENT: "true"
     NVHPC_INSTALL_DIR: "{{ hpcsdk_install_dir }}"
     NVHPC_INSTALL_TYPE: "{{ hpcsdk_install_type }}"
     NVHPC_DEFAULT_CUDA: "{{ hpcsdk_default_cuda }}"
+
+- name: run the makelocalrc script
+  command: "{{ hpcsdk_install_dir }}/Linux_{{ hpcsdk_arch }}/{{ hpcsdk_version_dir }}/compilers/bin/makelocalrc -x {{ hpcsdk_install_dir }}/Linux_{{ hpcsdk_arch }}/{{ hpcsdk_version_dir }}/compilers"
+  args:
+    creates: "{{ hpcsdk_install_dir }}/Linux_{{ hpcsdk_arch }}/{{ hpcsdk_version_dir }}/compilers/bin/localrc"
 
 - name: add profile script to add to environment
   template:
