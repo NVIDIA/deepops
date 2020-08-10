@@ -6,3 +6,6 @@ hosts_network_interface: "eth1"
 slurm_allow_ssh_user:
 - "vagrant"
 - "root"
+
+# Don't install HPC SDK by default in virtual cluster, as it can run out of disk space
+slurm_install_hpcsdk: false
