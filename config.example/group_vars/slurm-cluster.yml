@@ -72,6 +72,7 @@ nfs_client_group: "slurm-node"
 # SOFTWARE MODULES (SM)                                                        #
 #   May be built with either EasyBuild or Spack                                #
 ################################################################################
+slurm_install_lmod: true
 
 # Note: the sm_prefix must be in an NFS-shared location
 sm_prefix: "/sw"
@@ -92,6 +93,17 @@ spack_build_packages: false
 spack_default_packages:
 - "cuda@10.2.89"
 - "openmpi@3.1.6 +cuda +pmi schedulers=auto"
+
+################################################################################
+# NVIDIA HPC SDK                                                               #
+################################################################################
+slurm_install_hpcsdk: false
+hpcsdk_version: "2020_207"
+
+# In a Slurm cluster, default to setting up HPC SDK as modules rather than in
+# the default user environment
+hpcsdk_install_as_modules: true
+hpcsdk_install_in_path: false
 
 ################################################################################
 # Open OnDemand                                                                #
