@@ -118,8 +118,10 @@
     PATH: '{{ slurm_install_prefix }}/bin:{{ ansible_env.PATH }}'
 
 - name: clear slurm state when downgrading
-  command: /usr/sbin/slurmctld -i
+  command: slurmctld -i
   when: slurm_downgrade
+  environment:
+    PATH: '{{ slurm_install_prefix }}/bin:{{ ansible_env.PATH }}'
 
 - name: wait for slurmctld to start
   pause:
