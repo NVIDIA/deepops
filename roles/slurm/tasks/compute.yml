@@ -114,7 +114,7 @@
 - name: start slurmd
   systemd:
     name: slurmd
-    state: started
+    state: restarted
     enabled: yes
     daemon-reload: yes
 
