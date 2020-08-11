@@ -12,7 +12,8 @@ hpcsdk_version_dir: "20.7"
 
 hpcsdk_temp_dir: "/tmp/hpc-sdk-install"
 hpcsdk_dest_download_path: "{{ hpcsdk_temp_dir }}/nvhpc.tar.gz"
-hpcsdk_clean_up_temp_dir: true
+hpcsdk_clean_up_tarball_after_extract: false
+hpcsdk_clean_up_temp_dir: false
 
 hpcsdk_install_as_modules: false
 hpcsdk_install_in_path: true
