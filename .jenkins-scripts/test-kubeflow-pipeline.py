@@ -28,7 +28,7 @@ while True:
         time.sleep(30) # Occassionally Kubeflow fails to respond even when all deployments are up. I don't know why, sometimes it is a 403, sometimes a 500, and sometimes it works. So we will just wait and re-try until the test/script times out.
 
 for i in range(70): # The test .sh times out after 600 seconds. So we run a little longer than that. This accounts mostly for NGC download time.
-    print("Polling for pipeline status: {}".format(i))
+    print("Polling for pipeline status: {} - {}".format(run_result, i))
     status = kfp.Client(host=None).get_run(run_result.run_id).run.status
     if status == "Succeeded":
         print("SUCCESS: Kubeflow launched a container successfully")
