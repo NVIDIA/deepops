@@ -117,4 +117,4 @@ allow_user_set_gpu_clocks: no
 ################################################################################
 slurm_install_enroot: true
 slurm_install_pyxis: true
-slurm_pyxis_tarball_url: https://github.com/NVIDIA/pyxis/archive/v0.7.0.tar.gz
+slurm_pyxis_version: 0.8.0
