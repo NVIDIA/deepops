@@ -1,6 +1,6 @@
 APPSDIR=/lustre/fsw/selene-admin/ctierney/apps
 CUDA_HOME=${APPSDIR}/cuda/11.0.2
-UCX_HOME=${APPSDIR}/ucx/1.8.1
+UCX_HOME=${APPSDIR}/ucx/1.9.0-rc1
 MPI_HOME=${APPSDIR}/openmpi/4.0.4
 
 
