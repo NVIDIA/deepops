@@ -148,11 +148,16 @@ echo "HOSTLIST: $(scontrol show hostname $SLURM_NODELIST | paste -s -d,)" | tee 
 echo "" | tee -a $RESULT_FILE
 
 echo "Setting Clocks" | tee -a $RESULT_FILE
-mpirun -np $NNODES -npernode 1 ${LOCAL_MPIOPTS}  ${mpiopts} nvidia-smi -ac ${memclock},${gpuclock} | tee -a $RESULT_FILE
+mpirun -np $NNODES -npernode 1 ${LOCAL_MPIOPTS}  ${mpiopts} nvidia-smi -ac ${gpuclock},${memclock} | tee -a $RESULT_FILE
 echo "" | tee -a $RESULT_FILE
 
 ## Run HPL
 export OMPI_MCA_btl_openib_allow_ib=1
+
+echo "History"
+env | grep NUM_THREADS
+env | grep CORE
+
 mpirun -np $NPROCS -bind-to none -x LD_LIBRARY_PATH ${LOCAL_MPIOPTS} ${mpiopts} ${HPL_DIR}/run_hpl_cuda11.0.sh 2>&1 | tee -a $RESULT_FILE
 
 ## Cleanup Run

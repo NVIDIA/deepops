@@ -258,6 +258,7 @@ echo "MAP: rank=${OMPI_COMM_WORLD_RANK} lrank=$local_rank HCA=${OMPI_MCA_btl_ope
 
 #export OMPI_MCA_btl_openib_allow_ib=1
 export UCX_NET_DEVICES=${OMPI_MCA_btl_openib_if_include}
+
 if [ "${#numactl_args[@]}" -gt 0 ] ; then
     exec numactl "${numactl_args[@]}" -- "${@}"
 else
