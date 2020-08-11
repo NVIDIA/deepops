@@ -1,7 +1,7 @@
 ---
 hpcsdk_version: "2020_207"
 hpcsdk_arch: "x86_64"
-hpcsdk_cuda: "multi"
+hpcsdk_cuda: "11.0"
 hpcsdk_download_name: "nvhpc_{{ hpcsdk_version }}_Linux_{{ hpcsdk_arch }}_cuda_{{ hpcsdk_cuda }}"
 hpcsdk_download_url: "https://developer.download.nvidia.com/hpc-sdk/{{ hpcsdk_download_name }}.tar.gz"
 
