@@ -17,6 +17,7 @@
 
 # Install NVIDIA driver
 - include: nvidia-driver.yml
+  when: slurm_cluster_install_nvidia_driver|default(true)
 
 # Install NVIDIA CUDA Toolkit
 - include: nvidia-cuda.yml
@@ -56,6 +57,7 @@
 
 # Install Singularity
 - include: singularity.yml
+  when: slurm_cluster_install_singularity|default(true)
 
 # Install Open OnDemand
 - include: open-ondemand.yml

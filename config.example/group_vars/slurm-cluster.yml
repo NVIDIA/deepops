@@ -36,6 +36,8 @@ hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
 ################################################################################
 slurm_cluster_install_cuda: yes
 slurm_cluster_install_openmpi: yes
+slurm_cluster_install_nvidia_driver: yes
+slurm_cluster_install_singularity: no
 
 ################################################################################
 # NFS                                                                          #
