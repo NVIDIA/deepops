@@ -45,10 +45,6 @@
     slurm_build: no
   when: sinfo_version.stdout == slurm_version and not slurm_force_rebuild
 
-- name: debug
-  debug:
-    msg: "{{ sinfo_version.stdout }}"
-
 - name: upgrade?
   set_fact:
     slurm_upgrade: yes
