@@ -9,7 +9,7 @@
 
 - name: "install packages"
   become: yes
-  action: yum name=lmod state=latest
+  action: yum name=Lmod state=latest
   when: ansible_os_family == "RedHat"
 
 - name: "mkdir software path"

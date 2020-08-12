@@ -3,7 +3,7 @@
 ################################################################################
 # Slurm job scheduler configuration
 # Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
-slurm_version: 20.02.1
+slurm_version: 20.02.4
 slurm_install_prefix: /usr/local
 #slurm_user_home: /local/slurm
 slurm_manage_gpus: true
@@ -36,6 +36,8 @@ hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
 ################################################################################
 slurm_cluster_install_cuda: yes
 slurm_cluster_install_openmpi: yes
+slurm_cluster_install_nvidia_driver: yes
+slurm_cluster_install_singularity: no
 
 ################################################################################
 # NFS                                                                          #
@@ -72,6 +74,7 @@ nfs_client_group: "slurm-node"
 # SOFTWARE MODULES (SM)                                                        #
 #   May be built with either EasyBuild or Spack                                #
 ################################################################################
+slurm_install_lmod: true
 
 # Note: the sm_prefix must be in an NFS-shared location
 sm_prefix: "/sw"
@@ -92,6 +95,17 @@ spack_build_packages: false
 spack_default_packages:
 - "cuda@10.2.89"
 - "openmpi@3.1.6 +cuda +pmi schedulers=auto"
+
+################################################################################
+# NVIDIA HPC SDK                                                               #
+################################################################################
+slurm_install_hpcsdk: true
+hpcsdk_version: "2020_207"
+
+# In a Slurm cluster, default to setting up HPC SDK as modules rather than in
+# the default user environment
+hpcsdk_install_as_modules: true
+hpcsdk_install_in_path: false
 
 ################################################################################
 # Open OnDemand                                                                #
@@ -117,7 +131,4 @@ allow_user_set_gpu_clocks: no
 ################################################################################
 slurm_install_enroot: true
 slurm_install_pyxis: true
-enroot_deb_packages:
-  - 'https://github.com/NVIDIA/enroot/releases/download/v3.1.0/enroot_3.1.0-1_amd64.deb'
-  - 'https://github.com/NVIDIA/enroot/releases/download/v3.1.0/enroot+caps_3.1.0-1_amd64.deb'
-slurm_pyxis_tarball_url: https://github.com/NVIDIA/pyxis/archive/v0.7.0.tar.gz
+slurm_pyxis_version: 0.8.0

@@ -63,8 +63,8 @@ function get_opts() {
 }
 
 function delete_monitoring() {
-    helm del --purge prometheus-operator
-    helm del --purge "${ingress_name}"
+    helm uninstall prometheus-operator
+    helm uninstall "${ingress_name}"
     kubectl delete crd prometheuses.monitoring.coreos.com
     kubectl delete crd prometheusrules.monitoring.coreos.com
     kubectl delete crd servicemonitors.monitoring.coreos.com
@@ -114,11 +114,14 @@ function setup_prom_monitoring() {
     # Deploy Monitoring stack via Prometheus Operator Helm chart
     echo
     echo "Deploying monitoring stack..."
-    if ! helm status prometheus-operator >/dev/null 2>&1 ; then
+    if ! kubectl get ns monitoring >/dev/null 2>&1 ; then
+        kubectl create ns monitoring
+    fi
+    if ! helm status -n monitoring prometheus-operator >/dev/null 2>&1 ; then
         helm install \
+            prometheus-operator \
             stable/prometheus-operator \
             --version "${HELM_PROMETHEUS_CHART_VERSION}" \
-            --name prometheus-operator \
             --namespace monitoring \
             --values ${config_dir}/helm/monitoring.yml \
             --set alertmanager.ingress.hosts[0]="alertmanager-${ingress_ip_string}" \
@@ -126,7 +129,7 @@ function setup_prom_monitoring() {
             --set grafana.ingress.hosts[0]="grafana-${ingress_ip_string}" \
             ${helm_prom_oper_args} \
             ${helm_kube_prom_args}
-        fi
+    fi
 }
 
 function setup_gpu_monitoring() {

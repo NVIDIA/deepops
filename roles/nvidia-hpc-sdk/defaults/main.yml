@@ -1,0 +1,19 @@
+---
+hpcsdk_version: "2020_207"
+hpcsdk_arch: "x86_64"
+hpcsdk_cuda: "11.0"
+hpcsdk_download_name: "nvhpc_{{ hpcsdk_version }}_Linux_{{ hpcsdk_arch }}_cuda_{{ hpcsdk_cuda }}"
+hpcsdk_download_url: "https://developer.download.nvidia.com/hpc-sdk/{{ hpcsdk_download_name }}.tar.gz"
+
+hpcsdk_install_dir: "/sw/hpc-sdk"
+hpcsdk_install_type: "single"
+hpcsdk_default_cuda: "11.0"
+hpcsdk_version_dir: "20.7"
+
+hpcsdk_temp_dir: "/tmp/hpc-sdk-install"
+hpcsdk_dest_download_path: "{{ hpcsdk_temp_dir }}/nvhpc.tar.gz"
+hpcsdk_clean_up_tarball_after_extract: false
+hpcsdk_clean_up_temp_dir: false
+
+hpcsdk_install_as_modules: false
+hpcsdk_install_in_path: true

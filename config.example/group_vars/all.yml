@@ -134,15 +134,18 @@ docker_storage_options: -s overlay2
 docker_override_dgx: false
 
 # Enroot configuration
-# Playbook: slurm-perf, slurm-perf-cluster
-enroot_runtime_path: '/tmp/enroot-runtime-$(id -u)'
-enroot_cache_path: '/tmp/enroot-cache-$(id -u)'
-enroot_data_path: '/tmp/enroot-data-$(id -u)'
+# Playbook: slurm, slurm-cluster
+#
+# See: https://github.com/NVIDIA/pyxis/wiki/Setup#enroot-configuration-example
+enroot_runtime_path: '/run/enroot/user-$(id -u)'
+enroot_cache_path: '/var/lib/enroot-cache/group-$(id -g)'
+enroot_data_path: '/tmp/enroot-data/user-$(id -u)'
 enroot_config: |
   ENROOT_CONFIG_PATH ${HOME}/.config/enroot
   ENROOT_SQUASH_OPTIONS -noI -noD -noF -noX -no-duplicates
   ENROOT_MOUNT_HOME y
   ENROOT_RESTRICT_DEV y
+  ENROOT_ROOTFS_WRITABLE y
   ENROOT_RUNTIME_PATH {{ enroot_runtime_path }}
   ENROOT_CACHE_PATH {{ enroot_cache_path }}
   ENROOT_DATA_PATH {{ enroot_data_path }}

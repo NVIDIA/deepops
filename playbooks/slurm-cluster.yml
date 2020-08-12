@@ -17,6 +17,7 @@
 
 # Install NVIDIA driver
 - include: nvidia-driver.yml
+  when: slurm_cluster_install_nvidia_driver|default(true)
 
 # Install NVIDIA CUDA Toolkit
 - include: nvidia-cuda.yml
@@ -42,6 +43,14 @@
 - include: openmpi.yml
   when: slurm_cluster_install_openmpi|default(true)
 
+# Install Lmod
+- include: lmod.yml
+  when: slurm_install_lmod
+
+# Install the NVIDIA HPC SDK
+- include: nvidia-hpc-sdk.yml hostlist=slurm-master
+  when: slurm_install_hpcsdk
+
 # Install monitoring tools
 - include: prometheus.yml hostlist=slurm-master
   when: slurm_enable_monitoring
@@ -56,6 +65,7 @@
 
 # Install Singularity
 - include: singularity.yml
+  when: slurm_cluster_install_singularity|default(true)
 
 # Install Open OnDemand
 - include: open-ondemand.yml
