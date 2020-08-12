@@ -30,9 +30,9 @@ case "$ID" in
 esac
 
 if ! type helm >/dev/null 2>&1 ; then
-    curl -fsSL -o /tmp/get_helm.sh "${HELM_INSTALL_SCRIPT_URL}"
-    chmod +x /tmp/get_helm.sh
-    #sed -i 's/sudo//g' /tmp/get_helm.sh
+    curl -fsSL -o /var/tmp/get_helm.sh "${HELM_INSTALL_SCRIPT_URL}"
+    chmod +x /var/tmp/get_helm.sh
+    #sed -i 's/sudo//g' /var/tmp/get_helm.sh
     mkdir -p ${HELM_INSTALL_DIR}
-    HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v3.1.2 /tmp/get_helm.sh # Should match: config/group_vars/k8s-cluster.yml:helm_version:
+    HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v3.1.2 /var/tmp/get_helm.sh # Should match: config/group_vars/k8s-cluster.yml:helm_version:
 fi
