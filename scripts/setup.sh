@@ -117,13 +117,19 @@ case "$ID" in
         fi
         ipmitool -V
 
-
         # Install wget
         if ! which wget >/dev/null 2>&1; then
             echo "Installing wget..."
             as_sudo 'yum -y install wget' >/dev/null
         fi
         wget --version | head -1
+
+        # Install sshpass
+        if ! which sshpass >/dev/null 2>&1; then
+            echo "Installing sshpass..."
+            as_sudo 'yum -y install sshpass' >/dev/null
+        fi
+        sshpass -V | head -1
         ;;
     ubuntu*)
 	# No interactive prompts from apt during this process
