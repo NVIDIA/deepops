@@ -23,13 +23,13 @@
 
 ## Set default options
 niters=5
-cudaver=10.1
+cudaver=11.0
 partition=batch
 usehca=0
 usegres=1
 maxnodes=9999
 mpiopts=""
-walltime=00:30:00
+walltime=02:00:00
 
 print_usage() {
    cat << EOF
@@ -51,6 +51,8 @@ Other Options:
         * Set the version of CUDA to use.  Default is ${cudaver}."
     -p|--part=<Slurm Partition>
         * Set the Slurm partition to use.  Default is ${partition}."
+    -a|--account=<Slurm Account>
+        * Set the Slurm accoutn to use.  Default is None."
     --usehca=<Use HCA Affinity>
         * Use HCA affinity. Set to 1 to enable.  Default is ${usehca}."    
     --maxnodes=<Number_of_nodes>
@@ -79,12 +81,14 @@ while [ $# -gt 0 ]; do
 		-i|--iters) niters="$2"; shift 2 ;;
 		--cudaver) cudaver="$2"; shift 2 ;;
 		-p|--part) partition="$2"; shift 2 ;;
+		-a|--account) account="-A $2"; shift 2 ;;
+		-t|--walltime) walltime="$2"; shift 2 ;;
 		--usehca) usehca="$2"; shift 2;;
 	        --maxnodes) maxnodes="$2"; shift 2 ;;	
 		--mpiopts) mpiopts="$2"; shift 2 ;;
 		--usegres) usegres="$2"; shift 2 ;;
-		--gpuclock) clock="$2" ; shift 2 ;;
-		--memclock) clock="$2" ; shift 2 ;;
+		--gpuclock) gpuclock="$2" ; shift 2 ;;
+		--memclock) memclock="$2" ; shift 2 ;;
 		--hpldat) hpldat="$2"; shift 2 ;;
 		*) echo "Option <$1> Not understood" ; exit 1 ;;
 
@@ -120,11 +124,13 @@ elif [ x"${system}" == x"dgx2h" ]; then
 	export NV_MEMCLOCK=877
 	exit
 elif [ x"${system}" == x"dgxa100" ]; then
-	export gpus_per_node=16
-	export NV_GPUCLOCK=1530
-	export NV_MEMCLOCK=877
-	echo "ERROR: DGX A100 is not supported yet.  Exiting"
-	exit
+	export gpus_per_node=8
+	export NV_GPUCLOCK=1275
+	export NV_MEMCLOCK=1215
+	export GPU_CLOCK_WARNING=1335 
+	export GPU_POWER_WARNING=400 
+	export GPU_PCIE_GEN_WARNING=4
+        export CPU_CORES_PER_RANK=16
 else
 	echo "ERROR: Generic systems are not supported yet."
 	exit
@@ -178,7 +184,7 @@ fi
 mkdir -p $EXPDIR
 
 # Grab nodelist and node count from the batch queue
-export NODELIST=$(sinfo -p ${partition} | grep ${partition} | grep idle | awk '{print $6}')
+export NODELIST=$(sinfo -p ${partition} | grep ${partition} | grep " idle " | awk '{print $6}')
 
 export MACHINEFILE=/tmp/mfile.$$
 scontrol show hostname ${NODELIST} | head -${maxnodes} > $MACHINEFILE
@@ -209,7 +215,7 @@ for n in $(seq ${niters}); do
 	P=1
 	while [ $P -le ${total_nodes} ]; do
 		HLIST=$(scontrol show hostlist $(tail +$P $MACHINEFILE | head -${nodes_per_job} | paste -d, -s))
-		CMD="sbatch -N ${nodes_per_job} --time=${walltime}  -p ${partition} --parsable --ntasks-per-node=${gpus_per_node} ${gresstr} --export ALL,EXPDIR,NV_GPUCLOCK,NV_MEMCLOCK,HPLDAT,SYSTEM,GPUS_PER_NODE --exclusive -w ${HLIST} ${RUNSCRIPT}"
+		CMD="sbatch -N ${nodes_per_job} --time=${walltime} ${account}  -p ${partition} --parsable --ntasks-per-node=${gpus_per_node} ${gresstr} --export ALL,EXPDIR,NV_GPUCLOCK,NV_MEMCLOCK,HPLDAT,SYSTEM,GPUS_PER_NODE,CPU_CORES_PER_RANK --exclusive -w ${HLIST} ${RUNSCRIPT}"
 		echo $CMD
 		jobid=$($CMD)
 		if [ $? -ne 0 ]; then
@@ -241,7 +247,7 @@ while [ ${jobs_tbd} != 0 ]; do
 		echo "             Date                   TotalJobs RunningJobs  WaitingJobs FinishingJobs"
 		echo "------------------------------------------------------------------------------------"
         fi
-	squeue | grep -E $(echo ${jobid_list[@]} | tr ' ' '|') > $SQUEUEFN
+	squeue -a | grep -E $(echo ${jobid_list[@]} | tr ' ' '|') > $SQUEUEFN
         jobs_tbd=$(cat $SQUEUEFN | wc -l)
 	c_running=$(cat $SQUEUEFN | grep " R " | wc -l)
 	c_waiting=$(cat $SQUEUEFN | grep " PD " | wc -l)
@@ -273,5 +279,6 @@ echo "Verify Log: ${VLOGFN}"
 echo ""
 echo "To rerun the verification: ./verify_hpl_experiment.py ${EXPDIR}"
 echo ""
+
 
 

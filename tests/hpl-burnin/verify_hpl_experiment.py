@@ -18,6 +18,7 @@ import os
 import glob
 import re
 
+
 ### Define thresholds for slow jobs, in percent
 HPLTHRESH=1.05
 CPUTHRESH=1.05
@@ -257,6 +258,7 @@ print("               P*Q: {}*{}".format(e_p,e_q))
 print("          Hostlist:", format_hostlist(t_total))
 print("           MaxPerf:", maxperf,"GF")
 print("           MinPerf:", minperf,"GF")
+print("     Percent Range: {:.2f}%".format(100.0*(maxperf-minperf)/maxperf))
 print("")
 
 if stat==0:
@@ -265,3 +267,4 @@ else:
     print("Issues were found.  Refer to the README.md file for instructions on how to interpret the results.")
 
 print("")
+
