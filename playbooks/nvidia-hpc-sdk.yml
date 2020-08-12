@@ -1,0 +1,5 @@
+---
+- hosts: "{{ hostlist | default('all') }}"
+  become: true
+  roles:
+  - nvidia-hpc-sdk

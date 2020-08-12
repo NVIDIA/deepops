@@ -6,3 +6,8 @@ hosts_network_interface: "eth1"
 slurm_allow_ssh_user:
 - "vagrant"
 - "root"
+
+# Perform cleanup tasks during the install to minimize disk space impact
+hpcsdk_clean_up_tarball_after_extract: true
+hpcsdk_clean_up_temp_dir: true
+slurm_build_dir_cleanup: true
