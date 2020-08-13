@@ -18,7 +18,7 @@ kubelet_flexvolumes_plugins_dir: /usr/libexec/kubernetes/kubelet-plugins/volume/
 
 # Provide option to use GPU Operator instead of setting up NVIDIA driver and
 # Docker configuration.
-deepops_gpu_operator_enabled: false
+deepops_gpu_operator_enabled: true
 
 # When set to true, enables the PodSecurityPolicy admission controller and
 # defines two policies: privileged (applying to all resources in kube-system
