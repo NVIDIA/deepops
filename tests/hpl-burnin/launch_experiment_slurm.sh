@@ -21,6 +21,8 @@
 ###    When all the jobs are down, run the verify script, put the results in the results directory
 ### - Set the full expdir from this script
 
+export HPL_DIR=${HPL_DIR:-/mnt/shared}
+
 ## Set default options
 niters=5
 cudaver=10.1
@@ -169,7 +171,7 @@ RUNSCRIPT=submit_hpl_cuda${cudaver}.sh
 
 # Set a name for the experiment
 export EXPNAME=${nodes_per_job}node_${system}_$(date +%Y%m%d%H%M%S)
-export EXPDIR=$(pwd)/results/${EXPNAME}
+export EXPDIR=${HPL_DIR}/results/${EXPNAME}
 
 if [ -d $EXPDIR ]; then
 	echo "ERROR: Directory already exists: $EXPDIR"
@@ -194,7 +196,7 @@ fi
 ### Report all variables
 echo ""
 echo "Experiment Variables:"
-for V in EXPDIR system nodes_per_job gpus_per_node gpuclock memclock  niters cudaver partition usehca maxnodes mpiopts gresstr total_nodes hpldat; do
+for V in HPL_DIR EXPDIR system nodes_per_job gpus_per_node gpuclock memclock  niters cudaver partition usehca maxnodes mpiopts gresstr total_nodes hpldat; do
 	echo -n "${V}: "
         if [ x"${!V}" != x"" ]; then	
         	echo "${!V}"
