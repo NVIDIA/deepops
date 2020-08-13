@@ -38,4 +38,4 @@ if ! helm status metallb >/dev/null 2>&1; then
 	helm install metallb stable/metallb "${helm_install_args[@]}"
 fi
 
-kubectl wait --for=condition=Ready -l app=metallb,component=controller pod
+kubectl wait --timeout=120s --for=condition=Ready -l app=metallb,component=controller pod
