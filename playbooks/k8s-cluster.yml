@@ -119,7 +119,7 @@
   when: deepops_gpu_operator_enabled | default('false') | bool == false
 
 # Install k8s GPU device plugin
-- include: k8s-gpu-plugin.yml
+- include: nvidia-k8s-gpu-device-plugin.yml
   tags:
     - nvidia
   when: deepops_gpu_operator_enabled | default('false') | bool == false

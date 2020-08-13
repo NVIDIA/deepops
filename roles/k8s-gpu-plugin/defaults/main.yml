@@ -1,5 +1,0 @@
-deepops_dir: /opt/deepops
-deepops_venv: '{{ deepops_dir }}/venv'
-nvidia_k8s_device_plugin_def: https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/1.0.0-beta4/nvidia-device-plugin.yml
-nvidia_k8s_device_plugin_file: '{{deepops_dir}}/nvidia-device-plugin.yml'
-

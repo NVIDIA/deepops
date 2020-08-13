@@ -4,7 +4,7 @@
   tasks:
     - name: install k8s GPU plugin
       include_role:
-        name: k8s-gpu-plugin
+        name: nvidia-k8s-gpu-device-plugin
   environment: "{{proxy_env if proxy_env is defined else {}}}"
   tags:
     - k8s_gpu_device_plugin
