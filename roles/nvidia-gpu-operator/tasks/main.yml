@@ -2,13 +2,13 @@
 # While we would prefer to use the Ansible helm module, it's broken! :-(
 # See https://github.com/ansible/ansible/pull/57897
 # Unfortunately this will not be fixed until Ansible 2.10 which is not yet released.
-# So for now we will run helm commands directly...
+# So for now we will run /usr/local/bin/helm commands directly...
 
 - name: install gpu-operator helm repo
-  command: helm repo add nvidia "{{ gpu_operator_helm_repo }}"
+  command: /usr/local/bin/helm repo add nvidia "{{ gpu_operator_helm_repo }}"
 
 - name: update helm repos
-  command: helm repo update
+  command: /usr/local/bin/helm repo update
 
 - name: install nvidia gpu operator
-  command: helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --wait
+  command: /usr/local/bin/helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --wait
