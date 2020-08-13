@@ -21,7 +21,7 @@
 ###    When all the jobs are down, run the verify script, put the results in the results directory
 ### - Set the full expdir from this script
 
-export HPL_DIR=${HPL_DIR:-/mnt/shared}
+export HPL_DIR=${HPL_DIR:-${HOME}}
 
 ## Set default options
 niters=5
