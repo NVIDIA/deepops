@@ -1,15 +1,4 @@
 ---
-# Configure a global NFS share across the slurm cluster
-nfs_mounts:
-- mountpoint: "/shared"
-  server: '{{ groups["slurm-master"][0] }}'
-  path: "/shared"
-  options: "nfsvers=3,rw,sync"
-
-nfs_exports:
-- path: "/shared"
-  options: "*(rw,sync)"
-
 # For virtual cluster, ensure hosts file correctly uses private network
 hosts_network_interface: "eth1"
 
@@ -17,3 +6,8 @@ hosts_network_interface: "eth1"
 slurm_allow_ssh_user:
 - "vagrant"
 - "root"
+
+# Perform cleanup tasks during the install to minimize disk space impact
+hpcsdk_clean_up_tarball_after_extract: true
+hpcsdk_clean_up_temp_dir: true
+slurm_build_dir_cleanup: true

@@ -1,71 +1,6 @@
 ---
-# Curently, GPU Operator is not supported on any distro but Ubuntu
-- hosts: kube-node
-  become: yes
-  any_errors_fatal: yes
-  tasks:
-    - name: Ensure we are running on a supported distro for all compute hosts
-      assert:
-        that:
-          - ansible_distribution == "Ubuntu"
-          - ansible_product_name is not search("DGX-1")
-          - ansible_product_name is not search("DGX-2")
-        fail_msg: "GPU Operator is currently only supported on Ubuntu, and not on DGX OS"
-        success_msg: "All nodes are on supported OS"
-
-# Install packages required for Ansible Helm module
-- hosts: kube-master
-  become: true
-  tasks:
-    - name: Enable EPEL repo
-      package:
-        name:
-          - epel-release
-        state: present
-      when: ansible_os_family == 'RedHat'
-    - name: Install package dependencies
-      package:
-        name:
-          - python-pip
-          - git
-        state: present
-    - name: Install python dependencies
-      pip:
-        name:
-          - pyhelm
-          - grpcio
-        state: present
-  tags:
-    - always
-
 # Ensure OpenShift packages are installed
 - include: bootstrap-openshift.yml
-
-# Register Tiller service info
-- hosts: kube-master
-  become: true
-  tasks:
-    - name: Get tiller service info (Ubuntu)
-      k8s_facts:
-        api_version: v1
-        kind: Service
-        name: tiller-deploy
-        namespace: kube-system
-      environment:
-        PYTHONHOME: "{{ deepops_venv }}"
-      register: tiller_service_ubuntu
-      when: ansible_distribution == "Ubuntu"
-
-    - name: Get tiller service info (RedHat)
-      k8s_facts:
-        api_version: v1
-        kind: Service
-        name: tiller-deploy
-        namespace: kube-system
-      register: tiller_service_redhat
-      when: ansible_distribution == "RedHat"
-  tags:
-    - always
 
 # Prepare compute nodes for GPU operator
 - hosts: kube-node
@@ -82,21 +17,10 @@
 - hosts: kube-master
   become: yes
   tasks:
-    - name: Install helm chart for GPU operator (Ubuntu)
+    - name: Install helm chart for GPU operator
       include_role:
         name: nvidia-gpu-operator
-      vars:
-        tiller_host: "{{ tiller_service_ubuntu.resources[0].spec.clusterIP }}"
       run_once: true
-      when: ansible_distribution == "Ubuntu"
-      
-    - name: Install helm chart for GPU operator (RedHat)
-      include_role:
-        name: nvidia-gpu-operator
-      vars:
-        tiller_host: "{{ tiller_service_redhat.resources[0].spec.clusterIP }}"
-      run_once: true
-      when: ansible_distribution == "RedHat"
   tags:
     - nvidia
     - nvidia-gpu-operator

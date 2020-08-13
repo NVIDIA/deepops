@@ -18,6 +18,8 @@ ANSIBLE_VERSION="2.9.5"
 PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/proxy.sh | grep -v ^$ | wc -l`
 PIP="${PIP:-pip}"
 
+JINJA2_VERSION="${JINJA2_VERSION:-2.11.1}"
+
 as_sudo(){
     if [ $PROXY_USE -gt 0 ]; then
         cmd="sudo -H bash -c '. ${SCRIPT_DIR}/proxy.sh && $1'"
@@ -61,7 +63,7 @@ case "$ID" in
             # Use virtual environment
             . env/bin/activate
             # Upgrade jinja2
-            as_user "${PIP} install --upgrade Jinja2"
+            as_user "${PIP} install --upgrade Jinja2==${JINJA2_VERSION}"
             # Install ansible
             as_user "${PIP} install ansible==${ANSIBLE_VERSION}"
             # Install netaddr
@@ -74,7 +76,7 @@ case "$ID" in
 
         # Ensure Jinja2 is updated
         echo "Upgrading jinja2"
-        as_sudo "${PIP} install --upgrade Jinja2"
+        as_sudo "${PIP} install --upgrade Jinja2==${JINJA2_VERSION}"
 
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
@@ -117,13 +119,19 @@ case "$ID" in
         fi
         ipmitool -V
 
-
         # Install wget
         if ! which wget >/dev/null 2>&1; then
             echo "Installing wget..."
             as_sudo 'yum -y install wget' >/dev/null
         fi
         wget --version | head -1
+
+        # Install sshpass
+        if ! which sshpass >/dev/null 2>&1; then
+            echo "Installing sshpass..."
+            as_sudo 'yum -y install sshpass' >/dev/null
+        fi
+        sshpass -V | head -1
         ;;
     ubuntu*)
 	# No interactive prompts from apt during this process

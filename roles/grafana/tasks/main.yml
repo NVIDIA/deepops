@@ -31,7 +31,7 @@
     dest: "{{ grafana_cfg_dashboard_path }}"
     owner: "{{ grafana_user_id }}"
   with_items:
-    - gpu-dashboard.json
+    - ../../../files/dashboards/gpu-dashboard.json
   notify: restart grafana
 
 - name: install datasource config

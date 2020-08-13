@@ -1,0 +1,30 @@
+---
+- name: restart munge
+  service:
+    name: munge
+    state: restarted
+
+- name: restart slurmd
+  service:
+    name: slurmd
+    state: restarted
+  when: is_compute
+
+- name: restart slurmdbd
+  service:
+    name: slurmdbd
+    state: restarted
+  when: is_controller
+
+- name: restart slurmctld
+  service:
+    name: slurmctld
+    state: restarted
+  when: is_controller
+
+- name: restart logind
+  service:
+    name: systemd-logind.service
+    state: restarted
+    enabled: yes
+  when: is_compute

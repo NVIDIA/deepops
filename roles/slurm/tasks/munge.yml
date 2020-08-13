@@ -9,7 +9,7 @@
 
 - name: create munge.key
   template:
-    src: munge.key.j2
+    src: templates/etc/munge/munge.key.j2
     dest: /etc/munge/munge.key
     mode: 0400
     owner: munge

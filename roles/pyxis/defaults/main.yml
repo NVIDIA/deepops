@@ -1,0 +1,7 @@
+slurm_install_pyxis: true
+slurm_config_dir: /etc/slurm
+slurm_pyxis_version: 0.8.0
+slurm_pyxis_tarball_url: "https://github.com/NVIDIA/pyxis/archive/v{{ slurm_pyxis_version }}.tar.gz"
+
+is_controller: no
+is_compute: no

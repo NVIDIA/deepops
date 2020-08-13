@@ -1,0 +1,14 @@
+---
+- name: create slurm user home
+  file:
+   path: "{{ slurm_user_home }}"
+   recurse: yes
+   state: directory
+
+- name: create slurm user
+  user:
+    name: slurm
+    state: present
+    system: yes
+    home: "{{ slurm_user_home }}"
+    uid: "{{ slurm_user_uid }}"

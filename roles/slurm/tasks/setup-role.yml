@@ -1,0 +1,20 @@
+---
+- name: gather os specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+      - "{{ ansible_distribution|lower }}.yml"
+      - "{{ ansible_os_family|lower }}.yml"
+      paths:
+      - ../vars
+      skip: true
+  tags:
+    - always
+
+- name: add epel repo
+  yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: "{{ epel_baseurl }}"
+    gpgkey: "{{ epel_gpgkey }}"
+  when: ansible_os_family == "RedHat"

@@ -30,6 +30,7 @@
 
 # NTP configuration
 # Playbook: chrony-client
+chrony_install: yes
 chrony_service_state: "started"
 chrony_service_enabled: "yes"
 chrony_timezone: "Etc/UTC"
@@ -39,14 +40,15 @@ chrony_config_server:
   - 2.pool.ntp.org
   - 3.pool.ntp.org
 
+# Enable docker iptables
+# If this isn't set, containers won't have access to the outside net
+# See https://github.com/kubernetes-sigs/kubespray/issues/2002
+docker_iptables_enabled: true
+
 
 ################################################################################
 # SOFTWARE                                                                     #
 ################################################################################
-# Lmod modules
-# Playbook: lmod
-#lmod_modulepath: /shared/modules/all
-
 # Extra software to install or remove
 # Playbook: software
 #software_extra_packages:
@@ -109,7 +111,7 @@ users:
 ################################################################################
 # NVIDIA GPU configuration
 # Playbook: nvidia-cuda
-cuda_version: cuda-10-2
+cuda_version: cuda-toolkit-11-0
 # Playbook: nvidia-set-gpu-clocks
 # Resets the Gpu clocks to the default values. (see the `--reset-gpu-clocks` flag in nvidia-smi for more)
 gpu_clock_reset: no
@@ -128,21 +130,27 @@ docker_version: '18.09'
 docker_dns_servers_strict: no
 docker_storage_options: -s overlay2
 #docker_options: "--bip=192.168.99.1/24"
+# Install DeepOps version of Docker on DGX
+docker_override_dgx: false
 
 # Enroot configuration
-# Playbook: slurm-perf, slurm-perf-cluster
-enroot_runtime_path: '/tmp/enroot-runtime-$(id -u)'
-enroot_cache_path: '/tmp/enroot-cache-$(id -u)'
-enroot_data_path: '/tmp/enroot-data-$(id -u)'
+# Playbook: slurm, slurm-cluster
+#
+# See: https://github.com/NVIDIA/pyxis/wiki/Setup#enroot-configuration-example
+enroot_runtime_path: '/run/enroot/user-$(id -u)'
+enroot_cache_path: '/var/lib/enroot-cache/group-$(id -g)'
+enroot_data_path: '/tmp/enroot-data/user-$(id -u)'
 enroot_config: |
   ENROOT_CONFIG_PATH ${HOME}/.config/enroot
   ENROOT_SQUASH_OPTIONS -noI -noD -noF -noX -no-duplicates
   ENROOT_MOUNT_HOME y
   ENROOT_RESTRICT_DEV y
+  ENROOT_ROOTFS_WRITABLE y
   ENROOT_RUNTIME_PATH {{ enroot_runtime_path }}
   ENROOT_CACHE_PATH {{ enroot_cache_path }}
   ENROOT_DATA_PATH {{ enroot_data_path }}
-enroot_environ_config_files:
+enroot_environ_config_files: []
+enroot_environ_config_files_dgx:
   - filename: 50-mellanox.env
     content: |
       MELLANOX_VISIBLE_DEVICES=all
@@ -212,18 +220,6 @@ maas_setup_user: false
 maas_single_node_install: true
 
 maas_kvm: false
-
-################################################################################
-# SOFTWARE MODULES (SM)                                                        #
-################################################################################
-sm_prefix: /sw                                 # has to be in a shared location
-sm_module_root: "{{ sm_prefix }}/modules"
-sm_module_path: "{{ sm_module_root }}/all"
-sm_software_path: "{{ sm_prefix }}/software"
-sm_files_path: "{{ sm_prefix }}/easybuild_files"
-# need to put this in github/DeepOps
-sm_files_url: "https://github.com/DeepOps/easybuild_files.git" 
-sm_install_default: true         
 
 ################################################################################
 # Misc.                                                                        #

@@ -5,4 +5,3 @@
     - name: Install required Python OpenShift packages/libraries
       include_role:
         name: openshift
-      run_once: true

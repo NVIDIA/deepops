@@ -47,22 +47,35 @@
     owner: slurm
     mode: 0755
   with_items:
-    - /etc/slurm
-    - /etc/slurm/shared
-    - /etc/slurm/shared/bin
+    - "{{ slurm_config_dir }}"
+    - "{{ slurm_config_dir }}/shared"
+    - "{{ slurm_config_dir }}/shared/bin"
+    - "{{ slurm_sysconf_dir }}"
     - /var/log/slurm
     - /var/spool/slurm/d
   tags:
     - prolog
     - epilog
 
+- name: configure slurmd for pmix
+  blockinfile:
+    path: "{{ slurm_sysconf_dir }}/slurmd"
+    create: yes
+    block: |
+      PMIX_MCA_ptl=^usock
+      PMIX_MCA_psec=none
+      PMIX_SYSTEM_TMPDIR=/var/empty
+      PMIX_MCA_gds=hash
+  notify: restart slurmd
+  tags: config
+
 - name: copy shared scripts
-  copy:
+  template:
     src: "{{ item }}"
-    dest: /etc/slurm/shared/bin/
+    dest: "{{ slurm_config_dir }}/shared/bin/"
     mode: 0755
   with_fileglob:
-    - shared/bin/*
+    - templates/etc/slurm/shared/bin/*
   tags:
     - prolog
     - epilog
@@ -74,7 +87,7 @@
 - name: configure slurm.conf
   template:
     src: "{{ slurm_conf_template }}"
-    dest: "/etc/slurm/slurm.conf"
+    dest: "{{ slurm_config_dir }}/slurm.conf"
   notify:
   - restart slurmd
   tags:
@@ -83,7 +96,7 @@
 - name: configure cgroup.conf
   template:
     src: "{{ slurm_cgroup_conf_template }}"
-    dest: "/etc/slurm/cgroup.conf"
+    dest: "{{ slurm_config_dir }}/cgroup.conf"
   notify:
   - restart slurmd
   tags:
@@ -92,7 +105,7 @@
 - name: configure gres.conf
   template:
     src: "{{ slurm_gres_conf_template }}"
-    dest: "/etc/slurm/gres.conf"
+    dest: "{{ slurm_config_dir }}/gres.conf"
   notify:
   - restart slurmd
   tags:
@@ -101,17 +114,17 @@
 - name: start slurmd
   systemd:
     name: slurmd
-    state: started
+    state: restarted
     enabled: yes
     daemon-reload: yes
 
 - name: install /etc/localusers
   template:
-    src: etc-localusers
+    src: etc/localusers
     dest: "{{ item }}"
     mode: 0600
   with_items:
-    - /etc/slurm/localusers.backup
+    - "{{ slurm_config_dir }}/localusers.backup"
     - /etc/localusers
   tags:
     - localusers

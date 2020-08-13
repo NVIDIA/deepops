@@ -38,7 +38,7 @@ For more information on deploying DGX in the datacenter, consult the
 
 * Provisioning
   * Laptop, workstation or virtual machine for provisioning/deployment via Ansible
-    * Ubuntu 18.04 LTS or RHEL/CentOS 7 installed
+    * Ubuntu 18.04 LTS or CentOS 7 installed
   * (optional) One of the management nodes can double as a provisioning node if resources are short
 * Management
   * 1 or more CPU-only servers for management
@@ -46,7 +46,7 @@ For more information on deploying DGX in the datacenter, consult the
   * Minimum: 4 CPU cores, 16GB RAM, 100GB hard disk
     * More storage required if storing containers in registry, etc.
     * More RAM required if running more services on kubernetes or using one/few servers
-  * Ubuntu 18.04 LTS or RHEL/CentOS 7 installed
+  * Ubuntu 18.04 LTS or CentOS 7 installed
 * Compute/Workers
   * 1 or more DGX compute nodes
 * Cluster Usage
@@ -56,7 +56,7 @@ For more information on deploying DGX in the datacenter, consult the
 
 ### Software Requirements
 
-Before starting the installation steps the provisioning and management server(s) should be pre-installed with Ubuntu 18.04 LTS or RHEL/CentOS 7.  If you already have a bare-metal provisioning system (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)), it can be used to install Ubuntu/RHEL on the management server(s).  Integrating the DGX Base OS with other bare-metal provisioning systems is outside the scope of this project.
+Before starting the installation steps the provisioning and management server(s) should be pre-installed with Ubuntu 18.04 LTS or CentOS 7.  If you already have a bare-metal provisioning system (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)), it can be used to install Ubuntu/RHEL on the management server(s).  Integrating the DGX Base OS with other bare-metal provisioning systems is outside the scope of this project.
 
 A few software package will be installed on the administrator's provisioning system at the beginning of the configuration step.
 

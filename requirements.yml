@@ -24,7 +24,7 @@
   version: "v1.2.1"
 
 - src: https://github.com/NVIDIA/ansible-role-enroot.git
-  verions: "v0.1.2"
+  version: "v0.3.0"
 
 - src: geerlingguy.filebeat
   version: "2.0.1"
@@ -52,7 +52,7 @@
   version: 'a56783750d5e61f0d099a2b294d9f050d194f293'
 
 - src: gantsign.golang
-  version: 2.3.0
+  version: 2.4.0
 
 - src: lecorguille.singularity
   version: 1.2.0

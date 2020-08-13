@@ -15,3 +15,4 @@
 /src/python/build
 /src/python/*.egg-info
 /src/python/dist
+/tridentctl

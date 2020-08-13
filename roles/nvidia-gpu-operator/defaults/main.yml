@@ -1,14 +1,6 @@
 ---
-# Vars needed to run Helm
-tiller_host: "localhost"
-
 # Vars needed to install operator
 gpu_operator_helm_repo: "https://nvidia.github.io/gpu-operator"
-gpu_operator_chart_name: "gpu-operator"
+gpu_operator_chart_name: "nvidia/gpu-operator"
 gpu_operator_release_name: "nvidia-gpu-operator"
-gpu_operator_chart_version: "1.0.0"
-
-# Vars needed for the k8s SpecialResource
-gpu_operator_custom_resource_url: "https://raw.githubusercontent.com/NVIDIA/gpu-operator/master/manifests/cr/sro_cr_sched_none.yaml"
-deepops_dir: "/opt/deepops"
-deepops_venv: "{{ deepops_dir }}/venv"
+gpu_operator_chart_version: "1.1.7"

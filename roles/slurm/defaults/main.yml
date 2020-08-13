@@ -1,10 +1,17 @@
 epel_baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"
 epel_gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
 
-slurm_version: 20.02.1
+slurm_build_dir: /opt/deepops/build/slurm
+hwloc_build_dir: /opt/deepops/build/hwloc
+pmix_build_dir: /opt/deepops/build/pmix
+
+slurm_workflow_build: yes
+slurm_version: 20.02.4
 slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
-slurm_build_dir: /tmp/slurm-build
+slurm_build_make_clean: no
+slurm_build_dir_cleanup: no
 slurm_config_dir: /etc/slurm
+slurm_sysconf_dir: /etc/sysconfig
 slurm_install_prefix: /usr/local
 slurm_configure:  './configure --prefix={{ slurm_install_prefix }} --disable-dependency-tracking --disable-debug --disable-x11 --enable-really-no-cray --enable-salloc-kill-cmd --with-hdf5=no --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --without-shared-libslurm --without-rpath --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}'
 slurm_force_rebuild: no
@@ -35,10 +42,10 @@ slurm_manage_gpus: true
 # The default values are relative paths that will point to files within the
 # templates/ directory of this role, but we provide variables so that they
 # can be overrided.
-slurm_conf_template: "slurm.conf"
-slurm_cgroup_conf_template: "cgroup.conf"
-slurm_gres_conf_template: "gres.conf"
-slurm_dbd_conf_template: "slurmdbd.conf"
+slurm_conf_template: "etc/slurm/slurm.conf"
+slurm_cgroup_conf_template: "etc/slurm/cgroup.conf"
+slurm_gres_conf_template: "etc/slurm/gres.conf"
+slurm_dbd_conf_template: "etc/slurm/slurmdbd.conf"
 
 # Controls the ability of the partition to execute more than one job at a time on each resource (node, socket or core depending upon the value of SelectTypeParameters). If resources are to be over-subscribed, avoiding memory over-subscription is very important. SelectTypeParameters should be configured to treat memory as a consumable resource and the --mem option should be used for job allocations. Sharing of resources is typically useful only when using gang scheduling (PreemptMode=suspend,gang). Possible values for OverSubscribe are "EXCLUSIVE", "FORCE", "YES", and "NO". Note that a value of "YES" or "FORCE" can negatively impact performance for systems with many thousands of running jobs. The default value is "NO". For more information see the following web pages: 
 # Sets partition OverSubscribe
@@ -55,11 +62,17 @@ slurm_oversubscribe: "NO"
 # Default: <not included>
 # slurm_default_job_timelimit: 
 
-# Use the provided prolog/epilog
+# Set up prolog and epilog
 slurm_enable_prolog_epilog: true
 
 # Useful to delete old files (e.g. from previous versions of deepops)
 slurm_clear_old_prolog_epilog: false
+
+# Fileglob patterns used to copy prolog and epilog files
+prolog_fileglob:
+  - "templates/etc/slurm/prolog.d/*"
+epilog_fileglob:
+  - "templates/etc/slurm/epilog.d/*"
 
 # Disable clearing of shared memory when user login shell exits
 slurm_fix_shm: true
@@ -68,7 +81,6 @@ slurm_include_hwloc: yes
 hwloc_version: 2.2.0
 hwloc_tag: "v{{ hwloc_version.split('.')[0] }}.{{ hwloc_version.split('.')[1] }}"
 hwloc_src_url: "https://download.open-mpi.org/release/hwloc/{{ hwloc_tag }}/hwloc-{{ hwloc_version }}.tar.gz"
-hwloc_build_dir: /tmp/hwloc-build
 hwloc_install_prefix: /opt/deepops/hwloc
 hwloc_configure: "./configure --prefix={{ hwloc_install_prefix }} --enable-static --disable-cairo --disable-libxml2 --enable-netloc --enable-plugins"
 hwloc_force_rebuild: no
@@ -76,7 +88,6 @@ hwloc_force_rebuild: no
 slurm_include_pmix: yes
 pmix_version: 3.1.5
 pmix_src_url: "https://github.com/openpmix/openpmix/releases/download/v{{ pmix_version }}/pmix-{{ pmix_version }}.tar.bz2"
-pmix_build_dir: /tmp/pmix-build
 pmix_install_prefix: /opt/deepops/pmix
 pmix_configure: "./configure --prefix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}"
 pmix_force_rebuild: no

@@ -57,3 +57,14 @@ Instructions for deploying a GPU cluster with Slurm
 ## Using Slurm
 
 Now that Slurm is installed, try a ["Hello World" example using MPI](../examples/slurm-mpi-hello/README.md).
+
+
+## Configuring shared filesystems
+
+For information about configuring a shared NFS filesystem on your Slurm cluster, see the documentation on [Slurm and NFS](./slurm-nfs.md).
+
+
+## Installing tools and applications
+
+You may optionally choose to install a tool for managing additional packages on your Slurm cluster.
+See the documentation on [software modules](./software-modules.md) for information on how to set this up.

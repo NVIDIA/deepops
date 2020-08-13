@@ -14,6 +14,16 @@
         state: present
         key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
 
+# Build slurm first on all nodes
+- hosts: slurm-cluster
+  become: yes
+  tasks:
+    - name: build slurm on all nodes
+      include_role:
+        name: slurm
+        tasks_from: build
+
+# Set up slurm controller
 - hosts: slurm-master
   become: yes
   roles:
@@ -21,7 +31,9 @@
       vars:
         user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
         is_controller: yes
+        slurm_workflow_build: no
 
+# Set up slurm nodes
 - hosts: slurm-node
   become: yes
   roles:
@@ -29,3 +41,4 @@
       vars:
         user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
         is_compute: yes
+        slurm_workflow_build: no

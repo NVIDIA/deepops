@@ -1,7 +1,7 @@
 epel_baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"
 epel_gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
 nvidia_dgx_rhel_baseurl: "https://international.download.nvidia.com/dgx/repos/{{ dgx_repo_dir }}/"
-nvidia_dgx_rhel_gpgkey: "https://international.download.nvidia.com/dgx/repos/rhel-files/RPM-GPG-KEY-dgx-cosmos-support"
+nvidia_dgx_rhel_gpgkey: "https://international.download.nvidia.com/dgx/repos/RPM-GPG-KEY-dgx-cosmos-support"
 
 nvidia_dgx_ubuntu_baseurl: "http://international.download.nvidia.com/dgx/repos"
 nvidia_dgx_ubuntu_gpgkey: "https://international.download.nvidia.com/dgx/repos/bionic/pool/multiverse/d/dgx-repo-keys/dgx-repo-keys_2.0_amd64.deb"
@@ -9,5 +9,17 @@ nvidia_dgx_ubuntu_gpgkey: "https://international.download.nvidia.com/dgx/repos/b
 dgx_configure_raid_array: false
 nvidia_driver_skip_reboot: false
 dgx_raid_mount_path: /raid
+cachefilesd_cache_dir: /raid
+cachefilesd_cache_tag: dgx1cache
+cachefilesd_cache_brun: 25%
+cachefilesd_cache_bcull: 10%
+cachefilesd_cache_dir_mode: 1775
 
 dgx_full_upgrade: false
+
+dgx_default_ubuntu_repos: |
+  deb http://security.ubuntu.com/ubuntu bionic-security main
+  deb http://security.ubuntu.com/ubuntu bionic-security universe
+  deb http://security.ubuntu.com/ubuntu bionic-security multiverse
+  deb http://archive.ubuntu.com/ubuntu/ bionic main multiverse universe
+  deb http://archive.ubuntu.com/ubuntu/ bionic-updates main multiverse universe

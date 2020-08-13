@@ -1,0 +1,19 @@
+---
+- name: copy service files
+  copy:
+    src: "{{ slurm_build_dir }}/etc/{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+    remote_src: yes
+  with_items:
+    - slurmctld.service
+    - slurmdbd.service
+  when: is_controller
+
+- name: copy service files
+  copy:
+    src: "{{ slurm_build_dir }}/etc/{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+    remote_src: yes
+  with_items:
+    - slurmd.service
+  when: is_compute

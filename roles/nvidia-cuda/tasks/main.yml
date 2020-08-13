@@ -1,0 +1,26 @@
+---
+- name: check if we are running on DGX
+  stat:
+    path: "/etc/dgx-release"
+  register: is_dgx
+
+- name: DGX install tasks
+  include_tasks: install-dgx.yml
+  when: is_dgx.stat.exists == True
+
+- name: ubuntu install tasks
+  include_tasks: install-ubuntu.yml
+  when: (ansible_distribution == "Ubuntu") and (is_dgx.stat.exists == False)
+
+- name: redhat family install tasks
+  include_tasks: install-redhat.yml
+  when: (ansible_os_family == "RedHat") and (is_dgx.stat.exists == False)
+
+- name: add profile script to set environment for toolkit
+  copy:
+    src: "cuda-vars.sh"
+    dest: "/etc/profile.d/cuda-vars.sh"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when: cuda_toolkit_add_profile_script

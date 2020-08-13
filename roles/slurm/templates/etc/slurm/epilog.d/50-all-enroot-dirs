@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -ex
+
+command -v enroot >/dev/null || exit 0  # enroot not installed
+
+{% if enroot_runtime_path | default(none) %}
+runtime_path="$(sudo -u "$SLURM_JOB_USER" sh -c 'echo "{{ enroot_runtime_path }}"')"
+rm -rf "$runtime_path"
+{% endif %}
+
+{% if enroot_data_path | default(none) %}
+data_path="$(sudo -u "$SLURM_JOB_USER" sh -c 'echo "{{ enroot_data_path }}"')"
+rm -rf "$data_path"
+{% endif %}

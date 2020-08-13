@@ -3,7 +3,7 @@
 
 - name: Download and extract Trident installer
   unarchive:
-    src: https://github.com/NetApp/trident/releases/download/v20.04.0/trident-installer-20.04.0.tar.gz
+    src: '{{ trident_installer_url }}'
     dest: /root
     remote_src: yes
 

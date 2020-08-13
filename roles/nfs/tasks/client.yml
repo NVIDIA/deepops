@@ -19,3 +19,16 @@
   when: nfs_mounts|length
   tags:
     - nfs
+
+- name: rhel | install management prereq
+  yum:
+    name: "libsemanage-python"
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: rhel | enable nfs home directory usage
+  seboolean:
+    name: "use_nfs_home_dirs"
+    state: yes
+    persistent: yes
+  when: ansible_os_family == "RedHat"

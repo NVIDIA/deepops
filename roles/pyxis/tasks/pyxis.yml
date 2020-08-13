@@ -1,0 +1,55 @@
+---
+- name: create pyxis source dir
+  file:
+    path: /usr/local/src/pyxis
+    state: directory
+  tags: pyxis
+
+- name: copy pyxis source
+  unarchive:
+    src: "{{ slurm_pyxis_tarball_url }}"
+    remote_src: yes
+    dest: /usr/local/src/pyxis
+    extra_opts:
+      - --strip-components=1
+  tags: pyxis
+
+- name: clean pyxis source directory
+  command:
+    chdir: /usr/local/src/pyxis
+    argv:
+      - make
+      - clean
+  ignore_errors: true
+  tags: pyxis
+
+- name: build pyxis
+  command:
+    chdir: /usr/local/src/pyxis
+    argv:
+      - make
+  register: result
+  changed_when: "result.stdout != \"make: Nothing to be done for 'all'.\""
+  notify:
+    - restart slurmctld
+    - restart slurmd
+  tags: pyxis
+
+# Needed for 17.11, but not for 19.05. Doesn't hurt either way.
+- name: copy top-level plugstack file
+  template:
+    src: etc/slurm/plugstack.conf
+    dest: "{{ slurm_config_dir }}/"
+  notify:
+    - restart slurmctld
+    - restart slurmd
+  tags: pyxis
+
+- name: copy pyxis plugstack file
+  template:
+    src: etc/slurm/plugstack.conf.d/pyxis.conf
+    dest: "{{ slurm_config_dir }}/plugstack.conf.d/"
+  notify:
+    - restart slurmctld
+    - restart slurmd
+  tags: pyxis

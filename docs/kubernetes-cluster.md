@@ -108,7 +108,7 @@ Deploy a Ceph cluster running on Kubernetes for services that require persistent
 ./scripts/k8s_deploy_rook.sh
 ```
 
-Poll the Ceph status by running:
+Poll the Ceph status by running (this script will return when Ceph initialization is complete):
 
 ```sh
 ./scripts/ceph_poll.sh
@@ -184,13 +184,9 @@ Many K8s applications require the deployment of a Load Balancer and Ingress. To 
 
 ### Kubeflow
 
-Kubeflow is a popular way for multiple users to run ML workloads. It exposes a Jupyter Notebook interface where users can request access to GPUs via the browser GUI. Deploy Kubeflow with a convenient script:
+Kubeflow is a popular way for multiple users to run ML workloads. It exposes a Jupyter Notebook interface where users can request access to GPUs via the browser GUI and allows a user to build automated AI pipelines. To deploy Kubeflow refer to the [DeepOps Kubeflow Guide](kubeflow.md).
 
-```sh
-./scripts/k8s_deploy_kubeflow.sh
-```
-
-For more on Kubeflow, please refer to the [official documentation](https://www.kubeflow.org/docs/about/kubeflow/).
+For more information on Kubeflow, please refer to the [official documentation](https://www.kubeflow.org/docs/about/kubeflow/).
 
 ## Cluster Maintenance
 

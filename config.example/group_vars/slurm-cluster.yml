@@ -3,7 +3,7 @@
 ################################################################################
 # Slurm job scheduler configuration
 # Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
-slurm_version: 20.02.1
+slurm_version: 20.02.4
 slurm_install_prefix: /usr/local
 #slurm_user_home: /local/slurm
 slurm_manage_gpus: true
@@ -14,7 +14,6 @@ slurm_password: ReplaceWithASecurePasswordInTheVault
 slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 #slurm_max_job_timelimit: INFINITE
 #slurm_default_job_timelimit:
-#slurm_install_pyxis: yes
 slurm_controller_host: "{{ groups['slurm-master'][0] }}"
 slurm_compute_hosts: "{{ groups['slurm-node'] }}"
 slurm_enable_monitoring: true
@@ -33,18 +32,80 @@ hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
 #slurm_dbd_conf_template: "/path/to/slurmdbd.conf"
 
 ################################################################################
+# Optional installs                                                            #
+################################################################################
+slurm_cluster_install_cuda: yes
+slurm_cluster_install_openmpi: yes
+slurm_cluster_install_nvidia_driver: yes
+slurm_cluster_install_singularity: no
+
+################################################################################
 # NFS                                                                          #
 ################################################################################
-# Export /home from the Slurm login node by default
-# A shared directory is required by Open OnDemand
+# Default exports:
+# - /home: shared home directories, needed for Open OnDemand and best practice
+# - /sw:   shared space for software installs, used for Spack or EasyBuild
 nfs_exports:
   - path: /home
+    options: "*(rw,sync,no_root_squash)"
+  - path: /sw
     options: "*(rw,sync,no_root_squash)"
 nfs_mounts:
   - mountpoint: /home
     server: '{{ groups["slurm-master"][0] }}'
     path: /home
     options: async,vers=3
+  - mountpoint: /sw
+    server: '{{ groups["slurm-master"][0] }}'
+    path: /sw
+    options: async,vers=3
+
+# Flags for enable/disable of NFS deployment
+#  - Set up an NFS server on nfs-server?
+slurm_enable_nfs_server: true
+#  - Mount NFS filesystems on nfs-clients?
+slurm_enable_nfs_client_nodes: true
+
+# Inventory host groups to use for NFS server or clients
+nfs_server_group: "slurm-master"
+nfs_client_group: "slurm-node"
+
+################################################################################
+# SOFTWARE MODULES (SM)                                                        #
+#   May be built with either EasyBuild or Spack                                #
+################################################################################
+slurm_install_lmod: true
+
+# Note: the sm_prefix must be in an NFS-shared location
+sm_prefix: "/sw"
+
+# Easybuild-specific
+sm_module_root: "{{ sm_prefix }}/modules"
+sm_software_path: "{{ sm_prefix }}/software"
+sm_files_path: "{{ sm_prefix }}/easybuild_files"
+sm_sources_path: "{{ sm_prefix }}/sources"
+sm_build_path: "{{ sm_prefix }}/build"
+sm_files_url: "https://github.com/DeepOps/easybuild_files.git"
+sm_install_default: true
+sm_module_path: "{{ sm_module_root }}/all"
+
+# Spack-specific
+spack_install_dir: "{{ sm_prefix }}/spack"
+spack_build_packages: false
+spack_default_packages:
+- "cuda@10.2.89"
+- "openmpi@3.1.6 +cuda +pmi schedulers=auto"
+
+################################################################################
+# NVIDIA HPC SDK                                                               #
+################################################################################
+slurm_install_hpcsdk: true
+hpcsdk_version: "2020_207"
+
+# In a Slurm cluster, default to setting up HPC SDK as modules rather than in
+# the default user environment
+hpcsdk_install_as_modules: true
+hpcsdk_install_in_path: false
 
 ################################################################################
 # Open OnDemand                                                                #
@@ -61,8 +122,13 @@ node_uri: /node
 rnode_uri: /rnode
 
 ################################################################################
-# Allow the User Permision to Set GPU Clocks                                    #
+# Allow the User Permision to Set GPU Clocks                                   #
 ################################################################################
 allow_user_set_gpu_clocks: no
 
-
+################################################################################
+# Enroot & Pyxis                                                               #
+################################################################################
+slurm_install_enroot: true
+slurm_install_pyxis: true
+slurm_pyxis_version: 0.8.0

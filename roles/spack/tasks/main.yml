@@ -1,0 +1,50 @@
+---
+- name: ensure development tools are installed (Ubuntu)
+  apt:
+    name: "{{ item }}"
+    state: "present"
+  with_items: "{{ spack_ubuntu_deps }}"
+  when: ansible_distribution == "Ubuntu"
+
+- name: ensure development tools are installed (Red Hat)
+  package:
+    name: "{{ item }}"
+    state: "present"
+  with_items: "{{ spack_redhat_deps }}"
+  when: ansible_os_family == "RedHat"
+
+- name: ensure install directory exists
+  file:
+    path: "{{ spack_install_dir }}"
+    owner: "{{ spack_user }}"
+    group: "{{ spack_group }}"
+    mode: "0755"
+    state: "directory"
+
+- name: clone spack repository
+  git:
+    repo: "{{ spack_repo }}"
+    dest: "{{ spack_install_dir }}"
+    version: "{{ spack_version }}"
+
+- name: set up spack profile scripts
+  template:
+    src: "{{ item }}"
+    dest: "/etc/profile.d/{{ item }}"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  with_items:
+  - "z00_spack.sh"
+  - "z00_spack.csh"
+
+- name: source spack environment once for initialization
+  shell: |
+      . /etc/profile.d/z00_spack.sh
+
+- name: build spack packages
+  shell: |
+      . /etc/profile.d/z00_spack.sh &&
+      spack install {{ item }}
+  with_items: "{{ spack_default_packages }}"
+  when: spack_build_packages

@@ -1,7 +1,39 @@
 ---
+###########################################
+# Install dependencies
+###########################################
+
+- include: setup-role.yml
+
+- name: configure alternative library path
+  template:
+    src: etc/ld.so.conf.d/slurm.conf.j2
+    dest: /etc/ld.so.conf.d/slurm.conf
+    mode: 0644
+  register: updated_slurm_ld
+
+- name: update ld cache
+  command: ldconfig
+  when: updated_slurm_ld.changed
+
+- include: munge.yml
+
+- include: hwloc.yml
+  tags: hwloc
+  when: slurm_include_hwloc
+
+- include: pmix.yml
+  tags: pmix
+  when: slurm_include_pmix
+
+###########################################
+# Build Slurm
+###########################################
 - name: default to building slurm
   set_fact:
     slurm_build: yes
+    slurm_upgrade: no
+    slurm_downgrade: no
 
 - name: check installed slurm version
   shell: "{{ slurm_install_prefix }}/bin/sinfo --version | awk '{print $2}'"
@@ -12,6 +44,16 @@
   set_fact:
     slurm_build: no
   when: sinfo_version.stdout == slurm_version and not slurm_force_rebuild
+
+- name: upgrade?
+  set_fact:
+    slurm_upgrade: yes
+  when: sinfo_version.stdout and sinfo_version.stdout is version(slurm_version, '<')
+
+- name: downgrade?
+  set_fact:
+    slurm_downgrade: yes
+  when: sinfo_version.stdout and sinfo_version.stdout is version(slurm_version, '>')
 
 - name: going to rebuild slurm?
   debug:
@@ -139,22 +181,4 @@
     - restart slurmd
     - restart slurmdbd
     - restart slurmctld
-
-- name: copy service files
-  copy:
-    src: "{{ slurm_build_dir }}/etc/{{ item }}"
-    dest: "/etc/systemd/system/{{ item }}"
-    remote_src: yes
-  with_items:
-    - slurmctld.service
-    - slurmdbd.service
-  when: is_controller
-
-- name: copy service files
-  copy:
-    src: "{{ slurm_build_dir }}/etc/{{ item }}"
-    dest: "/etc/systemd/system/{{ item }}"
-    remote_src: yes
-  with_items:
-    - slurmd.service
-  when: is_compute
+    

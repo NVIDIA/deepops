@@ -1,0 +1,9 @@
+# OTA upgrade stuff
+- name: perform OTA upgrade to latest release (this takes a while)
+  apt:
+    upgrade: full
+    update_cache: yes
+    dpkg_options: "force-confdef,force-confold"
+
+- name: reboot after full OTA upgrade
+  reboot:
