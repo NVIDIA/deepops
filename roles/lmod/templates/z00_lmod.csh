@@ -31,7 +31,7 @@ if ( ! $?MODULEPATH_ROOT ) then
     setenv MODULEPATH_ROOT      "{{ sm_module_root }}"
     # setenv MODULEPATH           `/usr/share/lmod/lmod/libexec/addto --append MODULEPATH $MODULEPATH_ROOT/$LMOD_sys $MODULEPATH_ROOT/Core`
     # setenv MODULEPATH           `/usr/share/lmod/lmod/libexec/addto --append MODULEPATH /usr/share/lmod/lmod/modulefiles/Core`
-    setenv MODULEPATH           "{{ eb_modulepath }}"
+    setenv MODULEPATH           "{{ sm_module_path }}"
     setenv MODULESHOME          "/usr/share/lmod/lmod"
     setenv BASH_ENV             "$MODULESHOME/init/bash"
 

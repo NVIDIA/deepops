@@ -4,12 +4,21 @@
 ---
 - name: "install packages"
   become: yes
-  action: apt name=lmod state=latest
+  apt:
+    name:
+    - bash
+    - tcsh
+    - lmod
+    state: present
   when: ansible_os_family == "Debian"
 
 - name: "install packages"
   become: yes
-  action: yum name=Lmod state=latest
+  yum:
+    name:
+    - bash
+    - tcsh
+    - Lmod
   when: ansible_os_family == "RedHat"
 
 - name: "mkdir software path"
@@ -72,7 +81,7 @@
   when: ansible_os_family == "Debian"
 
 - name: "auto load lmod "
-  shell: . /etc/profile.d/z00_lmod.csh
+  shell: source /etc/profile.d/z00_lmod.csh
   args:
     executable: /bin/csh
   when: ansible_os_family == "RedHat"
