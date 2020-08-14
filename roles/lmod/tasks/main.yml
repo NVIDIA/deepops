@@ -9,6 +9,7 @@
     baseurl: "{{ lmod_rhel_epel_repo_baseurl }}"
     gpgkey: "{{ lmod_rhel_epel_repo_gpgkey }}"
   environment: "{{proxy_env if proxy_env is defined else {}}}"
+  when: ansible_os_family == "RedHat"
 
 - name: "install packages"
   become: yes
