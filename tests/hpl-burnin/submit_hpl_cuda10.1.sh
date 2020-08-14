@@ -1,7 +1,9 @@
 #!/bin/bash
 #location of HPL
 
-export HPL_DIR=${HPL_DIR:-/mnt/shared}
+export HPL_DIR=${HPL_DIR:-${HOME}} # Shared location where all HPL files are stored
+export HPL_SCRIPTS_DIR=${HPL_DIR:-${HPL_DIR}/deepops/tests/hpl-burnin} # Shared location where these scripts are stored
+export HPL_FILE_DIR=${HPL_FILE_DIR:-${HPL_DIR}/hplfiles} # Shared location where .dat files are stored
 
 export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
@@ -47,7 +49,7 @@ if [ x"${HPLDAT}" != x"" ]; then
 	echo "Using predefined HPL.dat file: ${HPLDAT}"
 	HPLFN=${HPLDAT}
 else
-	HPLFNDIR=$HPL_DIR/hplfiles
+	HPLFNDIR=$HPL_FILE_DIR
 	if [ ${GPUS_PER_NODE} == 8 ]; then
 		case ${NNODES} in
 			1) PxQ=4x2 ;;
@@ -153,7 +155,7 @@ mpirun -np $NNODES -npernode 1 ${LOCAL_MPIOPTS}  ${mpiopts} nvidia-smi -ac ${NVC
 echo "" | tee -a $RESULT_FILE
 
 ## Run HPL
-mpirun -np $NPROCS -bind-to none -x LD_LIBRARY_PATH ${LOCAL_MPIOPTS} ${mpiopts} ${HPL_DIR}/run_hpl_cuda10.1.sh 2>&1 | tee -a $RESULT_FILE
+mpirun -np $NPROCS -bind-to none -x LD_LIBRARY_PATH ${LOCAL_MPIOPTS} ${mpiopts} ${HPL_SCRIPTS_DIR}/run_hpl_cuda10.1.sh 2>&1 | tee -a $RESULT_FILE
 
 ## Cleanup Run
 cd ${HPL_DIR}

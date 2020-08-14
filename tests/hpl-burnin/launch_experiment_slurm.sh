@@ -21,7 +21,8 @@
 ###    When all the jobs are down, run the verify script, put the results in the results directory
 ### - Set the full expdir from this script
 
-export HPL_DIR=${HPL_DIR:-${HOME}}
+export HPL_DIR=${HPL_DIR:-${HOME}} # The shared directory where scripts, data, and results are stored
+export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}/deepops/tests/hpl-burnin} # The shared directory where these scripts are stored
 
 ## Set default options
 niters=5
@@ -167,7 +168,7 @@ fi
 export SYSTEM=${system}
 export GPUS_PER_NODE=${gpus_per_node}
 
-RUNSCRIPT=submit_hpl_cuda${cudaver}.sh
+RUNSCRIPT=${HPL_SCRIPTS_DIR}/submit_hpl_cuda${cudaver}.sh
 
 # Set a name for the experiment
 export EXPNAME=${nodes_per_job}node_${system}_$(date +%Y%m%d%H%M%S)
@@ -196,7 +197,7 @@ fi
 ### Report all variables
 echo ""
 echo "Experiment Variables:"
-for V in HPL_DIR EXPDIR system nodes_per_job gpus_per_node gpuclock memclock  niters cudaver partition usehca maxnodes mpiopts gresstr total_nodes hpldat; do
+for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system nodes_per_job gpus_per_node gpuclock memclock  niters cudaver partition usehca maxnodes mpiopts gresstr total_nodes hpldat; do
 	echo -n "${V}: "
         if [ x"${!V}" != x"" ]; then	
         	echo "${!V}"
@@ -264,7 +265,7 @@ echo "===================="
 
 VLOGFN=${EXPDIR}/verify_results.txt
 
-./verify_hpl_experiment.py ${EXPDIR} | tee ${VLOGFN}
+${HPL_SCRIPTS_DIR}/verify_hpl_experiment.py ${EXPDIR} | tee ${VLOGFN}
 
 echo "Run Summary:"
 echo "Experiment Results Directory: ${EXPDIR}"
@@ -273,7 +274,7 @@ echo "Nodes Per Job:: ${nodes_per_job}"
 echo "Verify Log: ${VLOGFN}"
 
 echo ""
-echo "To rerun the verification: ./verify_hpl_experiment.py ${EXPDIR}"
+echo "To rerun the verification: ${HPL_SCRIPTS_DIR}/verify_hpl_experiment.py ${EXPDIR}"
 echo ""
 
 

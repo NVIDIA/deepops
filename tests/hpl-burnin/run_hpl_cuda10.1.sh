@@ -1,7 +1,7 @@
 #!/bin/bash
 #location of HPL 
 
-export HPL_DIR=${HPL_DIR:-/mnt/shared}
+export HPL_DIR=${HPL_DIR:-${HOME}}
 
 CUDAVER=${cudaver:-"10.1"}
 
