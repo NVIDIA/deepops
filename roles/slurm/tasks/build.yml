@@ -185,10 +185,12 @@
 - name: fix library dir permissions
   file:
     path: "{{ slurm_install_prefix }}/lib/slurm"
+    state: directory
     mode: 0775
 
 - name: fix deepops dir permissions
   file:
     path: "{{ deepops_dir }}"
+    state: directory
     mode: 0755
     recurse: yes
