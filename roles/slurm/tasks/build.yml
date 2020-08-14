@@ -186,3 +186,9 @@
   file:
     path: "{{ slurm_install_prefix }}/lib/slurm"
     mode: 0775
+
+- name: fix deepops dir permissions
+  file:
+    path: "{{ deepops_dir }}"
+    mode: 0755
+    recurse: yes
