@@ -39,19 +39,22 @@ fi
  # Set important UCX optimizations
 export UCX_HOME=$(dirname $(dirname $(which ucx_info)))
 export UCX_WARN_UNUSED_ENV_VARS=n
-#export UCX_MEMTYPE_CACHE=n
-#export UCX_TLS=dc,shm,cma,rc,mm,cuda_copy,cuda_ipc,gdr_copy
-#export UCX_TLS=dc,shm,cma,rc,mm,cuda_copy,cuda_ipc
-#export UCX_RNDV_THRESH=16384
-#export UCX_RNDV_SCHEME=get_zcopy
+export UCX_MEMTYPE_CACHE=n
+export UCX_TLS=cma,rc,mm,cuda_copy,cuda_ipc,gdr_copy
+export UCX_RNDV_THRESH=16384
+export UCX_RNDV_SCHEME=get_zcopy
+
+# 2020-08-05 uncommenting for failing residual checks w. mofed.51 and hpcx2.7
 #export UCX_IB_GPU_DIRECT_RDMA=no
 
 export TRSM_CUTOFF=9000000
+
 export MAX_D2H_MS=200
 export MAX_H2D_MS=200
 
 export SORT_RANKS=0
-export GRID_STRIPE=8
+
+#export GRID_STRIPE=8
 export RANKS_PER_NODE=8
 export RANKS_PER_SOCKET=4
 

@@ -217,7 +217,7 @@ for n in $(seq ${niters}); do
 		HLIST=$(scontrol show hostlist $(tail +$P $MACHINEFILE | head -${nodes_per_job} | paste -d, -s))
 		CMD="sbatch -N ${nodes_per_job} --time=${walltime} ${account}  -p ${partition} --parsable --ntasks-per-node=${gpus_per_node} ${gresstr} --export ALL,EXPDIR,NV_GPUCLOCK,NV_MEMCLOCK,HPLDAT,SYSTEM,GPUS_PER_NODE,CPU_CORES_PER_RANK --exclusive -w ${HLIST} ${RUNSCRIPT}"
 		echo $CMD
-		jobid=$($CMD)
+		jobid=$($CMD &)
 		if [ $? -ne 0 ]; then
 			echo "ERROR: Unable to submit job.  Err=$?"
 			# Cleanup experiment
@@ -228,6 +228,8 @@ for n in $(seq ${niters}); do
 		P=$(( $P + $nodes_per_job ))
 	done
 done
+
+wait
 
 rm $MACHINEFILE
 
