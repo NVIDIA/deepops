@@ -2,6 +2,14 @@
 # ansible role to install lmod:
 #
 ---
+- name: RedHat | add epel repo
+  yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: "{{ lmod_rhel_epel_repo_baseurl }}"
+    gpgkey: "{{ lmod_rhel_epel_repo_gpgkey }}"
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
 - name: "install packages"
   become: yes
   apt:
