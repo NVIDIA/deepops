@@ -18,7 +18,7 @@ git clone https://github.com/NVIDIA/deepops.git
 
 ```
 cd deepops
-git checkout tags/20.06
+git checkout tags/20.08
 ```
 
 3. Pick one of the [Deployment Options](/README.md#deployment-options) mentioned in the main [README](/README.md), following the installation instructions. For example, if deploying a hybrid cluster, all features of DeepOps may be deployed by following the [DGX POD Hybrid Cluster](dgx-pod.md) guide.
