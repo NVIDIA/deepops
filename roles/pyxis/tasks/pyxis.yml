@@ -53,3 +53,8 @@
     - restart slurmctld
     - restart slurmd
   tags: pyxis
+
+- name: set pyxis shared-object permissions
+  file:
+    path: "/usr/local/src/pyxis/spank_pyxis.so"
+    mode: 0755
