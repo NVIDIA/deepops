@@ -38,7 +38,7 @@ if ( ! $?MODULEPATH_ROOT ) then
     #
     # If MANPATH is empty, Lmod is adding a trailing ":" so that
     # the system MANPATH will be found
-    if ( -z "$MANPATH" ) then
+    if (! $?MANPATH ) then
       setenv MANPATH :
     endif
     setenv MANPATH `/usr/share/lmod/lmod/libexec/addto MANPATH /usr/share/lmod/lmod/share/man`
