@@ -181,3 +181,8 @@
     - restart slurmd
     - restart slurmdbd
     - restart slurmctld
+
+- name: fix library dir permissions
+  file:
+    path: "{{ slurm_install_prefix }}/lib/slurm"
+    mode: 0775
