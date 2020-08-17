@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Make the dashboard a NodePort
+kubectl patch svc -n kube-system kubernetes-dashboard  -p '{"spec": {"type": "NodePort", "ports": [{"nodePort": 31443, "port": 443}] }}'
+
 kubectl -n kube-system get sa admin-user 2>&1 | grep "NotFound" >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
     kubectl apply -f services/k8s-dashboard-admin.yml
@@ -11,7 +14,8 @@ master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o
 # Get access token
 token=$(kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}') | grep ^token: | awk '{print $2}')
 
-export dashboard_url="https://${master_ip}:6443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login"
+export dashboard_url="https://${master_ip}:31443"
+
 # Print Dashboard address
 echo
 echo "Dashboard is available at: ${dashboard_url}"
