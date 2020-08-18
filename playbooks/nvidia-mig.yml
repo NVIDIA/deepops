@@ -15,42 +15,83 @@
       - nvsm.service
       - docker.service
 
+    # By default assume no changes are needed. Set to True as needed.
+    need_changes: False
+
   tasks:
     # Check for MIG-capable devices
-    - name: check for MIG capable devices
+    - name: Query MIG mode
       command: nvidia-smi --query-gpu=pci.bus_id,mig.mode.current --format=csv,noheader
-      register: has_mig
+      register: mig_status
+      tags: always
 
-    # Pre-tasks
-    - name: collect facts about services
-      service_facts:
+    - name: Count GPUs with MIG enabled, disabled and N/A
+      set_fact:
+        mig_enabled_count: "{{ mig_status.stdout | regex_findall(\"Enabled\") | length }}"
+        mig_disabled_count: "{{ mig_status.stdout | regex_findall(\"Disabled\") | length }}"
+        mig_not_available_count: "{{ mig_status.stdout | regex_findall(\"(\\[N/A\\])\") | length }}"
+      tags: always
+
+    # Fail if MIG is requested to be enabled, but no GPUs support MIG. The
+    # opposite is considered ok as a GPU with no MIG support can be considered
+    # having it always disabled.
+    - fail:
+        msg: "No GPUs supporting MIG found while MIG was requested to be enabled."
+      when: mig_enabled_count == "0" and mig_disabled_count == "0"
+      tags: enable
+
+    - name: Check that we need to enable MIG on any GPUs
+      set_fact:
+        need_changes: True
+      when: mig_disabled_count != "0"
+      tags: enable
+
+    - name: Check that we need to disable MIG on any GPUs
+      set_fact:
+        need_changes: True
+      when: mig_enabled_count != "0"
+      tags: disable
+
+    - name: Display info if no MIG changes are needed
+      debug:
+        msg: "All GPUs in the desired MIG state already, skipping most of the other tasks."
+      when: not need_changes
       tags: enable, disable, never
 
-    - name: stop system services referencing nvidia
-      systemd:
-        state: stopped
-        name: "{{ item }}"
-      loop: "{{ nv_services }}"
-      when: item in ansible_facts.services and ansible_facts.services[item].state == "running"
-      tags: enable, disable, never
+    - name: Apply new MIG mode settings
+      block:
+        # Pre-tasks
+        - name: collect facts about services
+          service_facts:
+          tags: enable, disable, never
 
-    # Manage MIG
-    - name: enable MIG mode
-      command: nvidia-smi -mig 1
-      tags: enable, never
+        - name: stop system services referencing nvidia
+          systemd:
+            state: stopped
+            name: "{{ item }}"
+          loop: "{{ nv_services }}"
+          when: item in ansible_facts.services and ansible_facts.services[item].state == "running"
+          tags: enable, disable, never
 
-    - name: disable MIG mode
-      command: nvidia-smi -mig 0
-      tags: disable, never
+        # Manage MIG
+        - name: enable MIG mode
+          command: nvidia-smi -mig 1
+          tags: enable, never
 
-    # Post-tasks
-    - name: restart system services referencing nvidia
-      systemd:
-        state: started
-        name: "{{ item }}"
-      loop: "{{ nv_services }}"
-      when: item in ansible_facts.services and ansible_facts.services[item].state == "running"
-      tags: enable, disable, never
+        - name: disable MIG mode
+          command: nvidia-smi -mig 0
+          tags: disable, never
+
+        # Post-tasks
+        - name: restart system services referencing nvidia
+          systemd:
+            state: started
+            name: "{{ item }}"
+          loop: "{{ nv_services }}"
+          when: item in ansible_facts.services and ansible_facts.services[item].state == "running"
+          tags: enable, disable, never
+
+      when: need_changes
 
     # Permissions
     - name: grant user permissions to manage MIG instances
