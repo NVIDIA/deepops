@@ -132,7 +132,7 @@ elif [ x"${system}" == x"workshop" ]; then
 	export gpus_per_node=1
 	export NV_GPUCLOCK=1530
 	export NV_MEMCLOCK=877
-	export hpldat="/mnt/shared/deepops/tests/hpl-burnin/hplfiles/HPL.dat_1x1_workshop_16G"
+	export hpldat="${HPL_SCRIPTS_DIR}/hplfiles/HPL.dat_1x1_workshop_16G"
 	echo "WARN; Running in non-performant workshop configuration"
 else
 	echo "ERROR: Generic systems are not supported yet."
