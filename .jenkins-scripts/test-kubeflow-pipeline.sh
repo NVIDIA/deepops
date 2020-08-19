@@ -17,4 +17,5 @@ kubectl get pods -n kubeflow # Do this for debug purposes
 
 # Run the Kubeflow pipeline test, this will build a pipeline that launches an NGC container
 # For some reason the initial pipeline creation hangs sometime (and doesn't timeout or error out or provide any logging) so we run this twice until success or timeout
-timeout 600 python3 .jenkins-scripts/test-kubeflow-pipeline.py || timeout 600 python3 .jenkins-scripts/test-kubeflow-pipeline.py
+python3 .jenkins-scripts/test-kubeflow-pipeline.py
+kubectl get pods -n kubeflow # Do this for debug purposes
