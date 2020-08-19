@@ -16,10 +16,13 @@ while [ ${time} -lt ${timeout} ]; do
   curl -s --raw -L "${prometheus_url}" && \
     curl -s --raw -L "${grafana_url}" && \
     curl -s --raw -L "${alertmanager_url}"  && \
-    echo "Monitoring URLs are all responding" && exit 0
+    echo "Monitoring URLs are all responding" && break
   let time=$time+15
   sleep 15
 done
+
+# Delete Monitoring
+source ./scripts/k8s_deploy_monitoring.sh -d && exit 0
 
 # Monitoring deployment failure
 echo "Monitoring did not come up in time"
