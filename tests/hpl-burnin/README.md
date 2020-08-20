@@ -14,7 +14,13 @@ Currently, only clusters built with DGX-1V-16GB, DGX-1V-32GB, and DGX2 are suppo
 
 ## Getting started
 
-First copy the hpl-burnin test directory to the shared home directory of the slurm cluster login node. Then place the hpl binary in the hpl-burnin directory and run launch_experiment_slurm.sh from it without any options.
+First clone the DeepOps repo to the shared home directory of the slurm cluster login node. Then place the hpl binary in the hpl-burnin directory (`deepops/tests/hpl-burnin`) and run launch_experiment_slurm.sh from it without any options.
+
+```sh
+git clone https://github.com/NVIDIA/deepops.git
+cd deepops/tests/hpl-burnin
+```
+> Note: All test scripts along with the HPL binary will be in this directory. It is referenced in code as `HPL_SCRIPTS_DIR`. The shared directory is referenced as `HPL_DIR` and by default this is assumed to be `~/`. These can both be changed by running `export HPL_DIR=<new_dir>; export HPL_SCRIPTS_DIR=<new_dir>`.
 
 ```
 ./launch_experiment_slurm.sh --sys <SYSTEM> --count <NODES_PER_JOBS> 
