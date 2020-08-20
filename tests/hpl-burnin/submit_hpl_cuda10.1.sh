@@ -2,7 +2,7 @@
 #location of HPL
 
 export HPL_DIR=${HPL_DIR:-${HOME}} # Shared location where all HPL files are stored
-export HPL_SCRIPTS_DIR=${HPL_DIR:-${HPL_DIR}/deepops/tests/hpl-burnin} # Shared location where these scripts are stored
+export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}/deepops/tests/hpl-burnin} # Shared location where these scripts are stored
 export HPL_FILE_DIR=${HPL_FILE_DIR:-${HPL_DIR}/hplfiles} # Shared location where .dat files are stored
 
 export PATH=/usr/local/cuda/bin:$PATH
