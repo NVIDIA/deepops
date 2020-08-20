@@ -30,8 +30,8 @@ export KFCTL_FILE=kfctl_v1.1.0-0-g9a3621e_linux.tar.gz # https://github.com/kube
 export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.1.0/${KFCTL_FILE}"
 
 # Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
-export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/55d1a9c84ca796f9a098bbeec406acbdcfa6aebe/kfdef/kfctl_istio_dex.v1.0.2.yaml"
-export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.0.2.yaml" # https://github.com/kubeflow/manifests/releases/tag/v1.0.2
+export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/6dcebbe263bc98c62aee9bff4364f7dfb3efe254/kfdef/kfctl_istio_dex.v1.1.0.yaml"
+export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.1.0.yaml" # Not yet a release version, but likely https://github.com/kubeflow/manifests/releases/tag/v1.1-rc.3
 
 # Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
 export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/master/kfdef/kfctl_k8s_istio.yaml" # Not a hash or branch tag because of https://github.com/kubeflow/manifests/pull/1459
