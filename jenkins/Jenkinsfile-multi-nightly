@@ -88,6 +88,11 @@ pipeline {
             timeout 60 bash -x ./.jenkins-scripts/test-slurm-job.sh
           '''
 
+          echo "Test MPI"
+          sh '''
+            timeout 60 bash -x ./.jenkins-scripts/test-mpi-job.sh
+          '''
+
           echo "Reset repo and unmunge files"
           sh '''
             git reset --hard
