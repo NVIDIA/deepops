@@ -139,7 +139,9 @@ function install_dependencies() {
 
 
 function install_mpi_operator() {
+
   # Download kustomize, as required by mpi
+  pushd .
   cd ${CONFIG_DIR}
   curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases |\
     grep browser_download |\
@@ -156,6 +158,8 @@ function install_mpi_operator() {
   git clone ${KUBEFLOW_MPI_MANIFESTS_REPO}
   cd manifests/mpi-job/mpi-operator
   ${KUSTOMIZE} build base | kubectl apply -f -
+
+  popd # Go back to the original dir
 }
 
 
@@ -180,6 +184,7 @@ function stand_up() {
   chmod +x ${KUBEFLOW_DEL_SCRIPT}
 
   # Initialize and apply the Kubeflow project using the specified config. We do this in two steps to allow a chance to customize the config
+  pushd .
   cd ${KF_DIR}
   ${KFCTL} build -V -f ${CONFIG_URI}
 
@@ -197,6 +202,7 @@ function stand_up() {
 
   # XXX: Add potential CONFIG customizations here before applying
   ${KFCTL} apply -V -f ${CONFIG_FILE}
+  popd
 }
 
 
