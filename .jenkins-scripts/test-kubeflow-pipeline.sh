@@ -8,9 +8,7 @@ cd "${ROOT_DIR}"
 # Install the optional kfp package
 sudo pip3 install kfp
 
-# Wait for the kubeflow pipeline service to be ready, and then wait another 30 seconds for other random Kubeflow initialization
-# Don't wait for katib or a few other things that take longer to initialize
-export KUBEFLOW_DEPLOYMENTS="profiles-deployment centraldashboard ml-pipeline minio mysql metadata-db"
+# Wait for the kubeflow pipeline service to be ready
 ./scripts/k8s_deploy_kubeflow.sh -w
 
 kubectl get pods -n kubeflow # Do this for debug purposes
