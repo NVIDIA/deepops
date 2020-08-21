@@ -28,6 +28,8 @@ export KUBEFLOW_MPI_MANIFESTS_REPO="${KUBEFLOW_MPI_MANIFESTS_REPO:-https://githu
 # Download URLs and versions, note the kfctl version does not always match the manifest/config version, but best-effort should be made to keep their versions close
 export KFCTL_FILE=kfctl_v1.1.0-0-g9a3621e_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.1.0
 export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.1.0/${KFCTL_FILE}"
+export AUTH_KFCTL_FILE=kfctl_v1.1.0-0-g9a3621e_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.1.0
+export AUTH_KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.1.0/${KFCTL_FILE}"
 
 # Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
 export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/6dcebbe263bc98c62aee9bff4364f7dfb3efe254/kfdef/kfctl_istio_dex.v1.1.0.yaml"
@@ -66,6 +68,8 @@ function get_opts() {
       x)
 	CONFIG_URI=${AUTH_CONFIG_URI}
 	CONFIG_FILE=${AUTH_CONFIG_FILE}
+        KFCTL_FILE="${AUTH_KFCTL_FILE}"
+        KFCTL_URL="${AUTH_KFCTL_URL}"
         ;;
       d)
         KUBEFLOW_DELETE=true
