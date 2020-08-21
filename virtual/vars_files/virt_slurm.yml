@@ -11,3 +11,6 @@ slurm_allow_ssh_user:
 hpcsdk_clean_up_tarball_after_extract: true
 hpcsdk_clean_up_temp_dir: true
 slurm_build_dir_cleanup: true
+
+# Build OpenMPI locally for testing
+slurm_cluster_install_openmpi: true

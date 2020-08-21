@@ -37,7 +37,6 @@ hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
 # Optional installs                                                            #
 ################################################################################
 slurm_cluster_install_cuda: yes
-slurm_cluster_install_openmpi: yes
 slurm_cluster_install_nvidia_driver: yes
 slurm_cluster_install_singularity: no
 
@@ -117,6 +116,7 @@ hpcsdk_install_in_path: false
 # using the OpenMPI provided in the HPC SDK, but if you need a custom build,   #
 # this can help you get started.
 ################################################################################
+slurm_cluster_install_openmpi: false
 openmpi_version: 4.0.4
 openmpi_install_prefix: "/usr/local"
 openmpi_configure: "./configure --prefix={{ openmpi_install_prefix }} --disable-dependency-tracking --disable-getpwuid --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }} --with-pmi={{ slurm_install_prefix }} --with-slurm={{ slurm_install_prefix }}"
