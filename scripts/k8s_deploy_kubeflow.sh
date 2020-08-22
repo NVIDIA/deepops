@@ -296,45 +296,6 @@ function print_info() {
 }
 
 
-function test_script() {
-  # Don't test recursively
-  if [ ${KUBEFLOW_TEST} ]; then
-    export KUBEFLOW_TEST=""
-  else
-    return
-  fi
-
-  ./${0} -dp
-  if [ ${?} -eq 0 ]; then
-    exit 10
-  fi
-  ./${0} -h
-  if [ ${?} -eq 0 ]; then
-    exit 11
-  fi
-  
-  ./${0}
-  if [ ${?} -ne 0 ]; then
-    exit 12 # we should really test with a curl
-  fi
-  ./${0} -D
-  if [ ${?} -ne 0 ]; then
-    exit 13
-  fi
-  ./${0} -x
-  if [ ${?} -ne 0 ]; then
-    exit 14
-  fi
-  ./${0} -e
-  if [ ${?} -ne 0 ]; then
-    exit 15
-  fi
-
-  exit 0
-}
-
-test_script
-
 get_opts ${@}
 
 if [ ${KUBEFLOW_PRINT} ] && [ ${KUBEFLOW_DELETE} ]; then
