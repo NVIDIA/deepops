@@ -48,19 +48,15 @@ function help_me() {
   echo "-d    Delete Kubeflow from your system (skipping the CRDs and istio-system namespace that may have been installed with Kubeflow."
   echo "-D    Deprecated, same as -d. Previously 'Fully Delete Kubeflow from your system along with all Kubeflow CRDs the istio-system namespace. WARNING, do not use this option if other components depend on istio.'"
   echo "-x    Install Kubeflow with multi-user auth (this utilizes Dex, the default is no multi-user auth)."
-  echo "-c    Specify a different Kubeflow config to install with (this option is deprecated)."
   echo "-w    Wait for Kubeflow homepage to respond (also polls for various Kubeflow Deployments to have an available status)."
 }
 
 
 function get_opts() {
-  while getopts "hpwc:xdDZ" option; do
+  while getopts "hpwxdDZ" option; do
     case $option in
       p)
         KUBEFLOW_PRINT=true
-        ;;
-      c)
-	CONFIG=$OPTARG
         ;;
       w)
         KUBEFLOW_WAIT=true
@@ -76,7 +72,6 @@ function get_opts() {
         ;;
       D)
         KUBEFLOW_DELETE=true
-        KUBEFLOW_FULL_DELETE=true
         echo "The -D flag is deprecated, use -d instead"
         ;;
       Z)
@@ -221,23 +216,10 @@ function tear_down() {
   namespaces="kubeflow"
 
   # This runs kfctl delete pointing to the CONFIG that was used at install
-  bash ${KUBEFLOW_DEL_SCRIPT} && sleep 5 # There seems to be a timing issue here in kfctl, so we sleep a bit.
-
-  # Delete other NS that were installed. These might be part of other apps and is slightly dangerous
-  # LEGACY: This code was implemented to workaround https://github.com/kubeflow/kubeflow/issues/3767, this is supposedly fixed
-  #if [ "${KUBEFLOW_FULL_DELETE}" == "true" ]; then
-  #  namespaces=" ${namespaces} admin auth cert-manager istio-system knative-serving ${KUBEFLOW_EXTRA_NS}"
-  #  # delete all namespaces, including namespaces that "should" already have been deleted by kfctl delete
-  #  echo "Re-deleting namespaces ${namespaces} for a full cleanup"
-  #  kubectl delete ns ${namespaces}
-  #  # These should probably be deleted by kfctl, but they are not
-  #  kubectl delete crd -l app.kubernetes.io/part-of=kubeflow -o name
-  #  kubectl delete all -l app.kubernetes.io/part-of=kubeflow --all-namespaces
-  #fi
+  bash ${KUBEFLOW_DEL_SCRIPT}
 
   # There is an issues in the kfctl delete command that does not properly clean up and leaves NSs in a terminating state, this is a bit hacky but resolves it
   if [ "${KUBEFLOW_EXTRA_FULL_DELETE}" == "true" ]; then
-    sleep 10 # Give the other deletion steps proper time to cleanup
     echo "Removing finalizers from all namespaces: ${namespaces}"
     fix_terminating_ns ${namespaces}
   fi
@@ -290,8 +272,6 @@ function print_info() {
   echo "To perform a full uninstall : ${0} -D"
   echo
   echo "Kubeflow Dashboard (HTTP NodePort): ${kf_url}"
-  # echo "Kubeflow Dashboard (HTTPS NodePort, required for auth): ${secure_kf_url}"
-  # echo "Kubeflow Dashboard (DEFAULT - LoadBalancer, required for auth w/Dex): ${lb_url}"
   echo
 }
 
