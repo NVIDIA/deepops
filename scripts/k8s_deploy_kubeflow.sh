@@ -240,12 +240,12 @@ function poll_url() {
   while [ ${time} -lt ${KUBEFLOW_TIMEOUT} ]; do
     # XXX: This validates that the webapp is responding, it does not guarentee functionality
     curl -s --raw -L "${kf_url}" && \
-      echo "Kubeflow homepage is up" && exit 0
+      echo "Kubeflow homepage is up" && break
     let time=$time+15
     sleep 15
   done
-  echo "Kubeflow did not respond within ${KUBEFLOW_TIMEOUT} seconds"
-  exit 1
+  curl -s --raw -L "${kf_url}" || (echo "Kubeflow did not respond within ${KUBEFLOW_TIMEOUT} seconds" && \
+    exit 1) # Fail if we didn't come up in time.
 }
 
 
