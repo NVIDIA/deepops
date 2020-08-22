@@ -5,6 +5,8 @@ source .jenkins-scripts/jenkins-common.sh
 # Ensure working directory is root
 cd "${ROOT_DIR}"
 
+export KUBEFLOW_DEPLOYMENTS="profiles-deployment centraldashboard ml-pipeline minio mysql metadata-db" # TODO: We will only poll for these, because other services currently fail to come up in Jenkins due to low disk space
+
 # Install the optional kfp package
 sudo pip3 install kfp
 
