@@ -14,7 +14,7 @@
     - nvidia-gpu-operator
 
 # GPU operator
-- hosts: kube-master
+- hosts: kube-master[0]
   become: yes
   tasks:
     - name: Install helm chart for GPU operator

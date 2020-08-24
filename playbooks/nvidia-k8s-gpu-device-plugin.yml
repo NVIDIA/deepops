@@ -1,5 +1,5 @@
 ---
-- hosts: kube-master
+- hosts: kube-master[0]
   become: true
   tasks:
     - name: install k8s GPU plugin
