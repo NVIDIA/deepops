@@ -3,6 +3,7 @@ source .jenkins-scripts/jenkins-common.sh
 
 # Upload MPI source
 scp  \
+	-o "StrictHostKeyChecking no" \
 	-o "UserKnownHostsFile /dev/null" \
 	-i "${HOME}/.ssh/id_rsa" \
 	examples/slurm-mpi-hello/mpi-hello.c \
