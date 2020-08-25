@@ -200,4 +200,15 @@
   tags:
     - local
 
+# Remove taint from kube-master nodes.
+# This keeps backwards compatibility and allows a few services (monitoring/etc.) to run properly.
+- hosts: kube-master
+  gather_facts: false
+  vars:
+    ansible_become: no
+  tasks:
+    - name: kubeadm | Remove taint for master with node role
+      command: "{{ artifacts_dir }}/kubectl --kubeconfig {{ artifacts_dir }}/admin.conf taint node {{ inventory_hostname }} node-role.kubernetes.io/master:NoSchedule-"
+      delegate_to: localhost
+      failed_when: false # Taint will not be present if kube-master also under kube-node
 
