@@ -5,12 +5,12 @@ source .jenkins-scripts/jenkins-common.sh
 # Ensure working directory is root
 cd "${ROOT_DIR}"
 
+export KUBEFLOW_DEPLOYMENTS="profiles-deployment centraldashboard ml-pipeline minio mysql metadata-db" # TODO: We will only poll for these, because other services currently fail to come up in Jenkins due to low disk space
+
 # Install the optional kfp package
 sudo pip3 install kfp
 
-# Wait for the kubeflow pipeline service to be ready, and then wait another 30 seconds for other random Kubeflow initialization
-# Don't wait for katib or a few other things that take longer to initialize
-export KUBEFLOW_DEPLOYMENTS="profiles-deployment centraldashboard ml-pipeline minio mysql metadata-db"
+# Wait for the kubeflow pipeline service to be ready
 ./scripts/k8s_deploy_kubeflow.sh -w
 
 kubectl get pods -n kubeflow # Do this for debug purposes
