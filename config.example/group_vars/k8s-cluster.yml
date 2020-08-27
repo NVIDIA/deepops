@@ -26,11 +26,12 @@ deepops_gpu_operator_enabled: false
 # Addons deployed in kube-system namespaces are handled.
 #podsecuritypolicy_enabled: false
 
-# kubespray v2.12.2 deploys dashboard 1.10.1 which is no longer supported in k8s 1.16
-# https://github.com/kubernetes/dashboard/issues/4401#issuecomment-540476478
+# Pin the version of kubespray dashboard https://github.com/kubernetes/dashboard/releases/tag/v2.0.3
 dashboard_enabled: true
-dashboard_image_tag: "v2.0.0-rc5"
+dashboard_image_tag: "v2.0.3"
 dashboard_image_repo: "kubernetesui/dashboard"
+dashboard_metrics_scrape_tagr: "v1.0.4"
+dashboard_metrics_scraper_repo: "kubernetesui/metrics-scraper"
 
 # kubespray v2.13.1 deploys helm v3.1.2
 helm_version: "v3.1.2"

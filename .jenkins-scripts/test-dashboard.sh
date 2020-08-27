@@ -13,7 +13,7 @@ source ./scripts/k8s_deploy_dashboard_user.sh
 timeout=120
 time=0
 while [ ${time} -lt ${timeout} ]; do
-  curl -ks --raw -L "${dashboard_url}" && \
+  curl -ks --raw -kL "${dashboard_url}" | grep "Kubernetes Dashboard" && \
     echo "Dashboard URLs are all responding" && exit 0
   let time=$time+15
   sleep 15

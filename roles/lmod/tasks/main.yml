@@ -2,14 +2,32 @@
 # ansible role to install lmod:
 #
 ---
+- name: RedHat | add epel repo
+  yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: "{{ lmod_rhel_epel_repo_baseurl }}"
+    gpgkey: "{{ lmod_rhel_epel_repo_gpgkey }}"
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  when: ansible_os_family == "RedHat"
+
 - name: "install packages"
   become: yes
-  action: apt name=lmod state=latest
+  apt:
+    name:
+    - bash
+    - tcsh
+    - lmod
+    state: present
   when: ansible_os_family == "Debian"
 
 - name: "install packages"
   become: yes
-  action: yum name=Lmod state=latest
+  yum:
+    name:
+    - bash
+    - tcsh
+    - Lmod
   when: ansible_os_family == "RedHat"
 
 - name: "mkdir software path"
@@ -28,7 +46,6 @@
     owner: root
     group: root
     mode: 0777
-  when: ansible_os_family == "Debian"
   tags:
     - configuration
 
@@ -40,7 +57,6 @@
     owner: root
     group: root
     mode: 0777
-  when: ansible_os_family == "RedHat"
   tags:
     - configuration
 
@@ -57,23 +73,18 @@
   shell: unset MODULEPATH_ROOT
   args:
     executable: /bin/bash
-  when: ansible_os_family == "Debian"
 
 - name: "unset previous lmod setup"
   shell: unsetenv MODULEPATH_ROOT
   args:
     executable: /bin/csh
-  when: ansible_os_family == "RedHat"
 
 - name: "auto load lmod"
   shell: . /etc/profile.d/z00_lmod.sh
   args:
     executable: /bin/bash
-  when: ansible_os_family == "Debian"
 
 - name: "auto load lmod "
-  shell: . /etc/profile.d/z00_lmod.csh
+  shell: source /etc/profile.d/z00_lmod.csh
   args:
     executable: /bin/csh
-  when: ansible_os_family == "RedHat"
-  

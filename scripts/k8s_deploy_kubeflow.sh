@@ -28,10 +28,12 @@ export KUBEFLOW_MPI_MANIFESTS_REPO="${KUBEFLOW_MPI_MANIFESTS_REPO:-https://githu
 # Download URLs and versions, note the kfctl version does not always match the manifest/config version, but best-effort should be made to keep their versions close
 export KFCTL_FILE=kfctl_v1.1.0-0-g9a3621e_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.1.0
 export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.1.0/${KFCTL_FILE}"
+export AUTH_KFCTL_FILE=kfctl_v1.1.0-0-g9a3621e_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.1.0
+export AUTH_KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.1.0/${KFCTL_FILE}"
 
 # Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
-export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/55d1a9c84ca796f9a098bbeec406acbdcfa6aebe/kfdef/kfctl_istio_dex.v1.0.2.yaml"
-export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.0.2.yaml" # https://github.com/kubeflow/manifests/releases/tag/v1.0.2
+export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/6dcebbe263bc98c62aee9bff4364f7dfb3efe254/kfdef/kfctl_istio_dex.v1.1.0.yaml"
+export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.1.0.yaml" # Not yet a release version, but likely https://github.com/kubeflow/manifests/releases/tag/v1.1-rc.3
 
 # Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
 export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/master/kfdef/kfctl_k8s_istio.yaml" # Not a hash or branch tag because of https://github.com/kubeflow/manifests/pull/1459
@@ -46,19 +48,15 @@ function help_me() {
   echo "-d    Delete Kubeflow from your system (skipping the CRDs and istio-system namespace that may have been installed with Kubeflow."
   echo "-D    Deprecated, same as -d. Previously 'Fully Delete Kubeflow from your system along with all Kubeflow CRDs the istio-system namespace. WARNING, do not use this option if other components depend on istio.'"
   echo "-x    Install Kubeflow with multi-user auth (this utilizes Dex, the default is no multi-user auth)."
-  echo "-c    Specify a different Kubeflow config to install with (this option is deprecated)."
   echo "-w    Wait for Kubeflow homepage to respond (also polls for various Kubeflow Deployments to have an available status)."
 }
 
 
 function get_opts() {
-  while getopts "hpwc:xdDZ" option; do
+  while getopts "hpwxdDZ" option; do
     case $option in
       p)
         KUBEFLOW_PRINT=true
-        ;;
-      c)
-	CONFIG=$OPTARG
         ;;
       w)
         KUBEFLOW_WAIT=true
@@ -66,13 +64,14 @@ function get_opts() {
       x)
 	CONFIG_URI=${AUTH_CONFIG_URI}
 	CONFIG_FILE=${AUTH_CONFIG_FILE}
+        KFCTL_FILE="${AUTH_KFCTL_FILE}"
+        KFCTL_URL="${AUTH_KFCTL_URL}"
         ;;
       d)
         KUBEFLOW_DELETE=true
         ;;
       D)
         KUBEFLOW_DELETE=true
-        KUBEFLOW_FULL_DELETE=true
         echo "The -D flag is deprecated, use -d instead"
         ;;
       Z)
@@ -135,7 +134,9 @@ function install_dependencies() {
 
 
 function install_mpi_operator() {
+
   # Download kustomize, as required by mpi
+  pushd .
   cd ${CONFIG_DIR}
   curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases |\
     grep browser_download |\
@@ -152,6 +153,8 @@ function install_mpi_operator() {
   git clone ${KUBEFLOW_MPI_MANIFESTS_REPO}
   cd manifests/mpi-job/mpi-operator
   ${KUSTOMIZE} build base | kubectl apply -f -
+
+  popd # Go back to the original dir
 }
 
 
@@ -176,6 +179,7 @@ function stand_up() {
   chmod +x ${KUBEFLOW_DEL_SCRIPT}
 
   # Initialize and apply the Kubeflow project using the specified config. We do this in two steps to allow a chance to customize the config
+  pushd .
   cd ${KF_DIR}
   ${KFCTL} build -V -f ${CONFIG_URI}
 
@@ -193,6 +197,7 @@ function stand_up() {
 
   # XXX: Add potential CONFIG customizations here before applying
   ${KFCTL} apply -V -f ${CONFIG_FILE}
+  popd
 }
 
 
@@ -211,23 +216,10 @@ function tear_down() {
   namespaces="kubeflow"
 
   # This runs kfctl delete pointing to the CONFIG that was used at install
-  bash ${KUBEFLOW_DEL_SCRIPT} && sleep 5 # There seems to be a timing issue here in kfctl, so we sleep a bit.
-
-  # Delete other NS that were installed. These might be part of other apps and is slightly dangerous
-  # LEGACY: This code was implemented to workaround https://github.com/kubeflow/kubeflow/issues/3767, this is supposedly fixed
-  #if [ "${KUBEFLOW_FULL_DELETE}" == "true" ]; then
-  #  namespaces=" ${namespaces} admin auth cert-manager istio-system knative-serving ${KUBEFLOW_EXTRA_NS}"
-  #  # delete all namespaces, including namespaces that "should" already have been deleted by kfctl delete
-  #  echo "Re-deleting namespaces ${namespaces} for a full cleanup"
-  #  kubectl delete ns ${namespaces}
-  #  # These should probably be deleted by kfctl, but they are not
-  #  kubectl delete crd -l app.kubernetes.io/part-of=kubeflow -o name
-  #  kubectl delete all -l app.kubernetes.io/part-of=kubeflow --all-namespaces
-  #fi
+  bash ${KUBEFLOW_DEL_SCRIPT}
 
   # There is an issues in the kfctl delete command that does not properly clean up and leaves NSs in a terminating state, this is a bit hacky but resolves it
   if [ "${KUBEFLOW_EXTRA_FULL_DELETE}" == "true" ]; then
-    sleep 10 # Give the other deletion steps proper time to cleanup
     echo "Removing finalizers from all namespaces: ${namespaces}"
     fix_terminating_ns ${namespaces}
   fi
@@ -248,12 +240,12 @@ function poll_url() {
   while [ ${time} -lt ${KUBEFLOW_TIMEOUT} ]; do
     # XXX: This validates that the webapp is responding, it does not guarentee functionality
     curl -s --raw -L "${kf_url}" && \
-      echo "Kubeflow homepage is up" && exit 0
+      echo "Kubeflow homepage is up" && break
     let time=$time+15
     sleep 15
   done
-  echo "Kubeflow did not respond within ${KUBEFLOW_TIMEOUT} seconds"
-  exit 1
+  curl -s --raw -L "${kf_url}" || (echo "Kubeflow did not respond within ${KUBEFLOW_TIMEOUT} seconds" && \
+    exit 1) # Fail if we didn't come up in time.
 }
 
 
@@ -280,50 +272,9 @@ function print_info() {
   echo "To perform a full uninstall : ${0} -D"
   echo
   echo "Kubeflow Dashboard (HTTP NodePort): ${kf_url}"
-  # echo "Kubeflow Dashboard (HTTPS NodePort, required for auth): ${secure_kf_url}"
-  # echo "Kubeflow Dashboard (DEFAULT - LoadBalancer, required for auth w/Dex): ${lb_url}"
   echo
 }
 
-
-function test_script() {
-  # Don't test recursively
-  if [ ${KUBEFLOW_TEST} ]; then
-    export KUBEFLOW_TEST=""
-  else
-    return
-  fi
-
-  ./${0} -dp
-  if [ ${?} -eq 0 ]; then
-    exit 10
-  fi
-  ./${0} -h
-  if [ ${?} -eq 0 ]; then
-    exit 11
-  fi
-  
-  ./${0}
-  if [ ${?} -ne 0 ]; then
-    exit 12 # we should really test with a curl
-  fi
-  ./${0} -D
-  if [ ${?} -ne 0 ]; then
-    exit 13
-  fi
-  ./${0} -x
-  if [ ${?} -ne 0 ]; then
-    exit 14
-  fi
-  ./${0} -e
-  if [ ${?} -ne 0 ]; then
-    exit 15
-  fi
-
-  exit 0
-}
-
-test_script
 
 get_opts ${@}
 

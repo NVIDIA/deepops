@@ -31,14 +31,14 @@ if ( ! $?MODULEPATH_ROOT ) then
     setenv MODULEPATH_ROOT      "{{ sm_module_root }}"
     # setenv MODULEPATH           `/usr/share/lmod/lmod/libexec/addto --append MODULEPATH $MODULEPATH_ROOT/$LMOD_sys $MODULEPATH_ROOT/Core`
     # setenv MODULEPATH           `/usr/share/lmod/lmod/libexec/addto --append MODULEPATH /usr/share/lmod/lmod/modulefiles/Core`
-    setenv MODULEPATH           "{{ eb_modulepath }}"
+    setenv MODULEPATH           "{{ sm_module_path }}"
     setenv MODULESHOME          "/usr/share/lmod/lmod"
     setenv BASH_ENV             "$MODULESHOME/init/bash"
 
     #
     # If MANPATH is empty, Lmod is adding a trailing ":" so that
     # the system MANPATH will be found
-    if ( -z "$MANPATH" ) then
+    if (! $?MANPATH ) then
       setenv MANPATH :
     endif
     setenv MANPATH `/usr/share/lmod/lmod/libexec/addto MANPATH /usr/share/lmod/lmod/share/man`
