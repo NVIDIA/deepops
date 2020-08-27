@@ -1,7 +1,9 @@
 #!/bin/bash
 #location of HPL 
 
-export HPL_DIR=${HPL_DIR:-${HOME}}
+export HPL_DIR=${HPL_DIR:-${HOME}} # Shared location where all HPL files are stored
+export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}/deepops/tests/hpl-burnin} # Shared location where these scripts are stored
+export HPL_FILE_DIR=${HPL_FILE_DIR:-${HPL_DIR}/hplfiles} # Shared location where .dat files are stored
 
 CUDAVER=${cudaver:-"10.1"}
 
@@ -38,7 +40,7 @@ RANK=${OMPI_COMM_WORLD_RANK}
 if [ $LOCAL_RANK == 0 ]; then
         echo ""
         echo "XHPL Settings"
-	for V in CPU_CORES_PER_RANK OMP_NUM_THREADS MKL_NUM_THREADS LD_LIBRARY_PATH MONITOR_GPU GPU_TEMP_WARNING GPU_CLOCK_WARNING GPU_POWER_WARNING GPU_PCIE_GEN_WARNING GPU_PCIE_WIDTH_WARNING TRSM_CUTOFF GPU_DGEMM_SPLIT; do
+	for V in HPL_DIR HPL_SCRIPTS_DIR CPU_CORES_PER_RANK OMP_NUM_THREADS MKL_NUM_THREADS LD_LIBRARY_PATH MONITOR_GPU GPU_TEMP_WARNING GPU_CLOCK_WARNING GPU_POWER_WARNING GPU_PCIE_GEN_WARNING GPU_PCIE_WIDTH_WARNING TRSM_CUTOFF GPU_DGEMM_SPLIT; do
 		echo "$V: ${!V}"
 	done
 	echo ""
@@ -50,7 +52,7 @@ fi
 #APP=$HPL_DIR/xhpl_cuda-10.0-dyn_mkl-static_ompi-3.1.0_gcc4.8.5_9-26-18
 #APP=$HPL_DIR/xhpl_cuda-10.1-dyn_mkl-dyn_ompi-3.1.3_gcc4.8.5_3-12-19b
 
-HPLBIN=${HPLBIN:-"${HPL_DIR}/xhpl_cuda-${CUDAVER}-dyn_mkl-static_ompi-3.1.3_gcc4.8.5_3-12-19b"}
+HPLBIN=${HPLBIN:-"${HPL_SCRIPTS_DIR}/xhpl_cuda-${CUDAVER}-dyn_mkl-static_ompi-3.1.3_gcc4.8.5_3-12-19b"}
 
 if [ ! -x $HPLBIN ]; then
 	echo "ERROR: Rank=${RANK} Unable to find executeable ${HPLBIN}"
@@ -58,4 +60,4 @@ if [ ! -x $HPLBIN ]; then
 fi
 
 # Use the bind script to launch
-${HPL_DIR}/bind.sh --ib=single --cpu=exclusive ${HPLBIN}
+${HPL_SCRIPTS_DIR}/bind.sh --ib=single --cpu=exclusive ${HPLBIN}
