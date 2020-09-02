@@ -9,7 +9,7 @@ Restart=always
 ExecStartPre=-/usr/bin/docker stop %n
 ExecStartPre=-/usr/bin/docker rm %n
 ExecStartPre=/usr/bin/docker pull {{ grafana_container }}
-ExecStart=/usr/bin/docker run --rm --net="host" --name %n -v {{ grafana_config_dir }}:/etc/grafana -v {{ grafana_data_dir }}:/var/lib/grafana {{ grafana_container }}
+ExecStart=/usr/bin/docker run --rm --network host --name %n -v {{ grafana_config_dir }}:/etc/grafana -v {{ grafana_data_dir }}:/var/lib/grafana {{ grafana_container }}
 
 [Install]
 WantedBy=multi-user.target
