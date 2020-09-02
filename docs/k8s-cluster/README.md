@@ -12,11 +12,11 @@ Instructions for deploying a GPU cluster with Kubernetes
 
 1. Install a supported operating system on all nodes. 
 
-   Install a supported operating system on all servers via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)) or utilize the provided [OS install container](PXE.md).
+   Install a supported operating system on all servers via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)) or utilize the provided [OS install container](../pxe/README.md).
 
 2. Set up your provisioning machine. 
 
-   This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](ANSIBLE.md). 
+   This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](../deepops/ansible.md). 
 
    ```sh
    # Install software prerequisites and copy default configuration
@@ -164,7 +164,7 @@ The services can be reached from the following addresses:
 
 ### Logging
 
-Follow the [ELK Guide](elk.md) to setup logging in the cluster.
+Follow the [Logging Guide](logging.md) to setup logging in the cluster.
 
 The service can be reached from the following address:
 * Kibana: http://mgmt:30700

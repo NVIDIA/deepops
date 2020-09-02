@@ -56,7 +56,7 @@ Instructions for deploying a GPU cluster with Slurm
 
 ## Using Slurm
 
-Now that Slurm is installed, try a ["Hello World" example using MPI](../examples/slurm-mpi-hello/README.md).
+Now that Slurm is installed, try a ["Hello World" example using MPI](../../examples/slurm-mpi-hello/README.md).
 
 
 ## Configuring shared filesystems
