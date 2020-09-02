@@ -36,9 +36,9 @@ if kubectl -n rook-ceph get pod -l app=rook-ceph-tools 2>&1 | grep "No resources
     sleep 5
     # If we have an alternate registry defined, dynamically substitute it in
     if [ "${DEEPOPS_ROOK_DOCKER_REGISTRY}" ]; then
-        sed "s/image: /image: ${DEEPOPS_ROOK_DOCKER_REGISTRY}\//g" services/rook-cluster.yml | kubectl create -f -
+        sed "s/image: /image: ${DEEPOPS_ROOK_DOCKER_REGISTRY}\//g" k8s-services/rook-cluster.yml | kubectl create -f -
     else
-        kubectl create -f services/rook-cluster.yml
+        kubectl create -f k8s-services/rook-cluster.yml
     fi
 fi
 

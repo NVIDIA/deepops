@@ -9,7 +9,7 @@ You will need to download the official DGX Base OS ISO image to your provisionin
 Copy the DGX Base OS ISO to shared storage via a container running in Kubernetes, substituting the path to the DGX ISO you downloaded (be sure to wait for the `iso-loader` POD to be in the *Running* state before attempting to copy the ISO):
 
 ```sh
-kubectl apply -f services/iso-loader.yml
+kubectl apply -f k8s-services/iso-loader.yml
 kubectl cp /local/DGXServer-4.0.2.180925_6acd9c.iso $(kubectl get pod -l app=iso-loader -o custom-columns=:metadata.name --no-headers):/data/iso/
 ```
 
@@ -51,7 +51,7 @@ kubectl create configmap pxe-machines --from-file=config/machines.json
 Launch the DGXie service:
 
 ```sh
-helm install --values config/helm/dgxie.yml services/dgxie
+helm install --values config/helm/dgxie.yml k8s-services/dgxie
 ```
 
 Check the DGXie logs to make sure the services were started without errors:
