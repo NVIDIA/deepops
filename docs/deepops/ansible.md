@@ -17,7 +17,7 @@ Ansible is:
 ### Requirements
 
 * Control machine with supported OS to run Ansible
-* [Passwordless](docs/ANSIBLE.md#passwordless-configuration-using-ssh-keys) (SSH key) access from Ansible system to Universal GPU servers
+* [Passwordless](docs/deepops/ansible.md#passwordless-configuration-using-ssh-keys) (SSH key) access from Ansible system to Universal GPU servers
 
 A script is provided to install Ansible on Ubuntu and RHEL/CentOS machines. Ansible can also be installed on Mac OS and Windows (WSL).
 
