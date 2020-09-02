@@ -14,7 +14,7 @@ As part of the Kubeflow installation, the MPI Operator will also be installed. T
 
 ## Installation
 
-Deploy Kubernetes by following the [DeepOps Kubernetes Deployment Guide](kubernetes-cluster.md)
+Deploy Kubernetes by following the [DeepOps Kubernetes Deployment Guide](README.md)
 
 Deploy [Ceph](kubernetes-cluster.md#persistent-storage). Kubeflow requires a DefaultStorageClass to be defined, either deploy Ceph or use an alternative StorageClass.
 
