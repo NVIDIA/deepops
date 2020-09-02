@@ -1,4 +1,4 @@
-NGC Ready Server
+NGC Ready Server Deployment Guide
 ===
 
 NVIDIA® GPU Cloud (NGC) containers leverage the power of NGC-Ready servers with NVIDIA GPUs. This document describes how to set up your NGC-Ready server with a software stack optimized to run NGC containers.
