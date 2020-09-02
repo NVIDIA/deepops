@@ -22,7 +22,7 @@ It is recommended to use the latest release branch for stable code (linked above
 
 ## Getting Started
 
-For detailed help or guidance, read through our [Getting Started Guide](docs/README.md) or pick one of the deployment options documented below.
+For detailed help or guidance, read through our [Getting Started Guide](docs/) or pick one of the deployment options documented below.
 
 ## Deployment Options
 
