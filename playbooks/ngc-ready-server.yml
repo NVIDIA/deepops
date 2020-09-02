@@ -1,12 +1,12 @@
 ---
 
-- include: bootstrap-python.yml
-- include: bootstrap-ssh.yml
-- include: bootstrap-sudo.yml
+- include: bootstrap/bootstrap-python.yml
+- include: bootstrap/bootstrap-ssh.yml
+- include: bootstrap/bootstrap-sudo.yml
 
-- include: docker.yml
-- include: nvidia-driver.yml
-- include: nvidia-docker.yml
+- include: container/docker.yml
+- include: nvidia-software/nvidia-driver.yml
+- include: container/nvidia-docker.yml
 
 - hosts: all
   become: true

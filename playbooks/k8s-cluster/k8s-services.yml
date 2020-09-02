@@ -1,5 +1,5 @@
 ---
-- include: bootstrap-openshift.yml
+- include: ../bootstrap/bootstrap-openshift.yml
 
 # Install packages required for Ansible Helm module
 - hosts: kube-master

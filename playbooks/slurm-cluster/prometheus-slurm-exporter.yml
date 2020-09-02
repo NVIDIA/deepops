@@ -1,5 +1,5 @@
 ---
-- include: docker.yml
+- include: ../container/docker.yml
 
 - hosts: "{{ hostlist | default('all') }}"
   become: yes
