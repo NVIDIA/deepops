@@ -19,7 +19,7 @@ K8S_CONFIG_DIR="${VIRT_DIR}/config"
 DEEPOPS_OFFLINE="${DEEPOPS_OFFLINE:-0}"
 ansible_extra_args=""
 if [ "${DEEPOPS_OFFLINE}" -ne 0 ]; then
-	ansible_extra_args="-e "@${VIRT_DIR}/config/offline_repo_vars.yml""
+	ansible_extra_args="-e "@${VIRT_DIR}/config/airgap/offline_repo_vars.yml""
 fi
 
 # Deploy the K8s cluster
