@@ -38,7 +38,7 @@ DeepOps currently supports the following Linux distributions:
 
 Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications.
 
-Consult the [DeepOps Kubernetes Deployment Guide](docs/k8s-cluster/README.md) for instructions on building a GPU-enabled Kubernetes cluster using DeepOps.
+Consult the [DeepOps Kubernetes Deployment Guide](docs/k8s-cluster/) for instructions on building a GPU-enabled Kubernetes cluster using DeepOps.
 
 For more information on Kubernetes in general, refer to the [official Kubernetes docs](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/).
 
@@ -46,7 +46,7 @@ For more information on Kubernetes in general, refer to the [official Kubernetes
 
 Slurm is an open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters.
 
-Consult the [DeepOps Slurm Deployment Guide](docs/slurm-cluster/README.md) for instructions on building a GPU-enabled Slurm cluster using DeepOps.
+Consult the [DeepOps Slurm Deployment Guide](docs/slurm-cluster/) for instructions on building a GPU-enabled Slurm cluster using DeepOps.
 
 For more information on Slurm in general, refer to the [official Slurm docs](https://slurm.schedmd.com/overview.html).
 
