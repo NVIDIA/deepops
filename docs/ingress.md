@@ -17,7 +17,7 @@ Modify `config/helm/metallb.yml` to configure the IP range that the load balance
 Run the script to deploy the load balancer:
 
 ```
-./scripts/k8s_deploy_loadbalancer.sh
+./scripts/k8s/deploy_loadbalancer.sh
 ```
 
 This script will set up a software-based L2 Load Balancer using [MetalLb](https://metallb.universe.tf/)
@@ -33,7 +33,7 @@ modify `config/helm/ingress.yml` and set the service type to `NodePort`.
 Run the script to deploy the Ingress controller:
 
 ```
-./scripts/k8s_deploy_ingress.sh
+./scripts/k8s/deploy_ingress.sh
 ```
 
 This script will set up an Ingress controller based on [NGINX](https://github.com/kubernetes/ingress-nginx).

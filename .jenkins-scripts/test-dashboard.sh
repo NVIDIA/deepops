@@ -6,7 +6,7 @@ source .jenkins-scripts/jenkins-common.sh
 cd "${ROOT_DIR}"
 
 # Deploy Dashboard
-source ./scripts/k8s_deploy_dashboard_user.sh
+source ./scripts/k8s/deploy_dashboard_user.sh
 
 # The deployment script exports the http endpoints, verify it returns a 200
 # It typically takes ~1 minutes for all pods and services to start, so we poll

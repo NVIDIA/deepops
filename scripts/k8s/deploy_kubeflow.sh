@@ -117,7 +117,7 @@ function install_dependencies() {
   kubectl get storageclass 2>&1 | grep "No resources found." >/dev/null 2>&1
   if [ $? -eq 0 ] ; then
       echo "No storageclass found"
-      echo "To provision Ceph storage, run: ./scripts/k8s_deploy_rook.sh"
+      echo "To provision Ceph storage, run: ./scripts/k8s/deploy_rook.sh"
       exit 1
   fi
   

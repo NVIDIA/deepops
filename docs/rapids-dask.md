@@ -31,7 +31,7 @@ vi config/helm/rapids-dask.yml
 vi config/k8s/rapids-dask-sa.yml
 
 # Deploy
-./scripts/k8s_deploy_rapids_dask.sh
+./scripts/k8s/deploy_rapids_dask.sh
 ```
 
 > For more configuration options, see: https://github.com/rmccorm4/charts/tree/update-stable-dask/stable/dask

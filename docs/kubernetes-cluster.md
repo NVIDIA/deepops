@@ -79,7 +79,7 @@ Instructions for deploying a GPU cluster with Kubernetes
 
    ```sh
    export CLUSTER_VERIFY_EXPECTED_PODS=1 # Expected number of GPUs in the cluster
-   ./scripts/k8s_verify_gpu.sh 
+   ./scripts/k8s/verify_gpu.sh 
    ```
 
 ## Using Kubernetes
@@ -95,7 +95,7 @@ The following components are completely optional and can be installed on an exis
 Run the following script to create an administrative user and print out the dashboard URL and access token:
 
 ```sh
-./scripts/k8s_deploy_dashboard_user.sh
+./scripts/k8s/deploy_dashboard_user.sh
 ```
 
 ### Persistent Storage
@@ -105,13 +105,13 @@ Run the following script to create an administrative user and print out the dash
 Deploy a Ceph cluster running on Kubernetes for services that require persistent storage (such as Kubeflow):
 
 ```sh
-./scripts/k8s_deploy_rook.sh
+./scripts/k8s/deploy_rook.sh
 ```
 
 Poll the Ceph status by running (this script will return when Ceph initialization is complete):
 
 ```sh
-./scripts/ceph_poll.sh
+./scripts/k8s/ceph_poll.sh
 ```
 
 #### NetApp Trident
@@ -154,7 +154,7 @@ Deploy NetApp Trident for services that require persistent storage (such as Kube
 Deploy Prometheus and Grafana to monitor Kubernetes and cluster nodes:
 
 ```sh
-./scripts/k8s_deploy_monitoring.sh
+./scripts/k8s/deploy_monitoring.sh
 ```
 
 The services can be reached from the following addresses:

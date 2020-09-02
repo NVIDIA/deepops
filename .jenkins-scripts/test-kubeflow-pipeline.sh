@@ -11,7 +11,7 @@ export KUBEFLOW_DEPLOYMENTS="profiles-deployment centraldashboard ml-pipeline mi
 sudo pip3 install kfp
 
 # Wait for the kubeflow pipeline service to be ready
-./scripts/k8s_deploy_kubeflow.sh -w
+./scripts/k8s/deploy_kubeflow.sh -w
 
 kubectl get pods -n kubeflow # Do this for debug purposes
 

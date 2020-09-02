@@ -6,7 +6,7 @@ source .jenkins-scripts/jenkins-common.sh
 cd "${ROOT_DIR}"
 
 # Deploy Monitoring
-source ./scripts/k8s_deploy_monitoring.sh
+source ./scripts/k8s/deploy_monitoring.sh
 
 # The deployment script exports the http endpoints, verify it returns a 200
 # It typically takes ~1 minutes for all pods and services to start, so we poll
@@ -22,7 +22,7 @@ while [ ${time} -lt ${timeout} ]; do
 done
 
 # Delete Monitoring
-source ./scripts/k8s_deploy_monitoring.sh -d && exit 0
+source ./scripts/k8s/deploy_monitoring.sh -d && exit 0
 
 # Monitoring deployment failure
 echo "Monitoring did not come up in time"

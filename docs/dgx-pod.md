@@ -203,8 +203,6 @@ note: The following K8s services are especially helpful for air-gapped environem
 
 Provision DGX nodes with the official DGX ISO over PXE boot using DGXie.
 
-> Note: The `scripts/do_ipmi.sh` script has these commands and can be looped over multiple hosts
-
 Disable the DGX IPMI boot device selection 60s timeout, you only need to do this once for each DGX, but it is required:
 
 ```sh
@@ -336,7 +334,7 @@ sudo scontrol update node=dgx01 state=drain reason=k8s
 
 It is also possible to remove the DGX from kubernetes and reserve the resources only for Slurm or to run a mixed hybrid mode.
 
-Once the DGX compute nodes have been added to Kubernetes and Slurm, you can use the `scripts/doctl.sh` script to manage which scheduler each DGX is allowed to run jobs from.
+Once the DGX compute nodes have been added to Kubernetes and Slurm, you can use the `scripts/deepops/doctl.sh` script to manage which scheduler each DGX is allowed to run jobs from.
 
 
 ### 8. Deploy additional cluster services
@@ -349,7 +347,7 @@ The following components are completely optional and can be installed on an exis
 Run the following script to create an administrative user and print out the dashboard URL and access token:
 
 ```sh
-./scripts/k8s_deploy_dashboard_user.sh
+./scripts/k8s/deploy_dashboard_user.sh
 ```
 
 #### Persistent Storage
@@ -357,13 +355,13 @@ Run the following script to create an administrative user and print out the dash
 Deploy a Ceph cluster running on Kubernetes for services that require persistent storage (such as Kubeflow):
 
 ```sh
-./scripts/k8s_deploy_rook.sh
+./scripts/k8s/deploy_rook.sh
 ```
 
 Poll the Ceph status by running:
 
 ```sh
-./scripts/ceph_poll.sh
+./scripts/k8s/ceph_poll.sh
 ```
 
 #### Monitoring
@@ -371,7 +369,7 @@ Poll the Ceph status by running:
 Deploy Prometheus and Grafana to monitor Kubernetes and cluster nodes:
 
 ```sh
-./scripts/k8s_deploy_monitoring.sh
+./scripts/k8s/deploy_monitoring.sh
 ```
 
 The services can be reached from the following addresses:
@@ -392,7 +390,7 @@ The service can be reached from the following address:
 Kubeflow is a popular way for multiple users to run ML workloads. It exposes a Jupyter Notebook interface where users can request access to GPUs via the browser GUI. Deploy Kubeflow with a convenient script:
 
 ```sh
-./scripts/k8s_deploy_kubeflow.sh
+./scripts/k8s/deploy_kubeflow.sh
 ```
 
 For more on Kubeflow, please refer to the [official documentation](https://www.kubeflow.org/docs/about/kubeflow/).

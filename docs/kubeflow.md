@@ -22,7 +22,7 @@ Deploy Kubeflow:
 
 ```sh
 # Deploy (using istio configuration)
-./scripts/k8s_deploy_kubeflow.sh
+./scripts/k8s/deploy_kubeflow.sh
 
 ```
 
@@ -30,7 +30,7 @@ Deploy Kubeflow with Dex and SSO integration:
 
 ```sh
 # Deploy (using istio_dex configuration)
-./scripts/k8s_deploy_kubeflow.sh -x
+./scripts/k8s/deploy_kubeflow.sh -x
 
 ```
 
@@ -51,10 +51,10 @@ These can be modified at startup time following the steps outlined [here](https:
 
 ## Other usage
 
-For the most up-to-date usage information run `./scripts/k8s_deploy_kubeflow.sh -h`.
+For the most up-to-date usage information run `./scripts/k8s/deploy_kubeflow.sh -h`.
 
 ```sh
-./scripts/k8s_deploy_kubeflow.sh -h
+./scripts/k8s/deploy_kubeflow.sh -h
 Usage:
 -h    This message.
 -p    Print out the connection info for Kubeflow.
@@ -72,8 +72,8 @@ Usage:
 To uninstall and re-install Kubeflow run:
 
 ```sh
-./scripts/k8s_deploy_kubeflow.sh -d
-./scripts/k8s_deploy_kubeflow.sh
+./scripts/k8s/deploy_kubeflow.sh -d
+./scripts/k8s/deploy_kubeflow.sh
 ```
 
 ### Modifying Kubeflow configuration
@@ -104,14 +104,14 @@ Verify Ceph is running and/or a DefaultStorageClass is defined:
 
 ```
 kubectl get storageclass | grep default
-./scripts/ceph_poll.sh
+./scripts/k8s/ceph_poll.sh
 ```
 > NOTE: If Ceph is being used, `ceph_poll.sh` should exit after several seconds and Ceph should be the default StorageClass. 
 
 
 To correct this issue:
-1. Uninstall Rook/Ceph: `./scripts/rmrook.sh`
-2. Uninstall Kubeflow: `./scripts/k8s_deploy_kubeflow.sh -D`
-3. Re-install Rook/ceph: `./scripts/k8s_deploy_rook.sh`
-4. Poll for Ceph to initialize (wait for this script to exit): `./scripts/ceph_poll.sh`
-5. Re-install Kubeflow: `./scripts/k8s_deploy_kubeflow.sh`
+1. Uninstall Rook/Ceph: `./scripts/k8s/rmrook.sh`
+2. Uninstall Kubeflow: `./scripts/k8s/deploy_kubeflow.sh -D`
+3. Re-install Rook/ceph: `./scripts/k8s/deploy_rook.sh`
+4. Poll for Ceph to initialize (wait for this script to exit): `./scripts/k8s/ceph_poll.sh`
+5. Re-install Kubeflow: `./scripts/k8s/deploy_kubeflow.sh`

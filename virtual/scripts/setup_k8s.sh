@@ -35,17 +35,17 @@ kubectl get nodes
 #kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
 
 # Install helm
-"${ROOT_DIR}/scripts/install_helm.sh"
+"${ROOT_DIR}/scripts/k8s/install_helm.sh"
 
 # Deploy dashboard (optional)
-"${ROOT_DIR}/scripts/k8s_deploy_dashboard_user.sh"
+"${ROOT_DIR}/scripts/k8s/deploy_dashboard_user.sh"
 
 # Deploy rook (optional, but highly recommended)
-"${ROOT_DIR}/scripts/k8s_deploy_rook.sh"
+"${ROOT_DIR}/scripts/k8s/deploy_rook.sh"
 
 # Deploy load balancer and ingress (optional but recommended)
-"${ROOT_DIR}/scripts/k8s_deploy_loadbalancer.sh"
-"${ROOT_DIR}/scripts/k8s_deploy_ingress.sh"
+"${ROOT_DIR}/scripts/k8s/deploy_loadbalancer.sh"
+"${ROOT_DIR}/scripts/k8s/deploy_ingress.sh"
 
 # Deploy monitoring (optional)
-"${ROOT_DIR}/scripts/k8s_deploy_monitoring.sh"
+"${ROOT_DIR}/scripts/k8s/deploy_monitoring.sh"

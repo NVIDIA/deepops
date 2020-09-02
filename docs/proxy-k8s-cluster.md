@@ -29,7 +29,7 @@ _Its important to note that docker will also be configued to use the proxy to do
 
 Before executing the scripts to continue setting up and installing services you can:
 
-1. Run the `scripts/proxy.sh` script to setup environment variables. Then continue running all the scripts necessary for you're environment. 
+1. Run the `scripts/deepops/proxy.sh` script to setup environment variables. Then continue running all the scripts necessary for your environment. 
 
 2. Rather than setup the variables for your current shell, you can run each script to use the proxy without impacting your current env. For example:
-`. scripts/proxy.env && scripts/k8s_deploy_rook.sh`
+`. scripts/deepops/proxy.sh && scripts/k8s/deploy_rook.sh`

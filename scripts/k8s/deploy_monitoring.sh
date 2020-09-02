@@ -100,7 +100,7 @@ function setup_prom_monitoring() {
     fi
 
     # Deploy the ingress controller with a set name
-    NGINX_INGRESS_APP_NAME="${ingress_name}" ./scripts/k8s_deploy_ingress.sh
+    NGINX_INGRESS_APP_NAME="${ingress_name}" ./scripts/k8s/deploy_ingress.sh
 
     # Get IP information of master and ingress
     get_ips
@@ -200,7 +200,7 @@ if [ $? -ne 0 ] ; then
 fi
 
 # Install/initialize Helm if needed
-./scripts/install_helm.sh
+./scripts/k8s/install_helm.sh
 
 setup_prom_monitoring
 setup_gpu_monitoring
