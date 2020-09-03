@@ -12,15 +12,15 @@ HPL.out      output file name (if any)
 4          Qs
 16.0         threshold
 1            # of panel fact
-1        PFACTs (0=left, 1=Crout, 2=Right)
+2        PFACTs (0=left, 1=Crout, 2=Right)
 1            # of recursive stopping criterium
-4          NBMINs (>= 1)
+2          NBMINs (>= 1)
 1            # of panels in recursion
-2            NDIVs
+8            NDIVs
 1            # of recursive panel fact.
-0        RFACTs (0=left, 1=Crout, 2=Right)
+0          RFACTs (0=left, 1=Crout, 2=Right)
 1            # of broadcast
-3          BCASTs (0=1rg,1=1rM,2=2rg,3=2rM,4=Lng,5=LnM)
+1          BCASTs (0=1rg,1=1rM,2=2rg,3=2rM,4=Lng,5=LnM)
 1            # of lookahead depth
 0            DEPTHs (>=0)
 1            SWAP (0=bin-exch,1=long,2=mix)

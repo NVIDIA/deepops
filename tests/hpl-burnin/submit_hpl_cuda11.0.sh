@@ -148,7 +148,7 @@ echo "HOSTLIST: $(scontrol show hostname $SLURM_NODELIST | paste -s -d,)" | tee 
 echo "" | tee -a $RESULT_FILE
 
 echo "Setting Clocks" | tee -a $RESULT_FILE
-mpirun -np $NNODES -npernode 1 ${LOCAL_MPIOPTS}  ${mpiopts} nvidia-smi -ac ${gpuclock},${memclock} | tee -a $RESULT_FILE
+mpirun -np $NNODES -npernode 1 ${LOCAL_MPIOPTS}  ${mpiopts} nvidia-smi -ac ${memclock},${gpuclock} | tee -a $RESULT_FILE
 echo "" | tee -a $RESULT_FILE
 
 ## Run HPL

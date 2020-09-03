@@ -41,6 +41,7 @@ export UCX_HOME=$(dirname $(dirname $(which ucx_info)))
 export UCX_WARN_UNUSED_ENV_VARS=n
 export UCX_MEMTYPE_CACHE=n
 export UCX_TLS=cma,rc,mm,cuda_copy,cuda_ipc,gdr_copy
+export UCX_TLS=cma,rc,mm,cuda_copy,cuda_ipc
 export UCX_RNDV_THRESH=16384
 export UCX_RNDV_SCHEME=get_zcopy
 
