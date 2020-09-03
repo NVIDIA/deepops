@@ -4,7 +4,7 @@ export BUILD_CUDA=${BUILD_CUDA:-1}
 export BUILD_HPCX=${BUILD_HPCX:-1}
 
 export BASEDIR=${BASEDIR:-$(cd $(dirname 0) && pwd))}
-export BUILDDIR=${BUILDDIR:-/tmp/build}
+export BUILDDIR=${BUILDDIR:-/tmp/build.$$}
 
 APPSDIR=${BASEDIR}/apps
 
@@ -85,4 +85,5 @@ echo \"OMPI Version: \$(ompi_info --version)\"
 
 echo "Created setenv.sh to setup your environment.  Execute 'source setenv.sh' to enable."
 cat setenv.sh
+
 
