@@ -3,7 +3,7 @@
 export BUILD_CUDA=${BUILD_CUDA:-1}
 export BUILD_HPCX=${BUILD_HPCX:-1}
 
-export BASEDIR=${BASEDIR:-$(cd $(dirname 0) && pwd))}
+export BASEDIR=${BASEDIR:-$(cd $(dirname 0) && pwd)}
 export BUILDDIR=${BUILDDIR:-/tmp/build.$$}
 
 APPSDIR=${BASEDIR}/apps
