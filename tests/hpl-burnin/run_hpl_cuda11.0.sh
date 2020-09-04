@@ -93,9 +93,16 @@ fi
 #HPLBIN=${HPLBIN:-"${HPL_DIR}/xhpl_cuda-${CUDAVER}-dyn_mkl-static_ompi-3.1.3_gcc4.8.5_3-12-19b"}
 HPLBIN=${HPLBIN:-"${HPL_DIR}/xhpl_cuda-${CUDAVER}-dyn_mkl-static_ompi-4.0.4_gcc4.8.5_7_23_20"}
 
-if [ ! -x $HPLBIN ]; then
-	echo "ERROR: Rank=${RANK} Unable to find executeable ${HPLBIN}"
+if [ ! -f $HPLBIN ]; then
+	echo "ERROR: Rank=${RANK} Unable to find executable ${HPLBIN}"
+	echo "NOTICE: The HPL binary is not distributed in the repo.  You have to download that separately."
+	echo "NOTICE: Please contact your NVIDIA representative for assistance."
 	exit 1
+fi
+if [ ! -x $HPLBIN ]; then
+	echo "ERROR: Found HPL binary, but it is not set with the execute bit (${HPLBIN})"
+	echo "ERROR: Please set the execute bit (chmod +x ${HPLBIN})"
+	exit
 fi
 
 export OMPI_MCA_osc=ucx

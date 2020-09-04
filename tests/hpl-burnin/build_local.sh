@@ -21,22 +21,48 @@ HPCX_FN=$(basename ${HPCX_URL})
 HPCX_DIR=$(basename ${HPCX_FN} .tbz)
 
 if [ $BUILD_CUDA == 1 ]; then
+    echo ""
+    echo "INFO: Installing CUDA ${CUDA_VERSION}"
+
+    CLOG=/tmp/cuda-installer.log
+    if [ -f ${CLOG} ]; then
+	    echo ""
+	    echo "INFO: The file ${CLOG} was found, trying to remove".
+	    rm -f ${CLOG}
+            if [ -f ${CLOG} ]; then
+		    echo ""
+		    echo "ERROR: Unable to remove ${CLOG} before installation of CUDA."
+		    echo "ERROR: Existence of this file without write permission will"
+		    echo "ERROR: cause the instalation of CUDA to trigger a segementation"
+		    echo "ERROR: fault.  Please have the file removed, and try the"
+		    echo "ERROR: Installation again."
+		    echo ""
+		    exit 1
+            fi
+	    echo "INFO: File ${CLOG} has been removed."
+	    echo ""
+    fi
+
     cd ${BUILDDIR}
     CUDAPATH=http://developer.download.nvidia.com/compute/cuda/11.0.2/local_installers/cuda_11.0.2_450.51.05_linux.run
     CUDAFN=$(basename ${CUDAPATH})
-    rm ${CUDAFN}
+    rm -f ${CUDAFN}
     wget http://developer.download.nvidia.com/compute/cuda/11.0.2/local_installers/${CUDAFN}
     sh ${CUDAFN} --installpath=${CUDA_HOME} --silent --toolkit
 
     if [ $? -ne 0 ]; then
-	echo "Install of CUDA failed.  Exiting"
-	exit
+	echo "ERROR: Install of CUDA failed.  Exiting"
    fi
+   echo ""
+   echo "INFO: Done installing CUDA"
 fi
 
 if [ $BUILD_HPCX == 1 ]; then
 	# First some sanity checking to make sure that the right version
+	echo ""
+	echo "INFO: Installing HPCX ${HPCX_VERSION}"
 	if [ x"$(which ofed_info)" == x"" ]; then
+		echo ""
 		echo "Error, unable to find ofed_info.  IB or RoCE is not enabld on this system.  Exiting"
 		exit
 	fi
@@ -46,22 +72,21 @@ if [ $BUILD_HPCX == 1 ]; then
 	hpcx_version=$(echo $HPCX_URL | grep -o '[^/]*$' | cut -f5-6 -d-)
 	hpcx_version_major=$(echo $hpcx_version | grep -o '[^/]*$' | cut -f1 -d-)
 
-	echo "OFED VERSION: ${ofed_version} ${ofed_version_major} ${hpcx_version} ${hpcx_version_major}"
 	if [ ${ofed_version_major} != ${hpcx_version_major} ]; then
 		echo "Error, the local ofed version ($ofed_version} is not correct for the request HPCX version {$hpcx_version_major}."
 		echo "The build script needs to be updated to match the local MOFED version."
 		exit
 	fi
 	
-	echo "Downloading file"
 	if [ -f $BUILDDIR/$HPCX_FN ]; then
 		rm $BUILDDIR/$HPCX_FN
 	fi
 	wget -q -nc --no-check-certificate -P $BUILDDIR $HPCX_URL
-	ls -al
 	cd $APPSDIR
 	tar -xjf $BUILDDIR/$HPCX_FN
-	ls -al
+
+	echo ""
+	echo "INFO: Done installing HPCX"
 fi
 
 # create setenv.sh script
@@ -84,6 +109,5 @@ echo \"OMPI Version: \$(ompi_info --version)\"
 " > setenv.sh
 
 echo "Created setenv.sh to setup your environment.  Execute 'source setenv.sh' to enable."
-cat setenv.sh
 
 
