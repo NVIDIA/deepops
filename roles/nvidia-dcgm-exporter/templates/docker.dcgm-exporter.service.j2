@@ -9,7 +9,7 @@ Restart=always
 ExecStartPre=-/usr/bin/docker stop %n
 ExecStartPre=-/usr/bin/docker rm %n
 ExecStartPre=/usr/bin/docker pull {{ nvidia_dcgm_container }}
-ExecStart=/usr/bin/docker run --rm --name %n -v {{ nvidia_dcgm_prom_dir }}:/run/prometheus {{ nvidia_dcgm_container }}
+ExecStart=/usr/bin/docker run --rm --name %n -p 9400:9400 {{ nvidia_dcgm_container }}
 
 [Install]
 WantedBy=multi-user.target

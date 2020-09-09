@@ -1,29 +1,14 @@
 ---
-- name: install GPU operator helm chart
-  helm:
-    host: "{{ tiller_host }}"
-    chart:
-      name: "{{ gpu_operator_chart_name }}"
-      version: "{{ gpu_operator_chart_version }}"
-      source:
-        type: repo
-        location: "{{ gpu_operator_helm_repo }}"
-    state: present
-    name: "{{ gpu_operator_release_name }}"
+# While we would prefer to use the Ansible helm module, it's broken! :-(
+# See https://github.com/ansible/ansible/pull/57897
+# Unfortunately this will not be fixed until Ansible 2.10 which is not yet released.
+# So for now we will run /usr/local/bin/helm commands directly...
 
-- name: create GPU operator special resource definition (Ubuntu)
-  k8s:
-    state: present
-    definition: "{{ lookup('url', gpu_operator_custom_resource_url, split_lines=False) }}"
-  run_once: true
-  environment:
-    PYTHONHOME: "{{ deepops_venv }}"
-  when: ansible_distribution == "Ubuntu"
+- name: install gpu-operator helm repo
+  command: /usr/local/bin/helm repo add nvidia "{{ gpu_operator_helm_repo }}"
 
-# GPU Operator isn't supported yet on RedHat, but including this commented out for future use
-# - name: create GPU operator special resource definition (RedHat)
-#   k8s:
-#     state: present
-#     definition: "{{ lookup('url', gpu_operator_custom_resource_url, split_lines=False) }}"
-#     run_once: true
-#     when: ansible_distribution == "RedHat"
+- name: update helm repos
+  command: /usr/local/bin/helm repo update
+
+- name: install nvidia gpu operator
+  command: /usr/local/bin/helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --wait

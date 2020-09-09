@@ -57,14 +57,14 @@
     owner: slurm
     mode: 0755
   with_items:
-    - /etc/slurm
+    - "{{ slurm_config_dir }}"
     - /var/spool/slurm/ctld
     - /var/log/slurm
 
 - name: configure slurm.conf
   template:
     src: "{{ slurm_conf_template }}"
-    dest: "/etc/slurm/slurm.conf"
+    dest: "{{ slurm_config_dir }}/slurm.conf"
   notify:
   - restart slurmctld
   tags:
@@ -73,16 +73,16 @@
 - name: configure slurmdbd.conf
   template:
     src: "{{ slurm_dbd_conf_template }}"
-    dest: "/etc/slurm/slurmdbd.conf"
+    dest: "{{ slurm_config_dir }}/slurmdbd.conf"
   notify:
   - restart slurmdbd
   tags:
   - config
 
-- name: start slurmdbd
+- name: restart slurmdbd
   systemd:
     name: slurmdbd
-    state: started
+    state: restarted
     enabled: yes
     daemon-reload: yes
 
@@ -117,9 +117,25 @@
   environment:
     PATH: '{{ slurm_install_prefix }}/bin:{{ ansible_env.PATH }}'
 
-- name: start slurmctld
+- name: clear slurm state when downgrading
+  command: slurmctld -i
+  when: slurm_downgrade
+  environment:
+    PATH: '{{ slurm_install_prefix }}/bin:{{ ansible_env.PATH }}'
+
+- name: wait for slurmctld to start
+  pause:
+    seconds: 20
+  when: slurm_downgrade
+
+- name: kill slurmctld
+  command: killall slurmctld
+  ignore_errors: yes
+  when: slurm_downgrade
+
+- name: restart slurmctld
   systemd:
     name: slurmctld
-    state: started
+    state: restarted
     enabled: yes
     daemon-reload: yes

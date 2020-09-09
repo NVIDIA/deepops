@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-set -ex
-
-# set path to find `usermod` on RHEL/CentOS
-PATH=$PATH:/sbin:/usr/sbin
-
-getent group docker || exit 0  # docker not installed
-
-usermod -aG docker "$SLURM_JOB_USER"

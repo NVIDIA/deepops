@@ -72,7 +72,7 @@ elif [ -n "${CLUSTER_VERIFY_EXPECTED_PODS}" ]; then
     if [ "${CLUSTER_VERIFY_EXPECTED_PODS}" != "${number_pods}" ]; then
         echo "ERROR: expected ${CLUSTER_VERIFY_EXPECTED_PODS} Pods, found ${number_pods}"
         echo "GPU driver test failed, use 'kubectl -n ${CLUSTER_VERIFY_NS} describe nodes' to check GPU driver status"
-	k8s_gpu_device_plugin=$(grep nvidia_k8s_device_plugin_def roles/k8s-gpu-plugin/defaults/main.yml  | awk '{print $2}')
+	k8s_gpu_device_plugin=$(grep nvidia_k8s_device_plugin_def roles/nvidia-k8s-gpu-device-plugin/defaults/main.yml  | awk '{print $2}')
 	echo "Try redeploying the NVIDIA Device Plugin by running (you may need to run this several times):"
 	echo "kubectl delete -f ${k8s_gpu_device_plugin}"
 	echo "kubectl create -f ${k8s_gpu_device_plugin}"

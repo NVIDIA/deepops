@@ -1,0 +1,14 @@
+---
+# While we would prefer to use the Ansible helm module, it's broken! :-(
+# See https://github.com/ansible/ansible/pull/57897
+# Unfortunately this will not be fixed until Ansible 2.10 which is not yet released.
+# So for now we will run helm commands directly...
+
+- name: install nvidia k8s gpu device plugin helm repo
+  command: /usr/local/bin/helm repo add nvdp "{{ k8s_gpu_plugin_helm_repo }}"
+
+- name: update helm repos
+  command: /usr/local/bin/helm repo update
+
+- name: install nvidia k8s gpu device plugin
+  command: /usr/local/bin/helm upgrade --install "{{ k8s_gpu_plugin_release_name }}" "{{ k8s_gpu_plugin_chart_name }}" --version "{{ k8s_gpu_plugin_chart_version }}" --wait

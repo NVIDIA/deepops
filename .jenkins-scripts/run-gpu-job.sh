@@ -10,7 +10,10 @@ chmod 755 "$K8S_CONFIG_DIR/artifacts/kubectl"
 # Verify Nodes & run single GPU test
 kubectl get nodes
 kubectl describe nodes
-timeout 120 kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
+
+# Occassionally this gpu-test fails and/or hangs. To ease debugging of this we run a describe several seconds into the launch.
+sleep 10 && kubectl describe pods gpu-test &
+timeout 300 kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
 
 # Run multi-GPU test
 if [ "${DEEPOPS_FULL_INSTALL}" ]; then

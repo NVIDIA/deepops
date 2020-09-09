@@ -1,0 +1,28 @@
+---
+- hosts: slurm-master
+  tasks:
+    - name: set controller fact
+      set_fact:
+        is_controller: true
+      tags: always
+
+- hosts: slurm-node
+  tasks:
+    - name: set compute fact
+      set_fact:
+        is_compute: true
+      tags: always
+
+- hosts: slurm-cluster
+  become: yes
+  tasks:
+    - name: set enroot DGX config fact
+      set_fact:
+        enroot_environ_config_files: "{{ enroot_environ_config_files_dgx }}"
+      when: ansible_product_name is search("DGX")
+
+- hosts: slurm-cluster
+  become: yes
+  roles:
+    - name: ansible-role-enroot
+    - name: pyxis

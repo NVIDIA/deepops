@@ -2,6 +2,7 @@
 # ansible role to install lmod:
 #
 ---
+<<<<<<< HEAD
 - name: "gather os specific variables"
   include_vars: "{{ item }}"
   with_first_found:
@@ -14,15 +15,34 @@
       skip: true
   tags:
     - always
+=======
+- name: RedHat | add epel repo
+  yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: "{{ lmod_rhel_epel_repo_baseurl }}"
+    gpgkey: "{{ lmod_rhel_epel_repo_gpgkey }}"
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  when: ansible_os_family == "RedHat"
+>>>>>>> upstream/master
 
 - name: "install packages"
   become: yes
-  action: apt name=lmod state=latest
+  apt:
+    name:
+    - bash
+    - tcsh
+    - lmod
+    state: present
   when: ansible_os_family == "Debian"
 
 - name: "install packages"
   become: yes
-  action: yum name=lmod state=latest
+  yum:
+    name:
+    - bash
+    - tcsh
+    - Lmod
   when: ansible_os_family == "RedHat"
 
 # see: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=891541
@@ -68,11 +88,13 @@
     - bugfix
 
 - name: "mkdir software path"
+  become: yes
   file: path={{ sm_software_path }} state=directory
   tags:
     - configuration
 
 - name: "mkdir module path"
+  become: yes
   file: path={{ sm_module_path }} state=directory 
   tags:
     - configuration

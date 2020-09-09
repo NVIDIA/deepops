@@ -26,8 +26,7 @@ if ! kubectl version ; then
 fi
 
 # We need to dynamically set up Helm args, so let's use an array
-helm_arguments=("--name" "${app_name}"
-                "--version" "${CHART_VERSION}"
+helm_arguments=("--version" "${CHART_VERSION}"
 		"--values" "${config_dir}/helm/ingress.yml"
 )
 
@@ -41,7 +40,7 @@ fi
 
 # Set up the ingress controller
 if ! helm status "${app_name}" >/dev/null 2>&1; then
-	helm install "${helm_arguments[@]}" stable/nginx-ingress
+	helm install "${app_name}" "${helm_arguments[@]}" stable/nginx-ingress
 fi
 
 kubectl wait --for=condition=Ready -l "app=${app_name},component=controller" --timeout=180s pod

@@ -13,29 +13,43 @@
 
 # Configure Chrony (NTP) sync
 - include: chrony-client.yml
+  when: chrony_install
 
 # Install NVIDIA driver
 - include: nvidia-driver.yml
+  when: slurm_cluster_install_nvidia_driver|default(true)
 
 # Install NVIDIA CUDA Toolkit
 - include: nvidia-cuda.yml
-
-# Install Docker and configure for NVIDIA
-- include: docker.yml
-  tags:
-  - install_docker
-- include: nvidia-docker.yml
-  tags:
-  - install_docker
+  when: slurm_cluster_install_cuda|default(true)
 
 # Install software
 - include: software.yml
+
+# Set up NFS filesystem
+- include: nfs-server.yml
+  vars:
+    hostlist: "{{ nfs_server_group | default('slurm-master') }}"
+  when: slurm_enable_nfs_server
+- include: nfs-client.yml
+  vars:
+    hostlist: "{{ nfs_client_group | default('slurm-node') }}"
+  when: slurm_enable_nfs_client_nodes
 
 # Install Slurm
 - include: slurm.yml
 
 # Install OpenMPI
 - include: openmpi.yml
+  when: slurm_cluster_install_openmpi|default(true)
+
+# Install Lmod
+- include: lmod.yml
+  when: slurm_install_lmod
+
+# Install the NVIDIA HPC SDK
+- include: nvidia-hpc-sdk.yml hostlist=slurm-master
+  when: slurm_install_hpcsdk
 
 # Install monitoring tools
 - include: prometheus.yml hostlist=slurm-master
@@ -44,13 +58,14 @@
   when: slurm_enable_monitoring
 - include: prometheus-slurm-exporter.yml hostlist=slurm-master
   when: slurm_enable_monitoring
-- include: prometheus-node-exporter.yml hostlist=slurm-cluster
+- include: prometheus-node-exporter.yml
   when: slurm_enable_monitoring
-- include: nvidia-dcgm-exporter.yml hostlist=slurm-node
+- include: nvidia-dcgm-exporter.yml
   when: slurm_enable_monitoring
 
 # Install Singularity
 - include: singularity.yml
+  when: slurm_cluster_install_singularity|default(true)
 
 # Install Open OnDemand
 - include: open-ondemand.yml
@@ -60,3 +75,15 @@
 - include: gpu-clocks.yml
   when: allow_user_set_gpu_clocks
 
+# Install Enroot and Pyxis
+- include: pyxis.yml
+  when:
+    - slurm_install_enroot
+    - slurm_install_pyxis
+  tags:
+    - pyxis
+
+# Ensure that nv_peer_mem is loaded
+- include: nvidia-peer-memory.yml
+  tags:
+    - nvidia-peer-memory

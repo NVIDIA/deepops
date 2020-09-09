@@ -1,0 +1,30 @@
+---
+- name: Ubuntu | remove ppa
+  apt_repository:
+    repo: ppa:graphics-drivers/ppa
+    state: absent
+
+- name: Ubuntu | add pin file
+  copy:
+    src: "cuda-ubuntu.pin"
+    dest: "/etc/apt/preferences.d/cuda-repository-pin-600"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
+- name: Ubuntu | add key
+  apt_key:
+    url: "{{ nvidia_driver_ubuntu_cuda_repo_gpgkey_url }}"
+    id: "{{ nvidia_driver_ubuntu_cuda_repo_gpgkey_id }}"
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
+- name: Ubuntu | add CUDA repo
+  apt_repository:
+    repo: "deb {{ nvidia_driver_ubuntu_cuda_repo_baseurl }} /"
+    update_cache: yes
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
+- name: Ubuntu | install cuda
+  package:
+    name: "{{ cuda_version }}"
+    state: present

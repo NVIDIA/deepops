@@ -1,0 +1,16 @@
+- name: install slurm-pmi hook
+  file:
+    path: /etc/enroot/hooks.d/50-slurm-pmi.sh
+    state: link
+    src: /usr/share/enroot/hooks.d/50-slurm-pmi.sh
+
+- name: install slurm-pytorch hook
+  file:
+    path: /etc/enroot/hooks.d/50-slurm-pytorch.sh
+    state: link
+    src: /usr/share/enroot/hooks.d/50-slurm-pytorch.sh
+
+- name: pyxis tasks
+  include_tasks: pyxis.yml
+  when: slurm_install_pyxis
+  tags: pyxis

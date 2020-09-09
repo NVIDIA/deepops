@@ -2,64 +2,223 @@
 - name: include os specific variables
   include_vars: ubuntu.yml
 
-- name: remove ppa
+- name: include DGXA100 specific variables
+  include_vars: dgxa100.yml
+  when: ansible_product_name is search("DGXA100")
+
+- name: install dmidecode
+  apt:
+    name: dmidecode
+    state: present
+    update_cache: yes
+
+# Housekeeping
+- name: register DGX product name
+  command: "dmidecode --string system-product-name"
+  register: dgx_name
+
+- name: register DGX-1 serial number
+  command: "dmidecode --string system-serial-number"
+  register: dgx1_serial
+  when: ansible_product_name is search("DGX-1")
+
+- name: register DGX-2 serial number
+  command: "dmidecode --string chassis-serial-number"
+  register: dgx2_serial
+  when: ansible_product_name is search("DGX-2")
+
+- name: register DGXA100 serial number
+  command: "dmidecode --string chassis-serial-number"
+  register: dgxa100_serial
+  when: ansible_product_name is search("DGXA100")
+
+- name: figure out which serial number we ended up with
+  set_fact:
+    dgx_serial: "{{ dgx1_serial.stdout }}"
+  when: dgx1_serial.skipped is not defined
+
+- name: figure out which serial number we ended up with
+  set_fact:
+    dgx_serial: "{{ dgx2_serial.stdout }}"
+  when: dgx2_serial.skipped is not defined
+
+- name: figure out which serial number we ended up with
+  set_fact:
+    dgx_serial: "{{ dgxa100_serial.stdout }}"
+  when: dgxa100_serial.skipped is not defined
+
+- name: fail if we don't recognize the DGX system
+  fail:
+    msg: "Unknown DGX model: {{ ansible_product_name }}"
+  when: dgx_serial is undefined
+
+- name: update dgx platform file
+  blockinfile:
+    path: /etc/dgx-release
+    create: yes
+    block: |
+      DGX_NAME="DGX Server"
+      DGX_PRETTY_NAME="NVIDIA DGX Server"
+      DGX_SWBUILD_DATE="{{ DGX_SWBUILD_DATE }}"
+      DGX_SWBUILD_VERSION="{{ DGX_SWBUILD_VERSION }}"
+      DGX_COMMIT_ID="{{ DGX_COMMIT_ID }}"
+      DGX_PLATFORM="DGX Server for {{ dgx_name.stdout }}"
+      DGX_SERIAL_NUMBER="{{ dgx_serial }}"
+
+# Repos and installs
+- name: remove ubuntu nvidia driver ppa if installed
   apt_repository:
     repo: ppa:graphics-drivers/ppa
     state: absent
-  when: not dgx_full_upgrade
 
-- name: add repo keys
+- name: add DGX repo keys
   apt:
     deb: "{{ nvidia_dgx_ubuntu_gpgkey }}"
-  when: not dgx_full_upgrade
 
-- name: add repo
+- name: add DGX repo
   template:
     src: dgx.list.j2
     dest: /etc/apt/sources.list.d/dgx.list
     mode: 0644
-  when: not dgx_full_upgrade
 
-- name: install dgx packages
+- name: update apt cache
+  apt:
+    update_cache: yes
+
+- name: add DGX cuda 10.1 repo
+  apt:
+    name: dgx-bionic-r418+cuda10.1-repo
+    update_cache: yes
+    dpkg_options: "force-confdef,force-confold"
+
+- name: add DGX cuda 11.0 repo
+  apt:
+    name: dgx-bionic-r450+cuda11.0-repo
+    update_cache: yes
+    dpkg_options: "force-confdef,force-confold"
+
+- name: add DGXA100 repo
+  apt:
+    name: dgx-bionic-4.99-repo
+    update_cache: yes
+    dpkg_options: "force-confdef,force-confold"
+  when: ansible_product_name is search("DGXA100")
+
+- name: install DGX-1 packages
   apt:
     name: "{{ item }}"
     state: present
     update_cache: yes
   with_items:
     - "{{ PKGS_DGX1_ALL }}"
-  when:
-    - ansible_product_name is search("DGX-1")
-    - not dgx_full_upgrade
+  when: ansible_product_name is search("DGX-1")
   notify:
     - restart docker
 
-- name: install dgx packages
+- name: install DGX-2 packages
   apt:
     name: "{{ item }}"
     state: present
     update_cache: yes
   with_items:
     - "{{ PKGS_DGX2_ALL }}"
-  when:
-    - ansible_product_name is search("DGX-2")
-    - not dgx_full_upgrade
+  when: ansible_product_name is search("DGX-2")
   notify:
     - restart docker
 
-- name: install dgx cuda 10.1 repo
+- name: install DGXA100 packages
   apt:
-    name: dgx-bionic-r418+cuda10.1-repo
+    name: "{{ item }}"
+    state: present
     update_cache: yes
-    dpkg_options: "force-confdef,force-confold"
-  when: dgx_full_upgrade
+  with_items:
+    - "{{ PKGS_DGXA100_ALL }}"
+  when: ansible_product_name is search("DGXA100")
+  notify:
+    - restart docker
 
-- name: perform OTA upgrade to latest release (this takes a while)
+- name: install extra DGX packages
   apt:
-    upgrade: full
+    name: "{{ item }}"
+    state: present
     update_cache: yes
-    dpkg_options: "force-confdef,force-confold"
-  when: dgx_full_upgrade
+  with_items:
+    - "{{ dgx_extra_packages }}"
 
-- name: reboot after full OTA upgrade
-  reboot:
-  when: dgx_full_upgrade
+- name: touch grub ipmisol.cfg
+  file:
+    path: /etc/default/grub.d/ipmisol.cfg
+    state: touch
+    mode: u=rw,g=r,o=r
+
+- name: add DGX IPMI SOL package
+  apt:
+    name: dgx-ipmisol
+    state: present
+  when: dgx_name is search("DGX")
+ 
+# Post-install stuff from preseed
+- name: add ipmi kernel module at boot
+  lineinfile:
+    path: /etc/modules
+    line: ipmi_devintf
+
+- name: enable openibd service
+  systemd:
+    name: openibd
+    state: started
+    enabled: yes
+
+- name: configure nv peer mem service startup
+  command: /usr/sbin/update-rc.d nv_peer_mem defaults
+
+- name: configure default ubuntu repos
+  template:
+    src: sources.list.j2
+    dest: /etc/apt/sources.list
+    mode: 0644
+
+- name: enable nvidia fabricmanager
+  systemd:
+    name: nvidia-fabricmanager
+    state: started
+    enabled: yes
+  when: ansible_product_name is search("DGXA100")
+
+- name: disable srp services
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  when: ansible_product_name is search("DGXA100")
+  with_items:
+    - srp_daemon
+    - srptools
+
+# setup_data_drive "/dev/sdb1" "dgx1cache"
+- name: create raid directory for raid cache mount point
+  file:
+    path: "{{ cachefilesd_cache_dir }}"
+    state: directory
+    mode: "{{ cachefilesd_cache_dir_mode }}"
+
+- name: configure cachefilesd
+  template:
+    src: cachefilesd.conf.j2
+    dest: /etc/cachefilesd.conf
+
+# Misc stuff
+- name: enable and start {{ item }} service
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - nvidia-persistenced
+    - dcgm
+
+- name: restart docker service just in case...
+  systemd:
+    name: docker
+    state: restarted
+    enabled: yes

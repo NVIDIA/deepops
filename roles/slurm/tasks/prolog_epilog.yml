@@ -15,97 +15,87 @@
 
 - name: delete old prolog files
   file:
-    path: "{{ item }}"
+    path: "{{ slurm_config_dir }}/{{ item }}"
     state: absent
   with_items:
-    - /etc/slurm/prolog.d
-    - /etc/slurm/prolog-parts.d
-    - /etc/slurm/prolog-exclusive.d
+    - prolog.sh
+    - prolog.d
+    - prolog-parts.d
+    - prolog-exclusive.d
   tags: prolog
   when: slurm_clear_old_prolog_epilog
 
 - name: delete old epilog files
   file:
-    path: "{{ item }}"
+    path: "{{ slurm_config_dir }}/{{ item }}"
     state: absent
   with_items:
-    - /etc/slurm/epilog.d
-    - /etc/slurm/epilog-parts.d
-    - /etc/slurm/epilog-exclusive.d
-    - /etc/slurm/epilog-last-user.d
+    - epilog.sh
+    - epilog.d
+    - epilog-parts.d
+    - epilog-exclusive.d
+    - epilog-last-user.d
   tags: epilog
   when: slurm_clear_old_prolog_epilog
 
 - name: create prolog directories
   file:
-    path: "{{ item }}"
+    path: "{{ slurm_config_dir }}/{{ item }}"
     state: directory
     owner: slurm
     group: slurm
     mode: 0755
   with_items:
-    - /etc/slurm/prolog.d/
-    - /etc/slurm/prolog-parts.d/
+    - prolog.d/
   tags:
     - prolog
 
 - name: create epilog directories
   file:
-    path: "{{ item }}"
+    path: "{{ slurm_config_dir }}/{{ item }}"
     state: directory
     owner: slurm
     group: slurm
     mode: 0755
   with_items:
-    - /etc/slurm/epilog.d/
-    - /etc/slurm/epilog-parts.d/
+    - epilog.d/
   tags:
     - epilog
 
-- name: copy prologs
-  copy:
-    src: "{{ item }}"
-    dest: /etc/slurm/prolog.d/
-    owner: slurm
-    group: slurm
+- name: copy prolog script
+  template:
+    src: etc/slurm/prolog.sh
+    dest: "{{ slurm_config_dir }}/"
     mode: 0755
-  with_fileglob:
-    - prolog.d/*
   tags:
     - prolog
 
-- name: copy prologs
-  copy:
+- name: copy prolog parts
+  template:
     src: "{{ item }}"
-    dest: /etc/slurm/prolog-parts.d/
+    dest: "{{ slurm_config_dir }}/prolog.d/"
     owner: slurm
     group: slurm
     mode: 0755
-  with_fileglob:
-    - prolog-parts.d/*
+  with_fileglob: "{{ prolog_fileglob }}"
   tags:
     - prolog
 
-- name: copy epilogs
-  copy:
-    src: "{{ item }}"
-    dest: /etc/slurm/epilog.d/
-    owner: slurm
-    group: slurm
+- name: copy epilog script
+  template:
+    src: etc/slurm/epilog.sh
+    dest: "{{ slurm_config_dir }}/"
     mode: 0755
-  with_fileglob:
-    - epilog.d/*
   tags:
     - epilog
 
-- name: copy epilogs
-  copy:
+- name: copy epilog parts
+  template:
     src: "{{ item }}"
-    dest: /etc/slurm/epilog-parts.d/
+    dest: "{{ slurm_config_dir }}/epilog.d/"
     owner: slurm
     group: slurm
     mode: 0755
-  with_fileglob:
-    - epilog-parts.d/*
+  with_fileglob: "{{ epilog_fileglob }}"
   tags:
     - epilog

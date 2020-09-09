@@ -1,0 +1,11 @@
+# Deploy the Spack package manager
+---
+- hosts: "{{ hostlist | default('all') }}"
+  become: yes
+  roles:
+  - lmod
+
+- hosts: "{{ hostlist | default('slurm-master') }}"
+  become: yes
+  roles:
+  - spack

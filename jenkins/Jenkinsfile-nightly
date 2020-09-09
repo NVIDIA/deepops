@@ -15,6 +15,12 @@ pipeline {
       steps {
         // TODO: ideally lock should work with declared stages
         lock(resource: null, label: 'gpu', quantity: 1, variable: 'GPUDATA') {
+          echo "Reset repo and unmunge files"
+          sh '''
+            git reset --hard
+            rm -rf config
+          '''
+
           echo "Munge files for testing"
           sh '''
             bash -x ./.jenkins-scripts/munge-files.sh
@@ -28,6 +34,11 @@ pipeline {
           echo "Cluster Up - MGMT Nodes"
           sh '''
             bash -x ./.jenkins-scripts/test-cluster-up.sh
+          '''
+
+          echo "Get K8S Cluster Status"
+          sh '''
+            bash -x ./.jenkins-scripts/get-k8s-debug.sh
           '''
 
           echo "Verify we can run a GPU job"
@@ -47,7 +58,7 @@ pipeline {
 
           echo "Test Kubeflow installation"
           sh '''
-             timeout 1500 bash -x ./.jenkins-scripts/test-kubeflow.sh
+             timeout 3000 bash -x ./.jenkins-scripts/test-kubeflow.sh
           '''
 
           echo "Test Monitoring installation"
@@ -58,6 +69,11 @@ pipeline {
           echo "Test Dashboard installation"
           sh '''
              timeout 180 bash -x ./.jenkins-scripts/test-dashboard.sh
+          '''
+
+          echo "Test Kubeflow pipeline"
+          sh '''
+             timeout 1500 bash -x ./.jenkins-scripts/test-kubeflow-pipeline.sh
           '''
 
           echo "Start new virtual environment pre-Slurm checks"
@@ -103,14 +119,19 @@ pipeline {
             bash -x ./.jenkins-scripts/munge-files.sh
           '''
 
-          echo "Vagrant Up - Multi-Nodes"
+          echo "Vagrant Up"
           sh '''
             bash -x ./.jenkins-scripts/vagrant-startup.sh
           '''
 
-          echo "Cluster Up - Multi-Nodes"
+          echo "Cluster Up"
           sh '''
             bash -x ./.jenkins-scripts/test-cluster-up.sh
+          '''
+
+          echo "Get K8S Cluster Status"
+          sh '''
+            bash -x ./.jenkins-scripts/get-k8s-debug.sh
           '''
 
           echo "Verify we can run a GPU job"
@@ -130,7 +151,7 @@ pipeline {
 
           echo "Test Kubeflow installation"
           sh '''
-             timeout 1500 bash -x ./.jenkins-scripts/test-kubeflow.sh
+             timeout 3000 bash -x ./.jenkins-scripts/test-kubeflow.sh
           '''
 
           echo "Test Monitoring installation"
@@ -141,6 +162,11 @@ pipeline {
           echo "Test Dashboard installation"
           sh '''
              timeout 180 bash -x ./.jenkins-scripts/test-dashboard.sh
+          '''
+
+          echo "Test Kubeflow pipeline"
+          sh '''
+             timeout 1500 bash -x ./.jenkins-scripts/test-kubeflow-pipeline.sh
           '''
 
           echo "Start new virtual environment pre-Slurm checks"
@@ -158,6 +184,11 @@ pipeline {
           echo "Test Slurm"
           sh '''
             timeout 60  bash -x ./.jenkins-scripts/test-slurm-job.sh
+          '''
+
+          echo "Test MPI"
+          sh '''
+            timeout 60 bash -x ./.jenkins-scripts/test-mpi-job.sh
           '''
         }
       }

@@ -15,6 +15,12 @@ pipeline {
       steps {
         // TODO: ideally lock should work with declared stages
         lock(resource: null, label: 'gpu', quantity: 1, variable: 'GPUDATA') {
+          echo "Reset repo and unmunge files"
+          sh '''
+            git reset --hard
+            rm -rf config
+          '''
+
           echo "Munge files for testing"
           sh '''
             bash -x ./.jenkins-scripts/munge-files.sh
@@ -28,6 +34,11 @@ pipeline {
           echo "Cluster Up"
           sh '''
             bash -x ./.jenkins-scripts/test-cluster-up.sh
+          '''
+
+          echo "Get K8S Cluster Status"
+          sh '''
+            bash -x ./.jenkins-scripts/get-k8s-debug.sh
           '''
 
           echo "Verify we can run a GPU job"
@@ -48,6 +59,16 @@ pipeline {
           echo "Test Slurm"
           sh '''
             timeout 60 bash -x ./.jenkins-scripts/test-slurm-job.sh
+          '''
+
+          echo "Test NFS"
+          sh '''
+            timeout 60 bash -x ./.jenkins-scripts/test-slurm-nfs-mount.sh
+          '''
+
+          echo "Test MPI"
+          sh '''
+            timeout 60 bash -x ./.jenkins-scripts/test-mpi-job.sh
           '''
         }
       }
