@@ -9,6 +9,11 @@
       stat:
         path: /etc/dgx-release
       register: is_dgx
+    
+    - name: Check for Jetson packages
+      stat:
+        path: /etc/nv_tegra_release
+      register: is_jetson
 
     - name: install custom facts
       include_role:
@@ -20,6 +25,7 @@
       when:
         - ansible_local['gpus']['count']
         - is_dgx.stat.exists == False
+        - is_jetson.stat.exists == False
 
     - name: test nvidia-smi
       command: nvidia-smi
@@ -27,4 +33,5 @@
       when:
         - ansible_local['gpus']['count']
         - is_dgx.stat.exists == False
+        - is_jetson.stat.exists == False
   environment: "{{proxy_env if proxy_env is defined else{}}}"
