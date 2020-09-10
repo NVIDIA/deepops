@@ -7,7 +7,7 @@
 
 # Ensure we start in the correct working directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-ROOT_DIR="${SCRIPT_DIR}/.."
+ROOT_DIR="${SCRIPT_DIR}/../.."
 cd "${ROOT_DIR}" || exit 1
 
 # Determine DeepOps config dir
