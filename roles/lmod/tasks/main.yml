@@ -2,7 +2,6 @@
 # ansible role to install lmod:
 #
 ---
-<<<<<<< HEAD
 - name: "gather os specific variables"
   include_vars: "{{ item }}"
   with_first_found:
@@ -15,7 +14,6 @@
       skip: true
   tags:
     - always
-=======
 - name: RedHat | add epel repo
   yum_repository:
     name: epel
@@ -24,7 +22,6 @@
     gpgkey: "{{ lmod_rhel_epel_repo_gpgkey }}"
   environment: "{{proxy_env if proxy_env is defined else {}}}"
   when: ansible_os_family == "RedHat"
->>>>>>> upstream/master
 
 - name: "install packages"
   become: yes
