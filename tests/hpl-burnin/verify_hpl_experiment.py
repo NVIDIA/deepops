@@ -146,20 +146,21 @@ for fn in glob.glob(expdir + "/*.out", recursive=False):
         file.close()
 
 # Vaidate each case and make sure they all have the same settings
+if fncnt == 0:
+    print("ERROR: No cases were found.  Either this is an invalid experiment directory or something we wrong.  Please check")
+    print("")
+    exit(1)
+
 e_cfg=validate_case("run config",cfg)
-if e_cfg == "": exit(1)
+if e_cfg == "": 
+    print("ERROR: Of the {} files read, the run config tag was not found.  All results failed to run, please check each run manually.".format(fncnt))
+    print("")
+    exit(1)
 
 e_n=validate_case("N",n)
-if e_n == "": exit(1)
-
 e_nb=validate_case("NB",nb)
-if e_nb == "": exit(1)
-
 e_p=validate_case("P",p)
-if e_p == "": exit(1)
-
 e_q=validate_case("Q",q)
-if e_q == "": exit(1)
 
 # now analyze the data, record stats by node
 # TODO, verify that all experiments have the same settings
@@ -242,6 +243,10 @@ if dnccnt > 0:
         print_table(t_dnc,t_total)
         stat=1
 
+if stat == 0:
+        print("No Issues Found")
+        print("")
+
 print("")
 print("Summary:")
 print("")
@@ -261,9 +266,7 @@ print("           MinPerf:", minperf,"GF")
 print("     Percent Range: {:.2f}%".format(100.0*(maxperf-minperf)/maxperf))
 print("")
 
-if stat==0:
-    print("No issues found")
-else:
+if stat!=0:
     print("Issues were found.  Refer to the README.md file for instructions on how to interpret the results.")
 
 print("")

@@ -30,6 +30,8 @@ usegres=1
 maxnodes=9999
 mpiopts=""
 walltime=02:00:00
+verbose=0
+ORDER_CMD="cat"
 
 print_usage() {
    cat << EOF
@@ -65,6 +67,10 @@ Other Options:
         * Set specific clock to use during run.  Default is to set the clocks to maximum.
     --memclock=MHz
         * Set specific clock to use during run.  Default is to set the clocks to maximum.
+    -r|--random
+        * Randomize which nodes get used each iteration
+    -v|--verbose
+        * Provide extra logging information
     --hpldat <FILE>
         * Use a specific HPL.dat file for the experiment.  The P and Q values in the file will be used and override the -c option.
 
@@ -83,6 +89,8 @@ while [ $# -gt 0 ]; do
 		-p|--part) partition="$2"; shift 2 ;;
 		-a|--account) account="-A $2"; shift 2 ;;
 		-t|--walltime) walltime="$2"; shift 2 ;;
+		-r|--random) ORDER_CMD=shuf; shift 1;;
+		-v|--verbose) verbose=1; shift 1;;
 		--usehca) usehca="$2"; shift 2;;
 	        --maxnodes) maxnodes="$2"; shift 2 ;;	
 		--mpiopts) mpiopts="$2"; shift 2 ;;
@@ -211,13 +219,22 @@ done
 echo ""
 
 jobid_list=()
-for n in $(seq ${niters}); do
+
+# Define hostfile for each iteration
+HFILE=/tmp/hfile.$$
+
+for N in $(seq ${niters}); do
+	echo "Starting Iteration $N"
 	P=1
-	while [ $P -le ${total_nodes} ]; do
-		HLIST=$(scontrol show hostlist $(tail +$P $MACHINEFILE | head -${nodes_per_job} | paste -d, -s))
-		CMD="sbatch -N ${nodes_per_job} --time=${walltime} ${account}  -p ${partition} --parsable --ntasks-per-node=${gpus_per_node} ${gresstr} --export ALL,EXPDIR,NV_GPUCLOCK,NV_MEMCLOCK,HPLDAT,SYSTEM,GPUS_PER_NODE,CPU_CORES_PER_RANK --exclusive -w ${HLIST} ${RUNSCRIPT}"
-		echo $CMD
-		jobid=$($CMD) 
+	cat $MACHINEFILE | ${ORDER_CMD} > $HFILE
+	while [ $(( P + nodes_per_job ))  -le ${total_nodes} ]; do
+		# Create hostlist per iter
+		HLIST=$(scontrol show hostlist $(tail +$P ${HFILE} | head -${nodes_per_job} | sort | paste -d, -s))
+		CMD="sbatch -N ${nodes_per_job} --time=${walltime} ${account}  -p ${partition} --parsable --ntasks-per-node=${gpus_per_node} ${gresstr} --export ALL,EXPDIR,NV_GPUCLOCK,NV_MEMCLOCK,HPLDAT,SYSTEM,GPUS_PER_NODE,CPU_CORES_PER_RANK --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out -w ${HLIST} ${RUNSCRIPT}"
+		if [ ${verbose} -eq 1 ]; then
+		        echo "Submitting:  $CMD"
+		fi
+  		jobid=$($CMD) 
 		if [ $? -ne 0 ]; then
 			echo "ERROR: Unable to submit job.  Err=$?"
 			# Cleanup experiment
@@ -227,11 +244,18 @@ for n in $(seq ${niters}); do
 
 		P=$(( $P + $nodes_per_job ))
 	done
+	# Print out the extra nodes not used
+	HLIST=$(scontrol show hostlist $(tail +$P ${HFILE} | sort | paste -d, -s))
+	echo ""
+	echo "Unused nodes for this iteration: ${HLIST}"
+	echo ""
+	echo "Ending Iteration $N"
 done
 
 wait
 
-rm $MACHINEFILE
+rm ${HFILE}
+rm ${MACHINEFILE}
 
 # Now watch and wait on the experimet
 # Group jobs into running, waiting

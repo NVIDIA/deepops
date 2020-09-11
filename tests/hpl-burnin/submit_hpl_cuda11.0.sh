@@ -57,6 +57,7 @@ else
 			16) PxQ=16x8 ;;
 			20) PxQ=20x8 ;;
 			32) PxQ=16x16 ;;
+			64) PxQ=32x16 ;;
 	                *) echo "ERROR: There is no defined mapping for ${NNODES} nodes for system ${SYSTEM}.  Exiting" 
 		esac
 	elif [ ${GPUS_PER_NODE} == 16 ]; then
@@ -102,33 +103,32 @@ if [ ! -d ${EXPDIR} ]; then
     fi
 fi
 
-RESULT_FILE=${EXPDIR}/${EXPNAME}.out
 
-echo "" | tee $RESULT_FILE
-echo "EXPDIR: ${EXPDIR}" | tee -a $RESULT_FILE
-echo "EXPERIMENT NAME: ${EXPNAME}" | tee -a $RESULT_FILE
-echo "HPL File: ${HPLFN}" | tee -a $RESULT_FILE
-echo "RESULT FILE: ${RESULT_FILE}" | tee -a $RESULT_FILE
+echo "" 
+echo "EXPDIR: ${EXPDIR}"
+echo "EXPERIMENT NAME: ${EXPNAME}" 
+echo "HPL File: ${HPLFN}"
 
-echo "" | tee -a $RESULT_FILE
-echo "=============================" | tee -a $RESULT_FILE
-echo "HPL.dat File" | tee -a $RESULT_FILE
-echo "=============================" | tee -a $RESULT_FILE
-cat ${HPLFN} | tee -a $RESULT_FILE
-echo "=============================" | tee -a $RESULT_FILE
-echo "=============================" | tee -a $RESULT_FILE
-echo "" | tee -a $RESULT_FILE
+echo "" 
+echo "=============================" 
+echo "HPL.dat File" 
+echo "=============================" 
+cat ${HPLFN} 
+echo "=============================" 
+echo "=============================" 
+echo "" 
 
 ### Create working directory in which to work
 WORKDIR=${HPL_DIR}/tmp/tmp.${JOBID}
 mkdir -p ${WORKDIR} 
 if [ $? -ne 0 ]; then
 	echo "ERROR: Unable to create working directory $WORKDIR.  Exiting"
-	exit
+	exit 1
 fi
 
 ## Create working runtime environment
 cp $HPLFN $WORKDIR/HPL.dat
+cp bind.sh $WORKDIR/
 cd $WORKDIR 
 
 #### Confirm mpirun is installed correctly
@@ -144,21 +144,17 @@ memclock=${NV_MEMCLOCK:-"877"}
 LOCAL_MPIOPTS="--mca btl_openib_warn_default_gid_prefix 0"
 
 # Echo write nodelist
-echo "HOSTLIST: $(scontrol show hostname $SLURM_NODELIST | paste -s -d,)" | tee -a $RESULT_FILE
-echo "" | tee -a $RESULT_FILE
+echo "HOSTLIST: $(scontrol show hostname $SLURM_NODELIST | paste -s -d,)" 
+echo "" 
 
-echo "Setting Clocks" | tee -a $RESULT_FILE
-mpirun -np $NNODES -npernode 1 ${LOCAL_MPIOPTS}  ${mpiopts} nvidia-smi -ac ${memclock},${gpuclock} | tee -a $RESULT_FILE
-echo "" | tee -a $RESULT_FILE
+echo "Setting Clocks" 
+mpirun -np $NNODES -npernode 1 ${LOCAL_MPIOPTS}  ${mpiopts} nvidia-smi -ac ${memclock},${gpuclock} 
+echo "" 
 
 ## Run HPL
 export OMPI_MCA_btl_openib_allow_ib=1
 
-echo "History"
-env | grep NUM_THREADS
-env | grep CORE
-
-mpirun -np $NPROCS -bind-to none -x LD_LIBRARY_PATH ${LOCAL_MPIOPTS} ${mpiopts} ${HPL_DIR}/run_hpl_cuda11.0.sh 2>&1 | tee -a $RESULT_FILE
+mpirun -np $NPROCS -bind-to none -x LD_LIBRARY_PATH ${LOCAL_MPIOPTS} ${mpiopts} ${HPL_DIR}/run_hpl_cuda11.0.sh 2>&1 
 
 ## Cleanup Run
 cd ${HPL_DIR}

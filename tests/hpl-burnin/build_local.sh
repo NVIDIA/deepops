@@ -23,6 +23,7 @@ HPCX_DIR=$(basename ${HPCX_FN} .tbz)
 if [ $BUILD_CUDA == 1 ]; then
     echo ""
     echo "INFO: Installing CUDA ${CUDA_VERSION}"
+    echo ""
 
     CLOG=/tmp/cuda-installer.log
     if [ -f ${CLOG} ]; then
@@ -90,6 +91,7 @@ if [ $BUILD_HPCX == 1 ]; then
 fi
 
 # create setenv.sh script
+cd ${BASEDIR}
 
 echo "
 export APPSDIR=${APPSDIR}
