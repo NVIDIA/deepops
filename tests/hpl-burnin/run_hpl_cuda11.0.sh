@@ -1,7 +1,7 @@
 #!/bin/bash
 #location of HPL 
 
-export HPL_DIR=${HPL_DIR:-$(pwd)} # Shared location where all HPL files are stored
+export HPL_DIR=${HPL_DIR:-$(cd $(dirname $0) && pwd)} # Shared location where all HPL files are stored
 export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}/} # Shared location where these scripts are stored
 export HPL_FILE_DIR=${HPL_FILE_DIR:-${HPL_DIR}/hplfiles} # Shared location where .dat files are stored
 

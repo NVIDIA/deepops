@@ -1,6 +1,12 @@
 #!/bin/bash
 #location of HPL
 
+### Here we cannot do the trick of pulling the dirname off the script
+### Because the batch systems may copy the script to a local location before
+### Execution. So this means the path would be to a directory somewhere possibly
+### in /tmp, not the real script directory.  The HPL_DIR should be set since
+### it was determined in the launch script.
+
 export HPL_DIR=${HPL_DIR:-$(pwd)} # Shared location where all HPL files are stored
 export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}/} # Shared location where these scripts are stored
 export HPL_FILE_DIR=${HPL_FILE_DIR:-${HPL_DIR}/hplfiles} # Shared location where .dat files are stored

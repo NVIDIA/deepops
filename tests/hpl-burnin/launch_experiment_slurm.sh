@@ -21,7 +21,7 @@
 ###    When all the jobs are down, run the verify script, put the results in the results directory
 ### - Set the full expdir from this script
 
-export HPL_DIR=${HPL_DIR:-$(pwd)} # The shared directory where scripts, data, and results are stored
+export HPL_DIR=${HPL_DIR:-$(cd $(dirname $0) && pwd)} # The shared directory where scripts, data, and results are stored
 export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}} # The shared directory where these scripts are stored
 
 ## Set default options
