@@ -24,5 +24,5 @@ if [ ${FAILED} -ne 0 ]; then
 fi
 
 echo "Enabling pre-commit hooks to lint Ansible, Shell, and Python"
-cp -v .githooks/pre-commit .git/hooks/pre-commit
+cp -v src/githooks/pre-commit .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
