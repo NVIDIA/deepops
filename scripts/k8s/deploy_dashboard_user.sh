@@ -5,7 +5,7 @@ kubectl patch svc -n kube-system kubernetes-dashboard  -p '{"spec": {"type": "No
 
 kubectl -n kube-system get sa admin-user 2>&1 | grep "NotFound" >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
-    kubectl apply -f k8s-services/k8s-dashboard-admin.yml
+    kubectl apply -f workloads/services/k8s/k8s-dashboard-admin.yml
 fi
 
 # Get IP of first master

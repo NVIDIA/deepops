@@ -1,6 +1,6 @@
 #!/bin/bash
 
-kubectl delete -f k8s-services/rook-cluster.yml
+kubectl delete -f workloads/services/k8s/rook-cluster.yml
 helm delete rook-ceph
 kubectl -n rook-ceph delete cephcluster rook-ceph
 kubectl -n rook-ceph delete storageclass rook-ceph-block

@@ -147,12 +147,12 @@ function setup_gpu_monitoring() {
     # Deploy DCGM node exporter
     if kubectl -n monitoring get pod -l app=dcgm-exporter 2>&1 | grep "No resources found." >/dev/null 2>&1 ; then
         if [ "${DCGM_DOCKER_REGISTRY}" ]; then
-            cat k8s-services/dcgm-exporter.yml \
+            cat workloads/services/k8s/dcgm-exporter.yml \
             | sed "s/image: quay.io/image: ${DCGM_DOCKER_REGISTRY}/g" \
             | sed "s/image: nvcr.io/image: ${DCGM_DOCKER_REGISTRY}/g" \
             | kubectl create -f -
         else
-            kubectl create -f k8s-services/dcgm-exporter.yml
+            kubectl create -f workloads/services/k8s/dcgm-exporter.yml
         fi
     fi
 }
