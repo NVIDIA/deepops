@@ -24,7 +24,7 @@ This process should run from a Linux system on the same network segment as the t
 
    ```sh
    # Modify listen interface, DHCP range, and network gateway IP
-   docker-compose -f containers/pxe/docker-compose.yml run -d dhcp dnsmasq -d --interface=ens192 --dhcp-range=192.168.1.100,192.168.1.199,7200 --dhcp-option=6,8.8.8.8 --dhcp-option=3,192.168.1.1
+   docker-compose -f src/containers/pxe/docker-compose.yml run -d dhcp dnsmasq -d --interface=ens192 --dhcp-range=192.168.1.100,192.168.1.199,7200 --dhcp-option=6,8.8.8.8 --dhcp-option=3,192.168.1.1
    ```
 
 3. (Optional) Configure NAT routing.
@@ -39,7 +39,7 @@ This process should run from a Linux system on the same network segment as the t
 4. Start PXE server.
 
    ```sh
-   docker-compose -f containers/pxe/docker-compose.yml up -d pxe
+   docker-compose -f src/containers/pxe/docker-compose.yml up -d pxe
    ```
 
 5. Install OS.

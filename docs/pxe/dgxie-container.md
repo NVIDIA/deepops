@@ -14,7 +14,7 @@ Configuration information for DGXie is located in `config/pxe`.
 
 Update the `config/pxe/dnsmasq.extra.conf` with additional options, such as assigning static IPs by MAC address.
 
-DGXie uses docker-compose to build and run. The `containers/dgxie/docker-compose-yml` file consumes several environment variables that are defined in `config/pxe/env`. Changes to the DHCP range, network used for serving up PXE files, and other values can be updated there. Be sure to update the `eth1` and `eth0` values to match your machine interfaces or the DGXie will fail to start.
+DGXie uses docker-compose to build and run. The `src/containers/dgxie/docker-compose-yml` file consumes several environment variables that are defined in `config/pxe/env`. Changes to the DHCP range, network used for serving up PXE files, and other values can be updated there. Be sure to update the `eth1` and `eth0` values to match your machine interfaces or the DGXie will fail to start.
 
    > Note: This assumes you have run the setup.sh script. If you have not, you must manually copy the example config and install docker/docker-compopse.
 
