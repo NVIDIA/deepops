@@ -15,6 +15,7 @@ slurm_sysconf_dir: /etc/sysconfig
 slurm_install_prefix: /usr/local
 slurm_configure:  './configure --prefix={{ slurm_install_prefix }} --disable-dependency-tracking --disable-debug --disable-x11 --enable-really-no-cray --enable-salloc-kill-cmd --with-hdf5=no --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --without-shared-libslurm --without-rpath --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}'
 slurm_force_rebuild: no
+slurm_contain_ssh: yes
 
 slurm_cluster_name: deepops
 slurm_username: slurm
@@ -86,7 +87,7 @@ hwloc_configure: "./configure --prefix={{ hwloc_install_prefix }} --enable-stati
 hwloc_force_rebuild: no
 
 slurm_include_pmix: yes
-pmix_version: 3.1.5
+pmix_version: 2.2.4
 pmix_src_url: "https://github.com/openpmix/openpmix/releases/download/v{{ pmix_version }}/pmix-{{ pmix_version }}.tar.bz2"
 pmix_install_prefix: /opt/deepops/pmix
 pmix_configure: "./configure --prefix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}"

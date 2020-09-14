@@ -9,7 +9,7 @@ Restart=always
 ExecStartPre=-/usr/bin/docker stop %n
 ExecStartPre=-/usr/bin/docker rm %n
 ExecStartPre=/usr/bin/docker pull {{ slurm_exporter_container }}
-ExecStart=/usr/bin/docker run --rm --net="host" --name %n -v {{ slurm_install_prefix }}/bin/sdiag:{{ slurm_install_prefix }}/bin/sdiag -v {{ slurm_install_prefix }}/bin/sinfo:{{ slurm_install_prefix }}/bin/sinfo -v {{ slurm_install_prefix }}/bin/squeue:{{ slurm_install_prefix }}/bin/squeue -v /etc/slurm:/etc/slurm:ro -v {{ slurm_install_prefix }}/lib/slurm:{{ slurm_install_prefix }}/lib/slurm:ro -v /etc/hosts:/etc/hosts:ro -v /var/run/munge:/var/run/munge:ro {{ slurm_exporter_container }}
+ExecStart=/usr/bin/docker run --rm --network host --name %n -v {{ slurm_install_prefix }}/bin/sdiag:{{ slurm_install_prefix }}/bin/sdiag -v {{ slurm_install_prefix }}/bin/sinfo:{{ slurm_install_prefix }}/bin/sinfo -v {{ slurm_install_prefix }}/bin/squeue:{{ slurm_install_prefix }}/bin/squeue -v /etc/slurm:/etc/slurm:ro -v {{ slurm_install_prefix }}/lib/slurm:{{ slurm_install_prefix }}/lib/slurm:ro -v /etc/hosts:/etc/hosts:ro -v /var/run/munge:/var/run/munge:ro {{ slurm_exporter_container }}
 
 [Install]
 WantedBy=multi-user.target
