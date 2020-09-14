@@ -40,7 +40,7 @@ if [ ${DEEPOPS_FULL_INSTALL} ]; then
 fi
 
 # Get absolute path for the virtual DeepOps directory
-export VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/../virtual"
+export VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/../../../virtual"
 export ROOT_DIR="${VIRT_DIR}/.."
 
 # Set variables used for kubectl
