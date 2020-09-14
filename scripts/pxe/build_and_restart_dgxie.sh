@@ -4,7 +4,7 @@ set -xe
 source config/pxe/env
 
 compose_directory_cmd="" #"--project-directory ."
-compose_cmd="docker-compose ${compose_directory} -f ${COMPOSE_FILE}"
+compose_cmd="docker-compose --env-file ./config/pxe/env ${compose_directory} -f ${COMPOSE_FILE}"
 
 
 function tear_down() {
