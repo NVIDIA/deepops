@@ -1,6 +1,6 @@
 ---
 exclude_paths:
-- ./galaxy-roles/
+- ./roles/galaxy/
 - ./kubespray/
 use_default_rules: true
 verbosity: 2
