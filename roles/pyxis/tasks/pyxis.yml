@@ -28,6 +28,9 @@
     chdir: /usr/local/src/pyxis
     argv:
       - make
+      - -j
+  environment:
+    CPPFLAGS: "-I {{ slurm_install_prefix }}/include/slurm"
   register: result
   changed_when: "result.stdout != \"make: Nothing to be done for 'all'.\""
   notify:
