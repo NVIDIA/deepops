@@ -15,11 +15,11 @@ If you haven't configured a Slurm cluster yet, see the [Slurm guide](/docs/slurm
     To install OpenMPI, run the `bootstrap-mpi.yml` Ansible playbook in this directory. 
     If you only want to install on a subset of nodes, use the `-l ${HOST_GROUP}` argument to restrict where this playbook is run.
     ```
-    $ ansible-playbook -i ${INVENTORY_FILE} [-l ${HOST_GROUP}] examples/slurm-mpi-hello/bootstrap-mpi.yml
+    $ ansible-playbook -i ${INVENTORY_FILE} [-l ${HOST_GROUP}] examples/slurm/mpi-hello/bootstrap-mpi.yml
     ```
 1. Upload the source code and job script to the shared filesystem on your login node:
     ```
-    $ scp examples/slurm-mpi-hello/mpi-hello.c login:/shared/
+    $ scp examples/slurm/mpi-hello/mpi-hello.c login:/shared/
     ```
 1. Log into your cluster and build the MPI application.
     ```

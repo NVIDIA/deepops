@@ -400,7 +400,7 @@ For more on Kubeflow, please refer to the [official documentation](https://www.k
 
 Refer to the following guides for examples of how to use the cluster:
 * [Kubernetes Usage Guide](kubernetes-usage.md)
-* [Slurm "Hello World" MPI Example](../examples/slurm-mpi-hello/README.md)
+* [Slurm "Hello World" MPI Example](../examples/slurm/mpi-hello/README.md)
 
 ## Cluster Updates
 

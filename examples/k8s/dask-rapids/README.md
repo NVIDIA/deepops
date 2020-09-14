@@ -68,8 +68,8 @@ To make sure we're pointing to the right registry, we'll need to edit this scrip
 1. We also need to edit the Helm config for the RAPIDS deployment to point to the correct image.
     Edit the `helm/rapids-dask.yml` file to point to the right image:
     ```
-    --- a/examples/k8s-dask-rapids/helm/rapids-dask.yml
-    +++ b/examples/k8s-dask-rapids/helm/rapids-dask.yml
+    --- a/examples/k8s/dask-rapids/helm/rapids-dask.yml
+    +++ b/examples/k8s/dask-rapids/helm/rapids-dask.yml
     @@ -5,7 +5,7 @@
      worker:
        image:
@@ -103,7 +103,7 @@ To make sure we're pointing to the right registry, we'll need to edit this scrip
 At this point we can run the deployment:
 
 ```
-ubuntu@ivb120:~/src/deepops/examples/k8s-dask-rapis$ ./deploy.sh
+ubuntu@ivb120:~/src/deepops/examples/k8s/dask-rapids$ ./deploy.sh
 ....... (lots of Docker and Kubernetes output follows) ........
 ```
 
@@ -128,7 +128,7 @@ If you open your browser and go to the URL for Jupyter, you can log in with the 
 You'll then find yourself in JupyterLab session where you can interact with the RAPIDS and Dask libraries.
 If you open a terminal window (File -> New -> Terminal in the JupyterLab menu), you should even be able to run `nvidia-smi` to see your GPUs:
 
-![Screenshot of running nvidia-smi in JupyterLab](/examples/k8s-dask-rapids/jupyterlab-nvsmi.png "Screenshot of running nvidia-smi in JupyterLab")
+![Screenshot of running nvidia-smi in JupyterLab](/examples/k8s/dask-rapids/jupyterlab-nvsmi.png "Screenshot of running nvidia-smi in JupyterLab")
 
 ## Running the benchmark
 
@@ -136,7 +136,7 @@ Once you have JupyterLab open, load the `ParallelSum.ipynb` notebook using the f
 This notebook will step through running a simple parallel sum benchmark on both the CPUs and GPUs in your cluster.
 Feel free to adjust the number of CPU cores or GPUs used and the parameters for the model to experiment with the calculation.
 
-![Screenshot of the parallel sum notebook](/examples/k8s-dask-rapids/parallel-sum.png "Screenshot of the parallel sum notebook")
+![Screenshot of the parallel sum notebook](/examples/k8s/dask-rapids/parallel-sum.png "Screenshot of the parallel sum notebook")
 
 ## Experimenting further
 
@@ -145,6 +145,6 @@ as well as an end-to-end wokrflow example based on a Fannie Mae mortgage dataset
 Both directories can be accessed easily via JupyterLab.
 
 You can also experiment with the custom container by making changes to the `Dockerfile` used to create it,
-in `examples/k8s-dask-rapids/docker`.
+in `examples/k8s/dask-rapids/docker`.
 
 For more information on RAPIDS, check out [https://rapids.ai](https://rapids.ai).
