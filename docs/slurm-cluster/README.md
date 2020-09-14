@@ -13,7 +13,7 @@ Instructions for deploying a GPU cluster with Slurm
 
 1. Install a supported operating system on all nodes. 
 
-   Install a supported operating system on all servers via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)) or utilize the provided [OS install container](../pxe/README.md).
+   Install a supported operating system on all servers via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)) or utilize the provided [OS install container](../pxe).
 
 2. Set up your provisioning machine. 
 

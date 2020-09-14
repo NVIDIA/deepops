@@ -104,14 +104,14 @@ Verify Ceph is running and/or a DefaultStorageClass is defined:
 
 ```
 kubectl get storageclass | grep default
-./scripts/k8s/ceph_poll.sh
+./scripts/k8s/poll_ceph.sh
 ```
-> NOTE: If Ceph is being used, `ceph_poll.sh` should exit after several seconds and Ceph should be the default StorageClass. 
+> NOTE: If Ceph is being used, `poll_ceph.sh` should exit after several seconds and Ceph should be the default StorageClass. 
 
 
 To correct this issue:
-1. Uninstall Rook/Ceph: `./scripts/k8s/rmrook.sh`
+1. Uninstall Rook/Ceph: `./scripts/k8s/delete_rook.sh`
 2. Uninstall Kubeflow: `./scripts/k8s/deploy_kubeflow.sh -D`
 3. Re-install Rook/ceph: `./scripts/k8s/deploy_rook.sh`
-4. Poll for Ceph to initialize (wait for this script to exit): `./scripts/k8s/ceph_poll.sh`
+4. Poll for Ceph to initialize (wait for this script to exit): `./scripts/k8s/poll_ceph.sh`
 5. Re-install Kubeflow: `./scripts/k8s/deploy_kubeflow.sh`

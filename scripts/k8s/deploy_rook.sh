@@ -55,7 +55,7 @@ dash_port=$(kubectl -n rook-ceph get svc rook-ceph-mgr-dashboard-external-https 
 
 echo
 echo "Ceph deployed, it may take up to 10 minutes for storage to be ready"
-echo "If install takes more than 30 minutes be sure you have cleaned up any previous Rook installs using the rmrook.sh script and have installed the required libraries using the bootstrap-rook.yml playbook"
+echo "If install takes more than 30 minutes be sure you have cleaned up any previous Rook installs using the delete_rook.sh script and have installed the required libraries using the bootstrap-rook.yml playbook"
 echo "Monitor readiness with:"
 echo "kubectl -n rook-ceph exec -ti ${toolspod} ceph status | grep up:active"
 echo

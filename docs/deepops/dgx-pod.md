@@ -177,7 +177,7 @@ k8-mgmt03        Ready    master   21m   v1.12.5
    Follow the setup, configure, and deploy instructions in the [DGXie Guide](dgxie.md).
 
 
-note: The following K8s services are especially helpful for air-gapped environemnts
+> Note: The following K8s services are especially helpful for air-gapped environemnts
 
 3. (Optional) Deploy Internal Container Registry
 
@@ -185,7 +185,7 @@ note: The following K8s services are especially helpful for air-gapped environem
    one that is resolvable outside the cluster), add `-e container_registry_hostname=registry.example.com`.
 
    ```sh
-   ansible-playbook --tags container-registry playbooks/k8s-services.yml
+   ansible-playbook --tags container-registry playbooks/k8s-cluster/k8s-services.yml
    ```
 
 3. (Optional) Deploy Internal Repositories
@@ -361,7 +361,7 @@ Deploy a Ceph cluster running on Kubernetes for services that require persistent
 Poll the Ceph status by running:
 
 ```sh
-./scripts/k8s/ceph_poll.sh
+./scripts/k8s/poll_ceph.sh
 ```
 
 #### Monitoring

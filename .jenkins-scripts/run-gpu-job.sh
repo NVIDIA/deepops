@@ -18,5 +18,5 @@ timeout 300 kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda 
 # Run multi-GPU test
 if [ "${DEEPOPS_FULL_INSTALL}" ]; then
   export CLUSTER_VERIFY_EXPECTED_PODS=${CLUSTER_VERIFY_EXPECTED_PODS:-2}
-  timeout 300 ./scripts/k8s_verify_gpu.sh
+  timeout 300 ./scripts/k8s/verify_gpu.sh
 fi

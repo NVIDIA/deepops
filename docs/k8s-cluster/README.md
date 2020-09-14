@@ -12,7 +12,7 @@ Instructions for deploying a GPU cluster with Kubernetes
 
 1. Install a supported operating system on all nodes. 
 
-   Install a supported operating system on all servers via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)) or utilize the provided [OS install container](../pxe/README.md).
+   Install a supported operating system on all servers via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)) or utilize the provided [OS install container](../pxe).
 
 2. Set up your provisioning machine. 
 
@@ -111,7 +111,7 @@ Deploy a Ceph cluster running on Kubernetes for services that require persistent
 Poll the Ceph status by running (this script will return when Ceph initialization is complete):
 
 ```sh
-./scripts/k8s/ceph_poll.sh
+./scripts/k8s/poll_ceph.sh
 ```
 
 #### NetApp Trident
