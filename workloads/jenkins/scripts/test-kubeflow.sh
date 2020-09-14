@@ -1,6 +1,6 @@
 #!/bin/bash
 set -x
-source .jenkins-scripts/jenkins-common.sh
+source workloads/jenkins/scripts/jenkins-common.sh
 cp /var/lib/jenkins/kustomize ${ROOT_DIR}/config # kustomize is saved off on the Jenkins server because the kustomize servers often rate-limit causing failed downloads
 
 # Ensure working directory is root

@@ -1,5 +1,5 @@
 #!/bin/bash
-source .jenkins-scripts/jenkins-common.sh
+source workloads/jenkins/scripts/jenkins-common.sh
 
 cd virtual || exit 1
 export DEEPOPS_DISABLE_K8S=true

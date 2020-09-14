@@ -1,5 +1,5 @@
 #!/bin/bash
-source .jenkins-scripts/jenkins-common.sh
+source workloads/jenkins/scripts/jenkins-common.sh
 
 # comment in for pci passthrough (and change bus according to local hw setup - `lspci -nnk | grep NVIDIA`)
 echo "modify GPU passthrough to point to this resource's GPU: ${GPU01}/${GPU02} and BUS: ${BUS01}/${BUS02} based on: ${GPUDATA}"

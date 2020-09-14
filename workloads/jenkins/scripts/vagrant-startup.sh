@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 set -ex
-source .jenkins-scripts/jenkins-common.sh
+source workloads/jenkins/scripts/jenkins-common.sh
 
 cd virtual || exit 1
 bash ./vagrant_startup.sh # If this fails the entire test should halt

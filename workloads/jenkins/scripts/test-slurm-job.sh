@@ -1,5 +1,5 @@
 #!/bin/bash
-source .jenkins-scripts/jenkins-common.sh
+source workloads/jenkins/scripts/jenkins-common.sh
 ssh -v \
 	-o "StrictHostKeyChecking no" \
 	-o "UserKnownHostsFile /dev/null" \

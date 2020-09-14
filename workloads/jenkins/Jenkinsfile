@@ -23,47 +23,47 @@ pipeline {
 
           echo "Munge files for testing"
           sh '''
-            bash -x ./.jenkins-scripts/munge-files.sh
+            bash -x ./workloads/jenkins/scripts/munge-files.sh
           '''
 
           echo "Vagrant Up"
           sh '''
-            bash -x ./.jenkins-scripts/vagrant-startup.sh
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
           '''
 
           echo "Cluster Up"
           sh '''
-            bash -x ./.jenkins-scripts/test-cluster-up.sh
+            bash -x ./workloads/jenkins/scripts/test-cluster-up.sh
           '''
 
           echo "Get K8S Cluster Status"
           sh '''
-            bash -x ./.jenkins-scripts/get-k8s-debug.sh
+            bash -x ./workloads/jenkins/scripts/get-k8s-debug.sh
           '''
 
           echo "Verify we can run a GPU job"
           sh '''
-            timeout 500 bash -x ./.jenkins-scripts/run-gpu-job.sh
+            timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
           '''
 
           echo "Verify ingress config"
           sh '''
-             bash -x ./.jenkins-scripts/verify-ingress-config.sh
+             bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
           '''
 
           echo "Set up Slurm"
           sh '''
-            bash -x ./.jenkins-scripts/test-setup-slurm.sh
+            bash -x ./workloads/jenkins/scripts/test-setup-slurm.sh
           '''
 
           echo "Test Slurm"
           sh '''
-            timeout 60 bash -x ./.jenkins-scripts/test-slurm-job.sh
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-job.sh
           '''
 
           echo "Test NFS"
           sh '''
-            timeout 60 bash -x ./.jenkins-scripts/test-slurm-nfs-mount.sh
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-nfs-mount.sh
           '''
         }
       }

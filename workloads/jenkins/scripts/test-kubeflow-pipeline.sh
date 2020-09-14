@@ -1,6 +1,6 @@
 #!/bin/bash
 set -x
-source .jenkins-scripts/jenkins-common.sh
+source workloads/jenkins/scripts/jenkins-common.sh
 
 # Ensure working directory is root
 cd "${ROOT_DIR}"
@@ -17,5 +17,5 @@ kubectl get pods -n kubeflow # Do this for debug purposes
 
 # Run the Kubeflow pipeline test, this will build a pipeline that launches an NGC container
 # For some reason the initial pipeline creation hangs sometime (and doesn't timeout or error out or provide any logging) so we run this twice until success or timeout
-python3 .jenkins-scripts/test-kubeflow-pipeline.py
+python3 workloads/jenkins/scripts/test-kubeflow-pipeline.py
 kubectl get pods -n kubeflow # Do this for debug purposes

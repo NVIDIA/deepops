@@ -1,6 +1,6 @@
 #!/bin/bash
 set -ex
-source .jenkins-scripts/jenkins-common.sh
+source workloads/jenkins/scripts/jenkins-common.sh
 
 # Ensure working directory is root
 cd "${ROOT_DIR}" || exit 1

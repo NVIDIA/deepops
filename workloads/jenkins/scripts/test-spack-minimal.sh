@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-source .jenkins-scripts/jenkins-common.sh
+source workloads/jenkins/scripts/jenkins-common.sh
 
 # Install Spack, but do not install any modules
 ansible-playbook -i virtual/config/inventory playbooks/spack-modules.sh
