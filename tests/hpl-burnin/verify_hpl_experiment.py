@@ -141,8 +141,6 @@ for fn in glob.glob(expdir + "/*.out", recursive=False):
                 if re.search('End of Tests',l):
                         tc[fn]=1
 
-        if hl[fn] == '':
-                print("ERROR: HOSTLIST not found in {}".format(fn))
         file.close()
 
 # Vaidate each case and make sure they all have the same settings

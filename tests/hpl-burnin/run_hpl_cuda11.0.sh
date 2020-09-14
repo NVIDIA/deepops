@@ -1,7 +1,9 @@
 #!/bin/bash
 #location of HPL 
 
-export HPL_DIR=${HPL_DIR:-$(pwd)}
+export HPL_DIR=${HPL_DIR:-$(pwd)} # Shared location where all HPL files are stored
+export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}/} # Shared location where these scripts are stored
+export HPL_FILE_DIR=${HPL_FILE_DIR:-${HPL_DIR}/hplfiles} # Shared location where .dat files are stored
 
 CUDAVER=${cudaver:-"11.0"}
 
@@ -91,7 +93,7 @@ fi
 #APP=$HPL_DIR/xhpl_cuda-10.1-dyn_mkl-dyn_ompi-3.1.3_gcc4.8.5_3-12-19b
 
 #HPLBIN=${HPLBIN:-"${HPL_DIR}/xhpl_cuda-${CUDAVER}-dyn_mkl-static_ompi-3.1.3_gcc4.8.5_3-12-19b"}
-HPLBIN=${HPLBIN:-"${HPL_DIR}/xhpl_cuda-${CUDAVER}-dyn_mkl-static_ompi-4.0.4_gcc4.8.5_7_23_20"}
+HPLBIN=${HPLBIN:-"${HPL_SCRIPTS_DIR}/xhpl_cuda-${CUDAVER}-dyn_mkl-static_ompi-4.0.4_gcc4.8.5_7_23_20"}
 
 if [ ! -f $HPLBIN ]; then
 	echo "ERROR: Rank=${RANK} Unable to find executable ${HPLBIN}"
@@ -111,6 +113,6 @@ export OMPI_MCA_pml=ucx
 
 # Use the bind script to launch
 #${HPL_DIR}/bind.sh --ib=single --cpu=exclusive ${HPLBIN}
-${HPL_DIR}/bind.sh --ib=single --cpu=node ${HPLBIN}
+${HPL_SCRIPTS_DIR}/bind.sh --ib=single --cpu=node ${HPLBIN}
 
 

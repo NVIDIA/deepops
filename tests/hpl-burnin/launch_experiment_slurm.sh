@@ -21,6 +21,9 @@
 ###    When all the jobs are down, run the verify script, put the results in the results directory
 ### - Set the full expdir from this script
 
+export HPL_DIR=${HPL_DIR:-$(pwd)} # The shared directory where scripts, data, and results are stored
+export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}} # The shared directory where these scripts are stored
+
 ## Set default options
 niters=5
 cudaver=11.0
@@ -139,6 +142,12 @@ elif [ x"${system}" == x"dgxa100" ]; then
 	export GPU_POWER_WARNING=400 
 	export GPU_PCIE_GEN_WARNING=4
         export CPU_CORES_PER_RANK=16
+elif [ x"${system}" == x"workshop" ]; then
+	export gpus_per_node=1
+	export NV_GPUCLOCK=1530
+	export NV_MEMCLOCK=877
+	export hpldat="${HPL_SCRIPTS_DIR}/hplfiles/HPL.dat_1x1_workshop_16G"
+	echo "WARN; Running in non-performant workshop configuration"
 else
 	echo "ERROR: Generic systems are not supported yet."
 	exit
@@ -179,7 +188,7 @@ fi
 export SYSTEM=${system}
 export GPUS_PER_NODE=${gpus_per_node}
 
-RUNSCRIPT=submit_hpl_cuda${cudaver}.sh
+RUNSCRIPT=${HPL_SCRIPTS_DIR}/submit_hpl_cuda${cudaver}.sh
 
 # Set a name for the experiment
 export EXPNAME=${nodes_per_job}node_${system}_$(date +%Y%m%d%H%M%S)
@@ -208,7 +217,7 @@ fi
 ### Report all variables
 echo ""
 echo "Experiment Variables:"
-for V in EXPDIR system nodes_per_job gpus_per_node gpuclock memclock  niters cudaver partition usehca maxnodes mpiopts gresstr total_nodes hpldat; do
+for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system nodes_per_job gpus_per_node gpuclock memclock  niters cudaver partition usehca maxnodes mpiopts gresstr total_nodes hpldat; do
 	echo -n "${V}: "
         if [ x"${!V}" != x"" ]; then	
         	echo "${!V}"
@@ -227,7 +236,7 @@ for N in $(seq ${niters}); do
 	echo "Starting Iteration $N"
 	P=1
 	cat $MACHINEFILE | ${ORDER_CMD} > $HFILE
-	while [ $(( P + nodes_per_job ))  -le ${total_nodes} ]; do
+	while [ $(( P + nodes_per_job - 1 ))  -le ${total_nodes} ]; do
 		# Create hostlist per iter
 		HLIST=$(scontrol show hostlist $(tail +$P ${HFILE} | head -${nodes_per_job} | sort | paste -d, -s))
 		CMD="sbatch -N ${nodes_per_job} --time=${walltime} ${account}  -p ${partition} --parsable --ntasks-per-node=${gpus_per_node} ${gresstr} --export ALL,EXPDIR,NV_GPUCLOCK,NV_MEMCLOCK,HPLDAT,SYSTEM,GPUS_PER_NODE,CPU_CORES_PER_RANK --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out -w ${HLIST} ${RUNSCRIPT}"
@@ -244,10 +253,12 @@ for N in $(seq ${niters}); do
 
 		P=$(( $P + $nodes_per_job ))
 	done
-	# Print out the extra nodes not used
-	HLIST=$(scontrol show hostlist $(tail +$P ${HFILE} | sort | paste -d, -s))
-	echo ""
-	echo "Unused nodes for this iteration: ${HLIST}"
+	if [ $(( P - 1 )) -lt ${total_nodes} ]; then
+	        # Print out the extra nodes not used
+	        HLIST=$(scontrol show hostlist $(tail +$P ${HFILE} | sort | paste -d, -s))
+	        echo ""
+	        echo "Unused nodes for this iteration: ${HLIST}"
+        fi
 	echo ""
 	echo "Ending Iteration $N"
 done
@@ -303,7 +314,7 @@ echo "Nodes Per Job:: ${nodes_per_job}"
 echo "Verify Log: ${VLOGFN}"
 
 echo ""
-echo "To rerun the verification: ./verify_hpl_experiment.py ${EXPDIR}"
+echo "To rerun the verification: ${HPL_SCRIPTS_DIR}/verify_hpl_experiment.py ${EXPDIR}"
 echo ""
 
 
