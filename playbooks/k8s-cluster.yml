@@ -52,7 +52,7 @@
 
 # Install Kubernetes
 # for configuration, see: config/group_vars/k8s-cluster.yml
-- include: ../kubespray/cluster.yml
+- include: ../submodules/kubespray/cluster.yml
   tags:
     - k8s
   vars:

@@ -190,7 +190,7 @@ For more information on Kubeflow, please refer to the [official documentation](h
 
 ## Cluster Maintenance
 
-DeepOps uses [Kubespray](https://github.com/kubernetes-sigs/kubespray) to deploy Kubernetes and therefore common cluster actions (such as adding nodes, removing them, draining and upgrading the cluster) should be performed with it. Kubespray is included as a submodule in the deepops/kubespray directory.
+DeepOps uses [Kubespray](https://github.com/kubernetes-sigs/kubespray) to deploy Kubernetes and therefore common cluster actions (such as adding nodes, removing them, draining and upgrading the cluster) should be performed with it. Kubespray is included as a submodule in the submodules/kubespray directory.
 
 ### Adding Nodes
 
@@ -202,7 +202,7 @@ Then run the Kubespray `scale.yml` playbook...
 # NOTE: If SSH requires a password, add: `-k`
 # NOTE: If sudo on remote machine requires a password, add: `-K`
 # NOTE: If SSH user is different than current user, add: `-u ubuntu`
-ansible-playbook -l k8s-cluster kubespray/scale.yml
+ansible-playbook -l k8s-cluster submodules/kubespray/scale.yml
 ```
 
 More information on this topic may be found in the [Kubespray docs](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md#adding-nodes).
@@ -215,7 +215,7 @@ Removing nodes can be performed with Kubespray's `remove-node.yml` playbook and 
 # NOTE: If SSH requires a password, add: `-k`
 # NOTE: If sudo on remote machine requires a password, add: `-K`
 # NOTE: If SSH user is different than current user, add: `-u ubuntu`
-ansible-playbook kubespray/remove-node.yml --extra-vars "node=nodename0,nodename1"
+ansible-playbook submodules/kubespray/remove-node.yml --extra-vars "node=nodename0,nodename1"
 ```
 
 This will drain `nodename0` & `nodename1`, stop Kubernetes services, delete certificates, and finally execute the kubectl command to delete the nodes.
@@ -228,7 +228,7 @@ Sometimes a cluster will get into a bad state - perhaps one where certs are misc
 
 ```sh
 # NOTE: Explicitly list ALL nodes in the cluster. Do not use an ansible group name such as k8s-cluster.
-ansible-playbook kubespray/remove-node.yml --extra-vars "node=nodename0,nodename1,<...>"
+ansible-playbook submodules/kubespray/remove-node.yml --extra-vars "node=nodename0,nodename1,<...>"
 ```
 
 > NOTE: There is also a Kubespray `reset.yml` playbook, but this does not do a complete tear-down of the cluster. Certificates and other artifacts might persist on each host, leading to a problematic redeployment in the future. The `remove-node.yml` playbook runs `reset.yml` as part of the process.
