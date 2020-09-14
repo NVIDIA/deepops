@@ -1,12 +1,12 @@
 #!/bin/bash
-source .jenkins-scripts/jenkins-common.sh
+source workloads/jenkins/scripts/jenkins-common.sh
 
 # Upload MPI source
 scp  \
 	-o "StrictHostKeyChecking no" \
 	-o "UserKnownHostsFile /dev/null" \
 	-i "${HOME}/.ssh/id_rsa" \
-	examples/slurm-mpi-hello/mpi-hello.c \
+	examples/slurm/mpi-hello/mpi-hello.c \
 	"vagrant@10.0.0.5${GPU01}:mpi-hello.c"
 
 # Compile the program
