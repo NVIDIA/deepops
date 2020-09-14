@@ -30,7 +30,7 @@ def get_changed_ansible_paths():
 
 
 def run_ansible_lint(paths):
-    cmd = ["ansible-lint"] + paths
+    cmd = ["ansible-lint", "-c" "src/repo/ansible-lint"] + paths
     return subprocess.call(cmd)
 
 
