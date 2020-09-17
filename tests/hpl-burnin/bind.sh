@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 set -euo pipefail
 
 print_usage() {
@@ -73,6 +73,37 @@ if [ "${local_rank}" -ge "${num_gpus}" ]; then
     exit 1
 fi
 
+# Check to see if HW_HCALIST or HW_CORELIST are defined.  If so
+# validate the output to ensure they have the right format
+
+if [[ -v HW_HCALIST ]]; then
+	hw_hcacnt=$(echo ${HW_HCALIST} | sed 's/:/ /g' | wc -w)
+	if [ ${hw_hcacnt} -ne ${num_gpus} ]; then
+		echo ""
+		echo "ERROR: HW_HCALIST is defined, but the number of items defined <${hw_hcacnt}>"
+		echo "ERROR: does not match the number of gpus found <${num_gpus}>".
+		echo "ERROR: Exiting"
+		echo ""
+		exit 1
+        else	
+		echo "Using defined HW_HCALIST: ${HW_HCALIST}"
+	fi
+fi
+
+if [ -v HW_CORELIST ]; then
+	hw_corcent=$(echo ${HW_CORELIST} | sed 's/:/ /g' | wc -w)
+	if [ ${hw_corecnt} -ne ${num_gpus} ]; then
+		echo ""
+		echo "ERROR: HW_CORELIST is defined, but the number of items defined <$hw_corecnt>"
+		echo "ERROR: does not match the number of gpus found <${num_gpus}>".
+		echo "ERROR: Exiting"
+		echo ""
+		exit 1
+        else	
+		echo "Using defined HW_COREIST: ${HW_CORELIST}"
+	fi
+fi
+
 get_lscpu_value() {
     awk -F: "(\$1 == \"${1}\"){gsub(/ /, \"\", \$2); print \$2; found=1} END{exit found!=1}"
 }
@@ -93,7 +124,8 @@ nvidia-smi topo -m | tr '\t' ' ' > ${nvtopofn}
 hditems=($(cat ${nvtopofn} | head -1 | sed 's/\x1b\[[0-9;]*m//g'))
 
 ## Find affinity between all gpus and network devices
-for gpuid in $(seq 0 $(( ${num_gpus} - 1 )) ); do
+#for gpuid in $(seq 0 $(( ${num_gpus} - 1 )) ); do
+for gpuid in $local_rank; do
 	gpudev="GPU${gpuid}"
 	#Verify the GPUs are numbered consistently
 	if [ $(cat ${nvtopofn} | grep -wE "^${gpudev}" | wc -l) -ne 1 ]; then
@@ -117,57 +149,83 @@ for gpuid in $(seq 0 $(( ${num_gpus} - 1 )) ); do
 	fi
        
 	# Lookup cpunode
-		# Lookup cpunode
-	cpunode=$(numactl --physcpubind=${cpulist} numactl --show | grep nodebind: | cut -f2- -d" ")
+	cpunode=$(numactl --physcpubind=${cpulist} numactl --show | grep nodebind: | cut -f2- -d" " | sed 's/ $//g')
 	if [ $(echo $cpunode | wc -l) -ne 1 ]; then
-		echo "ERROR: The node binding for ${gpudev} is not exactly one node.  Exiting
-"
+		echo "ERROR: The node binding for ${gpudev} is not exactly one node.  Exiting"
 		numactl --physcpubind=${cpulist} numactl --show
 		exit 1
 	fi
+
+	## This is an AMD, NPS=4 Hack
+	curnps=$(lscpu |grep "NUMA node(s)"|awk '{print $3 / 2}')
+
+	if [ $curnps -eq 4 ]; then
+    		if [ $(( local_rank % 2 )) == 0 ]; then
+                       cpunode=$(( cpunode - 1 ))
+		fi
+	fi
+
 	# for now assume memnode is cpunode
         memnode=$cpunode
 
 	# Search for devices, only ib_mode is not off
 	
 	if [ x"${ib_mode}" != x"off" ]; then
-        	devitems=($(cat ${nvtopofn} | grep -wE "${gpudev}" | tail -1 | sed 's/\x1b\[[0-9;]*m//g'))
-        	pixlist=()
-		pxblist=()
-        	phblist=()
-	        for ((i=0; i<${#devitems[@]}; ++i)); do
-	        	if [ "${devitems[$i]}" == "PIX" ]; then
-	        		pixlist+=(${hditems[$(( i - 1 ))]})
-	        	fi
-	        	if [ "${devitems[$i]}" == "PHB" ]; then
-	        		phblist+=(${hditems[$(( i - 1 ))]})
-	        	fi
-	        	if [ "${devitems[$i]}" == "PXB" ]; then
-	        		pxblist+=(${hditems[$(( i - 1 ))]})
-	        	fi
-        	done
-        	if [ ${#pixlist[@]} -eq 0 ]; then
-        		echo "WARNING: No HCA next to GPU. Looking for other HCA on PCIe root complex."
-        		if [ ${#phblist[@]} -eq 0 ]; then
-        			echo "WARNING: No HCA near GPU on same root complex, disabling HCA Affinity."
-				ib_mode="off"
-				node_map_mlx=()
+		# Should we autodetect, or use the provided list
+		if [[ ! -v HW_HCALIST ]]; then
+        		devitems=($(cat ${nvtopofn} | grep -wE "${gpudev}" | tail -1 | sed 's/\x1b\[[0-9;]*m//g'))
+        		pixlist=()
+			pxblist=()
+        		phblist=()
+	        	for ((i=0; i<${#devitems[@]}; ++i)); do
+	        		if [ "${devitems[$i]}" == "PIX" ]; then
+	        			pixlist+=(${hditems[$(( i - 1 ))]})
+	        		fi
+	        		if [ "${devitems[$i]}" == "PHB" ]; then
+	        			phblist+=(${hditems[$(( i - 1 ))]})
+	        		fi
+	        		if [ "${devitems[$i]}" == "PXB" ]; then
+	        			pxblist+=(${hditems[$(( i - 1 ))]})
+	        		fi
+        		done
+        		if [ ${#pixlist[@]} -eq 0 ]; then
+				#if [ $local_rank == $gpuid ]; then
+   				#    echo "WARNING(${gpuid},${local_rank}): No HCA next to GPU. Looking for other HCA on PCIe root complex."
+				#fi
+        			if [ ${#pxblist[@]} -eq 0 ]; then
+        				echo "WARNING: No HCA near GPU on same root complex, disabling HCA Affinity."
+					ib_mode="off"
+					node_map_mlx=()
+				else
+					hcalist=(${pxblist[@]})
+				fi
 			else
-				hcalist=${phblist}
+    				hcalist=(${pixlist[@]})
 			fi
 		else
-			hcalist=${pixlist}
+			# MAP using from the provided list
+			p=$(( local_rank + 1 ))
+			hcalist=($(echo ${HW_HCALIST} | cut -f${p} -d:))
+			echo "Manually using ${hcalist[@]} for $local_rank"
 		fi
 	fi
-       
-        # Add devices to map arrays	
-	node_map_gpu+=(${gpuid})
+	
+        # Add devices to map array
 	if [ x"${ib_mode}" != x"off" ]; then
-        	node_map_mlx+=(${hcalist})
+		if [[ -v HW_HCALIST ]]; then
+			node_map_mlx=${hcalist[0]}
+		else
+  		    i=0
+		    # This could be done much better, consider all curnps values, support multi-rail per GPU, etc
+		    if [ $curnps -eq 4 ]; then 
+			i=$(( local_rank % 2 ))
+		    fi	
+        	    node_map_mlx=${hcalist[i]}
+	        fi
 	fi
-	node_map_cpunode+=(${cpunode})
-	node_map_mem+=(${memnode})
-	node_map_physcpu+=(${cpulist})
+	node_map_cpunode=${cpunode}
+	node_map_mem=${memnode}
+	node_map_physcpu=${cpulist}
 done
 
 readonly cores_per_node=$(( (num_sockets * cores_per_socket) / num_nodes ))
@@ -190,10 +248,10 @@ declare -a numactl_args=()
 
 case "${cpu_mode}" in
     exclusive)
-	numactl_args+=( "--physcpubind=${node_map_physcpu[$local_rank]}" )
+	numactl_args+=( "--physcpubind=${node_map_physcpu}" )
         ;;
     node)
-	numactl_args+=( "--cpunodebind=${node_map_cpunode[$local_rank]}" )
+	numactl_args+=( "--cpunodebind=${node_map_cpunode}" )
         ;;
     off|'')
         ;;
@@ -206,7 +264,7 @@ esac
 
 case "${mem_mode}" in
     node)
-	numactl_args+=( "--membind=${node_map_mem[$local_rank]}" )
+	numactl_args+=( "--membind=${node_map_mem}" )
         ;;
     off|'')
         ;;
@@ -219,7 +277,7 @@ esac
 
 case "${ib_mode}" in
     single)
-	export OMPI_MCA_btl_openib_if_include=${node_map_mlx[$local_rank]}
+	export OMPI_MCA_btl_openib_if_include=${node_map_mlx}
         ;;
     off|'')
 	export OMPI_MCA_btl_openib_if_include=""
@@ -236,14 +294,18 @@ esac
 ################################################################################
 
 # Is this a GPUDirect aware binary or not
-export CUDA_VISIBLE_DEVICES=${node_map_gpu[${local_rank}]}
+export CUDA_VISIBLE_DEVICES=${local_rank}
 
 echo "MAP: rank=${OMPI_COMM_WORLD_RANK} lrank=$local_rank HCA=${OMPI_MCA_btl_openib_if_include} CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES} numactl_args=\"${numactl_args[@]}\" hplbin=${@}"
+
+#export OMPI_MCA_btl_openib_allow_ib=1
+export UCX_NET_DEVICES=${OMPI_MCA_btl_openib_if_include}:1
 
 if [ "${#numactl_args[@]}" -gt 0 ] ; then
     exec numactl "${numactl_args[@]}" -- "${@}"
 else
     exec "${@}"
 fi
+
 
 
