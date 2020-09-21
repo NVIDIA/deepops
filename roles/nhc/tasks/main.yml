@@ -3,6 +3,7 @@
   set_fact:
     nhc_build: true
 
+<<<<<<< HEAD
 - name: check if nhc is installed
   command: ls -l {{ nhc_install_dir }}/sbin/nhc
   register: nhc_check
@@ -13,6 +14,8 @@
     nhc_build: false
   when: nhc_check.rc == 0 and not nhc_force_reinstall
 
+=======
+>>>>>>> install nhc
 - name: ensure build dir exists
   file:
     path: "{{ nhc_build_dir }}"
