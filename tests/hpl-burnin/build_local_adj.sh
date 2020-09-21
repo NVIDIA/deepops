@@ -8,14 +8,18 @@ print_usage() {
 
 ${0} [options]
 
-Set the HPL Burn In Test Script Dependencies to be built for the cluster under test. 
+Select the HPL Burn In Test Script dependencies to be built for the cluster under test. 
+
+When ./build_local.sh is run with no options, it defaults to installing:
+CUDA Toolkit 11.0.2
+HPC-X v2.7 which install UCX 1.9 and Open MPI 4.0.4
 
 Options:
-    -c|--cuda <CUDA>
-        * Set to 0 in order to not build CUDA. The default is to installfor HPL Burn In Rev 1.0 is 11.0.2
-    -m|--mofed <OFED_VERSION_MAJOR>
-        * Set the MOFED Major Version to install the correct version of HPC-X for the OFED version on the cluster compute nodes. FOR DGX A100 this is 5.0, DGX-1/2 it is 4.7
-    -u|--ucx <HPC-X>
+    -c|--cuda <CUDA Toolkit>
+        * Set to 0 in order to not build the CUDA toolkit.  For a Slurm cluster set up by DeepOps, CUDA is setup by default so only HPC-X needs to be run. 
+    -m|--mofed <Mellanox OFED major version>
+        * Define the MOFED major version to install the correct version of HPC-X for the OFED version on the cluster compute nodes. FOR DGX A100 this is 5.0, DGX-1/2 it is 4.7
+    -u|--ucx <Install OpenMPI and UCX via HPC-X>
 	* Set to 0 in order to not utilize HPC-X Cluster Kit to install OpenMPI and UCX
 EOF
 
@@ -62,13 +66,13 @@ export BUILD_HPCX
 
 
 #If both options for HPC-X and CUDA say do not install, then exit
-#if [ $BUILD_HPCX==0 -a $BUILD_CUDA==0 ]; then
+#if [ ${BUILD_HPCX}==0 ]; then
 #	echo "Why even bother running this script?";
-#	exit
+# 	exit;	
 #fi
 
 ofed_major=${ofed_major:-5.0}
-echo "HPC-X for Mellanox OFED $ofed_major will be installed from"
+echo "HPC-X for Mellanox OFED $ofed_major will be downloaded from"
 
 case ${ofed_major} in
    "5.0") HPCX_URL="http://www.mellanox.com/downloads/hpc/hpc-x/v2.7/hpcx-v2.7.0-gcc-MLNX_OFED_LINUX-5.0-1.0.0.0-ubuntu18.04-x86_64.tbz"; echo $HPCX_URL ;;
@@ -79,8 +83,8 @@ esac
 #sets the directory where the burn in test is located, then sets where CUDA and HPC-X will downloaded and built
 export BASEDIR=${BASEDIR:-$(cd $(dirname 0) && pwd)}
 export BUILDDIR=${BUILDDIR:-/tmp/build.$$}
-echo $BASEDIR
-echo $BUILDDIR
+#echo $BASEDIR
+#echo $BUILDDIR
 
 APPSDIR=${BASEDIR}/apps
 
@@ -95,7 +99,7 @@ mkdir -p $BUILDDIR
 CUDA_VERSION=11.0.2
 CUDA_HOME=${APPSDIR}/cuda/${CUDA_VERSION}
 mkdir -p ${CUDA_HOME}
-echo $CUDA_HOME
+#echo $CUDA_HOME
 
 #HPCX Install Variables
 
@@ -123,7 +127,8 @@ if [ $BUILD_CUDA == 1 ]; then
 		    echo ""
 		    echo "ERROR: Unable to remove ${CLOG} before installation of CUDA."
 		    echo "ERROR: Existence of this file without write permission will"
-		    echo "ERROR: cause the instalation of CUDA to trigger a segementation"
+
+echo "ERROR: cause the instalation of CUDA to trigger a segementation"
 		    echo "ERROR: fault.  Please have the file removed, and try the"
 		    echo "ERROR: Installation again."
 		    echo ""
@@ -191,6 +196,7 @@ if [ $BUILD_HPCX == 1 ]; then
 
 	echo ""
 	echo "INFO: Done installing HPCX"
+	else exit
 fi
 
 # create setenv.sh script
@@ -208,8 +214,12 @@ hpcx_load
 export PATH=\${CUDA_HOME}/bin:\${PATH}
 export LD_LIBRARY_PATH=\${CUDA_HOME}/lib64:\${LD_LIBRARY_PATH}
 
+echo \" CUDA Toolkit Version: \$(nvcc -V)\"
+echo ""
 echo \" Loaded HPCX: \${HPCX_HOME}\"
+echo ""
 echo \" UCX Version: \$(ucx_info -v)\"
+echo ""
 echo \"OMPI Version: \$(ompi_info --version)\"
 " > setenv.sh
 
