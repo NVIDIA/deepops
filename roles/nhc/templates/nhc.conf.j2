@@ -1,0 +1,14 @@
+# Check number of CPU cores
+ {{ ansible_hostname }} || check_hw_cpuinfo {{ ansible_local.topology.cpu_topology.sockets }} {{ ansible_local.topology.cpu_topology.physical_cores }} {{ ansible_local.topology.cpu_topology.logical_cpus }}
+
+# Check memory
+ {{ ansible_hostname }} || check_hw_physmem {{ ansible_local.memory.total_mb }}MB
+
+# Check that the root filesystem is mounted rw
+ {{ ansible_hostname }} || check_fs_mount_rw /
+
+# Check that Ethernet connections are up
+{% set my_interfaces = ansible_interfaces|select('match', '(?!^(lo|docker|nodelocaldns)).*')|default(None) -%}
+{% for interface in my_interfaces %}
+ {{ ansible_hostname }} || check_hw_eth {{ interface }}
+{% endfor %}
