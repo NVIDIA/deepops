@@ -1,0 +1,45 @@
+---
+- name: default to building NHC
+  set_fact:
+    nhc_build: true
+
+- name: ensure build dir exists
+  file:
+    path: "{{ nhc_build_dir }}"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  when: nhc_build
+
+- name: download nhc src
+  get_url:
+    url: "{{ nhc_src_url }}"
+    dest: "{{ nhc_build_dir }}/nhc-{{ nhc_version }}.tar.xz"
+    mode: "0644"
+  when: nhc_build
+
+- name: extract nhc src
+  unarchive:
+    src: "{{ nhc_build_dir }}/nhc-{{ nhc_version }}.tar.xz"
+    dest: "{{ nhc_build_dir }}/"
+    remote_src: yes
+  when: nhc_build
+
+- name: configure nhc
+  command: "{{ nhc_configure }}"
+  args:
+    chdir: "{{ nhc_extract_dir }}"
+  when: nhc_build
+
+- name: test nhc src
+  command: "{{ nhc_test }}"
+  args:
+    chdir: "{{ nhc_extract_dir }}"
+  when: nhc_build and nhc_run_test
+
+- name: make and install nhc
+  command: "{{ nhc_make }}"
+  args:
+    chdir: "{{ nhc_extract_dir }}"
+  when: nhc_build
