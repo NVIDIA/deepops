@@ -37,7 +37,7 @@
   when: slurm_enable_nfs_client_nodes
 
 # Install Node Health Check
-- include: nhc.yml
+- include: nhc.yml hostlist=slurm-node
   when: slurm_install_nhc|default(true)
 
 # Install Slurm
