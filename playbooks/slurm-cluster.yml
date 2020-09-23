@@ -36,6 +36,10 @@
     hostlist: "{{ nfs_client_group | default('slurm-node') }}"
   when: slurm_enable_nfs_client_nodes
 
+# Install Node Health Check
+- include: nhc.yml
+  when: slurm_install_nhc|default(true)
+
 # Install Slurm
 - include: slurm-cluster/slurm.yml
 
