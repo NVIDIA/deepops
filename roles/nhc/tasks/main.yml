@@ -44,6 +44,14 @@
     chdir: "{{ nhc_extract_dir }}"
   when: nhc_build
 
+- name: add deepops checks to nhc
+  copy:
+    src: "deepops.nhc"
+    dest: "{{ nhc_config_dir }}/nhc/scripts/deepops.nhc"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
 - name: install NHC config
   template:
     src: "{{ nhc_config_template }}"

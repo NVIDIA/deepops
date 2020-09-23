@@ -20,3 +20,20 @@
  {{ ansible_hostname }} || check_ps_service -d rpc.statd nfslock
  {{ ansible_hostname }} || check_ps_service -u root slurmd
  {{ ansible_hostname }} || check_ps_service -u root docker
+
+{% if ansible_local.gpus.count > 0 %}
+# Check GPU count
+ {{ ansible_hostname }} || check_nv_gpu_count {{ ansible_local.gpus.count }}
+
+# Example: check NVIDIA driver version
+# {{ ansible_hostname }} || check_nv_drv_version 450.51.06
+
+# Example: check for retired pages pending
+# {{ ansible_hostname }} || check_nv_retired_pages
+
+# Example: check PCIe width
+# {{ ansible_hostname }} || check_nv_pcie_link_width 16
+
+# Example: run DCGM check
+# {{ ansible_hostname }} || check_nv_dcgmi_diag
+{% endif %}
