@@ -22,18 +22,26 @@
  {{ ansible_hostname }} || check_ps_service -u root docker
 
 {% if ansible_local.gpus.count > 0 %}
+#############################################################################
+# GPU-specific checks                                                       #
+#############################################################################
+
 # Check GPU count
  {{ ansible_hostname }} || check_nv_gpu_count {{ ansible_local.gpus.count }}
 
-# Example: check NVIDIA driver version
+# Optional: run Data Center GPU Manager diagnostic as health check.
+# Requires that DCGM be installed.
+# {{ ansible_hostname }} || check_nv_dcgmi_diag
+
+# Optional: check NVIDIA driver version against expected version.
+# Use this check to keep all nodes on the cluster at the same driver version
+# and control upgrades.
 # {{ ansible_hostname }} || check_nv_drv_version 450.51.06
 
-# Example: check for retired pages pending
+# Optional: check for retired pages pending.
+# A reboot may be needed to ensure these pages are blacklisted
 # {{ ansible_hostname }} || check_nv_retired_pages
 
-# Example: check PCIe width
+# Optional: check PCIe width is correct for your configuration
 # {{ ansible_hostname }} || check_nv_pcie_link_width 16
-
-# Example: run DCGM check
-# {{ ansible_hostname }} || check_nv_dcgmi_diag
 {% endif %}
