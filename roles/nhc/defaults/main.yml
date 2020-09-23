@@ -13,3 +13,5 @@ nhc_run_test: false
 nhc_make: "make install"
 
 nhc_config_template: "nhc.conf.j2"
+
+nhc_force_reinstall: false
