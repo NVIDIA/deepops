@@ -43,3 +43,11 @@
   args:
     chdir: "{{ nhc_extract_dir }}"
   when: nhc_build
+
+- name: install NHC config
+  template:
+    src: "{{ nhc_config_template }}"
+    dest: "{{ nhc_config_dir }}/nhc/nhc.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"

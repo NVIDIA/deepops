@@ -12,4 +12,4 @@ nhc_test: "make test"
 nhc_run_test: false
 nhc_make: "make install"
 
-nhc_config: "nhc.conf.j2"
+nhc_config_template: "nhc.conf.j2"

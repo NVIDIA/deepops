@@ -1,8 +1,10 @@
+# {{ ansible_managed }}
+
 # Check number of CPU cores
  {{ ansible_hostname }} || check_hw_cpuinfo {{ ansible_local.topology.cpu_topology.sockets }} {{ ansible_local.topology.cpu_topology.physical_cores }} {{ ansible_local.topology.cpu_topology.logical_cpus }}
 
 # Check memory
- {{ ansible_hostname }} || check_hw_physmem {{ ansible_local.memory.total_mb }}MB
+{{ ansible_hostname }} || check_hw_physmem {{ (ansible_memtotal_mb * 0.95) | round | int }}m {{ (ansible_memtotal_mb * 1.05) | round | int }}m
 
 # Check that the root filesystem is mounted rw
  {{ ansible_hostname }} || check_fs_mount_rw /
@@ -12,3 +14,9 @@
 {% for interface in my_interfaces %}
  {{ ansible_hostname }} || check_hw_eth {{ interface }}
 {% endfor %}
+
+# Check that expected processes are running
+ {{ ansible_hostname }} || check_ps_service -u root sshd
+ {{ ansible_hostname }} || check_ps_service -d rpc.statd nfslock
+ {{ ansible_hostname }} || check_ps_service -u root slurmd
+ {{ ansible_hostname }} || check_ps_service -u root docker
