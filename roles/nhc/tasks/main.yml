@@ -69,3 +69,19 @@
     owner: "root"
     group: "root"
     mode: "0644"
+
+- name: create sysconfig dir
+  file:
+    path: "{{ nhc_sysconfig_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: add sysconfig to use slurm
+  template:
+    src: "sysconfig_nhc.j2"
+    dest: "{{ nhc_sysconfig_dir }}/nhc"
+    owner: root
+    group: root
+    mode: "0644"
