@@ -6,7 +6,7 @@ This repository contains scripts and configuration files to use the GPU optimize
 
 If the expected performance is seen, the user can be confident that the nodes are working correctly.  If a Top500 submittal is desired, there are additional optimizations than can done to maximize performance.  Please work with an NVIDIA Solutions Architect (SA) to review the Burn In Test results so that additional perfomance may be obtained.
 
-Currently, only clusters built with DGX-1V-16GB, DGX-1V-32GB, and DGX2 are supported.  If you have an OEM GPU-based system, contact your NVIDIA SA for additional assistance.
+Currently, only clusters built with DGX-1V-16GB, DGX-1V-32GB, DGX-2, and DGXA100 are supported.  If you have an OEM GPU-based system, contact your NVIDIA SA for additional assistance.
 
 ## Requirements
 
@@ -14,7 +14,7 @@ Currently, only clusters built with DGX-1V-16GB, DGX-1V-32GB, and DGX2 are suppo
 
 ## Getting started
 
-First clone the DeepOps repo to the shared home directory of the slurm cluster login node. Then place the hpl binary in the hpl-burnin directory (`deepops/tests/hpl-burnin`) and run launch_experiment_slurm.sh from it without any options.
+From the DeepOps repo, either copy the entire DeepOps repo or just the hpl-burnin test directory to the user's home directory of the slurm cluster to be tested. It is assumed that this directory is on a shared filed system. Place the hpl binary in the hpl-burnin directory (`deepops/tests/hpl-burnin`) and run launch_experiment_slurm.sh from it without any options.
 
 ```sh
 git clone https://github.com/NVIDIA/deepops.git
@@ -75,9 +75,14 @@ Experiments are verified when all jobs are complete.  See the file verify_result
  * Run an experiement with 1 node to identify any slow nodes.  If any slow nodes are found, fix them.
 
 ```
-./launch_slurm_experiment.py -c 1 -s dgx1v_16G
+./launch_slurm_experiment.py -c 1 -s dgx1v_16G --maxnodes <number of nodes to run single node burn-in>
 ```
+* Run multi-node jobs starting with two nodes and increasing (four, eight, etc) until the increasing the size of the job to the next power of two would be greater than half the system.  At each node count, the all runs should be completed successfully with similar performance.
+*Run two jobs at N/2 in size (N is the total number of nodes). 
+*Run a job with all nodes.
 
-## How to create a HPL.dat file for a generic configuration.
 
-Script to be provided.
+```
+./launch_experiment_slurm.sh -c <number of nodes> -s <system type>
+
+```

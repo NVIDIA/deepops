@@ -1,17 +1,18 @@
 #!/bin/bash
 #
-# Launch a HPL burnin test based.
+# Launch a HPL Burn-in test based.
 #
 # ./launch_experiment_slurm.sh <nodes per job>
 #
-# - Right now systems supported are dgx1v_16G, dgx1v_32G, and dgx2.
-# - dgxa100 will be added when its read.
+# - Right now systems supported are dgx1v_16G, dgx1v_32G, dgx2, and dgxa100
 # - Eventually the code should (somewhat) support generic systems.
 #
 # -- Requirements
-# - OpenMPI 3.1.X must be on the PATH and LD_LIBRARY_PATH
+# - OpenMPI 4.0.4 and UCX 1.9 must be on the PATH and LD_LIBRARY_PATH
 # - The correct cuda version should be installed and on the PATH and LD_LIBRARY_PATH
-# - Slurm is required.
+# - run the install_hplbit_deps.sh script to do the above.
+# - Slurm Cluster Manager setup with PMIx and hwloc is required.
+#  
 #
 
 ### TODO:
