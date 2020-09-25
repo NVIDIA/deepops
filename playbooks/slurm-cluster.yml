@@ -8,6 +8,10 @@
 - include: bootstrap/bootstrap-ssh.yml
 - include: bootstrap/bootstrap-sudo.yml
 
+# Disable cloud-init
+- include: generic/disable-cloud-init.yml
+  when: deepops_disable_cloud_init
+
 # Configure hostnames, /etc/hosts
 - include: generic/hosts.yml
 
