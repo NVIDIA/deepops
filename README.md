@@ -22,7 +22,7 @@ It is recommended to use the latest release branch for stable code (linked above
 
 ## Getting Started
 
-For detailed help or guidance, read through our [Getting Started Guide](docs/getting-started.md) or pick one of the deployment options documented below.
+For detailed help or guidance, read through our [Getting Started Guide](docs/) or pick one of the deployment options documented below.
 
 ## Deployment Options
 
@@ -38,7 +38,7 @@ DeepOps currently supports the following Linux distributions:
 
 Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications.
 
-Consult the [DeepOps Kubernetes Deployment Guide](docs/kubernetes-cluster.md) for instructions on building a GPU-enabled Kubernetes cluster using DeepOps.
+Consult the [DeepOps Kubernetes Deployment Guide](docs/k8s-cluster/) for instructions on building a GPU-enabled Kubernetes cluster using DeepOps.
 
 For more information on Kubernetes in general, refer to the [official Kubernetes docs](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/).
 
@@ -46,7 +46,7 @@ For more information on Kubernetes in general, refer to the [official Kubernetes
 
 Slurm is an open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters.
 
-Consult the [DeepOps Slurm Deployment Guide](docs/slurm-cluster.md) for instructions on building a GPU-enabled Slurm cluster using DeepOps.
+Consult the [DeepOps Slurm Deployment Guide](docs/slurm-cluster/) for instructions on building a GPU-enabled Slurm cluster using DeepOps.
 
 For more information on Slurm in general, refer to the [official Slurm docs](https://slurm.schedmd.com/overview.html).
 
@@ -54,7 +54,7 @@ For more information on Slurm in general, refer to the [official Slurm docs](htt
 
 A hybrid cluster with both Kubernetes and Slurm can also be deployed. This is recommended for [DGX POD](https://www.nvidia.com/en-us/data-center/dgx-pod-reference-architecture/) and other setups that wish to make maximal use of the cluster.
 
-Consult the [DeepOps DGX POD Deployment Guide](docs/dgx-pod.md) for step-by-step instructions on building a GPU-enabled hybrid cluster using DeepOps.
+Consult the [DeepOps DGX POD Deployment Guide](docs/deepops/dgx-pod.md) for step-by-step instructions on building a GPU-enabled hybrid cluster using DeepOps.
 
 ### Virtual
 
@@ -64,7 +64,7 @@ Consult the [Virtual DeepOps Deployment Guide](virtual/README.md) to build a GPU
 
 ## Updating DeepOps
 
-To update from a previous version of DeepOps to a newer release, please consult the [DeepOps Update Guide](docs/update-deepops.md).
+To update from a previous version of DeepOps to a newer release, please consult the [DeepOps Update Guide](docs/deepops/update-deepops.md).
 
 ## Copyright and License
 

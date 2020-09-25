@@ -12,7 +12,7 @@ firmware_update_tag: 19.10.7
 
 # firmware update container to use and where it is locally stored
 firmware_update_container: "{{ firmware_update_repo }}_{{ firmware_update_tag }}.tar.gz"
-firmware_container_src_dir: "{{ inventory_dir }}/containers/dgx-firmware"
+firmware_container_src_dir: "{{ inventory_dir }}/src/containers/dgx-firmware"
 
 # default log directory is set to the location of your inventory file (./deepops/config/)
 local_log_directory: "{{ inventory_dir }}"

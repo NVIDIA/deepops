@@ -1,0 +1,27 @@
+#!/bin/bash
+
+if [ "${DEEPOPS_BYPASS_LINT}" ]; then
+	exit 0
+fi
+
+FAILED=0
+
+# Lint changed Ansible files
+if ! src/githooks/check-ansible.py; then
+	FAILED=1
+	echo "Failed Ansible lint"
+fi
+
+# Lint changed shell scripts
+if ! src/githooks/check-shell.py; then
+	FAILED=1
+	echo "Failed shell lint"
+fi
+
+# Lint changed Python files
+if ! src/githooks/check-python.py; then
+	FAILED=1
+	echo "Failed python lint"
+fi
+
+exit ${FAILED}

@@ -1,0 +1,9 @@
+---
+- include: ../container/docker.yml
+
+- hosts: "{{ hostlist | default('all') }}"
+  become: yes
+  tasks:
+    - name: configure node exporter
+      include_role:
+        name: prometheus-node-exporter

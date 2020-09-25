@@ -1,7 +1,0 @@
-- include: k8s-cluster.yml
-  vars:
-    deepops_gpu_operator_enabled: true
-    helm_version: v2.14.3
-    docker_version: 'latest'
-    docker_versioned_pkg:
-      'latest': docker-ce
