@@ -1,0 +1,10 @@
+---
+- hosts: "{{ hostlist | default('all') }}"
+  become: true
+  tasks:
+  - name: Gather custom facts
+    include_role:
+      name: facts
+  - name: Install Node Health Check
+    include_role: 
+      name: nhc

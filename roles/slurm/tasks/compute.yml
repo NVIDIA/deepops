@@ -40,6 +40,13 @@
       reboot:
   when: update_grub.changed and ansible_os_family == "RedHat"
 
+- name: create sysconfig dir
+  file:
+    path: "{{ slurm_sysconf_dir }}"
+    state: directory
+    owner: root
+    mode: 0755
+
 - name: create slurm directories
   file:
     path: "{{ item }}"
@@ -50,7 +57,6 @@
     - "{{ slurm_config_dir }}"
     - "{{ slurm_config_dir }}/shared"
     - "{{ slurm_config_dir }}/shared/bin"
-    - "{{ slurm_sysconf_dir }}"
     - /var/log/slurm
     - /var/spool/slurm/d
   tags:
