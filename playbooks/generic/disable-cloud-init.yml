@@ -7,8 +7,7 @@
 # is a good example of a file that both systems try to manage.
 #
 # This playbook disables cloud-init to prevent DeepOps and cloud-init from
-# stepping on each other. This playbook is not enabled by default, but you can
-# enable it by setting `deepops_disable_cloud_init: true` in your config.
+# stepping on each other.
 
 - hosts: "{{ hostlist | default('all') }}" 
   become: true
