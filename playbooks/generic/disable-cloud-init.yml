@@ -21,7 +21,7 @@
     register: etc_cloud
 
   - name: disable generator for setting cloud-init target
-    when: deepops_disable_cloud_init
+    when: deepops_disable_cloud_init and etc_cloud.stat.exists
     file:
       path: "/etc/cloud/cloud-init.disabled"
       owner: "root"
@@ -31,6 +31,7 @@
 
   - name: disable all systemd services
     when: deepops_disable_cloud_init
+    ignore_errors: yes
     service:
       name: "{{ item }}"
       state: stopped
