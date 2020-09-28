@@ -64,10 +64,10 @@ The following playbooks encapsulate this role and can be run separately to colle
 
 ```sh
 # collect diagnostic info
-ansible-playbook -l slurm-node playbooks/nvidia-dgx-diag.yml
+ansible-playbook -l slurm-node playbooks/nvidia-dgx/nvidia-dgx-diag.yml
 ```
 
 ```sh
 # update all firmware
-ansible-playbook -l slurm-node playbooks/nvidia-dgx-fw-update.yml
+ansible-playbook -l slurm-node playbooks/nvidia-dgx/nvidia-dgx-fw-update.yml
 ```
