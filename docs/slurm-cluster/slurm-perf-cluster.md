@@ -30,7 +30,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 
 1. Install a supported operating system on all nodes.
 
-   Install a supported operating system on all servers utilizing the [DGXie](/docs/dgxie-container.md) provisioning container, via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)), or server BMC/console.
+   Install a supported operating system on all servers utilizing the [DGXie](/docs/pxe/dgxie-container.md) provisioning container, via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)), or server BMC/console.
 
    > NOTE: During OS installation, it is ideal if the identical user/password is configured. Otherwise, follow step 4 below to create an idential user across all nodes in the cluster.
 
@@ -130,10 +130,10 @@ High-Performance Multi-Node Cluster Deployment Guide
    # NOTE: If SSH user is different than current user, add: `-u <user>`
 
    # create the NFS server (if not using an existing NFS server)
-   ansible-playbook playbooks/nfs-server.yml
+   ansible-playbook playbooks/generic/nfs-server.yml
 
    # mount the NFS shares to the clients
-   ansible-playbook playbooks/nfs-client.yml
+   ansible-playbook playbooks/generic/nfs-client.yml
    ```
 
 8. Deploy optimized Slurm software using Ansible
@@ -151,11 +151,9 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    The `slurm-validation.yml` playbook connects to the login node and executes the NCCL tests against all nodes and GPUs. This checks both the correctness and the performance of the cluster. For a full explanation of what these tests do and what the [results mean](https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md) see the official [NCCL Tests documentation](https://github.com/NVIDIA/nccl-tests).
 
-   This playbook can be run standalone, but is also run as the last step in the `slurm-cluster.yml`. To run standalone...
-
    ```sh
    # Verify Slurm connectivity across all nodes
-   ansible-playbook playbooks/slurm-validation.yml
+   ansible-playbook playbooks/slurm-cluster/slurm-validation.yml
    ```
 
    If the test is successful you should expect to see output similar to that below (run on a cluster of 4x DGX A100 nodes):
