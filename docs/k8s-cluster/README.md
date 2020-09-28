@@ -130,7 +130,7 @@ Deploy NetApp Trident for services that require persistent storage (such as Kube
    # NOTE: If SSH requires a password, add: `-k`
    # NOTE: If sudo on remote machine requires a password, add: `-K`
    # NOTE: If SSH user is different than current user, add: `-u ubuntu`
-   ansible-playbook -l k8s-cluster playbooks/netapp-trident.yml
+   ansible-playbook -l k8s-cluster playbooks/k8s-cluster/netapp-trident.yml
    ```
 
 3. Verify that Trident is running.
