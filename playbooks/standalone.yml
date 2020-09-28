@@ -1,9 +1,0 @@
----
-
-- include: bootstrap-python.yml
-- include: bootstrap-ssh.yml
-- include: bootstrap-sudo.yml
-
-- include: docker.yml
-- include: nvidia-driver.yml
-- include: nvidia-docker.yml

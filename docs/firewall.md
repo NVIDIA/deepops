@@ -50,10 +50,10 @@ If a service is not listed here, it will use a random port from the range.
 * `tcp/80`: default HTTP access, open to all nodes using Ingress
 * `tcp/443`: default HTTPS access, open to all nodes using Ingress
 
-The [MetalLB load balancer](/docs/ingress.md#load-balancer) defines an IP range for new services that request a load balancer.
+The [MetalLB load balancer](/docs/k8s-cluster/ingress.md#load-balancer) defines an IP range for new services that request a load balancer.
 The firewall on your worker nodes should allow access to these destination IPs.
 
-The [NGINX ingress controller](/docs/ingress.md#ingress-controller) will listen by default on ports 80 and 443.
+The [NGINX ingress controller](/docs/k8s-cluster/ingress.md#ingress-controller) will listen by default on ports 80 and 443.
 These ports will need to be open to all nodes that need to access services with configured ingress.
 
 ### Examining an already-running cluster

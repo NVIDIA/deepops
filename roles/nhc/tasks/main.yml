@@ -1,0 +1,87 @@
+---
+- name: default to building NHC
+  set_fact:
+    nhc_build: true
+
+- name: check if nhc is installed
+  command: ls -l {{ nhc_install_dir }}/sbin/nhc
+  register: nhc_check
+  ignore_errors: yes
+
+- name: don't build if installed unless we force
+  set_fact:
+    nhc_build: false
+  when: nhc_check.rc == 0 and not nhc_force_reinstall
+
+- name: ensure build dir exists
+  file:
+    path: "{{ nhc_build_dir }}"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  when: nhc_build
+
+- name: download nhc src
+  get_url:
+    url: "{{ nhc_src_url }}"
+    dest: "{{ nhc_build_dir }}/nhc-{{ nhc_version }}.tar.xz"
+    mode: "0644"
+  when: nhc_build
+
+- name: extract nhc src
+  unarchive:
+    src: "{{ nhc_build_dir }}/nhc-{{ nhc_version }}.tar.xz"
+    dest: "{{ nhc_build_dir }}/"
+    remote_src: yes
+  when: nhc_build
+
+- name: configure nhc
+  command: "{{ nhc_configure }}"
+  args:
+    chdir: "{{ nhc_extract_dir }}"
+  when: nhc_build
+
+- name: test nhc src
+  command: "{{ nhc_test }}"
+  args:
+    chdir: "{{ nhc_extract_dir }}"
+  when: nhc_build and nhc_run_test
+
+- name: make and install nhc
+  command: "{{ nhc_make }}"
+  args:
+    chdir: "{{ nhc_extract_dir }}"
+  when: nhc_build
+
+- name: add deepops checks to nhc
+  copy:
+    src: "deepops.nhc"
+    dest: "{{ nhc_config_dir }}/nhc/scripts/deepops.nhc"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
+- name: install NHC config
+  template:
+    src: "{{ nhc_config_template }}"
+    dest: "{{ nhc_config_dir }}/nhc/nhc.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
+- name: create sysconfig dir
+  file:
+    path: "{{ nhc_sysconfig_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: add sysconfig to use slurm
+  template:
+    src: "sysconfig_nhc.j2"
+    dest: "{{ nhc_sysconfig_dir }}/nhc"
+    owner: root
+    group: root
+    mode: "0644"

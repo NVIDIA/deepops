@@ -1,0 +1,47 @@
+# {{ ansible_managed }}
+
+# Check number of CPU cores
+ {{ ansible_hostname }} || check_hw_cpuinfo {{ ansible_local.topology.cpu_topology.sockets }} {{ ansible_local.topology.cpu_topology.physical_cores }} {{ ansible_local.topology.cpu_topology.logical_cpus }}
+
+# Check memory
+ {{ ansible_hostname }} || check_hw_physmem {{ (ansible_memtotal_mb * 0.95) | round | int }}m {{ (ansible_memtotal_mb * 1.05) | round | int }}m
+
+# Check that the root filesystem is mounted rw
+ {{ ansible_hostname }} || check_fs_mount_rw /
+
+# Check that Ethernet connections are up
+{% set my_interfaces = ansible_interfaces|select('match', '(?!^(lo|docker|nodelocaldns)).*')|default(None) -%}
+{% for interface in my_interfaces %}
+ {{ ansible_hostname }} || check_hw_eth {{ interface }}
+{% endfor %}
+
+# Check that expected processes are running
+ {{ ansible_hostname }} || check_ps_service -u root sshd
+ {{ ansible_hostname }} || check_ps_service -d rpc.statd nfslock
+ {{ ansible_hostname }} || check_ps_service -u root slurmd
+ {{ ansible_hostname }} || check_ps_service -u root docker
+
+{% if ansible_local.gpus.count > 0 %}
+#############################################################################
+# GPU-specific checks                                                       #
+#############################################################################
+
+# Check GPU count
+ {{ ansible_hostname }} || check_nv_gpu_count {{ ansible_local.gpus.count }}
+
+# Optional: run Data Center GPU Manager diagnostic as health check.
+# Requires that DCGM be installed.
+# {{ ansible_hostname }} || check_nv_dcgmi_diag
+
+# Optional: check NVIDIA driver version against expected version.
+# Use this check to keep all nodes on the cluster at the same driver version
+# and control upgrades.
+# {{ ansible_hostname }} || check_nv_drv_version 450.51.06
+
+# Optional: check for retired pages pending.
+# A reboot may be needed to ensure these pages are blacklisted
+# {{ ansible_hostname }} || check_nv_retired_pages
+
+# Optional: check PCIe width is correct for your configuration
+# {{ ansible_hostname }} || check_nv_pcie_link_width 16
+{% endif %}

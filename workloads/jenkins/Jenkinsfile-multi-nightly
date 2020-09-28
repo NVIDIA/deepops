@@ -1,0 +1,205 @@
+pipeline {
+  agent any
+  environment {
+    DEEPOPS_FULL_INSTALL = 'true'
+    DEEPOPS_VAGRANT_OS = 'ubuntu'
+  }
+  stages {
+    stage('Stop Any Old Builds') {
+      steps {
+        milestone label: '', ordinal:  Integer.parseInt(env.BUILD_ID) - 1
+        milestone label: '', ordinal:  Integer.parseInt(env.BUILD_ID)
+      }
+    }
+    stage('Cluster Up - Ubuntu') {
+      steps {
+        // TODO: ideally lock should work with declared stages
+        lock(resource: null, label: 'gpu', quantity: 2, variable: 'GPUDATA') {
+          echo "Reset repo and unmunge files"
+          sh '''
+            git reset --hard
+            rm -rf config
+          '''
+
+          echo "Munge files for testing"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/munge-files.sh
+          '''
+
+          echo "Vagrant Up"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
+          '''
+
+          echo "Cluster Up - Multiple GPU & MGMT Nodes"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/test-cluster-up.sh
+          '''
+
+          echo "Get K8S Cluster Status"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/get-k8s-debug.sh
+          '''
+
+          echo "Verify we can run a GPU job"
+          sh '''
+            timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
+          '''
+
+          echo "Verify ingress config"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
+          '''
+
+          echo "Test Rook+Ceph installation"
+          sh '''
+             timeout 2200 bash -x ./workloads/jenkins/scripts/test-ceph.sh
+          '''
+
+          echo "Test Kubeflow installation"
+          sh '''
+             timeout 3000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
+          '''
+
+          echo "Test Monitoring installation"
+          sh '''
+             timeout 800 bash -x ./workloads/jenkins/scripts/test-monitoring.sh
+          '''
+
+          echo "Test Dashboard installation"
+          sh '''
+             timeout 180 bash -x ./workloads/jenkins/scripts/test-dashboard.sh
+          '''
+
+          echo "Test Kubeflow pipeline"
+          sh '''
+             timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
+          '''
+
+          echo "Start new virtual environment pre-Slurm checks"
+          sh '''
+            cd virtual
+            bash -x ./vagrant_shutdown.sh
+            bash -x ./vagrant_startup.sh
+          '''
+
+          echo "Set up Slurm"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/test-setup-slurm.sh
+          '''
+
+          echo "Test Slurm"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-job.sh
+          '''
+
+          echo "Test MPI"
+          sh '''
+            timeout 60 bash -x ./.jenkins-scripts/test-mpi-job.sh
+          '''
+
+          echo "Reset repo and unmunge files"
+          sh '''
+            git reset --hard
+            rm -rf config
+          '''
+
+          echo "Tear down Vagrant before next cluster-up"
+          sh '''
+            pwd
+            cd virtual && ./vagrant_shutdown.sh
+          '''
+        }
+      }
+    }
+    stage('Cluster Up - CentOS') {
+      environment {
+        DEEPOPS_VAGRANT_OS = 'centos'
+      }
+      steps {
+        // TODO: ideally lock should work with declared stages
+        lock(resource: null, label: 'gpu', quantity: 2, variable: 'GPUDATA') {
+          echo "Munge files for testing"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/munge-files.sh
+          '''
+
+          echo "Vagrant Up"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
+          '''
+
+          echo "Cluster Up - Multiple GPU & MGMT Nodes"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/test-cluster-up.sh
+          '''
+
+          echo "Get K8S Cluster Status"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/get-k8s-debug.sh
+          '''
+
+          echo "Verify we can run a GPU job"
+          sh '''
+            timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
+          '''
+
+          echo "Verify ingress config"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
+          '''
+
+          echo "Test Rook+Ceph installation"
+          sh '''
+             timeout 2200 bash -x ./workloads/jenkins/scripts/test-ceph.sh
+          '''
+
+          echo "Test Kubeflow installation"
+          sh '''
+             timeout 3000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
+          '''
+
+          echo "Test Monitoring installation"
+          sh '''
+             timeout 800 bash -x ./workloads/jenkins/scripts/test-monitoring.sh
+          '''
+
+          echo "Test Dashboard installation"
+          sh '''
+             timeout 180 bash -x ./workloads/jenkins/scripts/test-dashboard.sh
+          '''
+
+          echo "Test Kubeflow pipeline"
+          sh '''
+             timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
+          '''
+
+          echo "Start new virtual environment pre-Slurm checks"
+          sh '''
+            cd virtual
+            bash -x ./vagrant_shutdown.sh
+            bash -x ./vagrant_startup.sh
+          '''
+
+          echo "Set up Slurm"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/test-setup-slurm.sh
+          '''
+
+          echo "Test Slurm"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-job.sh
+          '''
+        }
+      }
+    }
+  }
+  post {
+    always {
+      sh '''
+        pwd
+        cd virtual && ./vagrant_shutdown.sh
+      '''
+    }
+  }
+}
