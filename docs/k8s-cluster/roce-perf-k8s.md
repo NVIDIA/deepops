@@ -172,7 +172,7 @@ add switch PFC, ECN configuration
    # NOTE: If SSH requires a password, add: `-k`
    # NOTE: If sudo on remote machine requires a password, add: `-K`
    # NOTE: If SSH user is different than current user, add: `-u <user>`
-   ansible-playbook -b playbooks/users.yml
+   ansible-playbook -b playbooks/generic/users.yml
    ```
 
 7. Verify the configuration
@@ -236,7 +236,7 @@ add switch PFC, ECN configuration
    Run following script to deploy SRIOV RoCE functions:
 
    ```sh
-   nvidia@mgmt01:~/deepops_0322$ ansible-playbook -l k8s-cluster playbooks/roce.yaml
+   nvidia@mgmt01:~/deepops_0322$ ansible-playbook -l k8s-cluster playbooks/k8s-cluster/roce.yaml
    ```
 
    If using a different username and SSH key-based authentication haven't set up, try to use `-u <user> -k -K` when you run the script.
