@@ -76,7 +76,7 @@ DeepOps deploys Kubernetes using Kubespray, an Ansible framework for deploying p
 The preferred version of Helm for DeepOps is specified as part the install script. To make sure you have the correct version of Helm, just re-run the install script from the root of the repository.
 
 ```sh
-scripts/install_helm.sh
+scripts/k8s/install_helm.sh
 ```
 
 ### Updating Ceph (Rook)

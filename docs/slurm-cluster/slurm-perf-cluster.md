@@ -99,7 +99,7 @@ High-Performance Multi-Node Cluster Deployment Guide
    # NOTE: If SSH requires a password, add: `-k`
    # NOTE: If sudo on remote machine requires a password, add: `-K`
    # NOTE: If SSH user is different than current user, add: `-u <user>`
-   ansible-playbook -b playbooks/users.yml
+   ansible-playbook -b playbooks/generic/users.yml
    ```
 
 5. Verify the configuration

@@ -6,7 +6,7 @@ source workloads/jenkins/scripts/jenkins-common.sh
 ansible-playbook \
 	-i virtual/config/inventory \
 	-e '{"spack_build_packages": true}' \
-	playbooks/spack-modules.sh
+	playbooks/slurm-cluster/spack-modules.yml
 
 # After install, we expect a cuda module to exist
 ssh -v \

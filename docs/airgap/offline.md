@@ -52,7 +52,7 @@ This host should have at least 200 GB of free disk space, so you can extract the
 Copy `deepops-archive.tar` to your destination host, then run:
 
 ```
-ansible-playbook -e tar_file_path="<path_to_archive>" playbooks/build-offline-mirrors.yml
+ansible-playbook -e tar_file_path="<path_to_archive>" playbooks/airgap/build-offline-mirrors.yml
 ```
 
 This playbook will extract the `tar` file, copy its contents to `/opt/deepops` on the local host, and set up several software repositories using Docker.
@@ -104,5 +104,5 @@ We do this by overriding a collection of Ansible variables and environment varia
     ```
 1. If your hosts are not already configured to use local mirrors for the CentOS Yum repositories, you will need to do so before running other playbooks. You can configure them to use the DeepOps-configured Yum mirror using the following convenience playbook:
     ```
-    $ ansible-playbook -e @config/airgap/offline_repo_vars.yml playbooks/use-offline-yum-mirrors.yml
+    $ ansible-playbook -e @config/airgap/offline_repo_vars.yml playbooks/airgap/use-offline-yum-mirrors.yml
     ```
