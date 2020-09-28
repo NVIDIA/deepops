@@ -221,6 +221,22 @@ maas_single_node_install: true
 
 maas_kvm: false
 
+
+################################################################################
+# NVIDIA Datacenter GPU Manager                                                #
+################################################################################
+# DCGM is available through package repositories for DGX, but for other host
+# types you must download from the NVIDIA Developer portal at
+# https://developer.nvidia.com/dcgm
+# To install DCGM, please download the correct package type(s) and set the
+# following variables to a path where the file exists on the Ansible control
+# machine.
+#
+# dcgm_rpm_package: "/tmp/datacenter-gpu-manager.rpm"
+# dcgm_deb_package: "/tmp/datacenter-gpu-manager.deb"
+
+install_dcgm: false
+
 ################################################################################
 # Misc.                                                                        #
 ################################################################################

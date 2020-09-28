@@ -1,0 +1,18 @@
+---
+- name: ensure package var is defined
+  fail:
+    msg: "dcgm_rpm_package must be defined with file path to package"
+  when: dcgm_rpm_package is not defined
+
+- name: copy rpm to nodes
+  copy:
+    src: "{{ dcgm_rpm_package }}"
+    dest: "{{ dcgm_rpm_dest_path }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
+- name: install package
+  yum:
+    name: "{{ dcgm_rpm_dest_path }}"
+    state: "present"

@@ -1,0 +1,14 @@
+---
+# DCGM is available through package repositories for DGX, but for other host
+# types you must download from the NVIDIA Developer portal at
+# https://developer.nvidia.com/dcgm
+# To install DCGM, please download the correct package type(s) and set the
+# following variables to a path where the file exists on the Ansible control
+# machine.
+#
+# dcgm_rpm_package: "/tmp/datacenter-gpu-manager.rpm"
+# dcgm_deb_package: "/tmp/datacenter-gpu-manager.deb"
+
+# Location where the packages will be copied on the nodes
+dcgm_rpm_dest_path: "/tmp/datacenter-gpu-manager.rpm"
+dcgm_deb_dest_path: "/tmp/datacenter-gpu-manager.deb"
