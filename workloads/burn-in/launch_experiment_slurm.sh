@@ -53,23 +53,23 @@ Required Options:
 Other Options:
     -i|--iters <Iterations>
         * Set to the number of iterations per experiment.  Default is ${niters}."
-    --cudaver=<CUDA Version>
+    --cudaver <CUDA Version>
         * Set the version of CUDA to use.  Default is ${cudaver}."
-    -p|--part=<Slurm Partition>
+    -p|--part <Slurm Partition>
         * Set the Slurm partition to use.  Default is ${partition}."
-    -a|--account=<Slurm Account>
+    -a|--account <Slurm Account>
         * Set the Slurm accoutn to use.  Default is None."
-    --usehca=<Use HCA Affinity>
+    --usehca <Use HCA Affinity>
         * Use HCA affinity. Set to 1 to enable.  Default is ${usehca}."    
-    --maxnodes=<Number_of_nodes>
+    --maxnodes <Number_of_nodes>
         * Set the maximum number of nodes to use per experiment.  This is used for testing.  Default is all of them."
-    --mpiopts=<Options>
+    --mpiopts <Options>
         * Sets string with additional OpenMPI options to pass to mpirun.  Default is none.
-    --usegres=<Val>
+    --usegres <Val>
 	* Enable/disable use of GRES options in Slurm (1/0).  Default is ${usegres}.
-    --gpuclock=MHz
+    --gpuclock MHz
         * Set specific clock to use during run.  Default is to set the clocks to maximum.
-    --memclock=MHz
+    --memclock MHz
         * Set specific clock to use during run.  Default is to set the clocks to maximum.
     -r|--random
         * Randomize which nodes get used each iteration
