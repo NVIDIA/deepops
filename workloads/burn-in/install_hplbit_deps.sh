@@ -210,7 +210,6 @@ hpcx_load
 export PATH=\${CUDA_HOME}/bin:\${PATH}
 export LD_LIBRARY_PATH=\${CUDA_HOME}/lib64:\${LD_LIBRARY_PATH}
 
-echo \" Compute Node Driver Version: \$(nvidia-smi | grep -i nvidia-smi | awk '{print $3}') 
 echo \" CUDA Toolkit Version: \$(nvcc -V)\"
 echo ""
 echo \" Loaded HPCX: \${HPCX_HOME}\"
