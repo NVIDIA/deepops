@@ -15,7 +15,7 @@ This process should run from a Linux system on the same network segment as the t
 1. Install docker.
 
    ```sh
-   ./scripts/install_docker.sh
+   ./scripts/generic/install_docker.sh
    ```
 
 2. (Optional) Start DHCP server.
@@ -33,7 +33,7 @@ This process should run from a Linux system on the same network segment as the t
 
    ```sh
    # Set eth0 and eth1 to your public and private interfaces, respectively
-   ./scripts/setup_nat.sh eth0 eth1
+   ./scripts/pxe/setup_nat.sh eth0 eth1
    ```
 
 4. Start PXE server.

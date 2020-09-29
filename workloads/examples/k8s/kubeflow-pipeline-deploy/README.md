@@ -56,9 +56,9 @@ nfs_exports:
     options: "*(rw,sync,no_root_squash)"
 ```
 
-4. Deploy an NFS server with [Ansible](../playbooks/nfs-server.yml)
+4. Deploy an NFS server with [Ansible](../playbooks/generic/nfs-server.yml)
 ```sh
-ansible-playbook playbooks/nfs-server.yml
+ansible-playbook playbooks/generic/nfs-server.yml
 ```
 
 5. Create initial directories on the NFS server

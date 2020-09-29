@@ -90,7 +90,7 @@ echo "Downloading other DeepOps dependencies"
 cd "${ROOT_DIR}" || exit 1
 ansible-playbook \
 	-e offline_cache_dir="${DEST_DIR}" \
-	playbooks/build-offline-cache.yml
+	playbooks/airgap/build-offline-cache.yml
 
 #############################################################################
 sudo chown -R "$(whoami)" "${DEST_DIR}"

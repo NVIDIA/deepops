@@ -21,7 +21,7 @@ DGXie uses docker-compose to build and run. The `src/containers/dgxie/docker-com
 ## Deploy DGXie container
 
 ```sh
-./scripts/build_and_restart_dgxie.sh
+./scripts/pxe/build_and_restart_dgxie.sh
 ```
 
 ## Testing the DGXie PXE service
@@ -42,7 +42,7 @@ Update the `config/pxe/ipmi.conf` file with the proper username and password.
 Run:
 
 ```sh
-./scripts/dgxctl.sh -i
+./scripts/pxe/dgxctl.sh -i
 ```
 
    > Note: This tool assumes all DGX systems are configured with the same username and password.
@@ -50,6 +50,6 @@ Run:
 
 ## Making updates
 
-To make configuration changes or ISO updates, update the config files or ISO followed by re-running `./scripts/build_and_restart_dgxie.sh`. This will tear down the old DGXie and start a new one with the configuration changes.
+To make configuration changes or ISO updates, update the config files or ISO followed by re-running `./scripts/pxe/build_and_restart_dgxie.sh`. This will tear down the old DGXie and start a new one with the configuration changes.
 
 Updates to the machines.json file do not require a restart.

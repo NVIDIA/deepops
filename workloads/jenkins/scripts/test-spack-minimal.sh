@@ -3,7 +3,7 @@ set -e
 source workloads/jenkins/scripts/jenkins-common.sh
 
 # Install Spack, but do not install any modules
-ansible-playbook -i virtual/config/inventory playbooks/spack-modules.sh
+ansible-playbook -i virtual/config/inventory playbooks/slurm-cluster/spack-modules.yml
 
 # After install, we expect spack to be in our PATH
 ssh -v \

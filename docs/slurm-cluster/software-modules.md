@@ -20,7 +20,7 @@ making it easier to install software without a tedious manual build process.
 To install Spack using DeepOps, you can run:
 
 ```bash
-ansible-playbook -l slurm-cluster playbooks/spack-modules.yml
+ansible-playbook -l slurm-cluster playbooks/slurm-cluster/spack-modules.yml
 ```
 
 ### Configuration
@@ -91,7 +91,7 @@ This will produce less-optimized but more generic builds.
 To install EasyBuild using DeepOps, you can run:
 
 ```bash
-ansible-playbook -l slurm-cluster playbooks/easybuild-modules.yml
+ansible-playbook -l slurm-cluster playbooks/slurm-cluster/easybuild-modules.yml
 ```
 
 ### Configuration
