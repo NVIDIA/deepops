@@ -11,4 +11,4 @@
   command: /usr/local/bin/helm repo update
 
 - name: install nvidia gpu operator
-  command: /usr/local/bin/helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --wait
+  command: /usr/local/bin/helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --set "migStrategy={{ k8s_gpu_mig_strategy }}" --wait
