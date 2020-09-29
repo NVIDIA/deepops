@@ -11,4 +11,4 @@
   command: /usr/local/bin/helm repo update
 
 - name: install nvidia k8s gpu device plugin
-  command: /usr/local/bin/helm upgrade --install "{{ k8s_gpu_plugin_release_name }}" "{{ k8s_gpu_plugin_chart_name }}" --version "{{ k8s_gpu_plugin_chart_version }}" --wait
+  command: /usr/local/bin/helm upgrade --install "{{ k8s_gpu_plugin_release_name }}" "{{ k8s_gpu_plugin_chart_name }}" --version "{{ k8s_gpu_plugin_chart_version }}" --set "migStrategy={{ k8s_gpu_mig_strategy }}" --wait
