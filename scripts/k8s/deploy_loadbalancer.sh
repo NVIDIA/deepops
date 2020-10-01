@@ -6,9 +6,9 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/.."
 
 # Allow overriding config dir to look in
-config_dir=${DEEPOPS_CONFIG_DIR:-"${ROOT_DIR}/config"}
-if [ ! -d "${config_dir}" ]; then
-	echo "Can't find configuration in ${config_dir}"
+DEEPOPS_CONFIG_DIR=${DEEPOPS_CONFIG_DIR:-"${ROOT_DIR}/config"}
+if [ ! -d "${DEEPOPS_CONFIG_DIR}" ]; then
+	echo "Can't find configuration in ${DEEPOPS_CONFIG_DIR}"
 	echo "Please set DEEPOPS_CONFIG_DIR env variable to point to config location"
 	exit 1
 fi
@@ -25,7 +25,7 @@ if ! helm repo list | grep stable >/dev/null 2>&1 ; then
 fi
 
 # We need to dynamically set up Helm args, so let's use an array
-helm_install_args=("--values" "${config_dir}/helm/metallb.yml")
+helm_install_args=("--values" "${DEEPOPS_CONFIG_DIR}/helm/metallb.yml")
 if [ "${METALLB_SPEAKER_REPO}" ]; then
 	helm_install_args+=("--set-string" "speaker.image.repository=${METALLB_SPEAKER_REPO}")
 fi

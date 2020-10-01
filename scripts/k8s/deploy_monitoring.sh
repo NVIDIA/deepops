@@ -10,12 +10,13 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../.."
 cd "${ROOT_DIR}" || exit 1
 
-# Determine DeepOps config dir
-config_dir="$(pwd)/config"
-if [ "${DEEPOPS_CONFIG_DIR}" ]; then
-    config_dir="${DEEPOPS_CONFIG_DIR}"
-elif [ -d "$(pwd)/config" ] ; then
-    config_dir="$(pwd)/config"
+# Allow overriding config dir to look in
+DEEPOPS_CONFIG_DIR=${DEEPOPS_CONFIG_DIR:-"${ROOT_DIR}/config"}
+
+if [ ! -d "${DEEPOPS_CONFIG_DIR}" ]; then
+        echo "Can't find configuration in ${DEEPOPS_CONFIG_DIR}"
+        echo "Please set DEEPOPS_CONFIG_DIR env variable to point to config location"
+        exit 1
 fi
 
 HELM_CHARTS_REPO_STABLE="${HELM_CHARTS_REPO_STABLE:-https://kubernetes-charts.storage.googleapis.com}"
@@ -123,7 +124,7 @@ function setup_prom_monitoring() {
             stable/prometheus-operator \
             --version "${HELM_PROMETHEUS_CHART_VERSION}" \
             --namespace monitoring \
-            --values ${config_dir}/helm/monitoring.yml \
+            --values ${DEEPOPS_CONFIG_DIR}/helm/monitoring.yml \
             --set alertmanager.ingress.hosts[0]="alertmanager-${ingress_ip_string}" \
             --set prometheus.ingress.hosts[0]="prometheus-${ingress_ip_string}" \
             --set grafana.ingress.hosts[0]="grafana-${ingress_ip_string}" \

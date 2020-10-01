@@ -36,3 +36,6 @@ if ! type helm >/dev/null 2>&1 ; then
     mkdir -p ${HELM_INSTALL_DIR}
     HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v3.1.2 /var/tmp/get_helm.sh # Should match: config/group_vars/k8s-cluster.yml:helm_version:
 fi
+
+# Display the helm version for better debug
+helm version

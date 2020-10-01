@@ -12,10 +12,10 @@ CHART_VERSION="1.22.1"
 app_name="${NGINX_INGRESS_APP_NAME:-nginx-ingress}"
 
 # Allow overriding config dir to look in
-config_dir=${DEEPOPS_CONFIG_DIR:-"${ROOT_DIR}/config"}
+DEEPOPS_CONFIG_DIR=${DEEPOPS_CONFIG_DIR:-"${ROOT_DIR}/config"}
 
-if [ ! -d "${config_dir}" ]; then
-	echo "Can't find configuration in ${config_dir}"
+if [ ! -d "${DEEPOPS_CONFIG_DIR}" ]; then
+	echo "Can't find configuration in ${DEEPOPS_CONFIG_DIR}"
 	echo "Please set DEEPOPS_CONFIG_DIR env variable to point to config location"
 	exit 1
 fi
@@ -27,7 +27,7 @@ fi
 
 # We need to dynamically set up Helm args, so let's use an array
 helm_arguments=("--version" "${CHART_VERSION}"
-		"--values" "${config_dir}/helm/ingress.yml"
+		"--values" "${DEEPOPS_CONFIG_DIR}/helm/ingress.yml"
 )
 
 
