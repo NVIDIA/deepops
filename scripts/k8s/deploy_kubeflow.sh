@@ -2,7 +2,7 @@
 
 # Get the DeepOps root_dir and config_dir
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-ROOT_DIR="${SCRIPT_DIR}/.."
+ROOT_DIR="${SCRIPT_DIR}/../.."
 CONFIG_DIR="${ROOT_DIR}/config"
 
 # Specify credentials for the default user.
