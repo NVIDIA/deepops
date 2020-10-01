@@ -70,8 +70,8 @@ Now that Slurm is installed, try a ["Hello World" example using MPI](../../examp
 As part of the Slurm installation, Grafana and Prometheus are both deployed.
 
 The services can be reached from the following addresses:
-* Grafana: http://mgmt:3000
-* Prometheus: http://mgmt:9090
+* Grafana: http://\<slurm-master\>:3000
+* Prometheus: http://\<slurm-master\>:9090
 
 
 ## Configuring shared filesystems
