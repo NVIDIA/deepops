@@ -26,8 +26,6 @@ EOF
 exit
 }
 
-
-
 while [ $# -gt 0 ]; do
         case "$1" in
                 -h|--help) print_usage ; exit 0 ;;
@@ -35,12 +33,10 @@ while [ $# -gt 0 ]; do
                 -m|--mofed) ofed_major="$2"; shift 2 ;;
                 -u|--ucx) buildhpcx="$2"; shift 2;;  
 		*) echo "Option <$1> Not understood" ; exit 1 ;;
-
         esac
 done
 
-#Next steps after CUDA build option selected and MOFED Specified
-
+# Next steps after CUDA build option selected and MOFED Specified
 
 if [ x${buildcuda} == x"0" ]; then
         echo "CUDA will NOT be installed"
@@ -49,7 +45,6 @@ else
 fi
 
 BUILD_CUDA=${buildcuda:-1}
-#echo BUILD_CUDA=$BUILD_CUDA"
 export BUILD_CUDA
 
 if [ x${buildhpcx} == x"0" ]; then
@@ -60,14 +55,6 @@ fi
 
 BUILD_HPCX=${buildhpcx:-1}
 export BUILD_HPCX
-#echo "BUILD_HPCX=$BUILD_HPCX"
-
-
-#If both options for HPC-X and CUDA say do not install, then exit
-#if [ ${BUILD_CUDA} && ${BUILD_HPCX} == 0 ]; then
-#	echo "Terminating script, no installations specified."
-# 	exit	
-#fi
 
 ofed_major=${ofed_major:-5.0}
 echo "HPC-X for Mellanox OFED $ofed_major will be downloaded from"
@@ -100,7 +87,6 @@ mkdir -p ${CUDA_HOME}
 
 #HPCX Install Variables
 
-#HPCX_URL="http://www.mellanox.com/downloads/hpc/hpc-x/v2.7/hpcx-v2.7.0-gcc-MLNX_OFED_LINUX-5.0-1.0.0.0-ubuntu18.04-x86_64.tbz"
 HPCX_VERSION=$(echo $HPCX_URL | grep -o '[^/]*$' | cut -f5-6 -d-)
 #echo $HPCX_VERSION
 HPCX_FN=$(basename ${HPCX_URL})
@@ -124,7 +110,7 @@ if [ $BUILD_CUDA == 1 ]; then
 		    echo "ERROR: Unable to remove ${CLOG} before installation of CUDA."
 		    echo "ERROR: Existence of this file without write permission will"
 
-echo "ERROR: cause the instalation of CUDA to trigger a segementation"
+                    echo "ERROR: cause the instalation of CUDA to trigger a segementation"
 		    echo "ERROR: fault.  Please have the file removed, and try the"
 		    echo "ERROR: Installation again."
 		    echo ""
@@ -134,16 +120,15 @@ echo "ERROR: cause the instalation of CUDA to trigger a segementation"
 	    echo ""
     fi
 
-#Change to build directory where the CUDA run file is downloaded.  Remove the file if it is already present. Then run the installer to install the toolkit only. 
-    cd ${BUILDDIR}
-    CUDAPATH=http://developer.download.nvidia.com/compute/cuda/11.0.2/local_installers/cuda_11.0.2_450.51.05_linux.run
-    CUDAFN=$(basename ${CUDAPATH})
-    rm -f ${CUDAFN}
-    wget http://developer.download.nvidia.com/compute/cuda/11.0.2/local_installers/${CUDAFN}
+   cd ${BUILDDIR}
+   CUDAPATH=http://developer.download.nvidia.com/compute/cuda/11.0.2/local_installers/cuda_11.0.2_450.51.05_linux.run
+   CUDAFN=$(basename ${CUDAPATH})
+   rm -f ${CUDAFN}
+   wget http://developer.download.nvidia.com/compute/cuda/11.0.2/local_installers/${CUDAFN}
 
-    sh ${CUDAFN} --installpath=${CUDA_HOME} --silent --toolkit
+   sh ${CUDAFN} --installpath=${CUDA_HOME} --silent --toolkit
 
-    if [ $? -ne 0 ]; then
+   if [ $? -ne 0 ]; then
 	echo "ERROR: Install of CUDA failed.  Exiting"
    fi
    echo ""
@@ -153,36 +138,9 @@ fi
 
 #Build HPC-X and install UCX and OpenMPI
 if [ $BUILD_HPCX == 1 ]; then
-	# First some sanity checking to make sure that the right version
-	echo ""
-	echo "INFO: Installing HPCX for MLNX OFED ${HPCX_VERSION}"
-
-#On Login nodes where there is no mellanox adapter, this check will fail.  Perhaps do an srun to use a compute node on the test cluster and check its OFED, since it will be the same as all the nodes in the POD
-#	if [ x"$(which ofed_info)" == x"" ]; then
-#		echo ""
-#		echo "Error, unable to find ofed_info.  IB or RoCE is not enabld on this system.  Exiting"
-#		exit
-#	fi
-
-#	ofed_version=$(ofed_info -n)
-# Test value of above command from return value given by Selene node
-#	ofed_version=5.0-2.1.8
-#	ofed_version_major=$(echo $ofed_version | awk '{print $NF}' | cut -f1 -d-)
-#	echo $ofed_version_major
-
-#	hpcx_version=$(echo $HPCX_URL | grep -o '[^/]*$' | cut -f5-6 -d-)
-#	hpcx_version_major=$(echo $hpcx_version | grep -o '[^/]*$' | cut -f1 -d-)
-#	echo $hpcx_version
-
-#	if [ ${ofed_version_major} != ${hpcx_version_major} ]; then
-#		echo "Error, the local ofed version ($ofed_version} is not correct for the request HPCX version {$hpcx_version_major}."
-		#echo "The build script needs to be updated to match the local MOFED version."
-#		echo "Please use the correct --mofed argument to match the local MOFED version."
-#		echo "${0} --mofed $ofed_version_major or"
-#		echo "${0} -m $ofed_version_major"
-#		exit
-#	fi
-	
+  # First some sanity checking to make sure that the right version
+  echo ""
+  echo "INFO: Installing HPCX for MLNX OFED ${HPCX_VERSION}"
 	if [ -f $BUILDDIR/$HPCX_FN ]; then
 		rm $BUILDDIR/$HPCX_FN
 	fi
@@ -220,20 +178,4 @@ echo \"OMPI Version: \$(ompi_info --version)\"
 " > setenv.sh
 
 echo "Created setenv.sh to setup your environment.  Execute 'source setenv.sh' to enable."
-
-
-#############
-#Compute Node Driver Check
-#NV_DRIVER_MIN_VER=450
-#NV_DRIVER_DETECTED_VERSION=$(srun -N1 -n1 -G1 nvidia-smi | grep -i nvidia-smi | awk '{print $3}')
-#NV_DRIVER_DETECTED_MAJ=$(echo $NV_DRIVER_DETECTED_VERSION | awk '{print $NF}' | cut -f1 -d.) 
-#echo $NV_DRIVER_DETECTED_VERSION 
-#echo $NV_DRIVER_DETECTED_MAJ
-
-#if [ "$NV_DRIVER_DETECTED_MAJ" <  ${NV_DRIVER_MIN_VER} ] ; then
-#echo " ";
-#echo " Driver branch ${NV_DRIVER_DETECTED_MAJ} installed on the compute nodes is insufficient for the CUDA 11.0 Toolkit. / It must be ${NV_DRIVER_MIN_VER} or greater "
-#else
-#echo "The compute node driver branch ${NV_DRIVER_DETECTED_MAJ} is sufficient for the CUDA 11.0 Toolkit"
-#fi
 

@@ -124,7 +124,6 @@ nvidia-smi topo -m | tr '\t' ' ' > ${nvtopofn}
 hditems=($(cat ${nvtopofn} | head -1 | sed 's/\x1b\[[0-9;]*m//g'))
 
 ## Find affinity between all gpus and network devices
-#for gpuid in $(seq 0 $(( ${num_gpus} - 1 )) ); do
 for gpuid in $local_rank; do
 	gpudev="GPU${gpuid}"
 	#Verify the GPUs are numbered consistently
@@ -189,9 +188,6 @@ for gpuid in $local_rank; do
 	        		fi
         		done
         		if [ ${#pixlist[@]} -eq 0 ]; then
-				#if [ $local_rank == $gpuid ]; then
-   				#    echo "WARNING(${gpuid},${local_rank}): No HCA next to GPU. Looking for other HCA on PCIe root complex."
-				#fi
         			if [ ${#pxblist[@]} -eq 0 ]; then
         				echo "WARNING: No HCA near GPU on same root complex, disabling HCA Affinity."
 					ib_mode="off"
