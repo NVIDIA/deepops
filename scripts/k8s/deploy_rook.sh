@@ -5,10 +5,25 @@
 # `helm search rook` # get latest version number
 # `helm upgrade --namespace rook-ceph rook-ceph rook-release/rook-ceph --version v0.9.0-174.g3b14e51`
 
+# Get absolute path for script and root
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/../.."
+CHART_VERSION="1.22.1"
+
 HELM_ROOK_CHART_REPO="${HELM_ROOK_CHART_REPO:-https://charts.rook.io/release}"
 HELM_ROOK_CHART_VERSION="${HELM_ROOK_CHART_VERSION:-v1.1.1}"
 
-./scripts/install_helm.sh
+# Allow overriding config dir to look in
+DEEPOPS_CONFIG_DIR=${DEEPOPS_CONFIG_DIR:-"${ROOT_DIR}/config"}
+
+if [ ! -d "${DEEPOPS_CONFIG_DIR}" ]; then
+    echo "Can't find configuration in ${DEEPOPS_CONFIG_DIR}"
+    echo "Please set DEEPOPS_CONFIG_DIR env variable to point to config location"
+    exit 1
+fi
+
+# Install Helm if it is not already installed
+${SCRIPT_DIR}/install_helm.sh
 
 if ! kubectl get ns rook-ceph >/dev/null 2>&1 ; then
     kubectl create ns rook-ceph
