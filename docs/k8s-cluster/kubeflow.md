@@ -41,7 +41,7 @@ Kubeflow configuration files will be saved to `./config/kubeflow-install`.
 The kfctl binary will be saved to `./config/kfctl`. For easier management this file can be copied to `/usr/local/bin` or added to the `PATH`.
 
 The services can be reached from the following address:
-* Kubeflow: http://mgmt:31380
+* Kubeflow: http://\<kube-master\>:31380
 
 ## Login information
 
