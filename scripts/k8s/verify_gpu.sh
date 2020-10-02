@@ -10,7 +10,7 @@ export CLUSTER_VERIFY_EXPECTED_PODS=${CLUSTER_VERIFY_EXPECTED_PODS:-}
 export CLUSTER_VERIFY_JOB=tests/cluster-gpu-test-job.yml
 # Ensure we start in the correct working directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-ROOT_DIR="${SCRIPT_DIR}/.."
+ROOT_DIR="${SCRIPT_DIR}/../.."
 cd "${ROOT_DIR}" || exit 1
 TESTS_DIR=$ROOT_DIR/tests
 

@@ -6,7 +6,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../.."
 CHART_VERSION="1.22.1"
 
-./scripts/k8s/install_helm.sh
+${SCRIPT_DIR}/install_helm.sh
 
 # Allow overriding the app name with an env var
 app_name="${NGINX_INGRESS_APP_NAME:-nginx-ingress}"
