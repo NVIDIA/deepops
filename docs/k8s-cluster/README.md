@@ -162,6 +162,10 @@ The services can be reached from the following addresses:
 * Prometheus: http://mgmt:30500
 * Alertmanager: http://mgmt:30400
 
+We deploy our monitoring services using the [prometheus-operator](https://github.com/prometheus-operator/prometheus-operator) project.
+For documentation on configuring and managing the monitoring services, please see the [prometheus-operator user guides](https://github.com/prometheus-operator/prometheus-operator/tree/master/Documentation/user-guides).
+The source for our built-in Grafana dashboards can be found in [src/dashboards](../../src/dashboards).
+
 ### Logging
 
 Follow the [Logging Guide](logging.md) to setup logging in the cluster.
