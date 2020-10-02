@@ -6,7 +6,7 @@ This repository contains scripts and configuration files to use the GPU optimize
 
 If the expected performance is seen, the user can be confident that the nodes are working correctly.  If a Top500 submittal is desired, there are additional optimizations than can done to maximize performance.  Please work with an NVIDIA Solutions Architect (SA) to review the Burn In Test results so that additional perfomance may be obtained.
 
-Currently, only clusters built with DGX-1V-16GB, DGX-1V-32GB, and DGX2 are supported.  If you have an OEM GPU-based system, contact your NVIDIA SA for additional assistance.
+Currently, only clusters built with DGX-1V-16GB, DGX-1V-32GB, DGX-2, and DGXA100 are supported.  If you have an OEM GPU-based system, contact your NVIDIA SA for additional assistance.
 
 ## Requirements
 
@@ -14,7 +14,14 @@ Currently, only clusters built with DGX-1V-16GB, DGX-1V-32GB, and DGX2 are suppo
 
 ## Getting started
 
-First copy the hpl-burnin test directory to the shared home directory of the slurm cluster login node. Then place the hpl binary in the hpl-burnin directory and run launch_experiment_slurm.sh from it without any options.
+Copy the DeepOps repo to the user's home directory of the slurm cluster to be tested. It is assumed that this directory is on a shared filed system. Place the hpl binary in the burn-in directory (`deepops/workloads/burn-in`) and run launch_experiment_slurm.sh.
+
+```sh
+git clone https://github.com/NVIDIA/deepops.git
+cd deepops/workloads/burn-in/
+
+```
+> Note: All test scripts along with the HPL binary will be in this directory. It is referenced in code as `HPL_SCRIPTS_DIR`. The shared directory is referenced as `HPL_DIR`. These can both be changed by running `export HPL_DIR=<new_dir>; export HPL_SCRIPTS_DIR=<new_dir>`.
 
 ```
 ./launch_experiment_slurm.sh --sys <SYSTEM> --count <NODES_PER_JOBS> 
@@ -65,13 +72,18 @@ At the end of each job, a result will be reported that says if the individual jo
 
 Experiments are verified when all jobs are complete.  See the file verify_results.txt in the experiment directory.
 
-## How to use these scripts to burnin the cluster
- * Run an experiement with 1 node to identify any slow nodes.  If any slow nodes are found, fix them.
+## How to use these scripts to burn-in the cluster
+ * Run an experiment where each node generates a result to identify any slow nodes.  If any slow nodes are found, fix them.
 
 ```
-./launch_slurm_experiment.py -c 1 -s dgx1v_16G
+./launch_slurm_experiment.py -c 1 -s dgx1v_16G --maxnodes <number of nodes to run single node burn-in>
 ```
+* Run multi-node jobs starting with two nodes, and increase them (four, eight, etc) until the size of the job to the next power of two would be greater than half the system.  At each node count, all runs should be completed successfully with similar performance.
+*Run two jobs at N/2 in size (N is the total number of nodes). 
+*Run a job with all nodes.
 
-## How to create a HPL.dat file for a generic configuration.
 
-Script to be provided.
+```
+./launch_experiment_slurm.sh -c <number of nodes> -s <system type>
+
+```

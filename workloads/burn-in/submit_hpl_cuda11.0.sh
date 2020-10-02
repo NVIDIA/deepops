@@ -1,7 +1,17 @@
 #!/bin/bash
 #location of HPL
 
-export HPL_DIR=$(pwd)
+
+### HERE we cannot do the trick of pulling the dirname off the script
+### Because the batch systems may copy the script to a local location before
+### Execution. So this means the path would be to a directory somewhere possibly
+### in /tmp, not the real script directory.  The HPL_DIR should be set since
+### it was determined in the launch script.
+
+export HPL_DIR=${HPL_DIR:-$(pwd)} # Shared location where all HPL files are stored
+
+export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}} # Shared location where these scripts are stored
+export HPL_FILE_DIR=${HPL_FILE_DIR:-${HPL_DIR}/hplfiles} # Shared location where .dat files are stored
 
 export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
@@ -14,7 +24,6 @@ echo "NUMACTL:"
 numactl --show
 
 #### Setup and Check Run Environment
-
 if [ x"$(which mpirun)" == x"" ]; then
 	echo "Unable to find mpirun.  Exiting"
 	exit
@@ -47,7 +56,6 @@ if [ x"${HPLDAT}" != x"" ]; then
 	echo "Using predefined HPL.dat file: ${HPLDAT}"
 	HPLFN=${HPLDAT}
 else
-	HPLFNDIR=$HPL_DIR/hplfiles
 	if [ ${GPUS_PER_NODE} == 8 ]; then
 		case ${NNODES} in
 			1) PxQ=4x2 ;;
@@ -58,6 +66,7 @@ else
 			16) PxQ=16x8 ;;
 			20) PxQ=20x8 ;;
 			32) PxQ=16x16 ;;
+			64) PxQ=32x16 ;;
 	                *) echo "ERROR: There is no defined mapping for ${NNODES} nodes for system ${SYSTEM}.  Exiting" 
 		esac
 	elif [ ${GPUS_PER_NODE} == 16 ]; then
@@ -69,7 +78,7 @@ else
 		esac
 	fi
 
-	HPLFN=${HPLFNDIR}/HPL.dat_${PxQ}_${SYSTEM}
+	HPLFN=${HPL_FILE_DIR}/HPL.dat_${PxQ}_${SYSTEM}
 fi
  
 if [ ! -f $HPLFN ]; then
@@ -103,33 +112,32 @@ if [ ! -d ${EXPDIR} ]; then
     fi
 fi
 
-RESULT_FILE=${EXPDIR}/${EXPNAME}.out
 
-echo "" | tee $RESULT_FILE
-echo "EXPDIR: ${EXPDIR}" | tee -a $RESULT_FILE
-echo "EXPERIMENT NAME: ${EXPNAME}" | tee -a $RESULT_FILE
-echo "HPL File: ${HPLFN}" | tee -a $RESULT_FILE
-echo "RESULT FILE: ${RESULT_FILE}" | tee -a $RESULT_FILE
+echo "" 
+echo "EXPDIR: ${EXPDIR}"
+echo "EXPERIMENT NAME: ${EXPNAME}" 
+echo "HPL File: ${HPLFN}"
 
-echo "" | tee -a $RESULT_FILE
-echo "=============================" | tee -a $RESULT_FILE
-echo "HPL.dat File" | tee -a $RESULT_FILE
-echo "=============================" | tee -a $RESULT_FILE
-cat ${HPLFN} | tee -a $RESULT_FILE
-echo "=============================" | tee -a $RESULT_FILE
-echo "=============================" | tee -a $RESULT_FILE
-echo "" | tee -a $RESULT_FILE
+echo "" 
+echo "=============================" 
+echo "HPL.dat File" 
+echo "=============================" 
+cat ${HPLFN} 
+echo "=============================" 
+echo "=============================" 
+echo "" 
 
 ### Create working directory in which to work
 WORKDIR=${HPL_DIR}/tmp/tmp.${JOBID}
 mkdir -p ${WORKDIR} 
 if [ $? -ne 0 ]; then
 	echo "ERROR: Unable to create working directory $WORKDIR.  Exiting"
-	exit
+	exit 1
 fi
 
 ## Create working runtime environment
 cp $HPLFN $WORKDIR/HPL.dat
+cp bind.sh $WORKDIR/
 cd $WORKDIR 
 
 #### Confirm mpirun is installed correctly
@@ -141,20 +149,23 @@ fi
 #### Set Node information
 gpuclock=${NV_GPUCLOCK:-"1312"}
 memclock=${NV_MEMCLOCK:-"877"}
-NVCLOCKS=${memclock},${gpuclock}
+
+LOCAL_MPIOPTS="--mca btl_openib_warn_default_gid_prefix 0"
 
 # Echo write nodelist
-echo "HOSTLIST: $(scontrol show hostname $SLURM_NODELIST | paste -s -d,)" | tee -a $RESULT_FILE
-echo "" | tee -a $RESULT_FILE
+echo "HOSTLIST: $(scontrol show hostname $SLURM_NODELIST | paste -s -d,)" 
+echo "" 
 
-echo "Setting clocks" | tee -a $RESULT_FILE
-LOCAL_MPIOPTS="--mca btl_openib_warn_default_gid_prefix 0"
-mpirun -np $NNODES -npernode 1 ${LOCAL_MPIOPTS}  ${mpiopts} nvidia-smi -ac ${NVCLOCKS} | tee -a $RESULT_FILE
-echo "" | tee -a $RESULT_FILE
+echo "Setting Clocks" 
+mpirun -np $NNODES -npernode 1 ${LOCAL_MPIOPTS}  ${mpiopts} nvidia-smi -ac ${memclock},${gpuclock} 
+echo "" 
 
 ## Run HPL
-mpirun -np $NPROCS -bind-to none -x LD_LIBRARY_PATH ${LOCAL_MPIOPTS} ${mpiopts} ${HPL_DIR}/run_hpl_cuda10.1.sh 2>&1 | tee -a $RESULT_FILE
+export OMPI_MCA_btl_openib_allow_ib=1
+
+mpirun -np $NPROCS -bind-to none -x LD_LIBRARY_PATH ${LOCAL_MPIOPTS} ${mpiopts} ${HPL_SCRIPTS_DIR}/run_hpl_cuda11.0.sh 2>&1 
 
 ## Cleanup Run
 cd ${HPL_DIR}
+
 
