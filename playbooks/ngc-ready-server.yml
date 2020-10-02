@@ -8,6 +8,9 @@
 - include: nvidia-software/nvidia-driver.yml
 - include: container/nvidia-docker.yml
 
+- include: nvidia-software/nvidia-dcgm.yml
+  when: install_dcgm|default(false)
+
 - hosts: all
   become: true
   vars:
