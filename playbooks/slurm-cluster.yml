@@ -42,7 +42,7 @@
 
 # Install DCGM
 - include: nvidia-software/nvidia-dcgm.yml hostlist=slurm-node
-  when: slurm_install_dcgm|default(false)
+  when: install_dcgm|default(false)
 
 # Install Node Health Check
 - include: slurm-cluster/nhc.yml hostlist=slurm-node

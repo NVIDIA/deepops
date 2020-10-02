@@ -14,4 +14,4 @@ Once DCGM has been downloaded, you can install it using DeepOps via the [nvidia-
 
 1. Download the DCGM package and place it on your Ansible control node.
 1. In your DeepOps configuration, set either the `dcgm_deb_package` or `dcgm_rpm_package` variable to the file path of the DCGM package.
-1. Either run the `playbooks/nvidia-software/nvidia-dcgm.yml` playbook directly, or run the `slurm-cluster.yml` playbook with `slurm_install_dcgm: true`.
+1. Either run the `playbooks/nvidia-software/nvidia-dcgm.yml` playbook directly, or run the `slurm-cluster.yml` playbook with `install_dcgm: true`.
