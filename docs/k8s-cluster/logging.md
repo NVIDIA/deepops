@@ -46,7 +46,7 @@ Launch Filebeat, which will create an Elasticsearch index automatically:
 helm install --name log --namespace logging --values config/helm/filebeat.yml stable/filebeat
 ```
 
-Kibana can now be reached at http://mgmt:30700
+Kibana can now be reached at http://\<kube-master\>:30700
 
 ## Deleting the logging stack
 

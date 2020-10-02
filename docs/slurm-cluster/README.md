@@ -39,7 +39,7 @@ Instructions for deploying a GPU cluster with Slurm
    # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
    ```
 
-4. Verify the configuration
+4. Verify the configuration.
 
    ```sh
    ansible all -m raw -a "hostname"
@@ -54,9 +54,24 @@ Instructions for deploying a GPU cluster with Slurm
    ansible-playbook -l slurm-cluster playbooks/slurm-cluster.yml
    ```
 
+6. Verify Pyxis and Enroot can run GPU jobs across all nodes.
+
+  ```sh
+  # NOTE: This will use Pyxis to download a container and verify GPU functionality across all compute nodes 
+  ansible-playbook -l slurm-cluster playbooks/slurm-validation.yml -e '{num_gpus: 1}'
+  ```
 ## Using Slurm
 
 Now that Slurm is installed, try a ["Hello World" example using MPI](../../examples/slurm/mpi-hello/README.md).
+
+
+## Monitoring Slurm
+
+As part of the Slurm installation, Grafana and Prometheus are both deployed.
+
+The services can be reached from the following addresses:
+* Grafana: http://\<slurm-master\>:3000
+* Prometheus: http://\<slurm-master\>:9090
 
 
 ## Configuring shared filesystems
@@ -68,3 +83,11 @@ For information about configuring a shared NFS filesystem on your Slurm cluster,
 
 You may optionally choose to install a tool for managing additional packages on your Slurm cluster.
 See the documentation on [software modules](./software-modules.md) for information on how to set this up.
+
+
+## Installing Open on Demand
+[Open OnDemand](https://openondemand.org/) can be installed by setting the `install_open_ondemand` variable to yes before running the `slurm-cluster.yml` playbook.
+
+
+## Pyxis, Enroot, and Singularity
+[Pyxis](https://github.com/NVIDIA/pyxis) and [Enroot](https://github.com/NVIDIA/enroot) are installed by default and can be disabled by setting `slurm_install_enroot` and `slurm_install_pyxis` to no. Singularity can be installed by setting the `slurm_cluster_install_singularity` variable to yes before running the `slurm-cluster.yml` playbook.
