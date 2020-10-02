@@ -20,6 +20,9 @@ kubelet_flexvolumes_plugins_dir: /usr/libexec/kubernetes/kubelet-plugins/volume/
 # Docker configuration.
 deepops_gpu_operator_enabled: false
 
+# Set the MIG labeling and use strategy to none, single, or mixed. See https://github.com/NVIDIA/k8s-device-plugin
+k8s_gpu_mig_strategy: "mixed"
+
 # When set to true, enables the PodSecurityPolicy admission controller and
 # defines two policies: privileged (applying to all resources in kube-system
 # namespace and kubelet) and restricted (applying all other namespaces).

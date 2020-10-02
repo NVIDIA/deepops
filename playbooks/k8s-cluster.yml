@@ -128,6 +128,12 @@
     - nvidia
   when: deepops_gpu_operator_enabled | default('false') | bool == false
 
+# Install k8s GPU feature discovery
+- include: k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml
+  tags:
+    - nvidia
+  when: deepops_gpu_operator_enabled | default('false') | bool == false
+
 # Install NVIDIA GPU Operator
 - include: k8s-cluster/nvidia-gpu-operator.yml
   tags:
