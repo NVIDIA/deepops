@@ -24,7 +24,7 @@ There are some caveats depending on the state of your cluster and a node reboot 
 
 ## Installing MIG in Kubernetes
 
-By default, MIG support for Kubernetes is enabled in DeepOps. The default MIG strategy used is set to `mixed`. This can be controlled by the `k8s_gpu_mig_strategy`variable in `config/group_vars/k8s-cluster.yml`. For more information about strategies see the GPU Device Plugin [README](https://github.com/NVIDIA/k8s-device-plugin#deployment-via-helm). 
+By default, MIG support for Kubernetes is enabled in DeepOps. The default MIG strategy used is set to `mixed`. This can be controlled by the `k8s_gpu_mig_strategy`variable in `config/group_vars/k8s-cluster.yml. The "mixed" strategy is recommended for new deployments. For more information about strategies see the GPU Device Plugin [README](https://github.com/NVIDIA/k8s-device-plugin#deployment-via-helm).
 
 If DeepOps is being used to manage a Kubernetes cluster that was deployed using another method, MIG can be enabled by running:
 
@@ -35,7 +35,7 @@ ansible-playbook playbooks/k8s-cluster/nvidia-k8s-gpu-device-plugin.yml playbook
 
 ## Configuring MIG
 
-MIG devices must be configured after enabling MIG and after every node reboot. When in production, it is recommended to do a rolling upgrade node-by-node following the below steps on each GPU node.
+MIG devices must be configured after enabling MIG and after **every** node reboot. When in production, it is recommended to do a rolling upgrade node-by-node following the below steps on each GPU node.
 
 Configuration and reconfiguration require that you:
 
@@ -52,7 +52,7 @@ kubectl taint node gpu01 mig=maintenance:NoExecute # Optionally, Deep Learning j
 
 <Manual configuration steps>
 
-kubectl exec <GPU Device Plugin Pod on gpu01> -- kill -SIGHUP 1
+kubectl exec <GPU Device Plugin Pod on gpu01> -- kill -SIGTERM 1
 sleep 60 # 60 seconds is the default polling period of GPU Feature Discovery
 kubectl taint node gpu01 mig=maintenance:NoSchedule-
 kubectl taint node gpu01 mig=maintenance:NoExecute-
@@ -63,7 +63,7 @@ For information on configuring MIG see the [official documentation](https://docs
 
 ## Using MIG in Kubernetes
 
-See the official guide on [supporting Multi-Instance GPUs in Kubernetes](https://docs.google.com/document/u/1/d/1mdgMQ8g7WmaI_XVVRrCvHPFPOMCm5LQD5JefgAh6N8g) for full details.
+See "Requesting MIG devices with each Strategy" in [the K8S MIG guide](https://docs.google.com/document/u/1/d/1mdgMQ8g7WmaI_XVVRrCvHPFPOMCm5LQD5JefgAh6N8g) for full details.
 
 Example YAML:
 
