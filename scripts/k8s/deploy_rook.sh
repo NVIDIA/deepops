@@ -35,7 +35,8 @@ function help_me() {
 function poll_ceph() {
   echo "Beginning to poll for Ceph and Rook setup completion."
   echo "This may throw several errors and take up to 10 minutes. This behavior is expected."
-  echo "The script will polling when Ceph setup is completed and in a healthy state".
+  echo "The script will stop polling when Ceph setup is completed and the cluster is in a healthy state".
+  echo ""; echo ""; echo ""
 
   while true; do
     rook_tools_pod=$(kubectl -n rook-ceph get pod -l app=rook-ceph-tools -o name | cut -d \/ -f2 | sed -e 's/\\r$//g')
