@@ -9,4 +9,7 @@ cd "${ROOT_DIR}" || exit 1
 timeout 300 ./scripts/k8s/deploy_rook.sh
 
 # Poll for completion, fail if it takes longer than 30 minutes
-timeout 1800 ./scripts/k8s/poll_ceph.sh
+timeout 1800 ./scripts/k8s/deploy_rook.sh -w
+
+# Print Rook-Ceph information
+timeout 60 ./scripts/k8s/deploy_rook.sh -p

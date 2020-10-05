@@ -111,7 +111,7 @@ Deploy a Ceph cluster running on Kubernetes for services that require persistent
 Poll the Ceph status by running (this script will return when Ceph initialization is complete):
 
 ```sh
-./scripts/k8s/poll_ceph.sh
+./scripts/k8s/deploy_rook.sh -w
 ```
 
 #### NetApp Trident
@@ -158,16 +158,20 @@ Deploy Prometheus and Grafana to monitor Kubernetes and cluster nodes:
 ```
 
 The services can be reached from the following addresses:
-* Grafana: http://mgmt:30200
-* Prometheus: http://mgmt:30500
-* Alertmanager: http://mgmt:30400
+* Grafana: http://\<kube-master\>:30200
+* Prometheus: http://\<kube-master\>:30500
+* Alertmanager: http://\<kube-master\>:30400
+
+We deploy our monitoring services using the [prometheus-operator](https://github.com/prometheus-operator/prometheus-operator) project.
+For documentation on configuring and managing the monitoring services, please see the [prometheus-operator user guides](https://github.com/prometheus-operator/prometheus-operator/tree/master/Documentation/user-guides).
+The source for our built-in Grafana dashboards can be found in [src/dashboards](../../src/dashboards).
 
 ### Logging
 
 Follow the [Logging Guide](logging.md) to setup logging in the cluster.
 
 The service can be reached from the following address:
-* Kibana: http://mgmt:30700
+* Kibana: http://\<kube-master\>:30700
 
 ### Container Registry
 

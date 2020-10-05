@@ -6,7 +6,7 @@ scp  \
 	-o "StrictHostKeyChecking no" \
 	-o "UserKnownHostsFile /dev/null" \
 	-i "${HOME}/.ssh/id_rsa" \
-	examples/slurm/mpi-hello/mpi-hello.c \
+	workloads/examples/slurm/mpi-hello/mpi-hello.c \
 	"vagrant@10.0.0.5${GPU01}:mpi-hello.c"
 
 # Compile the program
