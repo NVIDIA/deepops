@@ -361,7 +361,7 @@ Deploy a Ceph cluster running on Kubernetes for services that require persistent
 Poll the Ceph status by running:
 
 ```sh
-./scripts/k8s/poll_ceph.sh
+./scripts/k8s/deploy_rook.sh -w
 ```
 
 #### Monitoring
