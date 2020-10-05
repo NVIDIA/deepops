@@ -51,7 +51,7 @@
 - name: Install DHCP CNI
   k8s:
     state: present
-    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/Mellanox/dhcp-cni/master/dhcp-cni-ds.yaml', split_lines=False) }}"
+    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/Mellanox/dhcp-cni/master/k8s-1.16/dhcp-cni-ds.yaml', split_lines=False) }}"
   run_once: true
   tags:
     - roce_k8s
@@ -84,7 +84,7 @@
 - name: Install Kubeflow MPI-Operator version v1alpha2
   k8s:
     state: present
-    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/kubeflow/mpi-operator/master/deploy/mpi-operator.yaml', split_lines=False) }}"
+    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/kubeflow/mpi-operator/master/deploy/v1/mpi-operator.yaml', split_lines=False) }}"
   run_once: true
   tags:
     - roce_k8s
