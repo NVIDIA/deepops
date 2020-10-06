@@ -45,8 +45,8 @@ function poll_ceph() {
 
   while true; do
     rook_tools_pod=$(kubectl -n rook-ceph get pod -l app=rook-ceph-tools -o name | cut -d \/ -f2 | sed -e 's/\\r$//g')
-    kubectl -n rook-ceph exec -ti $rook_tools_pod ceph status # Run once to print output
-    kubectl -n rook-ceph exec -ti $rook_tools_pod ceph status | grep "mds: cephfs" | grep "up:active" | grep "standby-replay" # Run again to check for completion
+    kubectl -n rook-ceph exec -ti $rook_tools_pod -- ceph status # Run once to print output
+    kubectl -n rook-ceph exec -ti $rook_tools_pod -- ceph status | grep "mds: cephfs" | grep "up:active" | grep "standby-replay" # Run again to check for completion
     if [ "${?}" == "0" ]; then
       echo "Ceph has completed setup."
       break
@@ -84,20 +84,20 @@ function print_rook() {
   echo "Ceph deployed, it may take up to 10 minutes for storage to be ready"
   echo "If install takes more than 30 minutes be sure you have cleaned up any previous Rook installs by running this script with the delete flag (-d) and have installed the required libraries using the bootstrap-rook.yml playbook"
   echo "Monitor readiness with:"
-  echo "kubectl -n rook-ceph exec -ti ${rook_toolspod} ceph status | grep up:active"
+  echo "kubectl -n rook-ceph exec -ti ${rook_toolspod} -- ceph status | grep up:active"
   echo
 
   echo "Ceph dashboard: ${rook_ceph_dashboard}"
   echo
-  echo "Create dashboard user with: kubectl -n rook-ceph exec -ti ${rook_toolspod} ceph dashboard set-login-credentials <username> <password>"
+  echo "Create dashboard user with: kubectl -n rook-ceph exec -ti ${rook_toolspod} -- ceph dashboard set-login-credentials <username> <password>"
   echo
 }
 
 
 function create_ceph_user() {
   # Get Rook Ceph Tools POD name
-  export rook_tools_pod=$(kubectl -n rook-ceph get pod -l app=rook-ceph-tools --no-headers -o custom-columns=:.metadata.name)
-  kubectl -n rook-ceph exec -ti ${rook_toolspod} ceph dashboard set-login-credentials ${DEEPOPS_ROOK_USER} ${DEEPOPS_ROOK_PASS}
+  export rook_toolspod=$(kubectl -n rook-ceph get pod -l app=rook-ceph-tools --no-headers -o custom-columns=:.metadata.name)
+  kubectl -n rook-ceph exec -ti ${rook_toolspod} -- ceph dashboard set-login-credentials ${DEEPOPS_ROOK_USER} ${DEEPOPS_ROOK_PASS}
 }
 
 
@@ -127,6 +127,7 @@ function get_opts() {
     esac
   done
 }
+
 
 function install_rook() {
   # Install Helm if it is not already installed
