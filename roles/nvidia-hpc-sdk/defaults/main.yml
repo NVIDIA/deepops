@@ -1,19 +1,27 @@
 ---
-hpcsdk_version: "2020_207"
+# Version numbers
+hpcsdk_major_version: "20"
+hpcsdk_minor_version: "9"
+hpcsdk_file_cuda: "11.0"
+hpcsdk_default_cuda: "11.0"
 hpcsdk_arch: "x86_64"
-hpcsdk_cuda: "11.0"
-hpcsdk_download_name: "nvhpc_{{ hpcsdk_version }}_Linux_{{ hpcsdk_arch }}_cuda_{{ hpcsdk_cuda }}"
-hpcsdk_download_url: "https://developer.download.nvidia.com/hpc-sdk/{{ hpcsdk_download_name }}.tar.gz"
 
+# Install in the user PATH and/or install module files
+hpcsdk_install_as_modules: false
+hpcsdk_install_in_path: true
+
+# Construct the download URL
+hpcsdk_file_version: "20{{ hpcsdk_major_version }}_{{ hpcsdk_major_version }}{{hpcsdk_minor_version }}"
+hpcsdk_download_name: "nvhpc_{{ hpcsdk_file_version }}_Linux_{{ hpcsdk_arch }}_cuda_{{ hpcsdk_file_cuda }}"
+hpcsdk_version_dir: "{{ hpcsdk_major_version }}.{{ hpcsdk_minor_version }}"
+hpcsdk_download_url: "https://developer.download.nvidia.com/hpc-sdk/{{ hpcsdk_version_dir }}/{{ hpcsdk_download_name }}.tar.gz"
+
+# Directories for install
 hpcsdk_install_dir: "/sw/hpc-sdk"
 hpcsdk_install_type: "single"
-hpcsdk_default_cuda: "11.0"
-hpcsdk_version_dir: "20.7"
 
+# Directories for download
 hpcsdk_temp_dir: "/tmp/hpc-sdk-install"
 hpcsdk_dest_download_path: "{{ hpcsdk_temp_dir }}/nvhpc.tar.gz"
 hpcsdk_clean_up_tarball_after_extract: false
 hpcsdk_clean_up_temp_dir: false
-
-hpcsdk_install_as_modules: false
-hpcsdk_install_in_path: true
