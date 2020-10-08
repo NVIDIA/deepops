@@ -19,6 +19,15 @@ ssh -v \
         "10.0.0.5${GPU01}" \
         sinfo --all --list-reasons --long
 
+# Check available MPI options
+ssh -v \
+        -o "StrictHostKeyChecking no" \
+        -o "UserKnownHostsFile /dev/null" \
+        -l vagrant \
+        -i "${HOME}/.ssh/id_rsa" \
+        "10.0.0.5${GPU01}" \
+        srun --mpi=list
+
 # Run a simple one-task job
 ssh -v \
 	-o "StrictHostKeyChecking no" \
