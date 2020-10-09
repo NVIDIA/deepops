@@ -6,12 +6,12 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../.."
 
 HELM_CHARTS_REPO_INGRESS="${HELM_CHARTS_REPO_INGRESS:-https://kubernetes.github.io/ingress-nginx}"
-HELM_INGRESS_CHART_VERSION="${HELM_INGRESS_CHART_VERSION:-1.22.1}" # # TODO: Update to 3.5.1
+HELM_INGRESS_CHART_VERSION="${HELM_INGRESS_CHART_VERSION:-3.5.1}"
 
 ${SCRIPT_DIR}/install_helm.sh
 
 # Allow overriding the app name with an env var
-app_name="${NGINX_INGRESS_APP_NAME:-nginx-ingress}"
+app_name="${NGINX_INGRESS_APP_NAME:-ingress-nginx}"
 
 # Allow overriding config dir to look in
 DEEPOPS_CONFIG_DIR=${DEEPOPS_CONFIG_DIR:-"${ROOT_DIR}/config"}
@@ -51,4 +51,4 @@ if ! helm status "${app_name}" >/dev/null 2>&1; then
 	helm install "${app_name}" "${helm_arguments[@]}" ingress-nginx/ingress-nginx
 fi
 
-kubectl wait --for=condition=Ready -l "app=${app_name},component=controller" --timeout=180s pod
+kubectl wait --for=condition=Ready -l "app.kubernetes.io/name=${app_name},app.kubernetes.io/component=controller" --timeout=180s pod
