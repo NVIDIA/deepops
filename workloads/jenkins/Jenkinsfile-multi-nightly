@@ -58,7 +58,7 @@ pipeline {
 
           echo "Test Kubeflow installation"
           sh '''
-             timeout 3000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
+             timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
           '''
 
           echo "Test Monitoring installation"
@@ -156,7 +156,7 @@ pipeline {
 
           echo "Test Kubeflow installation"
           sh '''
-             timeout 3000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
+             timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
           '''
 
           echo "Test Monitoring installation"
