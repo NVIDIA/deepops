@@ -48,7 +48,5 @@ fi
 # Set up the ingress controller
 if ! helm status "${app_name}" >/dev/null 2>&1; then
 	helm repo update
-	helm install "${app_name}" "${helm_arguments[@]}" ingress-nginx/ingress-nginx
+	helm install --wait "${app_name}" "${helm_arguments[@]}" ingress-nginx/ingress-nginx
 fi
-
-kubectl wait --for=condition=Ready -l "app.kubernetes.io/name=${app_name},app.kubernetes.io/component=controller" --timeout=180s pod

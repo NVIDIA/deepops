@@ -20,6 +20,7 @@ fi
 
 # Add Helm metallb repo if it doesn't exist
 HELM_CHARTS_REPO_METALLB="${HELM_CHARTS_REPO_METALLB:-https://charts.bitnami.com/bitnami}"
+HELM_METALLB_CHART_VERSION=${HELM_METALLB_CHART_VERSION:-0.1.24}
 if ! helm repo list | grep bitnami  >/dev/null 2>&1 ; then
 	helm repo add bitnami "${HELM_CHARTS_REPO_METALLB}"
 	helm repo upate
@@ -36,7 +37,5 @@ fi
 
 # Set up the MetalLB load balancer
 if ! helm status metallb >/dev/null 2>&1; then
-	helm install metallb bitnami/metallb "${helm_install_args[@]}"
+	helm install --wait metallb bitnami/metallb "${helm_install_args[@]}" --version ${HELM_METALLB_CHART_VERSION}
 fi
-
-kubectl wait --timeout=120s --for=condition=Ready -l app=metallb,component=controller pod
