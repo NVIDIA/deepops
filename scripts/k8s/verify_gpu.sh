@@ -7,12 +7,12 @@
 export KFCTL=${KFCTL:-~/kfctl}
 export CLUSTER_VERIFY_NS=${CLUSTER_VERIFY_NS:-cluster-gpu-verify}
 export CLUSTER_VERIFY_EXPECTED_PODS=${CLUSTER_VERIFY_EXPECTED_PODS:-}
-export CLUSTER_VERIFY_JOB=tests/cluster-gpu-test-job.yml
+export CLUSTER_VERIFY_JOB="${CLUSTER_VERIFY_JOB:-workloads/examples/k8s/cluster-gpu-test-job.yml}"
 # Ensure we start in the correct working directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../.."
 cd "${ROOT_DIR}" || exit 1
-TESTS_DIR=$ROOT_DIR/tests
+TESTS_DIR="${TESTS_DIR:-$ROOT_DIR/workloads/examples/k8s}"
 
 job_name=$(grep 'name:' ${CLUSTER_VERIFY_JOB} | awk -F": " '{print $2}' | tail -n1)
 echo "job_name=$job_name"
