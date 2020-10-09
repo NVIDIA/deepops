@@ -22,7 +22,7 @@ fi
 
 HELM_CHARTS_REPO_PROMETHEUS="${HELM_CHARTS_REPO_PROMETHEUS:-https://prometheus-community.github.io/helm-charts}"
 HELM_PROMETHEUS_CHART_VERSION="${HELM_PROMETHEUS_CHART_VERSION:-9.4.10}"
-ingress_name="nginx-ingress"
+ingress_name="ingress-nginx"
 
 function help_me() {
     echo "This script installs the DCGM exporter, Prometheus, Grafana, and configures a GPU Grafana dashboard."
@@ -68,6 +68,7 @@ function delete_monitoring() {
     helm uninstall prometheus-operator
     helm uninstall kube-prometheus-stack
     helm uninstall "${ingress_name}"
+    helm uninstall "nginx-ingress" # Delete legacy naming
     kubectl delete crd prometheuses.monitoring.coreos.com
     kubectl delete crd prometheusrules.monitoring.coreos.com
     kubectl delete crd servicemonitors.monitoring.coreos.com
