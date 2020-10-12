@@ -21,7 +21,7 @@ if [ ! -d "${DEEPOPS_CONFIG_DIR}" ]; then
 fi
 
 HELM_CHARTS_REPO_PROMETHEUS="${HELM_CHARTS_REPO_PROMETHEUS:-https://prometheus-community.github.io/helm-charts}"
-HELM_PROMETHEUS_CHART_VERSION="${HELM_PROMETHEUS_CHART_VERSION:-9.4.10}"
+HELM_PROMETHEUS_CHART_VERSION="${HELM_PROMETHEUS_CHART_VERSION:-10.0.2}"
 ingress_name="ingress-nginx"
 
 function help_me() {
@@ -66,7 +66,7 @@ function get_opts() {
 
 function delete_monitoring() {
     helm uninstall prometheus-operator
-    helm uninstall kube-prometheus-stack
+    helm uninstall kube-prometheus-stack -n monitoring
     helm uninstall "${ingress_name}"
     helm uninstall "nginx-ingress" # Delete legacy naming
     kubectl delete crd prometheuses.monitoring.coreos.com
@@ -109,8 +109,8 @@ function setup_prom_monitoring() {
     # Get IP information of master and ingress
     get_ips
 
-    if kubectl describe service -l "app=${ingress_name},component=controller" | grep 'LoadBalancer Ingress' >/dev/null 2>&1; then
-        lb_ip="$(kubectl describe service -l "app=${ingress_name},component=controller" | grep 'LoadBalancer Ingress' | awk '{print $3}')"
+    if kubectl describe service -l "app.kubernetes.io/name=${ingress_name},app.kubernetes.io/component=controller" | grep 'LoadBalancer Ingress' >/dev/null 2>&1; then
+        lb_ip="$(kubectl describe service -l "app.kubernetes.io/name=${ingress_name},app.kubernetes.io/component=controller" | grep 'LoadBalancer Ingress' | awk '{print $3}')"
         ingress_ip_string="$(echo ${lb_ip} | tr '.' '-').nip.io"
         echo "Using load balancer url: ${ingress_ip_string}"
     fi
@@ -171,14 +171,14 @@ function print_monitoring() {
     get_ips
 
     # Get Grafana auth details
-    grafana_user=$(kubectl -n monitoring get secrets prometheus-operator-grafana -o 'go-template={{ index .data "admin-user" }}' | base64 -d)
-    grafana_password=$(kubectl -n monitoring get secrets prometheus-operator-grafana -o 'go-template={{ index .data "admin-password" }}' | base64 -d)
+    grafana_user=$(kubectl -n monitoring get secrets kube-prometheus-stack-grafana -o 'go-template={{ index .data "admin-user" }}' | base64 -d)
+    grafana_password=$(kubectl -n monitoring get secrets kube-prometheus-stack-grafana -o 'go-template={{ index .data "admin-password" }}' | base64 -d)
 
     # Use NodePort directly if the IP string uses the master IP, otherwise use Ingress URL
     if echo "${ingress_ip_string}" | grep "${master_ip}" >/dev/null 2>&1; then
-        grafana_port=$(kubectl -n monitoring get svc prometheus-operator-grafana --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
-        prometheus_port=$(kubectl -n monitoring get svc prometheus-operator-prometheus --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
-        alertmanager_port=$(kubectl -n monitoring get svc prometheus-operator-alertmanager --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
+        grafana_port=$(kubectl -n monitoring get svc kube-prometheus-stack-grafana --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
+        prometheus_port=$(kubectl -n monitoring get svc kube-prometheus-stack-prometheus --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
+        alertmanager_port=$(kubectl -n monitoring get svc kube-prometheus-stack-alertmanager --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
 
         export grafana_url="http://${master_ip}:${grafana_port}/"
         export prometheus_url="http://${master_ip}:${prometheus_port}/"
