@@ -7,6 +7,7 @@ ROOT_DIR="${SCRIPT_DIR}/../.."
 
 HELM_CHARTS_REPO_INGRESS="${HELM_CHARTS_REPO_INGRESS:-https://kubernetes.github.io/ingress-nginx}"
 HELM_INGRESS_CHART_VERSION="${HELM_INGRESS_CHART_VERSION:-3.5.1}"
+# HELM_INGRESS_CONFIG, defaults below based on presence of metallb
 
 ${SCRIPT_DIR}/install_helm.sh
 
@@ -27,24 +28,23 @@ if ! kubectl version ; then
     exit 1
 fi
 
+# If MetalLB is installed, use LoadBalancer, otherwise use NodePort (unless the user specifies a config)
+if ! helm status metallb >/dev/null 2>&1; then
+	HELM_INGRESS_CONFIG="${HELM_INGRESS_CONFIG:-${ROOT_DIR}/workloads/examples/k8s/ingress-nodeport.yml}"
+else
+	HELM_INGRESS_CONFIG="${HELM_INGRESS_CONFIG:-${ROOT_DIR}/workloads/examples/k8s/ingress-loadbalancer.yml}"
+fi
+
 # We need to dynamically set up Helm args, so let's use an array
 helm_arguments=("--version" "${HELM_INGRESS_CHART_VERSION}"
-		"--values" "${DEEPOPS_CONFIG_DIR}/helm/ingress.yml"
+		"--values" "${HELM_INGRESS_CONFIG}"
 )
-
 
 if [ "${NGINX_INGRESS_CONTROLLER_REPO}" ]; then
 	helm_arguments+=("--set-string" "controller.image.repository=${NGINX_INGRESS_CONTROLLER_REPO}")
 fi
 if [ "${NGINX_INGRESS_BACKEND_REPO}" ]; then
 	helm_arguments+=("--set-string" "defaultBackend.image.repository=${NGINX_INGRESS_BACKEND_REPO}")
-fi
-
-# If MetalLB is installed, use a LoadBalancer for ingress, otherwise use a NodePort. Unless someone remove the dynamic flag.
-if ! helm status metallb >/dev/null 2>&1; then
-	sed -i 's/type: .*## DYNAMIC deploy_ingress.sh/    type: NodePort ## DYNAMIC deploy_ingress.sh/g' config/helm/ingress.yml
-else
-	sed -i 's/type: .*## DYNAMIC deploy_ingress.sh/    type: LoadBalancer ## DYNAMIC deploy_ingress.sh/g' config/helm/ingress.yml
 fi
 
 # Add Helm ingress-nginx repo if it doesn't exist
