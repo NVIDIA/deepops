@@ -40,6 +40,13 @@ if [ "${NGINX_INGRESS_BACKEND_REPO}" ]; then
 	helm_arguments+=("--set-string" "defaultBackend.image.repository=${NGINX_INGRESS_BACKEND_REPO}")
 fi
 
+# If MetalLB is installed, use a LoadBalancer for ingress, otherwise use a NodePort. Unless someone remove the dynamic flag.
+if ! helm status metallb >/dev/null 2>&1; then
+	sed -i 's/type: .*## DYNAMIC deploy_ingress.sh/    type: NodePort ## DYNAMIC deploy_ingress.sh/g' config/helm/ingress.yml
+else
+	sed -i 's/type: .*## DYNAMIC deploy_ingress.sh/    type: LoadBalancer ## DYNAMIC deploy_ingress.sh/g' config/helm/ingress.yml
+fi
+
 # Add Helm ingress-nginx repo if it doesn't exist
 if ! helm repo list | grep ingress-nginx >/dev/null 2>&1 ; then
 	helm repo add ingress-nginx "${HELM_CHARTS_REPO_INGRESS}"
