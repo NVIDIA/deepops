@@ -16,6 +16,10 @@ HELM_ROOK_CHART_VERSION="${HELM_ROOK_CHART_VERSION:-v1.1.1}"
 # Allow overriding config dir to look in
 DEEPOPS_CONFIG_DIR=${DEEPOPS_CONFIG_DIR:-"${ROOT_DIR}/config"}
 
+# Default creds to create
+DEEPOPS_ROOK_USER="${DEEPOPS_ROOK_USER:-admin}"
+DEEPOPS_ROOK_PASS="${DEEPOPS_ROOK_PASS:-deepops}"
+
 if [ ! -d "${DEEPOPS_CONFIG_DIR}" ]; then
     echo "Can't find configuration in ${DEEPOPS_CONFIG_DIR}"
     echo "Please set DEEPOPS_CONFIG_DIR env variable to point to config location"
@@ -29,6 +33,7 @@ function help_me() {
   echo "-p    Print out the connection info for Rook-Ceph."
   echo "-d    Delete Rook from your system (this delete any created volumes)."
   echo "-w    Poll for rook-ceph to reach a healthy and initialized state."
+  echo "-u    Create a new dashboard user (default username: 'admin' password: 'deepops'."
 }
 
 
@@ -40,8 +45,8 @@ function poll_ceph() {
 
   while true; do
     rook_tools_pod=$(kubectl -n rook-ceph get pod -l app=rook-ceph-tools -o name | cut -d \/ -f2 | sed -e 's/\\r$//g')
-    kubectl -n rook-ceph exec -ti $rook_tools_pod ceph status # Run once to print output
-    kubectl -n rook-ceph exec -ti $rook_tools_pod ceph status | grep "mds: cephfs" | grep "up:active" | grep "standby-replay" # Run again to check for completion
+    kubectl -n rook-ceph exec -ti $rook_tools_pod -- ceph status # Run once to print output
+    kubectl -n rook-ceph exec -ti $rook_tools_pod -- ceph status | grep "mds: cephfs" | grep "up:active" | grep "standby-replay" # Run again to check for completion
     if [ "${?}" == "0" ]; then
       echo "Ceph has completed setup."
       break
@@ -64,7 +69,7 @@ function delete_rook() {
 
 function print_rook() {
   # Get Rook Ceph Tools POD name
-  toolspod=$(kubectl -n rook-ceph get pod -l app=rook-ceph-tools --no-headers -o custom-columns=:.metadata.name)
+  export rook_toolspod=$(kubectl -n rook-ceph get pod -l app=rook-ceph-tools --no-headers -o custom-columns=:.metadata.name)
 
   # Get IP of first master
   master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
@@ -72,22 +77,32 @@ function print_rook() {
   # Get Ceph dashboard port
   dash_port=$(kubectl -n rook-ceph get svc rook-ceph-mgr-dashboard-external-https --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
 
+  # Ceph Dashboard
+  export rook_ceph_dashboard="https://${master_ip}:${dash_port}"
+
   echo
   echo "Ceph deployed, it may take up to 10 minutes for storage to be ready"
   echo "If install takes more than 30 minutes be sure you have cleaned up any previous Rook installs by running this script with the delete flag (-d) and have installed the required libraries using the bootstrap-rook.yml playbook"
   echo "Monitor readiness with:"
-  echo "kubectl -n rook-ceph exec -ti ${toolspod} ceph status | grep up:active"
+  echo "kubectl -n rook-ceph exec -ti ${rook_toolspod} -- ceph status | grep up:active"
   echo
 
-  echo "Ceph dashboard: https://${master_ip}:${dash_port}"
+  echo "Ceph dashboard: ${rook_ceph_dashboard}"
   echo
-  echo "Create dashboard user with: kubectl -n rook-ceph exec -ti ${toolspod} ceph dashboard set-login-credentials <username> <password>"
+  echo "Create dashboard user with: kubectl -n rook-ceph exec -ti ${rook_toolspod} -- ceph dashboard set-login-credentials <username> <password>"
   echo
 }
 
 
+function create_ceph_user() {
+  # Get Rook Ceph Tools POD name
+  export rook_toolspod=$(kubectl -n rook-ceph get pod -l app=rook-ceph-tools --no-headers -o custom-columns=:.metadata.name)
+  kubectl -n rook-ceph exec -ti ${rook_toolspod} -- ceph dashboard set-login-credentials ${DEEPOPS_ROOK_USER} ${DEEPOPS_ROOK_PASS}
+}
+
+
 function get_opts() {
-  while getopts "hwdp" option; do
+  while getopts "uhwdp" option; do
     case $option in
       w)
         ROOK_CEPH_POLL=true
@@ -97,6 +112,9 @@ function get_opts() {
         ;;
       p)
         ROOK_PRINT=true
+        ;;
+      u)
+        ROOK_CEPH_USER=true
         ;;
       h)
         help_me
@@ -109,6 +127,7 @@ function get_opts() {
     esac
   done
 }
+
 
 function install_rook() {
   # Install Helm if it is not already installed
@@ -156,13 +175,12 @@ get_opts ${@}
 
 if [ ${ROOK_DELETE} ]; then
   delete_rook
-  exit 0
+elif [ ${ROOK_CEPH_USER} ]; then
+  create_ceph_user
 elif [ ${ROOK_CEPH_POLL} ]; then
   poll_ceph
-  exit 0
 elif [ ${ROOK_PRINT} ]; then
   print_rook
-  exit 0
 else
   install_rook
 fi
