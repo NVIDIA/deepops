@@ -1,7 +1,7 @@
 #!/bin/bash
 if ! command -v lspci >/dev/null 2>&1; then
-    echo lcpci not installed
+    echo lspci not installed
     exit 1
 fi
-count=$(lspci | grep NVIDIA | grep --invert-match --ignore-case --count audio)
+count=$(lspci | grep -E "(3D|VGA compatible) controller: NVIDIA" --count)
 echo "{ \"count\": $count }"
