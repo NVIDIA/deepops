@@ -6,7 +6,7 @@
     state: present
   with_items:
     - mariadb-server
-    - python-mysqldb
+    - python3-mysqldb
     - s-nail
     - ssmtp
   when: ansible_os_family == "Debian"
