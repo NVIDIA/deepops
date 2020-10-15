@@ -21,4 +21,22 @@
       when:
         - ansible_local['gpus']['count'] and (ansible_distribution == "Ubuntu" or ansible_os_family == "RedHat")
         - ansible_product_name is not search("DGX") or docker_override_dgx
+
+    - name: Override docker daemon json on DGX
+      copy:
+        content: "{{ docker_daemon_json_override_dgx | to_nice_json }}"
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: 0644
+      when:
+        - ansible_product_name is search("DGX") and docker_daemon_json_override_dgx and docker_override_dgx is false
+
+    - name: reload docker
+      service:
+        name: docker
+        state: reloaded
+      when:
+        - ansible_product_name is search("DGX") and docker_daemon_json_override_dgx and docker_override_dgx is false
+
   environment: "{{ proxy_env if proxy_env is defined else {} }}"

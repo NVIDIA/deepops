@@ -127,6 +127,15 @@ docker_storage_options: -s overlay2
 #docker_options: "--bip=192.168.99.1/24"
 # Install DeepOps version of Docker on DGX
 docker_override_dgx: false
+
+# Value to override /etc/docker/daemon.json, minimally default runtime required for k8s
+docker_daemon_json_override_dgx:
+  runtimes:
+    nvidia:
+      path: /usr/bin/nvidia-container-runtime
+      runtimeArgs: []
+  default-runtime: nvidia
+
 # Enable docker iptables
 # If this isn't set, containers won't have access to the outside net
 # See https://github.com/kubernetes-sigs/kubespray/issues/2002
