@@ -5,7 +5,7 @@
   tasks:
     # Fortunately, python is a dependency of yum. So RedHat systems always have it.
     - name: install python (no proxy)
-      raw: test -e /usr/bin/python3 || (apt -y update && apt install -y pythoni3-minimal)
+      raw: test -e /usr/bin/python3 || (apt -y update && apt install -y python3-minimal)
       register: output
       changed_when: output.stdout != ""
       when: proxy_env is not defined
