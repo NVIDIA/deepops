@@ -23,7 +23,7 @@
   when: download_deepops_repo
 
 - name: install Ansible Galaxy dependencies in repo
-  command: ansible-galaxy install -p "{{ offline_cache_dir }}/deepops/galaxy-roles" -r "{{ offline_cache_dir }}/deepops/requirements.yml"
+  command: ansible-galaxy install -p "{{ offline_cache_dir }}/deepops/roles/galaxy" -r "{{ offline_cache_dir }}/deepops/roles/requirements.yml"
   tags:
   - skip_ansible_lint
 

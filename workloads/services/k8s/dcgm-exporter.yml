@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dcgm-exporter
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: dcgm-exporter
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: dcgm-exporter
+      name: dcgm-exporter
+    spec:
+      serviceAccountName: kube-prometheus-stack-prometheus-node-exporter
+      hostNetwork: true
+      hostPID: true
+      nodeSelector:
+        hardware-type: NVIDIAGPU
+      containers:
+      - image: nvcr.io/nvidia/k8s/dcgm-exporter:2.0.10-2.1.0-rc.1-ubuntu18.04
+        name: nvidia-dcgm-exporter
+        securityContext:
+          runAsNonRoot: false
+          runAsUser: 0
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/scrape: 'true'
+  labels:
+    app: dcgm-exporter
+    name: dcgm-exporter
+  name: dcgm-exporter
+  namespace: monitoring
+spec:
+  ports:
+  - name: scrape
+    port: 9400
+    protocol: TCP
+  selector:
+    app: dcgm-exporter
+  type: ClusterIP

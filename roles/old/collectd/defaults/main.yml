@@ -1,5 +1,0 @@
-collectd_network_server: "10.0.0.1"
-collectd_network_port: "25826"
-collectd_python_module_path: "/etc/collectd/"
-collectd_python_modules: []
-collectd_config_dir: "/etc/collectd.d"

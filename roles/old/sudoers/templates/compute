@@ -1,9 +1,0 @@
-# GPU
-%dip ALL=(ALL) NOPASSWD: /usr/bin/nvidia-smi
-
-# Infiniband
-%dip ALL=(ALL) NOPASSWD: /usr/sbin/perfquery
-%dip ALL=(ALL) NOPASSWD: /usr/sbin/ibqueryerrors
-%dip ALL=(ALL) NOPASSWD: /usr/sbin/ibclearerrors
-%dip ALL=(ALL) NOPASSWD: /usr/sbin/ibnodes
-%dip ALL=(ALL) NOPASSWD: /usr/sbin/ibswitches

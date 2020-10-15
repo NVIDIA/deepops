@@ -1,6 +1,0 @@
----
-
-- hosts: compute-nodes
-  become: yes
-  roles:
-    - { role: crashdump, is_compute: yes, is_controller: no, is_enabled: yes }

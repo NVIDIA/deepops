@@ -1,0 +1,67 @@
+---
+- include: ../bootstrap/bootstrap-openshift.yml
+
+# Install packages required for Ansible Helm module
+- hosts: kube-master
+  become: true
+  tasks:
+    - name: Enable EPEL repo
+      package:
+        name:
+          - epel-release
+        state: present
+      when: ansible_os_family == 'RedHat'
+    - name: Install package dependencies
+      package:
+        name:
+          - python-pip
+          - git
+        state: present
+    - name: Install python dependencies
+      pip:
+        name:
+          - pyhelm
+          - grpcio
+        state: present
+  tags:
+    - always
+
+# Register Tiller service info
+- hosts: kube-master
+  become: true
+  tasks:
+    - name: Get tiller service info
+      k8s_facts:
+        api_version: v1
+        kind: Service
+        name: tiller-deploy
+        namespace: kube-system
+      register: tiller_service
+  tags:
+    - always
+
+# Docker container registry
+- hosts: kube-master
+  become: true
+  tasks:
+    - name: Install helm chart for container registry
+      include_role:
+        name: container-registry
+      vars:
+        tiller_host: "{{ tiller_service.resources[0].spec.clusterIP }}"
+      run_once: true
+  tags:
+    - container-registry
+
+# Docker container registry
+- hosts: kube-node
+  become: true
+  vars:
+    container_registry_hostname: registry.local
+  tasks:
+    - name: Set registry hostname in /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ hostvars[groups['kube-master'][0]]['ansible_host'] }} {{ container_registry_hostname }}"
+  tags:
+    - container-registry

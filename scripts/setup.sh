@@ -15,14 +15,14 @@ cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
 # Pinned Ansible version
 ANSIBLE_OK="2.7.8"
 ANSIBLE_VERSION="2.9.5"
-PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/proxy.sh | grep -v ^$ | wc -l`
+PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh | grep -v ^$ | wc -l`
 PIP="${PIP:-pip}"
 
 JINJA2_VERSION="${JINJA2_VERSION:-2.11.1}"
 
 as_sudo(){
     if [ $PROXY_USE -gt 0 ]; then
-        cmd="sudo -H bash -c '. ${SCRIPT_DIR}/proxy.sh && $1'"
+        cmd="sudo -H bash -c '. ${SCRIPT_DIR}/deepops/proxy.sh && $1'"
     else
         cmd="sudo bash -c '$1'"
     fi
@@ -31,7 +31,7 @@ as_sudo(){
 
 as_user(){
     if [ $PROXY_USE -gt 0 ]; then
-        cmd="bash -c '. ${SCRIPT_DIR}/proxy.sh && $1'"
+        cmd="bash -c '. ${SCRIPT_DIR}/deepops/proxy.sh && $1'"
     else
         cmd="bash -c '$1'"
     fi
@@ -241,7 +241,7 @@ if ! grep -i deepops README.md >/dev/null 2>&1 ; then
     cd "${SCRIPT_DIR}"
     if ! test -d deepops ; then
         if [ $PROXY_USE -gt 0 ]; then
-            . ${SCRIPT_DIR}/proxy.sh && git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
+            . ${SCRIPT_DIR}/deepops/proxy.sh && git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
         else
             git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
         fi
@@ -254,9 +254,9 @@ ansible-galaxy --version >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
     echo "Updating Ansible Galaxy roles..."
     if [ $PROXY_USE -gt 0 ]; then
-        . ${SCRIPT_DIR}/proxy.sh && ansible-galaxy install --force -r requirements.yml >/dev/null
+        . ${SCRIPT_DIR}/deepops/proxy.sh && ansible-galaxy install --force -r roles/requirements.yml >/dev/null
     else
-        ansible-galaxy install --force -r requirements.yml >/dev/null
+        ansible-galaxy install --force -r roles/requirements.yml >/dev/null
     fi
 
 
@@ -268,7 +268,7 @@ fi
 git status >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
     if [ $PROXY_USE -gt 0 ]; then
-        . ${SCRIPT_DIR}/proxy.sh && git submodule update --init
+        . ${SCRIPT_DIR}/deepops/proxy.sh && git submodule update --init
     else
         git submodule update --init
     fi

@@ -1,0 +1,4 @@
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:{{ slurm_install_prefix|default('/usr/local') }}/bin
+NHC_RM=slurm
+SLURM_SINFO={{ slurm_install_prefix|default('/usr/local') }}/bin/sinfo
+SLURM_SCONTROL={{ slurm_install_prefix|default('/usr/local') }}/bin/scontrol

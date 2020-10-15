@@ -1,0 +1,41 @@
+---
+# Many provisioning systems, especially for Ubuntu, will include cloud-init
+# as part of the initial setup process for networking and other configuration.
+#
+# However, DeepOps attempts to manage many of the same files, which can lead to
+# conflicts and some components breaking under certain circumstances. /etc/hosts
+# is a good example of a file that both systems try to manage.
+#
+# This playbook disables cloud-init to prevent DeepOps and cloud-init from
+# stepping on each other.
+
+- hosts: "{{ hostlist | default('all') }}" 
+  become: true
+  tasks:
+
+  - name: check if /etc/cloud is present
+    when: deepops_disable_cloud_init
+    stat:
+      path: "/etc/cloud"
+    register: etc_cloud
+
+  - name: disable generator for setting cloud-init target
+    when: deepops_disable_cloud_init and etc_cloud.stat.exists
+    file:
+      path: "/etc/cloud/cloud-init.disabled"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+      state: "touch"
+
+  - name: disable all systemd services
+    when: deepops_disable_cloud_init
+    ignore_errors: yes
+    service:
+      name: "{{ item }}"
+      state: stopped
+      enabled: no
+    with_items:
+    - "cloud-init"
+    - "cloud-config"
+    - "cloud-final"

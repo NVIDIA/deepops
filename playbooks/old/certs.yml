@@ -1,5 +1,0 @@
-- name: update certs
-  hosts: all
-  become: true
-  roles:
-    - certs

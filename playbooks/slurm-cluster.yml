@@ -2,81 +2,93 @@
 # Slurm Cluster Playbook
 
 # Install python required for Ansible
-- include: bootstrap-python.yml
+- include: bootstrap/bootstrap-python.yml
 
 # Set up passwordless sudo and SSH keys if needed
-- include: bootstrap-ssh.yml
-- include: bootstrap-sudo.yml
+- include: bootstrap/bootstrap-ssh.yml
+- include: bootstrap/bootstrap-sudo.yml
+
+# Disable cloud-init
+- include: generic/disable-cloud-init.yml
+  when: deepops_disable_cloud_init
 
 # Configure hostnames, /etc/hosts
-- include: hosts.yml
+- include: generic/hosts.yml
 
 # Configure Chrony (NTP) sync
-- include: chrony-client.yml
+- include: generic/chrony-client.yml
   when: chrony_install
 
 # Install NVIDIA driver
-- include: nvidia-driver.yml
+- include: nvidia-software/nvidia-driver.yml
   when: slurm_cluster_install_nvidia_driver|default(true)
 
 # Install NVIDIA CUDA Toolkit
-- include: nvidia-cuda.yml
+- include: nvidia-software/nvidia-cuda.yml
   when: slurm_cluster_install_cuda|default(true)
 
 # Install software
-- include: software.yml
+- include: generic/software.yml
 
 # Set up NFS filesystem
-- include: nfs-server.yml
+- include: generic/nfs-server.yml
   vars:
     hostlist: "{{ nfs_server_group | default('slurm-master') }}"
   when: slurm_enable_nfs_server
-- include: nfs-client.yml
+- include: generic/nfs-client.yml
   vars:
     hostlist: "{{ nfs_client_group | default('slurm-node') }}"
   when: slurm_enable_nfs_client_nodes
 
+# Install DCGM
+- include: nvidia-software/nvidia-dcgm.yml hostlist=slurm-node
+  when: install_dcgm|default(false)
+
+# Install Node Health Check
+- include: slurm-cluster/nhc.yml hostlist=slurm-node
+  when: slurm_install_nhc|default(false)
+
 # Install Slurm
-- include: slurm.yml
+- include: slurm-cluster/slurm.yml
 
 # Install OpenMPI
-- include: openmpi.yml
+- include: slurm-cluster/openmpi.yml
   when: slurm_cluster_install_openmpi|default(true)
 
 # Install Lmod
-- include: lmod.yml
+- include: slurm-cluster/lmod.yml
   when: slurm_install_lmod
 
 # Install the NVIDIA HPC SDK
-- include: nvidia-hpc-sdk.yml hostlist=slurm-master
+- include: nvidia-software/nvidia-hpc-sdk.yml hostlist=slurm-master
   when: slurm_install_hpcsdk
 
 # Install monitoring tools
-- include: prometheus.yml hostlist=slurm-master
+- include: slurm-cluster/prometheus.yml hostlist=slurm-master
   when: slurm_enable_monitoring
-- include: grafana.yml hostlist=slurm-master
+- include: slurm-cluster/grafana.yml hostlist=slurm-master
   when: slurm_enable_monitoring
-- include: prometheus-slurm-exporter.yml hostlist=slurm-master
+- include: slurm-cluster/prometheus-slurm-exporter.yml hostlist=slurm-master
   when: slurm_enable_monitoring
-- include: prometheus-node-exporter.yml
+- include: slurm-cluster/prometheus-node-exporter.yml
   when: slurm_enable_monitoring
-- include: nvidia-dcgm-exporter.yml
+- include: slurm-cluster/nvidia-dcgm-exporter.yml
   when: slurm_enable_monitoring
 
 # Install Singularity
-- include: singularity.yml
+- include: container/singularity.yml
   when: slurm_cluster_install_singularity|default(true)
 
 # Install Open OnDemand
-- include: open-ondemand.yml
+- include: slurm-cluster/open-ondemand.yml
   when: install_open_ondemand
 
 #Set Permisions to adjust GPU Clocks speeds
-- include: gpu-clocks.yml
+- include: utilities/gpu-clocks.yml
   when: allow_user_set_gpu_clocks
 
 # Install Enroot and Pyxis
-- include: pyxis.yml
+- include: container/pyxis.yml
   when:
     - slurm_install_enroot
     - slurm_install_pyxis
@@ -84,6 +96,6 @@
     - pyxis
 
 # Ensure that nv_peer_mem is loaded
-- include: nvidia-peer-memory.yml
+- include: nvidia-software/nvidia-peer-memory.yml
   tags:
     - nvidia-peer-memory

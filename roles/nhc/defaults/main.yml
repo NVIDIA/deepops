@@ -1,0 +1,19 @@
+---
+nhc_version: "1.4.2"
+nhc_src_url: "https://github.com/mej/nhc/releases/download/{{ nhc_version }}/lbnl-nhc-{{ nhc_version }}.tar.xz"
+nhc_install_dir: "/usr"
+nhc_config_dir: "/etc"
+nhc_libexec_dir: "/usr/libexec"
+nhc_build_dir: "/opt/deepops/build/nhc"
+nhc_sysconfig_dir: "/etc/sysconfig"
+
+nhc_extract_dir: "{{ nhc_build_dir }}/lbnl-nhc-{{ nhc_version }}"
+nhc_configure: "./configure --prefix={{ nhc_install_dir }} --sysconfdir={{ nhc_config_dir }} --libexecdir={{ nhc_libexec_dir }}"
+nhc_test: "make test"
+nhc_run_test: false
+nhc_make: "make install"
+
+nhc_config_template: "nhc.conf.j2"
+
+nhc_force_reinstall: false
+nhc_config: "nhc.conf.j2"
