@@ -58,7 +58,7 @@ pipeline {
 
           echo "Test Kubeflow installation"
           sh '''
-             timeout 3000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
+             timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
           '''
 
           echo "Test Monitoring installation"
@@ -91,6 +91,16 @@ pipeline {
           echo "Test Slurm"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-job.sh
+          '''
+
+          echo "Test NFS"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-nfs-mount.sh
+          '''
+
+          echo "Test MPI"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-mpi-job.sh
           '''
 
           echo "Reset repo and unmunge files"
@@ -151,7 +161,7 @@ pipeline {
 
           echo "Test Kubeflow installation"
           sh '''
-             timeout 3000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
+             timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
           '''
 
           echo "Test Monitoring installation"
@@ -183,12 +193,17 @@ pipeline {
 
           echo "Test Slurm"
           sh '''
-            timeout 60  bash -x ./workloads/jenkins/scripts/test-slurm-job.sh
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-job.sh
+          '''
+
+          echo "Test NFS"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-nfs-mount.sh
           '''
 
           echo "Test MPI"
           sh '''
-            timeout 60 bash -x ./.jenkins-scripts/test-mpi-job.sh
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-mpi-job.sh
           '''
         }
       }

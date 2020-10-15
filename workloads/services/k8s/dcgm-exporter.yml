@@ -17,13 +17,13 @@ spec:
         app: dcgm-exporter
       name: dcgm-exporter
     spec:
-      serviceAccountName: prometheus-operator-prometheus-node-exporter
+      serviceAccountName: kube-prometheus-stack-prometheus-node-exporter
       hostNetwork: true
       hostPID: true
       nodeSelector:
         hardware-type: NVIDIAGPU
       containers:
-      - image: nvidia/dcgm-exporter:1.7.2 # TODO: Update to use nvcr.io when available
+      - image: nvcr.io/nvidia/k8s/dcgm-exporter:2.0.10-2.1.0-rc.1-ubuntu18.04
         name: nvidia-dcgm-exporter
         securityContext:
           runAsNonRoot: false
