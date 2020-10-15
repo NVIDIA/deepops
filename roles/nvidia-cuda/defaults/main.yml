@@ -3,8 +3,8 @@
 cuda_version: "cuda-toolkit-11-0"
 
 # DGX-specific versions
-cuda_dgx_1_version: "cuda-toolkit-11-0"
-cuda_dgx_2_version: "cuda-toolkit-11-0"
+cuda_dgx_1_version: "cuda-toolkit-10-1"
+cuda_dgx_2_version: "cuda-toolkit-10-1"
 cuda_dgx_a100_version: "cuda-toolkit-11-0"
 
 # To install a specific CUDA package on DGX, define cuda_dgx_override.
