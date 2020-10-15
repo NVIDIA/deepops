@@ -16,7 +16,7 @@ cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
 ANSIBLE_OK="2.7.8"
 ANSIBLE_VERSION="2.9.5"
 PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh | grep -v ^$ | wc -l`
-PIP="${PIP:-pip}"
+PIP="${PIP:-pip3}"
 
 JINJA2_VERSION="${JINJA2_VERSION:-2.11.1}"
 
@@ -47,7 +47,7 @@ case "$ID" in
         # Install pip
         if ! which ${PIP} >/dev/null 2>&1; then
             echo "Installing python pip..."
-            as_sudo 'yum -y install python36-pip python-pip' >/dev/null
+            as_sudo 'yum -y install python36-pip' >/dev/null
         fi
         ${PIP} --version
 
@@ -155,7 +155,7 @@ case "$ID" in
         # Install pip
         if ! which ${PIP} >/dev/null 2>&1; then
             echo "Installing pip..."
-            as_sudo 'apt-get -y install python3-pip python-pip' >/dev/null
+            as_sudo 'apt-get -y install python3-pip' >/dev/null
         fi
         ${PIP} --version
 
