@@ -4,8 +4,8 @@
     name: "{{ item }}"
     state: present
   with_items:
-    - "virtualenv"
-    - "python-setuptools"
+    - "python3-virtualenv"
+    - "python3-setuptools"
   when: ansible_distribution == 'Ubuntu'
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
