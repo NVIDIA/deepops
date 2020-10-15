@@ -56,7 +56,9 @@
     - 5.1
     - 5.2
     - 5.3
-  when: ansible_os_family == "Debian"
+  when: 
+    - ansible_distribution == 'Ubuntu'
+    - ansible_distribution_version == '18.04'
   tags:
     - bugfix
 
