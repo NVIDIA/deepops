@@ -78,4 +78,4 @@ Otherwise, bugs and feature requests can be made by [filing a GitHub Issue](http
 
 ## Contributing
 
-To contribute, please issue a [signed](https://raw.githubusercontent.com/NVIDIA/deepops/master/CONTRIBUTING.md) [pull request](https://help.github.com/articles/using-pull-requests/) against the master branch from a local fork. See the (contribution document)[https://raw.githubusercontent.com/NVIDIA/deepops/master/CONTRIBUTING.md] for more information.
+To contribute, please issue a [signed](https://raw.githubusercontent.com/NVIDIA/deepops/master/CONTRIBUTING.md) [pull request](https://help.github.com/articles/using-pull-requests/) against the master branch from a local fork. See the [contribution document](https://raw.githubusercontent.com/NVIDIA/deepops/master/CONTRIBUTING.md) for more information.
