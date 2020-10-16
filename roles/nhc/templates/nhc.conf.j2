@@ -17,7 +17,7 @@
 {% endfor %}
 
 # Check that expected processes are running
- {{ ansible_hostname }} || check_ps_service -u root -d daemon sshd
+ {{ ansible_hostname }} || check_ps_service -u root -d {{ nhc_ssh_daemon }} sshd
  {{ ansible_hostname }} || check_ps_service -u root slurmd
 
 {% if ansible_local.gpus.count > 0 %}

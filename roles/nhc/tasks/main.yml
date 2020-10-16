@@ -1,4 +1,17 @@
 ---
+- name: "gather os specific variables"
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+      - "{{ ansible_distribution|lower }}-{{ ansible_distribution_version }}.yml"
+      - "{{ ansible_distribution|lower }}.yml"
+      - "{{ ansible_os_family|lower }}.yml"
+      paths:
+      - ../vars
+      skip: true
+  tags:
+    - always
+
 - name: default to building NHC
   set_fact:
     nhc_build: true
