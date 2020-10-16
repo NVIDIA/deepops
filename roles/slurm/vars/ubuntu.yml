@@ -5,7 +5,7 @@ slurm_build_deps:
   - build-essential
   - libmunge-dev
   - libmariadb-dev
-  - libmariadb-dev-compat
+  - libmariadbclient-dev
   - libpam0g-dev
   - python3-minimal
   - ruby-dev
