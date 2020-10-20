@@ -6,9 +6,8 @@ Canonical's [Metal as a Service](https://maas.io/) tool for provisioning the ope
 By default, this playbook will set up a single-node MAAS install which can then be used to provision other servers on your network.
 
 In most cases, you will use MAAS to provision the OS on multiple bare-metal servers.
-However, this is often difficult and time-consuming when first getting started.
-To demonstrate how MAAS works, this guide will walk through installing and configuring MAAS using two virtual machines.
-MAAS 2.8 is used in this guide.
+However, MAAS can also be used to provision VMs, and this guide will walk through an example using two virtual machines for ease of demonstration.
+This guide was written using MAAS 2.8.
 
 MAAS has a lot of different configuration options which are outside the scope of this guide.
 For the best reference on how to use MAAS in general, see the [documentation on maas.io](https://maas.io/docs).
@@ -29,7 +28,7 @@ In this example, we will use:
 * An internal (VM-only) network on which we'll use the subnet `192.168.1.0/24`
 * An external network connection on which we'll use the subnet `192.168.122.0/24`
 * `maas-vm`, a pre-installed Ubuntu 18.04 virtual machine
-    * `maas-vm` has IP `192.168.1.1` on the internal network, and `192.168.122.90`
+    * `maas-vm` has IP `192.168.1.1` on the internal network, and `192.168.122.90` on the external network
 * `test-vm`, a "blank" virtual machine with no OS, on the same VM host
     * `test-vm` has a connection only to the internal network, which is not configured yet
     * `test-vm` should be configured to PXE boot on its network interface, rather than boot from its local disk
@@ -138,8 +137,8 @@ Before we can deploy this machine, we have to configure it so that MAAS can turn
 1. Scroll down until you see the Power configuration setting.
     If this has already been selected to a pre-configured value, you're good to go, because MAAS has autodetected how to control the power on this node!
 1. If it's not yet selected, click the drop-down menu and it will show several different types of power control available.
-    For a physical machine, the most common choice will be "IPMI". 
-    MAAS also supports power control via several different types of hypervisors, such as VMWare.
+    For a physical machine, the most common choice will be "IPMI", and will require you to fill in the username and password for the server BMC. 
+    MAAS also supports power control via several different types of hypervisors, such as VMWare; these may also require credentials to access.
     If none of these are available for your hypervisor, click "Manual". This will allow you to proceed with deploying your node, but you will have to manually boot it up when needed.
 1. Click "Save changes"
 
@@ -151,6 +150,7 @@ This process is similar to enlistment, but prepares the machine to have an OS de
 Navigate to the machine page for your new machine, then click the green "Take action" button in the upper-right hand corner.
 Click "Commission", and then click the green "Commission" button to confirm.
 If you selected manual power control, you should now turn the machine on.
+If using IPMI or VM power control, MAAS will send signals to turn the machine on itself.
 
 At this point, the machine will once again PXE boot from the MAAS server and run commissioning scripts.
 Once these are finished it will once again turn itself off.
@@ -160,10 +160,17 @@ Once these are finished it will once again turn itself off.
 Once the machine has completed commissioning, navigate to the machine page for your new machine, then click the green "Take action" button.
 Click "Deploy", then confirm by clicking "Deploy machine".
 If you selected manual power control, you should now turn the machine on.
+If using IPMI or VM power control, MAAS will send signals to turn the machine on itself.
 
 At this point, the machine will PXE boot from the MAAS server and begin installing the OS to the local disk.
 After the installation completes, the machine should show as "Deployed" in the MAAS web interface.
 And at this point your should be able to log in using the SSH key you configured in MAAS!
+
+### Releasing and reinstalling the machine
+
+1. Navigate to the machine page for the machine you want to reinstall
+1. Click the "Take action" button and select Release. This will shut the machine down, and MAAS should show it in a "Ready" state.
+1. To reinstall the machine, click the "Take action" button and select "Deploy". There is no need to commission the machine again.
 
 ## Scaling up
 

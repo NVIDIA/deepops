@@ -56,7 +56,7 @@ This process should run from a Linux system on the same network segment as the t
 # Set to boot from disk, always
 # Dell
 chassis bootdev disk options=persistent
-# DGX
+# DGX-1
 raw 0x00 0x08 0x05 0xe0 0x08 0x00 0x00 0x00
 
 # Set to boot from the network, next boot only
