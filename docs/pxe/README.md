@@ -1,64 +1,19 @@
-PXE
-===
+OS provisioning via PXE
+=======================
 
-Minimal containers for OS installation
+Deploying bare-metal clusters at scale generally involves some method for installing the operating system over the network.
+This is typically using the [Preboot eXecution Environment (PXE)](https://en.wikipedia.org/wiki/Preboot_Execution_Environment),
+a standardized environment which boots an OS from the network.
 
-## Requirements
+There are a wide variety of tools for managing OS installation over the network.
+Most of the playbooks in DeepOps are agnostic to the OS install tooling, assuming that an OS is already present.
+For example, DeepOps can be used to deploy a [Slurm cluster](../slurm-cluster/) or a [Kubernetes cluster](../k8s-cluster) regardless of how the OS was installed.
+This makes it relatively easy to integrate with an existing datacenter environment.
 
-  * Control machine connected to the same VLAN/subnet as target machines
-  * Docker installed on control machine
+However, DeepOps does provide tooling for several PXE installation mechanisms which can be used if an existing tool isn't already deployed.
+These include:
 
-## Installation Steps
-
-This process should run from a Linux system on the same network segment as the target nodes.
-
-1. Install docker.
-
-   ```sh
-   ./scripts/generic/install_docker.sh
-   ```
-
-2. (Optional) Start DHCP server.
-
-   If you have an existing DHCP server, skip this step
-
-   ```sh
-   # Modify listen interface, DHCP range, and network gateway IP
-   docker-compose -f src/containers/pxe/docker-compose.yml run -d dhcp dnsmasq -d --interface=ens192 --dhcp-range=192.168.1.100,192.168.1.199,7200 --dhcp-option=6,8.8.8.8 --dhcp-option=3,192.168.1.1
-   ```
-
-3. (Optional) Configure NAT routing.
-
-   If you have an existing network gateway, skip this step
-
-   ```sh
-   # Set eth0 and eth1 to your public and private interfaces, respectively
-   ./scripts/pxe/setup_nat.sh eth0 eth1
-   ```
-
-4. Start PXE server.
-
-   ```sh
-   docker-compose -f src/containers/pxe/docker-compose.yml up -d pxe
-   ```
-
-5. Install OS.
-
-   Set servers to boot from the network for the next boot only (to avoid re-install loops) and reboot them to install the OS.
-
-   The default credentials are:
-   * Username: `ubuntu`
-   * Password: `deepops`
-
-## IPMI Command Reference
-
-```sh
-# Set to boot from disk, always
-# Dell
-chassis bootdev disk options=persistent
-# DGX
-raw 0x00 0x08 0x05 0xe0 0x08 0x00 0x00 0x00
-
-# Set to boot from the network, next boot only
-chassis bootdev pxe options=efiboot
-```
+* [MAAS](./maas.md), an open-source bare-metal provisioning tool developed by [Canonical](https://canonical.com/)
+* [DGXIE](./dgxie-container.md), a containerized deployment tool developed specifically to deploy NVIDIA DGX OS
+    * [DGXIE on Kubernetes](./dgxie-on-k8s.md)
+* A minimal [PXE container](./minimal-pxe-container.md) which wraps [Pixiecore](https://github.com/danderson/netboot/tree/master/pixiecore), an open source tool for network booting
