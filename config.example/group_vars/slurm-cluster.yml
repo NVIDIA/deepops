@@ -16,8 +16,6 @@ slurm_password: ReplaceWithASecurePasswordInTheVault
 slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 #slurm_max_job_timelimit: INFINITE
 #slurm_default_job_timelimit:
-slurm_controller_host: "{{ groups['slurm-master'][0] }}"
-slurm_compute_hosts: "{{ groups['slurm-node'] }}"
 slurm_enable_monitoring: true
 
 # Ensure hosts file generation only runs across slurm cluster
