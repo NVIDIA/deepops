@@ -28,6 +28,9 @@ slurm_allow_ssh_user: []
 slurm_db_username: slurm
 slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 
+slurm_enable_ha: false
+slurm_ha_state_save_location: "/sw/slurm"
+
 is_controller: no
 is_compute: no
 
