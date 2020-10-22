@@ -26,6 +26,14 @@
     nhc_build: false
   when: nhc_check.rc == 0 and not nhc_force_reinstall
 
+- name: install build dependencies
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items: "{{ nhc_build_deps }}"
+  when: ansible_distribution == 'Ubuntu'
+
 - name: ensure build dir exists
   file:
     path: "{{ nhc_build_dir }}"
