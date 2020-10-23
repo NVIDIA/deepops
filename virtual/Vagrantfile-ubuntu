@@ -40,7 +40,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.provision "shell", inline: <<-SHELL
-	sed -i -e 's/4\.2\.2\.1/8.8.8.8/g' -e 's/4\.2\.2\.2/8.8.4.4/g' /etc/netplan/01-netcfg.yaml
-	netplan apply
+    sed -i -e 's/4\.2\.2\.1/8.8.8.8/g' -e 's/4\.2\.2\.2/8.8.4.4/g' /etc/netplan/01-netcfg.yaml
+    netplan apply
+
+    apt-get update
   SHELL
 end

@@ -14,10 +14,10 @@
     - name: Install package dependencies
       package:
         name:
-          - python-pip
+          - python3-pip
           - git
         state: present
-    - name: Install python dependencies
+    - name: Install python3 dependencies
       pip:
         name:
           - pyhelm
