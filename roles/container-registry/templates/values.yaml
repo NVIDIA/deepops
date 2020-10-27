@@ -5,6 +5,8 @@ nodeSelector:
   node-role.kubernetes.io/master: ""
 service:
   type: "{{ container_registry_service_type }}"
+  {% if container_registry_service_type == "NodePort" %}nodePort: "{{ container_registry_node_port }}"{% endif %}
+
 ingress:
   enabled: "{{ container_registry_ingress_enabled }}"
   hosts:
@@ -14,6 +16,3 @@ ingress:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/proxy-body-size: "{{ container_registry_ingress_size }}"
-  tls:
-  - hosts:
-    - "{{ container_registry_hostname }}"
