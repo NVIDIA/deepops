@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -ex
 
+tmpfs_mounted="$(findmnt /tmp | grep ' tmpfs ' | cat)"
+tmpfs_infstab="$(grep '/tmp ' /etc/fstab | grep ' tmpfs ' | cat)"
+
 # Cleanup /tmp
-if findmnt /tmp && grep "/tmp " /etc/fstab; then
+if [ ! -z "$tmpfs_mounted" ] && [ ! -z "$tmpfs_infstab" ]; then
     umount /tmp
     mount /tmp
 else
