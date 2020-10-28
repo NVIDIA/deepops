@@ -1,6 +1,7 @@
 persistence:
-  enabled: true
-  size: "{{ container_registry_storage_size }}"
+  enabled: "{{ container_registry_persistence_enabled }}"
+  {% if container_registry_persistence_enabled %}size: "{{ container_registry_storage_size }}"{% endif %}
+
 nodeSelector:
   node-role.kubernetes.io/master: ""
 service:

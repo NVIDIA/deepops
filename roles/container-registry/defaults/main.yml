@@ -16,4 +16,5 @@ container_registry_ingress_enabled: false
 container_registry_ingress_size: 4096m
 container_registry_service_type: NodePort
 container_registry_node_port: 31500
+container_registry_persistence_enabled: true
 container_registry_storage_size: 100Gi

@@ -1,0 +1,4 @@
+---
+# Enable in-cluster registry for virtual cluster
+k8s_cluster_enable_container_registry: true
+container_registry_persistence_enabled: false
