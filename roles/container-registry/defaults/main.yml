@@ -1,7 +1,7 @@
 ---
 helm_cmd: "/usr/local/bin/helm"
 
-container_registry_chart_location: "https://kubernetes-charts.storage.googleapis.com"
+container_registry_chart_location: "https://charts.helm.sh/stable"
 container_registry_repo_name: "stable"
 container_registry_chart_name: "{{ container_registry_repo_name }}/docker-registry"
 container_registry_installed_name: "docker-registry"
