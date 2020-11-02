@@ -1,32 +1,22 @@
-- name: Install Helm chart for Docker container registry
-  helm:
-    host: "{{ tiller_host }}"
-    chart:
-      name: "{{ container_registry_name }}"
-      version: "{{ container_registry_version }}"
-      source:
-        type: repo
-        location: "{{ helm_chart_location }}"
-    state: present
-    name: "{{ container_registry_name }}"
-    namespace: "{{ container_registry_namespace }}"
-    values:
-      persistence:
-        enabled: true
-        size: "{{ container_registry_storage_size }}"
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
-      service:
-        type: "{{ container_registry_service_type }}"
-      ingress:
-        enabled: "{{ container_registry_ingress_enabled }}"
-        hosts:
-          - "{{ container_registry_hostname }}"
-        annotations:
-          kubernetes.io/ingress.class: "nginx"
-          nginx.ingress.kubernetes.io/ssl-redirect: "false"
-          nginx.ingress.kubernetes.io/rewrite-target: /
-          nginx.ingress.kubernetes.io/proxy-body-size: "{{ container_registry_ingress_size }}"
-        tls:
-        - hosts:
-          - "{{ container_registry_hostname }}"
+---
+# While we would prefer to use the Ansible helm module, it's broken! :-(
+# See https://github.com/ansible/ansible/pull/57897
+# Unfortunately this will not be fixed until Ansible 2.10 which is not yet released.
+# So for now we will run helm commands directly...
+
+- name: install stable helm repository
+  command: "{{ helm_cmd }} repo add {{ container_registry_repo_name }} {{ container_registry_chart_location }}"
+
+- name: update helm repos
+  command: "{{ helm_cmd }} repo update"
+
+- name: copy values.yaml into place
+  template:
+    src: "{{ container_registry_values_template }}"
+    dest: "{{ container_registry_values_path }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
+- name: install container-registry
+  command: "{{ helm_cmd }} upgrade --install -f {{ container_registry_values_path }} --version {{ container_registry_version }} --namespace {{ container_registry_namespace }} {{ container_registry_installed_name }} {{ container_registry_chart_name }}" 

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-registry-local
+spec:
+  containers:
+  - name: nginx
+    image: registry.local:31500/nginx
+  hostNetwork: true
+  dnsPolicy: Default

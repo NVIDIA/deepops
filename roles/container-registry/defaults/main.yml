@@ -1,10 +1,21 @@
-tiller_host: localhost
-helm_chart_location: "https://kubernetes-charts.storage.googleapis.com"
-container_registry_name: docker-registry
-container_registry_namespace: default
-container_registry_version: 1.9.2
+---
+helm_cmd: "/usr/local/bin/helm"
+
+container_registry_chart_location: "https://charts.helm.sh/stable"
+container_registry_repo_name: "stable"
+container_registry_chart_name: "{{ container_registry_repo_name }}/docker-registry"
+container_registry_installed_name: "docker-registry"
+
+container_registry_values_template: "values.yaml"
+container_registry_values_path: "/tmp/container-registry.yaml"
+
+container_registry_namespace: "default"
+container_registry_version: 1.9.4
 container_registry_hostname: registry.local
-container_registry_ingress_enabled: true
+container_registry_ingress_enabled: false
 container_registry_ingress_size: 4096m
-container_registry_service_type: LoadBalancer
+container_registry_service_type: NodePort
+container_registry_node_port: 31500
+container_registry_persistence_enabled: true
+container_registry_delete_enabled: true
 container_registry_storage_size: 100Gi

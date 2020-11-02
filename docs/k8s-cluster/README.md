@@ -179,7 +179,7 @@ The default container registry hostname is `registry.local`. To set another host
 one that is resolvable outside the cluster), add `-e container_registry_hostname=registry.example.com`.
 
 ```sh
-ansible-playbook --tags container-registry playbooks/k8s-cluster/k8s-services.yml
+ansible-playbook --tags container-registry playbooks/k8s-cluster/container-registry.yml
 ```
 
 ### Load Balancer and Ingress
