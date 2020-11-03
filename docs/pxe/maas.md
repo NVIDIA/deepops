@@ -177,3 +177,8 @@ And at this point your should be able to log in using the SSH key you configured
 This is a lot of work for a single machine, but most operations in MAAS can be done in batches.
 It's generally straightforward to auto-discover a large number of hosts at a time,
 then commission them and provision them by selecting them as a group in the Machines interface.
+
+## Creating a DGX OS image installable by MAAS
+
+The official NVIDIA DGX OS version 5.0 and higher is installable by MAAS by creating a custom OS image.
+The code is located in the `submodules/packer-maas` directory. For more information, see: https://github.com/DeepOps/packer-maas/tree/master/dgxos5
