@@ -1,18 +1,16 @@
 ---
 - hosts: all
   become: true
-  gather_facts: False
+  gather_facts: false
   tasks:
-    # Fortunately, python is a dependency of yum. So RedHat systems always have it.
     - name: install python (no proxy)
-      raw: test -e /usr/bin/python3 || (apt -y update && apt install -y python3-minimal)
+      raw: test -e /usr/bin/python3 || (apt -y update && apt install -y python3-minimal) || (yum install -y python3)
       register: output
       changed_when: output.stdout != ""
       when: proxy_env is not defined
 
     - name: install python (using proxy)
-      raw: test -e /usr/bin/python3 || (https_proxy="{{ https_proxy }}" http_proxy="{{ http_proxy }}" apt -y update && https_proxy="{{ https_proxy }}" http_proxy="{{ http_proxy }}" apt install -y python3-minimal)
+      raw: test -e /usr/bin/python3 || (https_proxy="{{ https_proxy }}" http_proxy="{{ http_proxy }}" apt -y update && https_proxy="{{ https_proxy }}" http_proxy="{{ http_proxy }}" apt install -y python3-minimal) || (https_proxy="{{ https_proxy }}" http_proxy="{{ http_proxy }}" yum install -y python3)
       register: output
       changed_when: output.stdout != ""
       when: proxy_env is defined
-
