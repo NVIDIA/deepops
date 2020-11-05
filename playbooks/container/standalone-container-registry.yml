@@ -1,0 +1,7 @@
+---
+- include: docker.yml
+
+- hosts: "{{ hostlist | default('all') }}"
+  become: yes
+  roles:
+  - standalone-container-registry
