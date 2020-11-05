@@ -256,3 +256,17 @@ openmpi_version: 4.0.3
 
 # Disable cloud-init
 deepops_disable_cloud_init: true
+
+################################################################################
+# Container registry                                                           #
+################################################################################
+standalone_container_registry_cache_enable: true 
+standalone_container_registry_port: "5000"
+
+# If we don't otherwise configure the registry host, default to first host
+# in inventory
+standalone_container_registry_host: "{{ groups['all'][0] }}:{{ standalone_container_registry_port }}"
+docker_insecure_registries:
+- "{{ standalone_container_registry_host }}"
+docker_registry_mirrors:
+- "http://{{ standalone_container_registry_host }}"

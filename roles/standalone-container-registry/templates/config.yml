@@ -3,7 +3,10 @@ storage:
   filesystem:
     rootdirectory: /var/lib/registry
 http:
-  addr: "localhost:{{ standalone_container_registry_port }}"
+  addr: "0.0.0.0:{{ standalone_container_registry_port }}"
+log:
+  accesslog:
+    disabled: false
 {% if standalone_container_registry_cache_enable -%}
 proxy:
   remoteurl: {{ standalone_container_registry_cache_upstream }}

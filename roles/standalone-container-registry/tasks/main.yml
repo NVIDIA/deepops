@@ -45,7 +45,6 @@
     name: "{{ standalone_container_registry_name }}"
     image: "{{ standalone_container_registry_image }}"
     state: started
-    ports:
-    - "{{ standalone_container_registry_port }}:5000"
+    network_mode: host
     volumes:
     - "{{ standalone_container_registry_config_dir }}/config.yml:/etc/docker/registry/config.yml"
