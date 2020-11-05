@@ -44,3 +44,15 @@ hosts_add_ansible_managed_hosts_groups: ["k8s-cluster"]
 
 # Configure so that the in-cluster registry can be accessed without HTTPS
 docker_insecure_registries: ["registry.local:31500"]
+
+# NFS Client Provisioner 
+# Playbook: nfs-client-provisioner.yml
+k8s_nfs_server: '{{ groups["kube-master"][0] }}'
+k8s_nfs_export_path: '/export/shared'
+
+# NFS Server
+# This config will create an NFS server and share the given exports
+# Playbook: nfs-server.yml, nfs-provisioner-client.yml
+nfs_exports:
+  - path: '{{ k8s_nfs_export_path }}'
+    options: "*(rw,sync,no_root_squash)"

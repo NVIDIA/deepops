@@ -1,0 +1,14 @@
+---
+# While we would prefer to use the Ansible helm module, it's broken! :-(
+# See https://github.com/ansible/ansible/pull/57897
+# Unfortunately this will not be fixed until Ansible 2.10 which is not yet released.
+# So for now we will run helm commands directly...
+
+- name: install nfs-client-provisioner helm repo
+  command: /usr/local/bin/helm repo add "{{k8s_nfs_client_repo_name}}" "{{ k8s_nfs_client_helm_repo }}"
+
+- name: update helm repos
+  command: /usr/local/bin/helm repo update
+
+- name: install nfs-client-provisioner
+  command: /usr/local/bin/helm upgrade --install "{{ k8s_nfs_client_release_name }}" "{{ k8s_nfs_client_chart_name }}" --version "{{ k8s_nfs_client_chart_version }}" --set nfs.server="{{ k8s_nfs_server }}" --set nfs.path="{{ k8s_nfs_export_path }}" --set storageClass.defaultClass="{{ k8s_nfs_default_sc }}" --wait

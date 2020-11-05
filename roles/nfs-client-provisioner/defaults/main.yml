@@ -1,0 +1,9 @@
+# Vars needed to install nfs-client-provisioner
+k8s_nfs_server: "127.0.0.1"
+k8s_nfs_export_path: "/export/shared"
+k8s_nfs_default_sc: "true"
+k8s_nfs_client_repo_name: "stable"
+k8s_nfs_client_helm_repo: "https://charts.helm.sh/stable"
+k8s_nfs_client_chart_name: "{{ k8s_nfs_client_repo_name }}/nfs-client-provisioner"
+k8s_nfs_client_release_name: "nfs-client-provisioner"
+k8s_nfs_client_chart_version: "1.2.9"
