@@ -11,8 +11,3 @@ slurm_allow_ssh_user:
 hpcsdk_clean_up_tarball_after_extract: true
 hpcsdk_clean_up_temp_dir: true
 slurm_build_dir_cleanup: true
-
-# Assuming we're in the virtual cluster, set use the k8s management node as our
-# container registry
-standalone_container_registry_port: "5000"
-standalone_container_registry_host: "{{ groups['kube-master'][0] }}:{{ standalone_container_registry_port }}"

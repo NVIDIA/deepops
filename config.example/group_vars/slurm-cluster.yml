@@ -171,5 +171,4 @@ slurm_health_check_program: "/usr/sbin/nhc"
 ################################################################################
 # Container registry                                                           #
 ################################################################################
-standalone_container_registry_host: "{{ groups['slurm-master'][0] }}:{{ standalone_container_registry_port }}"
 slurm_enable_container_registry: true

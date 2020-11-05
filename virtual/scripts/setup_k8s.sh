@@ -25,7 +25,6 @@ fi
 # Deploy the K8s cluster
 ansible-playbook \
 	-b -i "${VIRT_DIR}/config/inventory" \
-	-e "@${VIRT_DIR}/vars_files/virt_k8s.yml" \
 	${ansible_extra_args} \
 	"${ROOT_DIR}/playbooks/k8s-cluster.yml"
 

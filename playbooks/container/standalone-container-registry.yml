@@ -2,6 +2,7 @@
 - include: docker.yml
 
 - hosts: "{{ hostlist | default('all') }}"
-  become: yes
+  become: true
+  become_method: sudo
   roles:
   - standalone-container-registry

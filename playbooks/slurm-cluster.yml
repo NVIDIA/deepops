@@ -22,6 +22,7 @@
 # Set up a local cluster container registry
 - include: container/standalone-container-registry.yml
   vars:
+    standalone_container_registry_host: "{{ groups['slurm-master'][0] }}"
     hostlist: "{{ standalone_container_registry_host }}"
   when: slurm_enable_container_registry|default(true)
 
