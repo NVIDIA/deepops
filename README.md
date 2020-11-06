@@ -16,7 +16,7 @@ Check out the [video tutorial](https://drive.google.com/file/d/1RNLQYlgJqE8JMv0n
 
 ## Releases
 
-Latest release: [DeepOps 20.10.1 Release](https://github.com/NVIDIA/deepops/releases/tag/20.10.1)
+Latest release: [DeepOps 20.10 Release](https://github.com/NVIDIA/deepops/releases/tag/20.10)
 
 It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally functional but may change significantly between releases.
 
@@ -78,6 +78,4 @@ Otherwise, bugs and feature requests can be made by [filing a GitHub Issue](http
 
 ## Contributing
 
-To contribute, please issue a [pull request](https://help.github.com/articles/using-pull-requests/) against the master branch from a local fork.
-
-A signed copy of the [Contributor License Agreement](https://raw.githubusercontent.com/NVIDIA/deepops/master/CLA) needs to be provided to deepops [at] nvidia.com before any change can be accepted.
+To contribute, please issue a [signed](https://raw.githubusercontent.com/NVIDIA/deepops/master/CONTRIBUTING.md) [pull request](https://help.github.com/articles/using-pull-requests/) against the master branch from a local fork. See the [contribution document](https://raw.githubusercontent.com/NVIDIA/deepops/master/CONTRIBUTING.md) for more information.

@@ -1,0 +1,22 @@
+---
+- hosts: kube-master
+  become: true
+  tasks:
+    - name: Install helm chart for container registry
+      include_role:
+        name: container-registry
+      run_once: true
+  tags:
+    - container-registry
+
+- hosts: kube-node
+  become: true
+  vars:
+    container_registry_hostname: registry.local
+  tasks:
+    - name: Set registry hostname in /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ hostvars[groups['kube-master'][0]]['ansible_host'] }} {{ container_registry_hostname }}"
+  tags:
+    - container-registry

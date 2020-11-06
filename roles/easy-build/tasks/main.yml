@@ -13,12 +13,12 @@
 
 - name: "install needed packages"
   become: yes
-  action: apt name=python-setuptools state=latest
+  action: apt name=python3-setuptools state=latest
   when: ansible_os_family == "Debian"
 
 - name: "install needed packages"
   become: yes
-  action: yum name=python-setuptools state=latest
+  action: yum name=python3-setuptools state=latest
   when: ansible_os_family == "RedHat"
 
 - name: "check if easybuild is installed"

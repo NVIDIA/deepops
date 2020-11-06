@@ -6,7 +6,7 @@
     state: present
   with_items:
     - mariadb-server
-    - python-mysqldb
+    - python3-mysqldb
     - s-nail
     - ssmtp
   when: ansible_os_family == "Debian"
@@ -61,6 +61,14 @@
     - /var/spool/slurm/ctld
     - /var/log/slurm
 
+- name: create slurm HA directory
+  file:
+    path: "{{ slurm_ha_state_save_location }}"
+    state: directory
+    owner: slurm
+    mode: 0755
+  when: "{{ slurm_enable_ha }}"
+
 - name: configure slurm.conf
   template:
     src: "{{ slurm_conf_template }}"
@@ -74,6 +82,7 @@
   template:
     src: "{{ slurm_dbd_conf_template }}"
     dest: "{{ slurm_config_dir }}/slurmdbd.conf"
+    mode: 0600
   notify:
   - restart slurmdbd
   tags:

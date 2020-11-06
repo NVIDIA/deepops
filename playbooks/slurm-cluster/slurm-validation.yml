@@ -1,6 +1,6 @@
 ---
 # Playbook designed to run a NCCL test across all nodes in a cluster of DGX-1s
-- hosts: slurm-master
+- hosts: slurm-master[0]
   vars:
     nccl_test_repo: "deepops/nccl-tests-tf20.06-ubuntu18.04:latest" # Public repository for nccl performance/validation tests
     num_gpus: 8 # A DGX A100 Server has 8 GPUs

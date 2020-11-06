@@ -33,11 +33,11 @@
 # Set up NFS filesystem
 - include: generic/nfs-server.yml
   vars:
-    hostlist: "{{ nfs_server_group | default('slurm-master') }}"
+    hostlist: "{{ nfs_server_group | default('slurm-master[0]') }}"
   when: slurm_enable_nfs_server
 - include: generic/nfs-client.yml
   vars:
-    hostlist: "{{ nfs_client_group | default('slurm-node') }}"
+    hostlist: "{{ nfs_client_group | default('slurm-master[1:],slurm-node') }}"
   when: slurm_enable_nfs_client_nodes
 
 # Install DCGM
@@ -60,15 +60,15 @@
   when: slurm_install_lmod
 
 # Install the NVIDIA HPC SDK
-- include: nvidia-software/nvidia-hpc-sdk.yml hostlist=slurm-master
+- include: nvidia-software/nvidia-hpc-sdk.yml hostlist=slurm-master[0]
   when: slurm_install_hpcsdk
 
 # Install monitoring tools
-- include: slurm-cluster/prometheus.yml hostlist=slurm-master
+- include: slurm-cluster/prometheus.yml hostlist=slurm-master[0]
   when: slurm_enable_monitoring
-- include: slurm-cluster/grafana.yml hostlist=slurm-master
+- include: slurm-cluster/grafana.yml hostlist=slurm-master[0]
   when: slurm_enable_monitoring
-- include: slurm-cluster/prometheus-slurm-exporter.yml hostlist=slurm-master
+- include: slurm-cluster/prometheus-slurm-exporter.yml hostlist=slurm-master[0]
   when: slurm_enable_monitoring
 - include: slurm-cluster/prometheus-node-exporter.yml
   when: slurm_enable_monitoring

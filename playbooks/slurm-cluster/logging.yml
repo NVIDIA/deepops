@@ -1,5 +1,5 @@
 ---
-- hosts: slurm-master
+- hosts: slurm-master[0]
   become: true
   vars:
     elasticsearch_network_host: 0.0.0.0
