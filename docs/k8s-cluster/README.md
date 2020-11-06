@@ -100,9 +100,23 @@ Run the following script to create an administrative user and print out the dash
 
 ### Persistent Storage
 
+#### NFS Client Provisioner
+
+The default behavior of DeepOps is to setup an NFS server on the first `kube-master` node. This temporary NFS server is used by the `nfs-client-provisioner` which is installed as the default StorageClass of a standard DeepOps deployment.
+
+
+To use an existing nfs server server update the `k8s_nfs_server` and `k8s_nfs_export_path` variables in `config/group_vars/k8s-cluster.yml` and run `ansible-playbook playbooks/k8s-cluster.yml` with `--skip-tags=nfs_server` command. Additionally, the `nfs_mkdir` flag can be skipped if the export directory is already configured on the server.
+
+To manually install or re-install the `nfs-client-provisioner` run:
+
+```sh
+ansible-playbook playbooks/k8s-cluster/nfs-client-provisioner.yml
+```
+
 #### Ceph Cluster
 
-Deploy a Ceph cluster running on Kubernetes for services that require persistent storage (such as Kubeflow):
+
+For a non-nfs based alternative, deploy a Ceph cluster running on Kubernetes for services that require persistent storage (such as Kubeflow):
 
 ```sh
 ./scripts/k8s/deploy_rook.sh
