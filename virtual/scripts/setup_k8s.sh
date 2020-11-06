@@ -44,9 +44,6 @@ kubectl get nodes
 # Deploy dashboard (optional)
 "${ROOT_DIR}/scripts/k8s/deploy_dashboard_user.sh"
 
-# Deploy rook (optional, but highly recommended)
-"${ROOT_DIR}/scripts/k8s/deploy_rook.sh"
-
 # Deploy load balancer and ingress (optional but recommended)
 "${ROOT_DIR}/scripts/k8s/deploy_loadbalancer.sh"
 "${ROOT_DIR}/scripts/k8s/deploy_ingress.sh"
