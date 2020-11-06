@@ -146,7 +146,7 @@ function install_mpi_operator() {
     grep /kustomize/v |\
     sort | tail -n 1 |\
     xargs curl -s -O -L
-  tar xzf ./kustomize_v*_linux_amd64.tar.gz
+  tar xzf ./kustomize_v*_linux_*.tar.gz
   mv kustomize ${KUSTOMIZE}
 
   mkdir -p ${KUBEFLOW_MPI_DIR}
