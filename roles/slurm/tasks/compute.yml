@@ -151,5 +151,6 @@
     path: /etc/pam.d/common-session
     regexp: '^([^#].*pam_systemd.so.*)'
     replace: '# \1 # ANSIBLE MANAGED (ansible-role-slurm)'
+  when: ansible_distribution == 'Ubuntu'
   tags:
     - config
