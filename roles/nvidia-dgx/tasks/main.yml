@@ -5,8 +5,10 @@
   when: ansible_product_name is not search("DGX")
 
 - name: ubuntu tasks
-  include_tasks: ubuntu.yml
-  when: ansible_distribution == 'Ubuntu'
+  include_tasks: ubuntu-18.04.yml
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - ansible_distribution_version == '18.04'
 
 - name: redhat family tasks
   include_tasks: redhat.yml

@@ -1,4 +1,9 @@
 ---
+- name: Check for Ubuntu version
+  fail:
+    msg: "Role supports Ubuntu 18.04 only"
+  when: ansible_distribution_version != "18.04"
+
 - name: include os specific variables
   include_vars: ubuntu.yml
 

@@ -185,7 +185,7 @@ k8-mgmt03        Ready    master   21m   v1.12.5
    one that is resolvable outside the cluster), add `-e container_registry_hostname=registry.example.com`.
 
    ```sh
-   ansible-playbook --tags container-registry playbooks/k8s-cluster/k8s-services.yml
+   ansible-playbook --tags container-registry playbooks/k8s-cluster/container-registry.yml
    ```
 
 3. (Optional) Deploy Internal Repositories

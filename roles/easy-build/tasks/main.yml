@@ -4,12 +4,12 @@
 ---
 - name: "install needed packages"
   become: yes
-  action: apt name=python-setuptools state=latest
+  action: apt name=python3-setuptools state=latest
   when: ansible_os_family == "Debian"
 
 - name: "install needed packages"
   become: yes
-  action: yum name=python-setuptools state=latest
+  action: yum name=python3-setuptools state=latest
   when: ansible_os_family == "RedHat"
 
 - name: "rm previous tmp folders"    
@@ -49,7 +49,7 @@
 # EasyBuild config manually. We might want to create some abstraction for this.
 # 
 - name: "install latest EasyBuild version"
-  shell: . /etc/profile && python /tmp/bootstrap_eb.py {{ eb_tmp_dir }}
+  shell: . /etc/profile && python3 /tmp/bootstrap_eb.py {{ eb_tmp_dir }}
   args:
     executable: /bin/bash
   when: not ebsw_exe.matched

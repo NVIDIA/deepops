@@ -23,7 +23,11 @@ if [ "${DEEPOPS_OFFLINE}" -ne 0 ]; then
 fi
 
 # Deploy the K8s cluster
-ansible-playbook -b -i "${VIRT_DIR}/config/inventory" ${ansible_extra_args} "${ROOT_DIR}/playbooks/k8s-cluster.yml"
+ansible-playbook \
+	-b -i "${VIRT_DIR}/config/inventory" \
+	-e "@${VIRT_DIR}/vars_files/virt_k8s.yml" \
+	${ansible_extra_args} \
+	"${ROOT_DIR}/playbooks/k8s-cluster.yml"
 
 # Source K8s environment for interacting with the cluster
 # shellcheck disable=SC1091 disable=SC1090
@@ -49,3 +53,10 @@ kubectl get nodes
 
 # Deploy monitoring (optional)
 "${ROOT_DIR}/scripts/k8s/deploy_monitoring.sh"
+
+# Deploy container registry (optional)
+ansible-playbook \
+	-b -i "${VIRT_DIR}/config/inventory" \
+	-e "@${VIRT_DIR}/vars_files/virt_k8s.yml" \
+	${ansible_extra_args} \
+	"${ROOT_DIR}/playbooks/k8s-cluster/container-registry.yml"

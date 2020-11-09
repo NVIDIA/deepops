@@ -16,13 +16,17 @@ slurm_password: ReplaceWithASecurePasswordInTheVault
 slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 #slurm_max_job_timelimit: INFINITE
 #slurm_default_job_timelimit:
-slurm_controller_host: "{{ groups['slurm-master'][0] }}"
-slurm_compute_hosts: "{{ groups['slurm-node'] }}"
 slurm_enable_monitoring: true
 
 # Ensure hosts file generation only runs across slurm cluster
 hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
 
+# Enable Slurm high-availability mode
+# NOTE: The location for Slurm saved state needs to reside in a location shared by all Slurm controller nodes
+#       Ideally this is on external NFS server and not the primary control node, since its failure
+#       would also take down that NFS share
+slurm_enable_ha: false
+slurm_ha_state_save_location: "/sw/slurm"
 
 # Slurm configuration is auto-generated from templates in the `slurm` role.
 # If you want to override any of these files with custom config files, please
@@ -68,8 +72,8 @@ slurm_enable_nfs_server: true
 slurm_enable_nfs_client_nodes: true
 
 # Inventory host groups to use for NFS server or clients
-nfs_server_group: "slurm-master"
-nfs_client_group: "slurm-node"
+nfs_server_group: "slurm-master[0]"
+nfs_client_group: "slurm-master[1:],slurm-node"
 
 ################################################################################
 # SOFTWARE MODULES (SM)                                                        #

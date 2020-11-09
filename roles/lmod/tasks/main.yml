@@ -67,7 +67,9 @@
     ln -s -f /usr/lib/x86_64-linux-gnu/lua/5.1/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.1/posix.so
     ln -s -f /usr/lib/x86_64-linux-gnu/lua/5.2/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.2/posix.so
     ln -s -f /usr/lib/x86_64-linux-gnu/lua/5.3/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.3/posix.so
-  when: ansible_os_family == "Debian"
+  when: 
+    - ansible_distribution == 'Ubuntu'
+    - ansible_distribution_version == '18.04'
 
 - name: "unset previous lmod setup"
   shell: unset MODULEPATH_ROOT

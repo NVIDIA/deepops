@@ -1,4 +1,4 @@
-# DGXIE
+# DGXIE (on Kubernetes)
 
 DGXie is an all-in-one container for DHCP, DNS, and PXE, specifically tailored to the DGX Base OS.
 

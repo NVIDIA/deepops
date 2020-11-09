@@ -6,7 +6,7 @@
       package:
         name: xfsprogs
         state: present
-    - name: install python-setuptools for ceph/rook
+    - name: install python3-setuptools for ceph/rook
       package:
-        name: python-setuptools
+        name: python3-setuptools
         state: present

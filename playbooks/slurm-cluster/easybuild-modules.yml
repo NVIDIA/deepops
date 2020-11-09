@@ -6,7 +6,10 @@
   roles:
     - name: lmod
 
-- hosts: slurm-master
+- hosts: slurm-master[0]
   roles:
     - name: easy-build
+
+- hosts: slurm-master
+  roles:
     - name: easy-build-packages

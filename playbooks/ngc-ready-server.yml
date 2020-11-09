@@ -16,9 +16,9 @@
   vars:
     ngc_container_tag: 18.10-py3
   tasks:
-    - name: install docker python module
+    - name: install docker python3 module
       apt:
-        name: python-docker
+        name: python3-docker
         state: present
         update_cache: yes
       when: ansible_distribution == "Ubuntu"
@@ -31,10 +31,10 @@
     - name: Install package dependencies
       package:
         name:
-          - python-pip
+          - python3-pip
         state: present
       when: ansible_os_family == "RedHat"
-    - name: Install python dependencies
+    - name: Install python3 dependencies
       pip:
         name:
           - docker

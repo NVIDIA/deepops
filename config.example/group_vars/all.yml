@@ -210,7 +210,7 @@ maas_adminusers:
 maas_dns_domain: 'deepops.local'
 maas_region_controller: '192.168.1.1'
 maas_region_controller_url: 'http://{{ maas_region_controller }}:5240/MAAS'
-maas_repo: 'ppa:maas/stable'
+maas_repo: 'ppa:maas/2.8'
 
 # Defines if maas user should generate ssh keys
 # Usable for remote KVM/libvirt power actions

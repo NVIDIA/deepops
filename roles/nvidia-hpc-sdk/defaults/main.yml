@@ -1,19 +1,50 @@
 ---
-hpcsdk_version: "2020_207"
+# The HPC SDK is downloaded from a URL that looks like this:
+#   https://developer.download.nvidia.com/hpc-sdk/20.9/nvhpc_2020_209_Linux_x86_64_cuda_11.0.tar.gz
+#
+# And we construct this URL from vars that can be specified in Ansible configuration:
+#   - hpcsdk_major_version: e.g. 20
+#   - hpcsdk_minor_version: e.g. 9
+#   - hpcsdk_file_cuda:     e.g. 11.0
+#   - hpcsdk_arch:          e.g. x86_64
+#
+# Note that the valid choices for hpcsdk_file_cuda are the latest CUDA
+# toolkit supported (e.g. 11.0) or a tarball which includes the last three
+# releases (named multi).
+# 
+# See https://developer.nvidia.com/nvidia-hpc-sdk-downloads for more detail on available downloads.
+
+# Version strings used to construct download URL
+hpcsdk_major_version: "20"
+hpcsdk_minor_version: "9"
+hpcsdk_file_cuda: "11.0"
 hpcsdk_arch: "x86_64"
-hpcsdk_cuda: "11.0"
-hpcsdk_download_name: "nvhpc_{{ hpcsdk_version }}_Linux_{{ hpcsdk_arch }}_cuda_{{ hpcsdk_cuda }}"
-hpcsdk_download_url: "https://developer.download.nvidia.com/hpc-sdk/{{ hpcsdk_download_name }}.tar.gz"
 
-hpcsdk_install_dir: "/sw/hpc-sdk"
-hpcsdk_install_type: "single"
+# We need to specify the default CUDA toolkit to use during installation.
+# This should usually be the latest CUDA included in the HPC SDK you are
+# installing.
 hpcsdk_default_cuda: "11.0"
-hpcsdk_version_dir: "20.7"
 
+# Add HPC SDK modules to the MODULEPATH?
+hpcsdk_install_as_modules: false
+
+# Add HPC SDK to the default user PATH?
+hpcsdk_install_in_path: true
+
+# Directory to install in
+hpcsdk_install_dir: "/sw/hpc-sdk"
+
+# Install type (should usually be "single")
+hpcsdk_install_type: "single"
+
+# Construct the download URL
+hpcsdk_file_version: "20{{ hpcsdk_major_version }}_{{ hpcsdk_major_version }}{{hpcsdk_minor_version }}"
+hpcsdk_download_name: "nvhpc_{{ hpcsdk_file_version }}_Linux_{{ hpcsdk_arch }}_cuda_{{ hpcsdk_file_cuda }}"
+hpcsdk_version_dir: "{{ hpcsdk_major_version }}.{{ hpcsdk_minor_version }}"
+hpcsdk_download_url: "https://developer.download.nvidia.com/hpc-sdk/{{ hpcsdk_version_dir }}/{{ hpcsdk_download_name }}.tar.gz"
+
+# Directories for download
 hpcsdk_temp_dir: "/tmp/hpc-sdk-install"
 hpcsdk_dest_download_path: "{{ hpcsdk_temp_dir }}/nvhpc.tar.gz"
-hpcsdk_clean_up_tarball_after_extract: false
-hpcsdk_clean_up_temp_dir: false
-
-hpcsdk_install_as_modules: false
-hpcsdk_install_in_path: true
+hpcsdk_clean_up_tarball_after_extract: true
+hpcsdk_clean_up_temp_dir: true
