@@ -46,10 +46,7 @@
 - include: generic/hosts.yml
 
 # Set up a local cluster container registry
-- include: container/standalone-container-registry.yml
-  vars:
-    standalone_container_registry_host: "{{ groups['kube-master'][0] }}"
-    hostlist: "{{ standalone_container_registry_host }}"
+- include: container/standalone-container-registry.yml hostlist=kube-master
   when: kube_enable_container_registry|default(true)
 
 # Install 'sshpass' program for: https://github.com/ansible/ansible/issues/56629

@@ -263,11 +263,8 @@ deepops_disable_cloud_init: true
 standalone_container_registry_cache_enable: true 
 standalone_container_registry_port: "5000"
 
-# If we don't otherwise configure the registry host, default to first host
-# in inventory
-standalone_container_registry_group: "all[0]"
-standalone_container_registry_host: "{{ groups['all'][0] }}"
-docker_insecure_registries:
-        - "{{ standalone_container_registry_host }}:{{ standalone_container_registry_port }}"
-docker_registry_mirrors:
-        - "http://{{ standalone_container_registry_host }}:{{ standalone_container_registry_port }}"
+# To configure some set of hosts as insecure registries, list them here.
+# Slurm and K8s cluster playbooks will automatically use the master nodes for
+# these if not specified.
+#docker_insecure_registries: ["<host>:<port>"]
+#docker_registry_mirrors: ["http://<host>:<port>"]
