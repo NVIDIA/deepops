@@ -1,4 +1,5 @@
 #!/bin/bash
+source workloads/jenkins/scripts/jenkins-common.sh
 
 # Check that we have installed a local registry on the cluster,
 # and that we are configured to use it as a mirror.
