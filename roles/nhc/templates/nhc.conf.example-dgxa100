@@ -75,7 +75,7 @@
 
 # Kernel module checks - Only check modules not covered via other tests
 
- * || check_cmd_output -t 2 -r 0 -m "/nv_peer_mem/'" "/sbin/lsmod"
+ * || check_cmd_output -t 2 -r 0 -m "/nv_peer_mem/" "/sbin/lsmod"
 
 # Load average check - Check for ridiculously high load
 
