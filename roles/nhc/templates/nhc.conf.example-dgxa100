@@ -7,6 +7,7 @@
 #   - Assumes you have RAID configured and mounted
 #   - Assumes a 2 TB memory config
 #   - Assumes you are running DCGM
+#   - Assumes Ethernet interface names from Ubuntu DGX OS
 
 # CPU and memory
 
