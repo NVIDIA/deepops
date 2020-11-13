@@ -48,7 +48,7 @@ docker_insecure_registries: ["registry.local:31500"]
 # NFS Client Provisioner 
 # Playbook: nfs-client-provisioner.yml
 k8s_nfs_server: '{{ groups["kube-master"][0] }}'
-k8s_nfs_export_path: '/export/shared'
+k8s_nfs_export_path: '/export/deepops_nfs'
 
 # NFS Server
 # This config will create an NFS server and share the given exports
