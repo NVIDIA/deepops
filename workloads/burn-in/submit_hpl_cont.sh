@@ -13,8 +13,8 @@ export HPL_DIR=${HPL_DIR:-$(pwd)} # Shared location where all HPL files are stor
 export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}} # Shared location where these scripts are stored
 export HPL_FILE_DIR=${HPL_FILE_DIR:-${HPL_DIR}/hplfiles} # Shared location where .dat files are stored
 
-export PATH=/usr/local/cuda/bin:$PATH
-export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+#export PATH=/usr/local/cuda/bin:$PATH
+#export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 echo "NVCC Version: $(nvcc -V)"
 echo "NVIDIA-SMI:"
@@ -54,6 +54,16 @@ if [ ! -f ${SYSCFG} ]; then
 	exit
 fi
 
+if [ x"${GPUMEM}" == x"" ]; then
+	echo "ERROR: GPUMEM not set.  Exiting"
+	exit
+fi
+
+if [ x"${CRUNTIME}" == x"" ]; then
+	echo "ERROR: CRUNTIME not set.  Exiting"
+	exit
+fi
+
 if [ x"${CONT}" = x"" ]; then
 	echo "ERROR, container is not defined at CONT."
 	exit 1
@@ -90,7 +100,7 @@ else
 		esac
 	fi
 
-	HPLFN=${HPL_FILE_DIR}/HPL.dat_${PxQ}_${SYSTEM}
+	HPLFN=${HPL_FILE_DIR}/HPL.dat_${PxQ}_${SYSTEM}_${GPUMEM}G
 fi
  
 if [ ! -f $HPLFN ]; then
@@ -169,7 +179,20 @@ echo ""
 # Set the mount as the temporary directory
 MOUNT=$(pwd):/datfiles
 
-CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} singularity run --nv -B "${MOUNT}" "${CONT}" /workspace/hpl.sh --config /datfiles/syscfg.sh --dat /datfiles/HPL.dat"
+case ${CRUNTIME} in
+	enroot)
+		srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
+                     --container-image="${CONT}" --container-mounts="${MOUNT}" \ 
+		     /workspace/hpl.sh --config /datfiles/syscfg.sh --dat /datfiles/HPL.dat ;;
+	singularity)
+		srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
+			singularity run --nv -B "${MOUNT}" "${CONT}" \
+		       	/workspace/hpl.sh --config /datfiles/syscfg.sh --dat /datfiles/HPL.dat ;;
+	*)
+		echo "ERROR: Runtime ${CRUNTIME} not supported.  Exiting"
+		exit 1
+		;;
+esac
 
 echo $CMD
 $CMD

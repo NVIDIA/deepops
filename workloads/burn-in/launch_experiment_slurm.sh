@@ -27,7 +27,6 @@ export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}} # The shared directory whe
 
 ## Set default options
 niters=5
-cudaver=11.0
 partition=batch
 usehca=0
 usegres=1
@@ -35,6 +34,8 @@ maxnodes=9999
 mpiopts=""
 walltime=02:00:00
 verbose=0
+cruntime=singularity
+container="nvcr.io/nvidia/hpc-benchmarks:20.10-hpl"
 ORDER_CMD="cat"
 
 print_usage() {
@@ -45,16 +46,16 @@ ${0} [options]
 Launch an HPL Burnin test.
 
 Required Options:
-    -s|--sys <SYSTEM>
-        * Set to the system type on which to run.  Ex: dgx1v_16G, dgx1v_32G, dgx2, dgx2h, dgxa100, generic
+    -s|--sys <SYSCFG>
+        * Set to the system type on which to run.  Ex: dgx1v, dgx2, dgxa100, or a path to a script file with custom system settings
     -c|--count <Count>
         * Set to the number of nodes to use per job
+    -m|--mem <Size in GB>
+        * GPU memory size, ex: 16, 32, 40, 80
 
 Other Options:
     -i|--iters <Iterations>
         * Set to the number of iterations per experiment.  Default is ${niters}."
-    --cudaver <CUDA Version>
-        * Set the version of CUDA to use.  Default is ${cudaver}."
     -p|--part <Slurm Partition>
         * Set the Slurm partition to use.  Default is ${partition}."
     -a|--account <Slurm Account>
@@ -67,10 +68,14 @@ Other Options:
         * Sets string with additional OpenMPI options to pass to mpirun.  Default is none.
     --usegres <Val>
 	* Enable/disable use of GRES options in Slurm (1/0).  Default is ${usegres}.
-    --gpuclock MHz
+    --gpuclock <MHz>
         * Set specific clock to use during run.  Default is to set the clocks to maximum.
-    --memclock MHz
+    --memclock <MHz>
         * Set specific clock to use during run.  Default is to set the clocks to maximum.
+    --container <container URL>
+        * Set container to use
+    --cruntime <container runtime>
+	* Specify container runtime.  Options are singularity, enroot, and bare (bare-metal)
     -r|--random
         * Randomize which nodes get used each iteration
     -v|--verbose
@@ -88,8 +93,8 @@ while [ $# -gt 0 ]; do
 		-h|--help) print_usage ; exit 0 ;;
 		-s|--sys) system="$2"; shift 2 ;;
 		-c|--count) nodes_per_job="$2"; shift 2 ;;
+		-m|--mem) gpumem="$2"; shift 2 ;;
 		-i|--iters) niters="$2"; shift 2 ;;
-		--cudaver) cudaver="$2"; shift 2 ;;
 		-p|--part) partition="$2"; shift 2 ;;
 		-a|--account) account="-A $2"; shift 2 ;;
 		-t|--walltime) walltime="$2"; shift 2 ;;
@@ -102,6 +107,8 @@ while [ $# -gt 0 ]; do
 		--gpuclock) gpuclock="$2" ; shift 2 ;;
 		--memclock) memclock="$2" ; shift 2 ;;
 		--hpldat) hpldat="$2"; shift 2 ;;
+		--cruntime) cruntime="$2"; shift 2 ;;
+		--container) container="$2"; shift 2 ;;
 		*) echo "Option <$1> Not understood" ; exit 1 ;;
 
         esac
@@ -117,43 +124,46 @@ if [ x"${nodes_per_job}" == x"" ]; then
 	print_usage
 fi
 
-if [ x"${system}" == x"dgx1v_16G" ]; then
-	export gpus_per_node=8
-	export NV_GPUCLOCK=1530
-	export NV_MEMCLOCK=877
-elif [ x"${system}" == x"dgx1v_32G" ]; then
-	export gpus_per_node=8
-	export NV_GPUCLOCK=1530
-	export NV_MEMCLOCK=877
-elif [ x"${system}" == x"dgx2" ]; then
-	export gpus_per_node=16
-	export NV_GPUCLOCK=1530
-	export NV_MEMCLOCK=877
-elif [ x"${system}" == x"dgx2h" ]; then
-	echo "ERROR: DGX-2H is not supported yet.  Exiting"
-	export gpus_per_node=16
-	export NV_GPUCLOCK=1530
-	export NV_MEMCLOCK=877
-	exit
-elif [ x"${system}" == x"dgxa100" ]; then
-	export gpus_per_node=8
-	export NV_GPUCLOCK=1275
-	export NV_MEMCLOCK=1215
-	export GPU_CLOCK_WARNING=1335 
-	export GPU_POWER_WARNING=400 
-	export GPU_PCIE_GEN_WARNING=4
-        export CPU_CORES_PER_RANK=16
-elif [ x"${system}" == x"workshop" ]; then
-	export gpus_per_node=1
-	export NV_GPUCLOCK=1530
-	export NV_MEMCLOCK=877
-	export hpldat="${HPL_SCRIPTS_DIR}/hplfiles/HPL.dat_1x1_workshop_16G"
-	echo "WARN; Running in non-performant workshop configuration"
+if [ x"${gpumem}" != x"" ]; then
+	export GPUMEM=${gpumem}
 else
-	echo "ERROR: Generic systems are not supported yet."
-	exit
+	if [ x"${hpldat}" == x"" ]; then
+		echo "ERROR: If --gpumem is not specified, then an HPL.dat file must be explicitly specified"
+		exit 1
+	fi
 fi
 
+if [ x"${system}" == x"dgx1v" ]; then
+	export gpus_per_node=8
+	export SYSCFG=syscfg-dgx1v.sh
+elif [ x"${system}" == x"dgx2" ]; then
+	export gpus_per_node=16
+	export SYSCFG=syscfg-dgx2.sh
+elif [ x"${system}" == x"dgxa100" ]; then
+	export gpus_per_node=8
+	export SYSCFG=dgxa100
+else
+	echo "GENERIC SYSTEMS are not supported yet"
+	if [ ! -f ${system} ]; then
+		echo "ERROR: For a generic system, a syscfg file must be specified (${system})"
+		exit 1
+	fi
+
+	export SYSCFG=${system}
+	export gpus_per_node=$(cat ${system} | GPU_AFFINITY | cut -f2 -d= | awk -F: '{print NF}' )
+	export SYSCFG=${system}
+	echo "HERE: $SYSCFG gpus=$gpus_per_node"
+fi
+
+case ${SYSCFG} in
+        *.sh)
+	if [ ! -f ${SYSCFG} ]; then
+		echo "ERROR: SYSCFG file ${SYSCFG} not found.  Exiting"
+		exit 1
+	fi
+	;;
+esac
+	   
 if [ x"${usegres}" == x"1" ]; then
 	gresstr="--gpus-per-node ${gpus_per_node}"
 fi
@@ -165,10 +175,68 @@ if [ x"${memclock}" != x"" ]; then
 	NV_MEMCLOCK=${memclock}
 fi
 
+if [ x"${memclock}" != x"" ]; then
+	NV_MEMCLOCK=${memclock}
+fi
+
+if [ x"${cruntime}" != x"" ]; then
+	# Validate runtime is correct
+	echo "Using contaner runtime ${cruntime}"
+	case "${cruntime}" in
+		singularity)
+			echo "INFO: Using singularity runtime"
+			# Pull container if needed and convert to singluarity
+			if [ x"$(which singularity)" == x"" ]; then
+				echo "ERROR: Singlularity not found, check your path"
+				exit 1
+			fi
+			siffn=$(pwd)/"$(basename ${container}).sif"
+			if [ -f ${siffn} ]; then
+				echo "INFO: ${siffn} found, not pulling"
+			else
+				#singularity build hpc-benchmarks:20.10-hpl.sif docker://nvcr.io/nvidia/hpc-benchmarks:20.10-hpl
+			  	echo singularity build ${siffn} docker://${container}
+			  	srun -N 1 -p ${partition}  singularity build ${siffn} docker://${container}
+				if [ $? -ne 0 ]; then
+					echo ""
+					echo "ERROR: Unable tou build singularity container from ${container}, Exiting"
+					echo ""
+					exit 1
+				fi
+			fi
+			export CONT=${siffn}
+			RUNSCRIPT=submit_hpl_cont.sh
+			;;
+		enroot)
+			echo "INFO: Using enroot runtime"
+			echo "ERROR: enroot not yet supported"
+			export CONT=${container}
+			RUNSCRIPT=submit_hpl_cont.sh
+			exit 2
+			;;
+		bare)
+			echo "INFO: Using bare-metal runtime"
+			echo "ERROR: Baremetal not supported yet"
+			export CONT=""
+			RUNSCRIPT=submit_hpl_bare.sh
+			exit 2
+			;;
+		*) echo "ERROR: Runtime ${cruntime} is not supported, exiting"
+		   exit 1 ;;
+	esac
+else
+	echo "ERROR: Container runtime (--cruntime) must be set"
+	exit 1
+fi
+
+export CRUNTIME=${cruntime}
+
+
 if [ x"${hpldat}" != x"" ]; then
 	echo ""
 	echo "An HPL.dat file has been manually specified."
 	if [ ! -f ${hpldat} ]; then
+		echo "ERROR: HPL.dat file specified, but not found.  ${hpldat}"
 		echo "ERROR: HPL.dat file specified, but not found.  ${hpldat}"
 		exit 1
 	fi
@@ -188,8 +256,6 @@ fi
 
 export SYSTEM=${system}
 export GPUS_PER_NODE=${gpus_per_node}
-
-RUNSCRIPT=${HPL_SCRIPTS_DIR}/submit_hpl_cuda${cudaver}.sh
 
 # Set a name for the experiment
 export EXPNAME=${nodes_per_job}node_${system}_$(date +%Y%m%d%H%M%S)
@@ -218,7 +284,7 @@ fi
 ### Report all variables
 echo ""
 echo "Experiment Variables:"
-for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system nodes_per_job gpus_per_node gpuclock memclock  niters cudaver partition usehca maxnodes mpiopts gresstr total_nodes hpldat; do
+for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system cruntime CONT gpumem nodes_per_job gpus_per_node gpuclock memclock  niters partition usehca maxnodes mpiopts gresstr total_nodes hpldat; do
 	echo -n "${V}: "
         if [ x"${!V}" != x"" ]; then	
         	echo "${!V}"
@@ -240,7 +306,9 @@ for N in $(seq ${niters}); do
 	while [ $(( P + nodes_per_job - 1 ))  -le ${total_nodes} ]; do
 		# Create hostlist per iter
 		HLIST=$(scontrol show hostlist $(tail +$P ${HFILE} | head -${nodes_per_job} | sort | paste -d, -s))
-		CMD="sbatch -N ${nodes_per_job} --time=${walltime} ${account}  -p ${partition} --parsable --ntasks-per-node=${gpus_per_node} ${gresstr} --export ALL,EXPDIR,NV_GPUCLOCK,NV_MEMCLOCK,HPLDAT,SYSTEM,GPUS_PER_NODE,CPU_CORES_PER_RANK --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out -w ${HLIST} ${RUNSCRIPT}"
+
+		CMD="sbatch -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out -w ${HLIST} --export ALL,CONT,SYSCFG,GPUMEM,CRUNTIME,HPLDAT ${RUNSCRIPT}"
+                 
 		if [ ${verbose} -eq 1 ]; then
 		        echo "Submitting:  $CMD"
 		fi
