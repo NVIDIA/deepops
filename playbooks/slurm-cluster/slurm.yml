@@ -23,6 +23,15 @@
         name: slurm
         tasks_from: build
 
+# Configure slurm.conf on all nodes
+- hosts: slurm-cluster
+  become: yes
+  roles:
+    - name: slurm
+      vars:
+        user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
+        slurm_workflow_build: no
+
 # Set up slurm controller
 - hosts: slurm-master
   become: yes

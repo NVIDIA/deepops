@@ -1,0 +1,30 @@
+---
+# Configure nodes that are neither running controller services, nor slurmd.
+# Examples include login nodes or CI nodes.
+
+- name: create slurm directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: slurm
+    mode: 0755
+  with_items:
+    - "{{ slurm_config_dir }}"
+
+- name: configure slurm.conf
+  template:
+    src: "{{ slurm_conf_template }}"
+    dest: "{{ slurm_config_dir }}/slurm.conf"
+  tags:
+  - config
+
+- name: ensure all slurm services are stopped
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  with_items:
+  - slurmctld
+  - slurmd
+  - slurmdbd
+  ignore_errors: yes
