@@ -145,3 +145,12 @@
     marker: "# {mark} ANSIBLE MANAGED BLOCK (ansible-role-slurm)"
   tags:
     - config
+
+- name: comment out pam_systemd.so as it conflicts with pam_slurm_adapt.so, see https://slurm.schedmd.com/pam_slurm_adopt.html
+  replace:
+    path: /etc/pam.d/common-session
+    regexp: '^([^#].*pam_systemd.so.*)'
+    replace: '# \1 # ANSIBLE MANAGED (ansible-role-slurm)'
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - config
