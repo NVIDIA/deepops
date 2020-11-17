@@ -65,12 +65,15 @@
 
 # Install monitoring services
 - include: slurm-cluster/prometheus.yml
+  vars:
     hostlist: "{{ slurm_monitoring_group | default('slurm-master[0]') }}"
   when: slurm_enable_monitoring
 - include: slurm-cluster/grafana.yml
+  vars:
     hostlist: "{{ slurm_monitoring_group | default('slurm-master[0]') }}"
   when: slurm_enable_monitoring
 - include: slurm-cluster/prometheus-slurm-exporter.yml
+  vars:
     hostlist: 'slurm-master[0]'
   when: slurm_enable_monitoring
 
