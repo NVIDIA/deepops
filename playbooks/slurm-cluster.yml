@@ -60,7 +60,9 @@
   when: slurm_install_lmod
 
 # Install the NVIDIA HPC SDK
-- include: nvidia-software/nvidia-hpc-sdk.yml hostlist=slurm-master[0]
+- include: nvidia-software/nvidia-hpc-sdk.yml
+  vars:
+    hostlist: "{{ sm_install_host }}"
   when: slurm_install_hpcsdk
 
 # Install monitoring services
