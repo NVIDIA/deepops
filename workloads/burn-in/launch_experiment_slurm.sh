@@ -32,10 +32,11 @@ usehca=0
 usegres=1
 maxnodes=9999
 mpiopts=""
-walltime=02:00:00
+walltime=00:30:00
 verbose=0
+nores=0
 cruntime=singularity
-container="nvcr.io/nvidia/hpc-benchmarks:20.10-hpl"
+container="nvcr.io#nvidia/hpc-benchmarks:20.10-hpl"
 ORDER_CMD="cat"
 
 print_usage() {
@@ -76,6 +77,8 @@ Other Options:
         * Set container to use
     --cruntime <container runtime>
 	* Specify container runtime.  Options are singularity, enroot, and bare (bare-metal)
+    --nores
+        * Do not request specific nodes when running tests
     -r|--random
         * Randomize which nodes get used each iteration
     -v|--verbose
@@ -99,7 +102,8 @@ while [ $# -gt 0 ]; do
 		-a|--account) account="-A $2"; shift 2 ;;
 		-t|--walltime) walltime="$2"; shift 2 ;;
 		-r|--random) ORDER_CMD=shuf; shift 1;;
-		-v|--verbose) verbose=1; shift 1;;
+		-v|--verbose) verbose=1; shift 1 ;;
+		--nores) nores=1; shift 1 ;;
 		--usehca) usehca="$2"; shift 2;;
 	        --maxnodes) maxnodes="$2"; shift 2 ;;	
 		--mpiopts) mpiopts="$2"; shift 2 ;;
@@ -141,7 +145,7 @@ elif [ x"${system}" == x"dgx2" ]; then
 	export SYSCFG=syscfg-dgx2.sh
 elif [ x"${system}" == x"dgxa100" ]; then
 	export gpus_per_node=8
-	export SYSCFG=dgxa100
+	export SYSCFG=dgx-a100
 else
 	echo "GENERIC SYSTEMS are not supported yet"
 	if [ ! -f ${system} ]; then
@@ -208,11 +212,10 @@ if [ x"${cruntime}" != x"" ]; then
 			RUNSCRIPT=submit_hpl_cont.sh
 			;;
 		enroot)
-			echo "INFO: Using enroot runtime"
-			echo "ERROR: enroot not yet supported"
-			export CONT=${container}
+			# Need to convert the container and change all the slashes except the last one to #
+			# This expression below is probably not robust.
+			export CONT=$(echo ${container} | rev | sed 's/\//#/g' | sed 's/#/\//' | rev)
 			RUNSCRIPT=submit_hpl_cont.sh
-			exit 2
 			;;
 		bare)
 			echo "INFO: Using bare-metal runtime"
@@ -305,9 +308,13 @@ for N in $(seq ${niters}); do
 	cat $MACHINEFILE | ${ORDER_CMD} > $HFILE
 	while [ $(( P + nodes_per_job - 1 ))  -le ${total_nodes} ]; do
 		# Create hostlist per iter
-		HLIST=$(scontrol show hostlist $(tail +$P ${HFILE} | head -${nodes_per_job} | sort | paste -d, -s))
+		if [ ${nores} == 1 ]; then
+			HLIST=""
+		else
+    		        HLIST="-x $(scontrol show hostlist $(tail +$P ${HFILE} | head -${nodes_per_job} | sort | paste -d, -s))"
+		fi
 
-		CMD="sbatch -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out -w ${HLIST} --export ALL,CONT,SYSCFG,GPUMEM,CRUNTIME,HPLDAT ${RUNSCRIPT}"
+		CMD="sbatch -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} --export ALL,CONT,SYSCFG,GPUMEM,CRUNTIME,HPLDAT ${RUNSCRIPT}"
                  
 		if [ ${verbose} -eq 1 ]; then
 		        echo "Submitting:  $CMD"

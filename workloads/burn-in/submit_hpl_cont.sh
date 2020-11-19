@@ -49,10 +49,6 @@ if [ x"${SYSCFG}" == x"" ]; then
 	echo "ERROR, SYSCFG must be defined.  Exiting.  Exiting"
 	exit 1
 fi
-if [ ! -f ${SYSCFG} ]; then
-	echo "ERROR: Unable to find SysCFG file ${SYSCFG}.  Exiting"
-	exit
-fi
 
 if [ x"${GPUMEM}" == x"" ]; then
 	echo "ERROR: GPUMEM not set.  Exiting"
@@ -68,10 +64,10 @@ if [ x"${CONT}" = x"" ]; then
 	echo "ERROR, container is not defined at CONT."
 	exit 1
 fi
-if [ ! -f ${CONT} ]; then
-	echo "ERROR: Unable to find container file ${CONT}.  Exiting"
-	exit 1
-fi
+#if [ ! -f ${CONT} ]; then
+#	echo "ERROR: Unable to find container file ${CONT}.  Exiting"
+#	exit 1
+#fi
 
 
 if [ x"${HPLDAT}" != x"" ]; then
@@ -159,7 +155,12 @@ fi
 
 ## Create working runtime environment
 cp $HPLFN $WORKDIR/HPL.dat
-cp $SYSCFG $WORKDIR/syscfg.sh
+if [ -f $SYSCFG ]; then
+	cp $SYSCFG $WORKDIR/syscfg.sh
+	SYSCFGVAR=/datfiles/syscfg.sh
+else
+	SYSCFGVAR=$SYSCFG
+fi
 cp bind.sh $WORKDIR/
 cd $WORKDIR 
 
@@ -181,13 +182,13 @@ MOUNT=$(pwd):/datfiles
 
 case ${CRUNTIME} in
 	enroot)
-		srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
-                     --container-image="${CONT}" --container-mounts="${MOUNT}" \ 
-		     /workspace/hpl.sh --config /datfiles/syscfg.sh --dat /datfiles/HPL.dat ;;
+		CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
+                     --container-image="${CONT}" --container-mounts="${MOUNT}" \
+		     /workspace/hpl.sh --config ${SYSCFGVAR} --dat /datfiles/HPL.dat" ;;
 	singularity)
-		srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
-			singularity run --nv -B "${MOUNT}" "${CONT}" \
-		       	/workspace/hpl.sh --config /datfiles/syscfg.sh --dat /datfiles/HPL.dat ;;
+		CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
+		     singularity run --nv -B "${MOUNT}" "${CONT}" \
+		     /workspace/hpl.sh --config ${SYSCFGVAR} --dat /datfiles/HPL.dat" ;;
 	*)
 		echo "ERROR: Runtime ${CRUNTIME} not supported.  Exiting"
 		exit 1
