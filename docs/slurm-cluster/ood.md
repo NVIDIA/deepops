@@ -20,14 +20,37 @@ These settings can also be changed by altering the variables in `config/group_va
 
 ## Walkthrough
 
-![OOD 01](ood-images/ood-01.png)
+Once logged into OOD, you'll be presented with a simple GUI. For this walk through, we'll launch a few interactive apps.
+
+### VS Code Server
+
+Click on the "Interactive Apps" button in the menu bar. Then click on the VS Code Server menu item.
 ![OOD 02](ood-images/ood-02.png)
+
+Configure your desired options for the VS Code Server that's being launched. The defaults are 1 GPU and 1 hour of reservation. If you do not enter a working directory, then your `$HOME` directory will be used. Click on the "Launch" button to start the server.
 ![OOD 03](ood-images/ood-03.png)
+
+Once the server is ready, you can click on the "Connect to Code Server" button.
 ![OOD 04](ood-images/ood-04.png)
+
+Where you will now have a VS Code session tied to the GPU resources you requested. Happy coding!
 ![OOD 05](ood-images/ood-05.png)
+
+### VS Code Server
+
+Click on the "Interactive Apps" button in the menu bar. Then click on the "Hackathon Desktop" (this name might vary).
+![OOD 02](ood-images/ood-02.png)
+
+Configure the Desktop with the requested reservation time, number of nodes, and number of GPUs requested. Click on the "Launch" button to start.
 ![OOD 06](ood-images/ood-06.png)
+
+The session will start and might take a minute or two to fully launch.
 ![OOD 07](ood-images/ood-07.png)
+
+Once launched, click on "Launch Desktop" to get a remote session view.
 ![OOD 08](ood-images/ood-08.png)
+
+The remote session view allows you to interact with the resources you requested as if it were a desktop system sitting in front of you.
 ![OOD 09](ood-images/ood-09.png)
 
 
