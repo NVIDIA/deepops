@@ -51,8 +51,6 @@ Required Options:
         * Set to the system type on which to run.  Ex: dgx1v, dgx2, dgxa100, or a path to a script file with custom system settings
     -c|--count <Count>
         * Set to the number of nodes to use per job
-    -m|--mem <Size in GB>
-        * GPU memory size, ex: 16, 32, 40, 80
 
 Other Options:
     -i|--iters <Iterations>
@@ -91,12 +89,49 @@ EOF
 exit
 }
 
+function find_hpl_dat_file() {
+
+
+        local system=$1
+        local gpus_per_node=$2
+        local nnodes=$3
+
+        if [ ${gpus_per_node} == 8 ]; then
+                case ${nnodes} in
+                        1) PxQ=4x2 ;;
+                        2) PxQ=4x4 ;;
+                        4) PxQ=8x4 ;;
+                        8) PxQ=8x8 ;;
+                        10) PxQ=10x8 ;;
+                        16) PxQ=16x8 ;;
+                        20) PxQ=20x8 ;;
+                        32) PxQ=16x16 ;;
+                        64) PxQ=32x16 ;;
+                        *) echo "ERROR: There is no defined mapping for ${nnodes} nodes for system ${system}.  Exiting" 
+                esac
+        elif [ ${gpus_per_node} == 16 ]; then
+                case ${nnodes} in
+                        1) PxQ=4x4 ;;
+                        2) PxQ=8x4 ;;
+                        4) PxQ=8x8 ;;
+                *) echo "ERROR: There is no defined mapping for ${nnodes} nodes for system ${system}.  Exiting" 
+		   exit 1 ;;
+                esac
+	else 
+		echo "ERROR: Unable to map system configuration to create HPL.dat file.  Exiting"
+		exit 1
+        fi
+
+        HPLDATFN=${HPL_FILE_DIR}/HPL.dat_${PxQ}_${system}
+	echo $HPLDATFN
+
+}
+
 while [ $# -gt 0 ]; do
 	case "$1" in
 		-h|--help) print_usage ; exit 0 ;;
 		-s|--sys) system="$2"; shift 2 ;;
 		-c|--count) nodes_per_job="$2"; shift 2 ;;
-		-m|--mem) gpumem="$2"; shift 2 ;;
 		-i|--iters) niters="$2"; shift 2 ;;
 		-p|--part) partition="$2"; shift 2 ;;
 		-a|--account) account="-A $2"; shift 2 ;;
@@ -128,24 +163,25 @@ if [ x"${nodes_per_job}" == x"" ]; then
 	print_usage
 fi
 
-if [ x"${gpumem}" != x"" ]; then
-	export GPUMEM=${gpumem}
-else
-	if [ x"${hpldat}" == x"" ]; then
-		echo "ERROR: If --gpumem is not specified, then an HPL.dat file must be explicitly specified"
-		exit 1
-	fi
-fi
-
-if [ x"${system}" == x"dgx1v" ]; then
+if [ x"${system}" == x"dgx1v_16G" ]; then
 	export gpus_per_node=8
 	export SYSCFG=syscfg-dgx1v.sh
+	export GPUMEM=16
+elif [ x"${system}" == x"dgx1v_32G" ]; then
+	export gpus_per_node=8
+	export SYSCFG=syscfg-dgx1v.sh
+	export GPUMEM=32
 elif [ x"${system}" == x"dgx2" ]; then
 	export gpus_per_node=16
 	export SYSCFG=syscfg-dgx2.sh
-elif [ x"${system}" == x"dgxa100" ]; then
+elif [ x"${system}" == x"dgxa100_40G" ]; then
 	export gpus_per_node=8
 	export SYSCFG=dgx-a100
+	export GPUMEM=40
+elif [ x"${system}" == x"dgxa100_80G" ]; then
+	export gpus_per_node=8
+	export SYSCFG=dgx-a100
+	export GPUMEM=80
 else
 	echo "GENERIC SYSTEMS are not supported yet"
 	if [ ! -f ${system} ]; then
@@ -162,7 +198,7 @@ fi
 case ${SYSCFG} in
         *.sh)
 	if [ ! -f ${SYSCFG} ]; then
-		echo "ERROR: SYSCFG file ${SYSCFG} not found.  Exiting"
+		echo "ERROR: SYSCFG file ${SYSCFG} not found.  Exiting."
 		exit 1
 	fi
 	;;
@@ -175,10 +211,6 @@ fi
 if [ x"${gpuclock}" != x"" ]; then
 	NV_GPUCLOCK=${gpuclock}
 fi
-if [ x"${memclock}" != x"" ]; then
-	NV_MEMCLOCK=${memclock}
-fi
-
 if [ x"${memclock}" != x"" ]; then
 	NV_MEMCLOCK=${memclock}
 fi
@@ -209,19 +241,16 @@ if [ x"${cruntime}" != x"" ]; then
 				fi
 			fi
 			export CONT=${siffn}
-			RUNSCRIPT=submit_hpl_cont.sh
 			;;
 		enroot)
 			# Need to convert the container and change all the slashes except the last one to #
 			# This expression below is probably not robust.
 			export CONT=$(echo ${container} | rev | sed 's/\//#/g' | sed 's/#/\//' | rev)
-			RUNSCRIPT=submit_hpl_cont.sh
 			;;
 		bare)
 			echo "INFO: Using bare-metal runtime"
 			echo "ERROR: Baremetal not supported yet"
 			export CONT=""
-			RUNSCRIPT=submit_hpl_bare.sh
 			exit 2
 			;;
 		*) echo "ERROR: Runtime ${cruntime} is not supported, exiting"
@@ -234,12 +263,13 @@ fi
 
 export CRUNTIME=${cruntime}
 
-
-if [ x"${hpldat}" != x"" ]; then
+### Find the right HPL.dat file
+if [ x"${hpldat}" == x"" ]; then
+	HPLDATFN=${HPL_DIR}/hplfiles/$(find_hpl_dat_file ${system} ${gpus_per_node} ${nodes_per_job})
+else
 	echo ""
 	echo "An HPL.dat file has been manually specified."
 	if [ ! -f ${hpldat} ]; then
-		echo "ERROR: HPL.dat file specified, but not found.  ${hpldat}"
 		echo "ERROR: HPL.dat file specified, but not found.  ${hpldat}"
 		exit 1
 	fi
@@ -254,7 +284,7 @@ if [ x"${hpldat}" != x"" ]; then
 	nodes_per_job=$(( P * Q / gpus_per_node ))
 	echo "Overriding nodes_per_job, using nodes_per_job=${nodes_per_job} to match settings in ${hpldat}"
 	echo ""
-	export HPLDAT=${hpldat}
+	export HPLDATFN=${hpldat}
 fi
 
 export SYSTEM=${system}
@@ -287,7 +317,7 @@ fi
 ### Report all variables
 echo ""
 echo "Experiment Variables:"
-for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system cruntime CONT gpumem nodes_per_job gpus_per_node gpuclock memclock  niters partition usehca maxnodes mpiopts gresstr total_nodes hpldat; do
+for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system cruntime CONT nodes_per_job gpus_per_node gpuclock memclock  niters partition usehca maxnodes mpiopts gresstr total_nodes hpldat; do
 	echo -n "${V}: "
         if [ x"${!V}" != x"" ]; then	
         	echo "${!V}"
@@ -305,16 +335,39 @@ HFILE=/tmp/hfile.$$
 for N in $(seq ${niters}); do
 	echo "Starting Iteration $N"
 	P=1
+	INST=1
 	cat $MACHINEFILE | ${ORDER_CMD} > $HFILE
 	while [ $(( P + nodes_per_job - 1 ))  -le ${total_nodes} ]; do
 		# Create hostlist per iter
 		if [ ${nores} == 1 ]; then
 			HLIST=""
+			DEPENDENCY="--dependency=singleton"
 		else
     		        HLIST="-x $(scontrol show hostlist $(tail +$P ${HFILE} | head -${nodes_per_job} | sort | paste -d, -s))"
+			DEPENDENCY=""
 		fi
 
-		CMD="sbatch -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} --export ALL,CONT,SYSCFG,GPUMEM,CRUNTIME,HPLDAT ${RUNSCRIPT}"
+		# create a workdir for each job
+		WORKDIR=${EXPDIR}/tmp/tmp.$$.$(date +%s)
+		mkdir -p ${WORKDIR}
+		if [ $? -ne 0 ]; then
+                       echo "ERROR: Unable to create working directory $WORKDIR.  Exiting"
+                       exit 1
+		fi
+
+		# Copy working files to unique directory
+		cp ${HPLDATFN} ${WORKDIR}/HPL.dat
+		if [ -f ${SYSCFG} ]; then
+                        cp ${SYSCFG} ${WORKDIR}/syscfg.sh
+			SYSCFGVAR=syscfg.sh
+		else
+			SYSCFGVAR=${SYSCFG}
+                fi
+
+		# Submit the job in the workdir
+		pushd ${WORKDIR}
+
+		CMD="sbatch -J burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFG,GPUMEM,CRUNTIME,EXPDIR ${HPL_DIR}/submit_hpl.sh"
                  
 		if [ ${verbose} -eq 1 ]; then
 		        echo "Submitting:  $CMD"
@@ -325,9 +378,13 @@ for N in $(seq ${niters}); do
 			# Cleanup experiment
 			#exit $? 
 		fi
+
+                popd
+
 		jobid_list+=($jobid)
 
 		P=$(( $P + $nodes_per_job ))
+		INST=$(( $INST + 1 ))
 	done
 	if [ $(( P - 1 )) -lt ${total_nodes} ]; then
 	        # Print out the extra nodes not used
