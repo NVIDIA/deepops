@@ -66,8 +66,9 @@ Instructions for deploying a GPU cluster with Slurm
   ```
 ## Using Slurm
 
-Now that Slurm is installed, try a ["Hello World" example using MPI](../../examples/slurm/mpi-hello/README.md).
+Now that Slurm is installed, try a ["Hello World" example using MPI](../../workloads/examples/slurm/mpi-hello/README.md).
 
+Read through the [slurm usage guide](slurm-usage.md) and [Open OnDemand guide](ood.md) for more information.
 
 ## Node Health Check
 
