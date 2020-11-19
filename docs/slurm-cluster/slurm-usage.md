@@ -73,7 +73,7 @@ During interactive mode, the resource is being reserved for use until the prompt
 
 ### Run a batch job
 
-While the `srun` command blocks any other execution in the terminal, `sbatch` can be run to queue a job for execution once resources are available in the cluster. It's therefore good practice to encapsulate everything that needs to be run into a script and then execute with `sbatch` vs with `srun`:
+While the `srun` command blocks any other execution in the terminal, `sbatch` can be run to queue a job for execution once resources are available in the cluster. Also, a batch job will let you queue up several jobs that run as nodes become available. It's therefore good practice to encapsulate everything that needs to be run into a script and then execute with `sbatch` vs with `srun`:
 
 ```sh
 $ cat script.sh
@@ -115,20 +115,11 @@ To run a deep learning job with multiple processes, use MPI:
 
 ```sh
 $ srun -p PARTITION --pty /bin/bash
-$ docker pull nvcr.io/nvidia/tensorflow:19.05-py3
-$ docker run nvcr.io/nvidia/tensorflow:19.05-py3
+$ singularity pull docker://nvcr.io/nvidia/tensorflow:19.05-py3
+$ singularity run docker://nvcr.io/nvidia/tensorflow:19.05-py3
 $ cd /opt/tensorflow/nvidia-examples/cnn/
 $ mpiexec --allow-run-as-root -np 2 python resnet.py --layers=50 --batch_size=32 --precision=fp16 --num_iter=50
 ```
-
-## General Tips for ML/DL
-
-* Design training runs as bash / python scripts
-* Expose hyperparameters to script (e.g. # GPUs, # layers, batch size, LR, etc...)
-* Use model checkpointing!  Usually in /scratch
-* Store only source code in /home or git
-* For best performance cache datasets in fast local memory - usually in /tmp
-* Store stdout with model checkpoints, and print hyperparameters in each run
 
 ## Additional Resources
 
