@@ -7,23 +7,23 @@
   register: nvsm_dump_file
   ignore_errors: yes
 
+- name: Copy fw manifest log file to local machine
+  fetch:
+    src: "{{ fw_dir }}/fw-manifests.log"
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-fw-version-manifests.log"
+    flat: yes
+  ignore_errors: yes
+
 - name: Copy fw versions log file to local machine
   fetch:
-    src: "{{ fw_dir }}/fw-versions.log"
+    src: "{{ fw_dir }}/fw-versions-pre-check.log"
     dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-fw-version-pre-check.log"
     flat: yes
   ignore_errors: yes
 
-- name: Copy fw manifest log file to local machine
-  fetch:
-    src: "{{ fw_dir }}/fw-versions.log"
-    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-fw-version-post-check.log"
-    flat: yes
-  ignore_errors: yes
-
 - name: Copy fw versions log file to local machine
   fetch:
-    src: "{{ fw_dir }}/fw-versions.log"
+    src: "{{ fw_dir }}/fw-versions-post-check.log"
     dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-fw-version-post-check.log"
     flat: yes
   ignore_errors: yes
@@ -60,6 +60,13 @@
   fetch:
     src: "{{ fw_dir }}/dcgm_diag_1.log"
     dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-dcgm_diag_1.log"
+    flat: yes
+  ignore_errors: yes
+
+- name: Copy dcgm-3 diag log file to local machine
+  fetch:
+    src: "{{ fw_dir }}/dcgm_diag_3.log"
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-dcgm_diag_3.log"
     flat: yes
   ignore_errors: yes
 

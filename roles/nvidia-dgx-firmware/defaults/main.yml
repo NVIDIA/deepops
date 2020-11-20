@@ -6,6 +6,10 @@ update_firmware: false
 load_firmware: false
 clean_firmware: true
 
+# These two actions can take a very long time, and dcgm_stress especially can stress hardware
+dcgm_stress: false
+nvsm_dump_health: true
+
 # The Docker repo name
 firmware_update_repo: nvfw-dgxa100
 
