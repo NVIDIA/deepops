@@ -1,7 +1,6 @@
 ---
 - include: get-time.yml
 
-
 # nvsm does not allow you to specify a dump location, so we search /tmp for the last dump
 - name: Get name of the latest dumpfile from nvsm
   shell: "ls -taA1 /tmp | grep nvsm-health.*tar.* | head -n 1"
@@ -11,7 +10,35 @@
 - name: Copy fw versions log file to local machine
   fetch:
     src: "{{ fw_dir }}/fw-versions.log"
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-fw-version-pre-check.log"
+    flat: yes
+  ignore_errors: yes
+
+- name: Copy fw manifest log file to local machine
+  fetch:
+    src: "{{ fw_dir }}/fw-versions.log"
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-fw-version-post-check.log"
+    flat: yes
+  ignore_errors: yes
+
+- name: Copy fw versions log file to local machine
+  fetch:
+    src: "{{ fw_dir }}/fw-versions.log"
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-fw-version-post-check.log"
+    flat: yes
+  ignore_errors: yes
+
+- name: Copy fw versions log file to local machine
+  fetch:
+    src: "{{ fw_dir }}/fw-versions.log"
     dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-fw-version.log"
+    flat: yes
+  ignore_errors: yes
+
+- name: Copy fw update log file to local machine
+  fetch:
+    src: "{{ fw_dir }}/fw-update.json"
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-fw-update.json"
     flat: yes
   ignore_errors: yes
 

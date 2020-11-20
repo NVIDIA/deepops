@@ -10,10 +10,10 @@ This role makes use of the NVIDIA DGX firmware container and can be used to:
 
 ```yml
 # The Docker repo name
-firmware_update_repo: nvfw-dgx1
+firmware_update_repo: nvfw-dgxa100
 
 # The Docker tag
-firmware_update_tag: 19.10.7
+firmware_update_tag: 20.05.12.5
 ```
 
 2) Change the `nv_mgmt_interface` variable to reflect the systems being collected from.
@@ -22,14 +22,17 @@ firmware_update_tag: 19.10.7
 # The OS/mgmt interface on the server
 nv_mgmt_interface: enp1s0f0 # DGX-1
 # nv_mgmt_interface: enp134s0f0 # DGX-2
+# nv_mgmt_interface: enp225s0f0 # DGX A100
 # nv_mgmt_interface: enp2s0f1 # DGX-Station
 ```
+
+> Note: This role is meant to run on a system running the DGX OS or a system that has had the nvidia-dgx role applied to it.
 
 ## Collect Diagnostics
 
 This role can be used to collect health and configuration information across a cluster. This is useful in verifying the health of a cluster or to debug a known issue. Because this is a debugging tool Ansible will continue executing tasks on all hosts even if some of the tasks fail.
 
-Although this role is meant to be executed against a homogeneous cluster of DGX systems (all DGX-1 or all DGX-2), the majority of the functionality will be effective on any GPU cluster.
+Although this role is meant to be executed against a homogeneous cluster of DGX systems (all DGX-1, all DGX-2, or all DGX A100), the majority of the functionality will be effective on any GPU cluster.
 
 ### Running
 
@@ -71,3 +74,7 @@ ansible-playbook -l slurm-node playbooks/nvidia-dgx/nvidia-dgx-diag.yml
 # update all firmware
 ansible-playbook -l slurm-node playbooks/nvidia-dgx/nvidia-dgx-fw-update.yml
 ```
+
+> Note: This playbook is designed to only allow upgrading of a single component per run; the recommended best-practice is to run `update_fw all`, however when updating individual components it is best to perform some level of manual verificaiton over the logs.
+
+> Note: It is not a requirement, but to resolve any potential issues while staff are on-site it is recommended to reboot all DGX Nodes after extensive firmware and software updates.
