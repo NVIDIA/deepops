@@ -62,7 +62,7 @@
 # Install the NVIDIA HPC SDK
 - include: nvidia-software/nvidia-hpc-sdk.yml
   vars:
-    hostlist: "{{ sm_install_host }}"
+    hostlist: "{{ sm_install_host | default('slurm-master[0]')}}"
   when: slurm_install_hpcsdk
 
 # Install monitoring services
