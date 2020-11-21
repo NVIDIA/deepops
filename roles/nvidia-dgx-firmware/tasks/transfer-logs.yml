@@ -14,14 +14,14 @@
     flat: yes
   ignore_errors: yes
 
-- name: Copy fw versions log file to local machine
+- name: Copy pre-check fw versions log file to local machine
   fetch:
     src: "{{ fw_dir }}/fw-versions-pre-check.log"
     dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-fw-version-pre-check.log"
     flat: yes
   ignore_errors: yes
 
-- name: Copy fw versions log file to local machine
+- name: Copy post-check fw versions log file to local machine
   fetch:
     src: "{{ fw_dir }}/fw-versions-post-check.log"
     dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-fw-version-post-check.log"

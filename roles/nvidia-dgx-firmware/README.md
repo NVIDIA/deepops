@@ -6,7 +6,7 @@ This role makes use of the NVIDIA DGX firmware container and can be used to:
 
 ## Setup
 
-1) Download the latest DGX firmware container and put it in `src/containers/dgx-firmware`. Keep the original file name. Update the role variables to reflect the version being used. 
+1) Download the latest [DGX firmware container](https://docs.nvidia.com/dgx/dgxa100-fw-container-release-notes/index.html) and put it in `src/containers/dgx-firmware`. Keep the original file name. Update the role variables to reflect the version being used. 
 
 ```yml
 # The Docker repo name
@@ -40,6 +40,17 @@ The default behavior is to collect diagnostics. To disable, change the `run_diag
 
 ```yml
 run_diagnostics: false
+```
+
+Along with general logs and firmware versions, the default behavior will also run `nvsm show health`, `nvsm health dump`, and `dcgmi diag -r 1`. A more extensive dcgmi stress test can be enabled with `dcgmi_stress` and the health dump can be disabled by setting `nvsm_dump_health: false`. These tests can take a long time to complete and be potentially disruptive or fail to complete if there are existing issues. See [the official docs](https://docs.nvidia.com/datacenter/nvsm/nvsm-user-guide/index.html) for additional details. 
+
+
+Logs will be copied locally to `config/logs`. After running the diagnostics, it may be helpful to do a quick scan for issues by running:
+
+```sh
+grep Unhealthy config/logs/*/*nvsm-show-health.log
+cat config/logs/*/*dcgm_diag_1.log
+# cat config/logs/*/*dcgm_diag_3.log # If `dcgm_stress: true`
 ```
 
 ### Collected Information
