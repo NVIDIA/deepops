@@ -122,14 +122,14 @@
     - nvidia
   when: deepops_gpu_operator_enabled | default('false') | bool == false
 
-# Install k8s GPU device plugin
-- include: k8s-cluster/nvidia-k8s-gpu-device-plugin.yml
+# Install k8s GPU feature discovery
+- include: k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml
   tags:
     - nvidia
   when: deepops_gpu_operator_enabled | default('false') | bool == false
 
-# Install k8s GPU feature discovery
-- include: k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml
+# Install k8s GPU device plugin
+- include: k8s-cluster/nvidia-k8s-gpu-device-plugin.yml
   tags:
     - nvidia
   when: deepops_gpu_operator_enabled | default('false') | bool == false
