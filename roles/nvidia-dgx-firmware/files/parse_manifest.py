@@ -132,8 +132,10 @@ if argv[1] == 'parse_update_json':
         try:
             lineJson = json.loads(line)
 
-            if 'FirmwareLoadAction' in json.loads(line).keys():
+            if 'FirmwareLoadAction' in json.loads(line).keys(): # Detects if chassis-level power cycle is required
                 fw_update_json = json.loads(line)
+            if 'Reboot required' in lineJson['Message']: # Detects if host-level reboot is required
+                fw_update_json['RebootRequired'] = True
 
             if lineJson['State'] == 'Failed':
                 fw_update_json['State'] = 'Failed'
@@ -148,7 +150,6 @@ if argv[1] == 'parse_update_json':
             if lineJson['State'] == 'Done':
                 fw_update_json['State'] = 'Done'
                 fw_update_json['Message'] = lineJson['Message']
-                break
 
         except Exception as e:
             continue

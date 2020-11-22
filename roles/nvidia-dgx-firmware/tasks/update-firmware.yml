@@ -6,11 +6,6 @@
 - include: check-firmware.yml
 
 - block:
-  - name: Stop NVSM_CORE before updating # TODO: BUG: Due to bug in current container workflow
-    service:
-      name: nvsm-core
-      state: stopped
-
   - name: Check if force update requested
     set_fact:
       force_parameter: "{{ '-f' if force_update else '' }}"
@@ -26,7 +21,8 @@
       fw_update_json: "{{ update_output.stdout }}"
   - name: Register reboot as required
     set_fact:
-       reboot_required: "{{ true if 'rebootHard\": true' in fw_update_json else false }}"
+       reboot_required: true
+    when: fw_update_json.RebootRequired == true
 
   when:
     - firmware_needs_upgrade | default(false)
@@ -38,6 +34,12 @@
   when:
     - reboot_required | default(false)
 
+# TODO: This script does not handle the case of a chassis-levl power cycle being required with ipmitool 
+- name: Tell user to manually power cycle chassis
+  when: fw_update_json.FirmwareLoadAction == "DC Power Cycle"
+  debug:
+    msg: "It is necessary to manually power cycle this DGX using the BMC or ipmitool. FW update message: {{ fw_update_json.Message }}"
+
 - name: Wait for server to reboot (if required)
   wait_for_connection:
     delay=15
@@ -46,10 +48,5 @@
 - name: Print Debug
   debug:
     msg: Host is online
-
-- name: Start NVSM_CORE after completion  # TODO: BUG: Due to bug in current container workflow
-  service:
-    name: nvsm-core
-    state: started
 
 - include: verify-firmware.yml

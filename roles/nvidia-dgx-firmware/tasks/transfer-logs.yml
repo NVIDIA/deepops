@@ -11,14 +11,14 @@
   ignore_errors: yes
   fetch:
     src: "{{ fw_dir }}/{{ item }}"
-    des: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-{{ item }}"
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-{{ item }}"
     flat: yes
   with_items:
     - "fw-manifests.log"
     - "fw-versions-pre-check.log"
     - "{{ inventory_hostname }}.log"
     - "fw-versions-post-check.log"
-    -  "fw-versions.log"
+    - "fw-versions.log"
     - "fw-update.json"
     - "{{ nvsm_dump_file.stdout }}"
     - "nvsm-show-health.log"

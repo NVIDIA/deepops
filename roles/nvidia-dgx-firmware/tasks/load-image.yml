@@ -10,6 +10,7 @@
   register: tarball_local_exists
   delegate_to: 127.0.0.1
   failed_when: not tarball_local_exists.stat.exists
+  run_once: true
 - name: Check if container tarbal exists remotely
   stat:
     path: "{{ fw_dir }}/{{ firmware_update_container }}"
