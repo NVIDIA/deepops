@@ -45,3 +45,10 @@
 # Clean up the loaded images and copied files
 - include: clean.yml
   when: clean_fw
+
+# Some FW component upgrades require cleanly shutting down the DGX and doing a full powercycle (typically SBIOS or BMC)
+# Rather than automating this step, we allow the operator to perform a manual powercycle when it is safe to do so
+- name: Tell user to manually power cycle chassis
+  when: nv_fw_power_cycle_needed | default(false)
+  debug:
+    msg: "It is necessary to manually power cycle this DGX using the BMC or ipmitool. Notify Datacenter Operations that the system will be restarted (if necessary), cleanly shutdown the DGX using the 'shutdown' command, and power cycle the server using the BMC IP and ipmitool. FW update message: {{ fw_update_json.Message }}"

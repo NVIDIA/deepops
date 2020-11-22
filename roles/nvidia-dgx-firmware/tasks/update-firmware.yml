@@ -35,8 +35,13 @@
     - reboot_required | default(false)
 
 # TODO: This script does not handle the case of a chassis-levl power cycle being required with ipmitool 
-- name: Tell user to manually power cycle chassis
+
+- name: Register power cycle required
   when: fw_update_json.FirmwareLoadAction == "DC Power Cycle"
+  set_fact:
+    nv_fw_power_cycle_needed: true
+- name: Tell user to manually power cycle chassis
+  when: nv_fw_power_cycle_needed | default(false)
   debug:
     msg: "It is necessary to manually power cycle this DGX using the BMC or ipmitool. FW update message: {{ fw_update_json.Message }}"
 
