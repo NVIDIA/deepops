@@ -46,5 +46,8 @@
     image: "{{ standalone_container_registry_image }}"
     state: started
     network_mode: host
+    restart: yes
+    restart_policy: always
+    restart_retries: 5
     volumes:
     - "{{ standalone_container_registry_config_dir }}/config.yml:/etc/docker/registry/config.yml"
