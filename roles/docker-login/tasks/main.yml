@@ -1,0 +1,19 @@
+---
+- name: ensure pip is installed
+  package:
+    name: "python3-pip"
+    state: present
+
+- name: ensure docker pip package is installed
+  pip:
+    name: "docker"
+    state: present
+
+- name: log into docker registry
+  docker_login:
+    state: "{{ docker_login_state }}"
+    registry: "{{ item.registry }}"
+    username: "{{ item.username }}"
+    password: "{{ item.password }}"
+    reauthorize: "{{ docker_login_reauth }}" 
+  with_items: "{{ docker_login_registries }}"

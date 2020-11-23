@@ -169,6 +169,17 @@ bind_paths: []
 golang_install_dir: '/opt/go/{{ golang_version }}'
 golang_gopath: /opt/go/packages
 
+# Docker daemon logins
+#   Note: example only! you should put these in an Ansible Vault file for security!
+#
+#docker_login_registries:
+#- registry: docker.io
+#  username: myuser
+#  password: mypassword
+#  email: docker@docker.io
+#- registry: nvcr.io
+#  username: '$oauthtoken'
+#  password: mypassword
 
 ################################################################################
 # AUTH                                                                         #
