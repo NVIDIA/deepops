@@ -25,17 +25,12 @@
   - "{{ hpcsdk_temp_dir }}"
   - "{{ hpcsdk_install_dir }}"
 
-- name: check for downloaded nvidia hpc sdk
-  command: /usr/bin/test -e {{ hpcsdk_dest_download_path }}
-  ignore_errors: True
-  register: nvidia_hpc_sdk
-
 - name: download nvidia hpc sdk
   get_url:
     url: "{{ hpcsdk_download_url }}"
     dest: "{{ hpcsdk_dest_download_path }}"
     mode: "0444"
-  when: nvidia_hpc_sdk == False
+    force: no
 
 - name: extract archive
   unarchive:
