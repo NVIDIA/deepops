@@ -45,6 +45,6 @@ hpcsdk_download_url: "https://developer.download.nvidia.com/hpc-sdk/{{ hpcsdk_ve
 
 # Directories for download
 hpcsdk_temp_dir: "/tmp/hpc-sdk-install"
-hpcsdk_dest_download_path: "{{ hpcsdk_temp_dir }}/nvhpc.tar.gz"
+hpcsdk_dest_download_path: "{{ hpcsdk_temp_dir }}/{{ hpcsdk_download_name }}.tar.gz"
 hpcsdk_clean_up_tarball_after_extract: true
 hpcsdk_clean_up_temp_dir: true
