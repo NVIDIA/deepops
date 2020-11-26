@@ -2,8 +2,9 @@
 - name: RedHat | add epel repo
   become: yes
   yum:
-    - name: "epel-release"
-  state: latest
+    name: 
+      - "epel-release"
+    state: latest
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
 - name: RedHat | add CUDA repo
