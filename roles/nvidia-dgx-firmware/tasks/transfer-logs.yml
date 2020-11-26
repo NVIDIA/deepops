@@ -32,6 +32,13 @@
     flat: yes
   ignore_errors: yes
 
+- name: Copy /var/log/dmesg to local machine
+  fetch:
+    src: /var/log/dmesg
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-dmesg"
+    flat: yes
+  ignore_errors: yes
+
 - name: Copy /var/log/nvidia-fw.log to local machine
   fetch:
     src: /var/log/nvidia-fw.log
