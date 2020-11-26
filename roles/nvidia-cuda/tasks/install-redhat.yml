@@ -1,5 +1,6 @@
 ---
 - name: RedHat | add epel repo
+  become: yes
   yum:
     - name: "epel-release"
   state: latest
