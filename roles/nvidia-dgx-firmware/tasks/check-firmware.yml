@@ -25,7 +25,6 @@
 - name: Print show_version output (for single node, maybe be different across cluster)
   debug:
     msg: "{{ firmware_versions_response.stdout }}"
-  run_once: true
 
 - name: Register firmware as needing upgrade
   set_fact:

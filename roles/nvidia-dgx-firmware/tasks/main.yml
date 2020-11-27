@@ -1,6 +1,7 @@
 ---
 # Print some debug, make directories, and initialize
 - name: Print debug
+  run_once: true
   debug:
     msg: "run_diagnostics: {{ run_diagnostics }}, load_firmware: {{ load_firmware }}, update_firmware: {{ update_firmware }}
           Copyng files to {{ fw_dir }} on DGX nodes, running container: {{ firmware_update_repo }}, tag: {{ firmware_update_tag }}"
