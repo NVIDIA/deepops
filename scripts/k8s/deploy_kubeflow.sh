@@ -26,19 +26,18 @@ export KUBEFLOW_MPI_DIR="${KUBEFLOW_MPI_DIR:-${KF_DIR}/mpi}"
 export KUBEFLOW_MPI_MANIFESTS_REPO="${KUBEFLOW_MPI_MANIFESTS_REPO:-https://github.com/kubeflow/manifests}"
 
 # Download URLs and versions, note the kfctl version does not always match the manifest/config version, but best-effort should be made to keep their versions close
-export KFCTL_FILE=kfctl_v1.1.0-0-g9a3621e_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.1.0
-export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.1.0/${KFCTL_FILE}"
-export AUTH_KFCTL_FILE=kfctl_v1.1.0-0-g9a3621e_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.1.0
-export AUTH_KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.1.0/${KFCTL_FILE}"
+export KFCTL_FILE=kfctl_v1.2.0-0-gbc038f9_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.2.0
+export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.2.0/${KFCTL_FILE}"
+export AUTH_KFCTL_FILE=kfctl_v1.2.0-0-gbc038f9_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.2.0
+export AUTH_KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.2.0/${KFCTL_FILE}"
 
 # Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
-export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/6dcebbe263bc98c62aee9bff4364f7dfb3efe254/kfdef/kfctl_istio_dex.v1.1.0.yaml"
-export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.1.0.yaml" # Not yet a release version, but likely https://github.com/kubeflow/manifests/releases/tag/v1.1-rc.3
+export AUTH_CONFIG_URI="https://github.com/kubeflow/manifests/blob/v1.2-branch/kfdef/kfctl_istio_dex.v1.2.0.yaml"
+export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.2.0.yaml"
 
 # Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
-export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/master/kfdef/kfctl_k8s_istio.yaml" # Not a hash or branch tag because of https://github.com/kubeflow/manifests/pull/1459
-export CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.yaml" #  Not v1.0.2 due to https://github.com/kubeflow/manifests/issues/991
-
+export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/v1.2-branch/kfdef/kfctl_k8s_istio.v1.2.0.yaml"
+export CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.v1.2.0.yaml"
 
 
 function help_me() {
