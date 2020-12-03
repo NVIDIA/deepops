@@ -69,6 +69,8 @@ dgx1:~$ exit
 
 During interactive mode, the resource is being reserved for use until the prompt is exited (as shown above). Commands can be run in succession.
 
+> Note: before starting an interactive session with srun it may be helpful to create a session on the login node with a tool like tmux or `screen`. This will prevent a user from losing interactive jobs if there is a network outage or the terminal is closed.
+
 ## More Advanced Use
 
 ### Run a batch job
