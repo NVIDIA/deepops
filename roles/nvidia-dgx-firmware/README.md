@@ -20,10 +20,10 @@ firmware_update_tag: 20.05.12.5
 
 ```yml
 # The OS/mgmt interface on the server
-nv_mgmt_interface: enp1s0f0 # DGX-1
+# nv_mgmt_interface: enp1s0f0 # DGX-1
 # nv_mgmt_interface: enp134s0f0 # DGX-2
 # nv_mgmt_interface: enp225s0f0 # DGX A100
-# nv_mgmt_interface: enp2s0f1 # DGX-Station
+nv_mgmt_interface: enp2s0f1 # DGX-Station
 ```
 
 > Note: This role is meant to run on a system running the DGX OS or a system that has had the nvidia-dgx role applied to it.
@@ -86,6 +86,6 @@ ansible-playbook -l slurm-node playbooks/nvidia-dgx/nvidia-dgx-diag.yml
 ansible-playbook -l slurm-node playbooks/nvidia-dgx/nvidia-dgx-fw-update.yml
 ```
 
-> Note: This playbook is designed to only allow upgrading of a single component per run; the recommended best-practice is to run `update_fw all`, however when updating individual components it is best to perform some level of manual verificaiton over the logs.
+> Note: This playbook is designed to only allow upgrading of a single component per run; the recommended best-practice is to run `update_fw all`, however when updating individual components it is best to perform some level of manual verification over the logs.
 
 > Note: It is not a requirement, but to resolve any potential issues while staff are on-site it is recommended to reboot all DGX Nodes after extensive firmware and software updates.
