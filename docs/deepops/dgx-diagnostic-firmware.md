@@ -2,8 +2,8 @@
 
 The `nvidia-dgx-firmware` role has been built to perform several administrative tasks cluster-wide.
 
-1.  Upgrade the the DGX firmware (*DGX only clusters*)
-2. Run a system diagnostics and collect a log bundle (*DGX and non-DGX clusters*)
+1. Upgrade the the DGX firmware (*DGX only clusters*)
+2. Run system diagnostics and collect a log bundle (*DGX and non-DGX clusters*)
 
 While documentation exists to [run system health checks](https://docs.nvidia.com/dgx/dgx1-fw-container-release-notes/index.html) and update [DGX firmware](https://docs.nvidia.com/dgx/dgx1-fw-container-release-notes/index.html), this role and document is meant to give guidance on performing these operations cluster-wide using `Ansible` for automation.
 
@@ -35,12 +35,12 @@ nv_mgmt_interface: enp225s0f0 # DGX A100
 # nv_mgmt_interface: enp2s0f1 # DGX-Station
 ```
 
-> Note: This role is meant to run on a system running the DGX OS or a system that has had the nvidia-dgx role applied to it. Certain diagnostics may fail if this is not the case.
+> Note: This playbook is meant to run on a system running the DGX OS or a system that has had the nvidia-dgx role applied to it. Certain diagnostics may fail if this is not the case.
 
 
 ## Collect Diagnostics
 
-The `nvidia-dgx-diag.yml` playbook leverages this role to run a diagnostic. This will collect health and configuration information for all nodes across a cluster. After being executed all logs will be copied locally to the provisioning system at `config/logs`. Logs are stored by hostname with timestamps. To change where logs are stored change the `local_log_directory` variable.
+The `nvidia-dgx-diag.yml` playbook leverages the `nvidia-dgx-firmware` role to run a diagnostic. This will collect health and configuration information for all nodes across a cluster. After being executed all logs will be copied locally to the provisioning system at `config/logs`. Logs are stored by hostname with timestamps. To change where logs are stored change the `local_log_directory` variable.
 
 Diagnostics include the following and easily be expanded by adding tasks to the `run-diagnostics.yml` file:
 
@@ -86,7 +86,7 @@ grep no config/logs/*/*fw-versions-post-check.log
 
 ## Update Firmware
 
-The `nvidia-dgx-fw-update.yml` playbook leverages this role to update the DGX firmware.
+The `nvidia-dgx-fw-update.yml` playbook leverages the `nvidia-dgx-firmware` role to update the DGX firmware.
 
 This will do the following:
 
