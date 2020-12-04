@@ -1,4 +1,8 @@
 ---
+# Note: a lot of this is redundant, however we do each step manually in the case of errors to ease debugging and clean up as best as possible
+- name: Starting cleanup step
+  debug:
+    msg: "Starting now"
 
 - name: Remove firmware container image
   command: "docker rmi -f {{ firmware_update_repo }}:{{ firmware_update_tag }}"
@@ -20,4 +24,3 @@
 
 - name: Remove diagnostic directory
   command: "rm -rf {{ fw_dir }}"
-

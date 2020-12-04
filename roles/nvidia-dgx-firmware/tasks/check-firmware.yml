@@ -1,7 +1,32 @@
 ---
+- name: Set diagnostic type
+  set_fact:
+    run_diagnostics_type: "{{ run_diagnostics_type | default() }}"
 
+- name: Ensure Docker is running
+  service:
+    name: docker
+    state: started
+
+- name: Check firmware manifest
+  shell: "docker run --rm --privileged  -v /:/hostfs {{ firmware_update_repo }}:{{ firmware_update_tag }} show_fw_manifest | tee {{ fw_dir }}/fw-manifests{{ run_diagnostics_type }}.log"
+  register: firmware_manifest
+
+# This is an optimization, checking the firmware versions can take a long time, so unless we are forcing an update only do this once
 - name: Check firmware version
-  command: "docker run --rm --privileged  -v /:/hostfs {{ firmware_update_repo }}:{{ firmware_update_tag }} show_version"
-  register: firmware_versions
-  changed_when: "'no' in firmware_versions.stdout"
-  
+  shell: "docker run --rm --privileged  -v /:/hostfs {{ firmware_update_repo }}:{{ firmware_update_tag }} show_version | tee {{ fw_dir }}/fw-versions{{ run_diagnostics_type }}.log"
+  register: firmware_versions_response
+
+- name: Print show_fw_manifest output
+  debug:
+    msg: "{{ firmware_manifest.stdout }}"
+  run_once: true
+
+- name: Print show_version output (for single node, maybe be different across cluster)
+  debug:
+    msg: "{{ firmware_versions_response.stdout }}"
+
+- name: Register firmware as needing upgrade
+  set_fact:
+    firmware_needs_upgrade: "{{ true if 'no' in firmware_versions_response.stdout or force_update else false }}" # TODO: Parse this from Json?
+  changed_when: firmware_needs_upgrade

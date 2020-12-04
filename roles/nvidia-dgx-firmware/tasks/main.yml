@@ -1,18 +1,55 @@
 ---
-
+# Print some debug, make directories, and initialize
+- name: Print debug
+  run_once: true
+  debug:
+    msg: "run_diagnostics: {{ run_diagnostics }}, load_firmware: {{ load_firmware }}, update_firmware: {{ update_firmware }}
+          Copyng files to {{ fw_dir }} on DGX nodes, running container: {{ firmware_update_repo }}, tag: {{ firmware_update_tag }}"
 - name: Make firmware dir
   file:
     path: "{{ fw_dir }}"
     state: directory
+    mode: '0755'
+- name: Copy Wrapper Script
+  copy:
+    src: parse_manifest.py
+    dest: "{{ fw_dir }}/parse_manifest.py"
+    mode: '0644'
+    force: yes
 
-- include: load-image.yml
+- block:
+  # Run some pre-flight diagnostics pre-firmware update in case things go wrong
+  - include: run-diagnostics.yml
+    vars:
+      run_diagnostics_type: '-pre-check'
+    when:
+      - run_diagnostics
+      - load_firmware or update_firmware
 
-- include: update-firmware.yml
-  vars:
-    force_parameter: ''
-  when: update_firmware
+  # Verify the local container exists, then copy it over if necessary and verify it is loaded into Docker
+  - include: load-image.yml
+    when: load_firmware
 
-- include: run-diagnostics.yml
-  when: run_diagnostics
+  # Update the FW and reboot if necessary
+  - include: update-firmware.yml
+    when: update_firmware
 
+  # Run post-flight diagnostics
+  - include: run-diagnostics.yml
+    vars:
+      run_diagnostics_type: '-post-check'
+    when: run_diagnostics
+
+  always:
+  - include: transfer-logs.yml # In case of failure, this will pull whatever logs were captured; in case of success it will pull the later logs and some pre-flight checks may be overwritten
+
+# Clean up the loaded images and copied files
 - include: clean.yml
+  when: clean_fw
+
+# Some FW component upgrades require cleanly shutting down the DGX and doing a full powercycle (typically SBIOS or BMC)
+# Rather than automating this step, we allow the operator to perform a manual powercycle when it is safe to do so
+- name: Tell user to manually power cycle chassis
+  when: nv_fw_power_cycle_needed | default(false)
+  debug:
+    msg: "It is necessary to manually power cycle this DGX using the BMC or ipmitool. Notify Datacenter Operations that the system will be restarted (if necessary), cleanly shutdown the DGX using the 'shutdown' command, and power cycle the server using the BMC IP and ipmitool. FW update message: {{ fw_update_json.Message }}"
