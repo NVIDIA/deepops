@@ -40,6 +40,8 @@ chrony_config_server:
   - 2.pool.ntp.org
   - 3.pool.ntp.org
 
+# Set hostname based on inventory file
+deepops_set_hostname: true
 
 ################################################################################
 # SOFTWARE                                                                     #
