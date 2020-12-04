@@ -31,7 +31,7 @@ firmware_container_src_dir: "{{ inventory_dir }}/src/containers/dgx-firmware"
 local_log_directory: "{{ inventory_dir }}"
 
 # Remote directory to save misc. temporary files to
-fw_dir: "/tmp/nvfw"
+fw_dir: "/opt/deepops/nvfw"
 
 # The OS/mgmt interface on the server
 # nv_mgmt_interface: enp1s0f0 # DGX-1
