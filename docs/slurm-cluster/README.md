@@ -110,3 +110,9 @@ See the documentation on [software modules](./software-modules.md) for informati
 
 ## Pyxis, Enroot, and Singularity
 [Pyxis](https://github.com/NVIDIA/pyxis) and [Enroot](https://github.com/NVIDIA/enroot) are installed by default and can be disabled by setting `slurm_install_enroot` and `slurm_install_pyxis` to no. Singularity can be installed by setting the `slurm_cluster_install_singularity` variable to yes before running the `slurm-cluster.yml` playbook.
+
+## Large deployments
+
+To minimize the requirements for the cluster management services, DeepOps deploys a single Slurm head node for cluster management, shared filesystems, and user login.
+However, for larger deployments, it often makes sense to run these functions on multiple separate machines.
+For instructions on separating these functions, see the [large deployment guide](./large-deployments.md).
