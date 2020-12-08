@@ -189,13 +189,15 @@ function stand_up() {
      exit 1
   fi
 
+  # Copy over DeepOps custom configurations & bugfixes
+  cp -r workloads/services/k8s/kubeflow-install/ config/
   sed -i '/metadata:.*/a\  ClusterName: cluster.local' ${CONFIG_FILE} # BUGFIX: Need to add the ClusterName for proper deletion:https://github.com/kubeflow/kubeflow/issues/4815
 
   # Update Kubeflow with the NGC containers and NVIDIA configurations
   # BUG: Commented out until NGC containers add Kubeflow support, see https://github.com/NVIDIA/deepops/tree/master/src/containers/ngc
   # ${SCRIPT_DIR}/update_kubeflow_config.py
 
-  # XXX: Add potential CONFIG customizations here before applying
+  # XXX: Add potential CONFIG customizations here before applying (these can be checked in to workloads/services/k8s/kubeflow-install/)
   ${KFCTL} apply -V -f ${CONFIG_FILE}
   popd
 }

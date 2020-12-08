@@ -16,7 +16,6 @@ slurm_password: ReplaceWithASecurePasswordInTheVault
 slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 #slurm_max_job_timelimit: INFINITE
 #slurm_default_job_timelimit:
-slurm_enable_monitoring: true
 
 # Ensure hosts file generation only runs across slurm cluster
 hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
@@ -40,6 +39,7 @@ slurm_ha_state_save_location: "/sw/slurm"
 ################################################################################
 # Optional installs                                                            #
 ################################################################################
+slurm_configure_etc_hosts: yes
 slurm_cluster_install_cuda: yes
 slurm_cluster_install_nvidia_driver: yes
 slurm_cluster_install_singularity: no
@@ -100,6 +100,9 @@ spack_build_packages: false
 spack_default_packages:
 - "cuda@10.2.89"
 - "openmpi@3.1.6 +cuda +pmi schedulers=auto"
+
+# Which host should we run installs on for software going into the NFS share?
+sm_install_host: "slurm-master[0]"
 
 ################################################################################
 # NVIDIA HPC SDK                                                               #
@@ -174,3 +177,12 @@ slurm_health_check_program: "/usr/sbin/nhc"
 slurm_enable_container_registry: true
 docker_insecure_registries: "{{ groups['slurm-master'] | map('regex_replace', '(.*)', '\\1:5000') | list + ['registry.local:31500'] }}"
 docker_registry_mirrors: "{{ groups['slurm-master'] | map('regex_replace', '(.*)', 'http://\\1:5000') | list }}"
+
+################################################################################
+# Monitoring stack                                                             #
+################################################################################
+slurm_enable_monitoring: true
+
+# Inventory host groups where cluster monitoring services will be installed
+# (Prometheus, Grafana, etc)
+slurm_monitoring_group: "slurm-master"

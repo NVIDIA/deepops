@@ -6,3 +6,5 @@ node_exporter_enabled: yes
 
 prometheus_config_dir: /etc/prometheus
 prometheus_cfg_endpoint_dir: "{{ prometheus_config_dir }}/endpoints"
+
+node_exporter_max_cpu: "0.5"

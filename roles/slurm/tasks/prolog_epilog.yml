@@ -3,7 +3,7 @@
   apt:
     name: "{{ item }}"
   with_items:
-    - linux-tools-generic  # for cpupower, used in prolog+epilog
+    - linux-tools-{{ ansible_kernel }}  # for cpupower, used in prolog+epilog
   when: ansible_os_family == "Debian"
 
 - name: install dependencies

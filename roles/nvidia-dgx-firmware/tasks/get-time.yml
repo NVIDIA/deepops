@@ -1,5 +1,4 @@
 ---
-
 - name: Get current system time
   shell: "now=$(date '+%Y%m%d-%H%M%S') && echo $now"
   register: current_time

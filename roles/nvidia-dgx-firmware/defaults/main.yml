@@ -1,29 +1,43 @@
 ---
 
-# Which portions of the role to run
+# Run diagnostics across the cluster (will cause pre and post-update diagnostics if run with update_firmware)
 run_diagnostics: true
+
+# Update the DGX firmware (will also execute post update diagnostics)
 update_firmware: false
 
+# Copy the firmware container and load it into Docker on all nodes
+load_firmware: true
+
+# Remove all log files and any loaded Docker images on all nodes
+clean_firmware: true
+
+# These two actions can take a very long time, and dcgm_stress especially can stress hardware
+dcgm_stress: false
+nvsm_dump_health: true
+
 # The Docker repo name
-firmware_update_repo: nvfw-dgx1
+firmware_update_repo: nvfw-dgxa100
 
 # The Docker tag
-firmware_update_tag: 19.10.7
+firmware_update_tag: 20.10.9
 
 # firmware update container to use and where it is locally stored
 firmware_update_container: "{{ firmware_update_repo }}_{{ firmware_update_tag }}.tar.gz"
+firmware_update_container: "nvfw-dgxa100_20.10.9_201103.tar.gz"
 firmware_container_src_dir: "{{ inventory_dir }}/src/containers/dgx-firmware"
 
 # default log directory is set to the location of your inventory file (./deepops/config/)
 local_log_directory: "{{ inventory_dir }}"
 
 # Remote directory to save misc. temporary files to
-fw_dir: "/tmp/nvfw"
+fw_dir: "/opt/deepops/nvfw"
 
 # The OS/mgmt interface on the server
-nv_mgmt_interface: enp1s0f0 # DGX-1
+# nv_mgmt_interface: enp1s0f0 # DGX-1
 # nv_mgmt_interface: enp134s0f0 # DGX-2
 # nv_mgmt_interface: enp2s0f1 # DGX-Station
+nv_mgmt_interface: enp225s0f0 # DGX A100
 
 # Target_fw can be set to 'all' or something specific (sbios, bmc, etc. - check container release notes on
 # NVIDIA Enterprise support portal for details on valid options)

@@ -101,7 +101,7 @@
 
 - name: add sysconfig to use slurm
   template:
-    src: "sysconfig_nhc.j2"
+    src: "{{ nhc_sysconfig_template }}"
     dest: "{{ nhc_sysconfig_dir }}/nhc"
     owner: root
     group: root
