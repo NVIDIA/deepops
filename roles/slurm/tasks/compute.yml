@@ -30,6 +30,7 @@
       command: update-grub
     - name: reboot after updating grub config
       reboot:
+        reboot_timeout: "{{ slurm_node_reboot_timeout }}"
   when: update_grub.changed and ansible_os_family == "Debian"
 
 - name: update grub
@@ -38,6 +39,7 @@
       command: grub2-mkconfig -o /boot/grub2/grub.cfg
     - name: reboot after updating grub config
       reboot:
+        reboot_timeout: "{{ slurm_node_reboot_timeout }}"
   when: update_grub.changed and ansible_os_family == "RedHat"
 
 - name: create sysconfig dir

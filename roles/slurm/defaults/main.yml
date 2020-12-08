@@ -66,6 +66,9 @@ slurm_oversubscribe: "NO"
 # Default: <not included>
 # slurm_default_job_timelimit: 
 
+# Maximum time to wait for Slurm compute nodes to reboot during playbook setup
+slurm_node_reboot_timeout: 600
+
 # Set up prolog and epilog
 slurm_enable_prolog_epilog: true
 
