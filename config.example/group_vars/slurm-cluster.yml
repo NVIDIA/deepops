@@ -39,6 +39,7 @@ slurm_ha_state_save_location: "/sw/slurm"
 ################################################################################
 # Optional installs                                                            #
 ################################################################################
+slurm_configure_etc_hosts: yes
 slurm_cluster_install_cuda: yes
 slurm_cluster_install_nvidia_driver: yes
 slurm_cluster_install_singularity: no

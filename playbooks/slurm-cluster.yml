@@ -14,6 +14,9 @@
 
 # Configure hostnames, /etc/hosts
 - include: generic/hosts.yml
+  when: "{{ slurm_configure_etc_hosts | default(true) }}"
+  tags:
+  - set-etc-hosts
 
 # Configure Chrony (NTP) sync
 - include: generic/chrony-client.yml
