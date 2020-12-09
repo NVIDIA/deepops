@@ -21,7 +21,7 @@ firmware_update_repo: nvfw-dgxa100
 # The Docker tag
 firmware_update_tag: 20.05.12.5
 
-# The tarbal name
+# The tarball name
 firmware_update_container: "nvfw-dgxa100_20.10.9_201103.tar.gz"
 ```
 

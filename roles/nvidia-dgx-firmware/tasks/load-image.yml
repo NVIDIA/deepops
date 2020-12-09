@@ -4,14 +4,14 @@
     msg: "Starting now"
 
 # Verify the local container exists, then copy it over if necessary and verify it is loaded into Docker
-- name: Check if container tarbal exists locally
+- name: Check if container tarball exists locally
   stat:
     path: "{{ firmware_container_src_dir }}/{{ firmware_update_container }}"
   register: tarball_local_exists
   delegate_to: 127.0.0.1
   failed_when: not tarball_local_exists.stat.exists
   run_once: true
-- name: Check if container tarbal exists remotely
+- name: Check if container tarball exists remotely
   stat:
     path: "{{ fw_dir }}/{{ firmware_update_container }}"
   register: tarball_exists
@@ -22,7 +22,7 @@
     dest: "{{ fw_dir }}"
   when: not tarball_exists.stat.exists 
 
-# Verify Remote tarbal is correct before loading it
+# Verify Remote tarball is correct before loading it
 - name: Get md5sum of remote tarball
   stat:
     path: "{{ fw_dir }}/{{ firmware_update_container }}"
