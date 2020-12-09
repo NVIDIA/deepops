@@ -1,14 +1,20 @@
 ---
-# While we would prefer to use the Ansible helm module, it's broken! :-(
-# See https://github.com/ansible/ansible/pull/57897
-# Unfortunately this will not be fixed until Ansible 2.10 which is not yet released.
-# So for now we will run helm commands directly...
+# See the GitHub code repo: https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
 
-- name: install nfs-client-provisioner helm repo
-  command: /usr/local/bin/helm repo add "{{k8s_nfs_client_repo_name}}" "{{ k8s_nfs_client_helm_repo }}"
-
-- name: update helm repos
-  command: /usr/local/bin/helm repo update
+# TODO: Remove this when helm version is bumped and '--create-namespace' is available
+- name: create nfs-client-provision namespace
+  command: "{{ artifacts_dir }}/kubectl create --kubeconfig {{ artifacts_dir }}/admin.conf namespace deepops-nfs-client-provisioner"
+  ignore_errors: true
 
 - name: install nfs-client-provisioner
-  command: /usr/local/bin/helm upgrade --install "{{ k8s_nfs_client_release_name }}" "{{ k8s_nfs_client_chart_name }}" --version "{{ k8s_nfs_client_chart_version }}" --set nfs.server="{{ k8s_nfs_server }}" --set nfs.path="{{ k8s_nfs_export_path }}" --set storageClass.defaultClass="{{ k8s_nfs_default_sc }}" --wait
+  command: /usr/local/bin/helm upgrade --install "{{ k8s_nfs_client_release_name }}" "{{ playbook_dir }}/../../{{ k8s_nfs_client_local_submodule }}" --namespace deepops-nfs-client-provisioner --set nfs.server="{{ k8s_nfs_server }}" --set nfs.path="{{ k8s_nfs_export_path }}" --set storageClass.defaultClass="{{ k8s_nfs_default_sc }}" --wait
+
+# TODO: Update this to use a non-local helm repo when a new maintainer takes on this project
+# - name: install nfs-client-provisioner helm repo
+#   command: /usr/local/bin/helm repo add "{{k8s_nfs_client_repo_name}}" "{{ k8s_nfs_client_helm_repo }}"
+
+# - name: update helm repos
+#   command: /usr/local/bin/helm repo update
+
+# - name: install nfs-client-provisioner
+#   command: /usr/local/bin/helm upgrade --install "{{ k8s_nfs_client_release_name }}" "{{ k8s_nfs_client_chart_name }}" --namespace deepops-nfs-client-provisioner --version "{{ k8s_nfs_client_chart_version }}" --set nfs.server="{{ k8s_nfs_server }}" --set nfs.path="{{ k8s_nfs_export_path }}" --set storageClass.defaultClass="{{ k8s_nfs_default_sc }}" --wait
