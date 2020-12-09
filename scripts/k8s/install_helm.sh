@@ -34,7 +34,7 @@ if ! type helm >/dev/null 2>&1 ; then
     chmod +x /var/tmp/get_helm.sh
     #sed -i 's/sudo//g' /var/tmp/get_helm.sh
     mkdir -p ${HELM_INSTALL_DIR}
-    HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v3.1.2 /var/tmp/get_helm.sh # Should match: config/group_vars/k8s-cluster.yml:helm_version:
+    HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v3.4.1 /var/tmp/get_helm.sh # Should match: config/group_vars/k8s-cluster.yml:helm_version:
 fi
 
 # Display the helm version for better debug
