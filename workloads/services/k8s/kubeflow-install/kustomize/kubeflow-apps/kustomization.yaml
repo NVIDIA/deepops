@@ -6,3 +6,13 @@ images:
 - name: gcr.io/kubeflow-images-public/jupyter-web-app
   newName: gcr.io/kubeflow-images-public/jupyter-web-app
   newTag: vmaster-ge4456300
+
+# TODO: This is not getting picked up by the configmap and we are using the .cache file instead, figure this out
+# Used for idle notebook culling
+- literals:
+  - USE_ISTIO=true
+  - ISTIO_GATEWAY=kubeflow/kubeflow-gateway
+  - ENABLE_CULLING="false" # Off by default
+  - IDLE_TIME="1440" # 1 day
+  - CULLING_CHECK_PERIOD="5"
+  name: notebook-controller-config
