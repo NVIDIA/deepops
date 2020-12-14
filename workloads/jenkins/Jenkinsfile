@@ -51,7 +51,12 @@ pipeline {
              bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
           '''
 
-          echo "Verify local docker registry"
+          echo "Verify registry mirror"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/test-deepops-registry-mirror.sh
+          '''
+
+          echo "Verify in-cluster k8s docker registry"
           sh '''
              bash -x ./workloads/jenkins/scripts/test-local-registry.sh
           '''

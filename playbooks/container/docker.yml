@@ -2,6 +2,8 @@
 - hosts: "{{ hostlist | default('all') }}"
   become: true
   become_method: sudo
+  tags:
+  - docker
   vars_files:
     # include kubespray-defaults here so that we can set the facts using the
     # kubespray 0040-set_facts.yml tasks
@@ -9,17 +11,18 @@
   tasks:
     - name: include kubespray task to set facts required for docker role
       include: ../../submodules/kubespray/roles/kubernetes/preinstall/tasks/0040-set_facts.yml
-    - name: remove docker overrides from DGX OS
+      when: docker_install
+    - name: remove docker overrides, specifically to deal with conflicting options from DGX OS
       file:
         path: /etc/systemd/system/docker.service.d/docker-override.conf
         state: absent
-      tags:
-        - docker
-      when: docker_override_dgx
+      when: docker_install
 
 - hosts: "{{ hostlist | default('all') }}"
   become: true
   become_method: sudo
+  tags:
+  - docker
   vars:
     # override deprecated dockerproject repo; old docker repo broken as of 03.04.2020
     dockerproject_rh_repo_base_url: 'https://download.docker.com/linux/centos/7/$basearch/stable'
@@ -27,8 +30,7 @@
     fallback_ips: []
   roles:
     - role: kubespray-defaults
-      when: ansible_product_name is not search("DGX") or docker_override_dgx
+      when: docker_install
     - role: "../../submodules/kubespray/roles/container-engine/docker"
-      tags: docker
-      when: ansible_product_name is not search("DGX") or docker_override_dgx
+      when: docker_install
   environment: "{{ proxy_env if proxy_env is defined else {} }}"

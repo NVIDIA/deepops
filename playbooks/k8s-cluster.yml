@@ -42,6 +42,13 @@
   tags:
     - bootstrap
 
+# Configure hostnames, /etc/hosts
+- include: generic/hosts.yml
+
+# Set up a local cluster container registry
+- include: container/standalone-container-registry.yml hostlist=kube-master
+  when: kube_enable_container_registry|default(true)
+
 # Install 'sshpass' program for: https://github.com/ansible/ansible/issues/56629
 - hosts: all
   gather_facts: true

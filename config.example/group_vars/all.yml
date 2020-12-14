@@ -123,12 +123,11 @@ gpu_clock_lock: "1507,1507"
 # Playbook: docker, nvidia-docker, k8s-cluster
 # 
 # For supported Docker versions, see: kubespray/roles/container-engine/docker/vars/*
+docker_install: yes
 docker_version: '19.03'
 docker_dns_servers_strict: no
 docker_storage_options: -s overlay2
 #docker_options: "--bip=192.168.99.1/24"
-# Install DeepOps version of Docker on DGX
-docker_override_dgx: false
 # Enable docker iptables
 # If this isn't set, containers won't have access to the outside net
 # See https://github.com/kubernetes-sigs/kubespray/issues/2002
@@ -258,3 +257,15 @@ openmpi_version: 4.0.3
 
 # Disable cloud-init
 deepops_disable_cloud_init: true
+
+################################################################################
+# Container registry                                                           #
+################################################################################
+standalone_container_registry_cache_enable: true 
+standalone_container_registry_port: "5000"
+
+# To configure some set of hosts as insecure registries, list them here.
+# Slurm and K8s cluster playbooks will automatically use the master nodes for
+# these if not specified.
+#docker_insecure_registries: ["<host>:<port>"]
+#docker_registry_mirrors: ["http://<host>:<port>"]

@@ -172,6 +172,13 @@ slurm_health_check_program: "/usr/sbin/nhc"
 # https://github.com/mej/nhc/blob/master/README.md
 
 ################################################################################
+# Container registry                                                           #
+################################################################################
+slurm_enable_container_registry: true
+docker_insecure_registries: "{{ groups['slurm-master'] | map('regex_replace', '(.*)', '\\1:5000') | list + ['registry.local:31500'] }}"
+docker_registry_mirrors: "{{ groups['slurm-master'] | map('regex_replace', '(.*)', 'http://\\1:5000') | list }}"
+
+################################################################################
 # Monitoring stack                                                             #
 ################################################################################
 slurm_enable_monitoring: true

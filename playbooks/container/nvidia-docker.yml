@@ -8,17 +8,18 @@
     - name: install custom facts module
       include_role:
         name: facts
+      when: docker_install
 
-    - name: remove docker overrides from DGX OS
+    - name: remove docker overrides, specifically to deal with conflicting options from DGX OS
       file:
         path: /etc/systemd/system/docker.service.d/docker-override.conf
         state: absent
-      when: docker_override_dgx
+      when: docker_install
 
     - name: install nvidia-docker
       include_role:
         name: nvidia.nvidia_docker
       when:
         - ansible_local['gpus']['count'] and (ansible_distribution == "Ubuntu" or ansible_os_family == "RedHat")
-        - ansible_product_name is not search("DGX") or docker_override_dgx
+        - docker_install
   environment: "{{ proxy_env if proxy_env is defined else {} }}"
