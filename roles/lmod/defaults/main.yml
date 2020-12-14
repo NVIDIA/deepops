@@ -1,7 +1,4 @@
 ---
-lmod_rhel_epel_repo_baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"
-lmod_rhel_epel_repo_gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
-
 # include some reasonable defaults for module paths
 sm_prefix: "/sw"
 sm_module_root: "{{ sm_prefix }}/modules"

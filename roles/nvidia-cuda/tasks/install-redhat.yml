@@ -1,10 +1,10 @@
 ---
 - name: RedHat | add epel repo
-  yum_repository:
-    name: epel
-    description: EPEL YUM repo
-    baseurl: "{{ nvidia_driver_rhel_epel_repo_baseurl }}"
-    gpgkey: "{{ nvidia_driver_rhel_epel_repo_gpgkey }}"
+  become: yes
+  yum:
+    name: 
+      - "epel-release"
+    state: latest
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
 - name: RedHat | add CUDA repo
