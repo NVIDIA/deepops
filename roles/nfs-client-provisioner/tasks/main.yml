@@ -5,6 +5,7 @@
 - name: create nfs-client-provision namespace
   command: "{{ artifacts_dir }}/kubectl create --kubeconfig {{ artifacts_dir }}/admin.conf namespace deepops-nfs-client-provisioner"
   ignore_errors: true
+  delegate_to: localhost
 
 - name: install nfs-client-provisioner
   command: /usr/local/bin/helm upgrade --install "{{ k8s_nfs_client_release_name }}" "{{ playbook_dir }}/../../{{ k8s_nfs_client_local_submodule }}" --namespace deepops-nfs-client-provisioner --set nfs.server="{{ k8s_nfs_server }}" --set nfs.path="{{ k8s_nfs_export_path }}" --set storageClass.defaultClass="{{ k8s_nfs_default_sc }}" --wait
