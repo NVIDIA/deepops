@@ -132,6 +132,17 @@ docker_storage_options: -s overlay2
 # If this isn't set, containers won't have access to the outside net
 # See https://github.com/kubernetes-sigs/kubespray/issues/2002
 docker_iptables_enabled: true
+# Docker daemon logins
+#   Note: example only! you should put these in an Ansible Vault file for security!
+#
+#docker_login_registries:
+#- registry: docker.io
+#  username: myuser
+#  password: mypassword
+#  email: docker@docker.io
+#- registry: nvcr.io
+#  username: '$oauthtoken'
+#  password: mypassword
 
 # Enroot configuration
 # Playbook: slurm, slurm-cluster
@@ -168,18 +179,6 @@ bind_paths: []
   #- /mnt/shared
 golang_install_dir: '/opt/go/{{ golang_version }}'
 golang_gopath: /opt/go/packages
-
-# Docker daemon logins
-#   Note: example only! you should put these in an Ansible Vault file for security!
-#
-#docker_login_registries:
-#- registry: docker.io
-#  username: myuser
-#  password: mypassword
-#  email: docker@docker.io
-#- registry: nvcr.io
-#  username: '$oauthtoken'
-#  password: mypassword
 
 ################################################################################
 # AUTH                                                                         #
