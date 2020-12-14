@@ -4,7 +4,7 @@
   tasks:
     - name: Install helm chart for container registry
       include_role:
-        name: container-registry
+        name: k8s-internal-container-registry
       run_once: true
   tags:
     - container-registry

@@ -42,5 +42,9 @@ helm_version: "v3.1.2"
 # Ensure hosts file generation only runs across k8s cluster
 hosts_add_ansible_managed_hosts_groups: ["k8s-cluster"]
 
-# Configure so that the in-cluster registry can be accessed without HTTPS
-docker_insecure_registries: ["registry.local:31500"]
+################################################################################
+# Container registry                                                           #
+################################################################################
+kube_enable_container_registry: true
+docker_insecure_registries: "{{ groups['kube-master']|map('regex_replace', '(.*)', '\\1:5000')|list + ['registry.local:31500']}}"
+docker_registry_mirrors: "{{ groups['kube-master'] | map('regex_replace', '(.*)', 'http://\\1:5000') | list }}"
