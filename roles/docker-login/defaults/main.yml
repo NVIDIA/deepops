@@ -1,6 +1,7 @@
 ---
 docker_login_state: present
 docker_login_reauth: yes
+docker_login_disable_log_password: yes
 
 #docker_login_registries:
 #- registry: docker.io
