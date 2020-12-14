@@ -22,6 +22,10 @@
 - include: generic/chrony-client.yml
   when: chrony_install
 
+# Set up a local cluster container registry
+- include: container/standalone-container-registry.yml hostlist=slurm-master
+  when: slurm_enable_container_registry|default(true)
+
 # Install NVIDIA driver
 - include: nvidia-software/nvidia-driver.yml
   when: slurm_cluster_install_nvidia_driver|default(true)

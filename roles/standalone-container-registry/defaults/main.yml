@@ -1,0 +1,18 @@
+---
+standalone_container_registry_image: "registry:2.7"
+standalone_container_registry_port: "5000"
+standalone_container_registry_name: "deepops-registry"
+
+standalone_container_registry_config_template: "config.yml"
+
+deepops_dir: "/opt/deepops"
+standalone_container_registry_config_dir: "{{ deepops_dir }}/registry"
+
+# To configure the container registry as a pull-through cache, set
+# standalone_container_registry_cache_enable to true.
+# A username and password can optionally be configured to access private images
+# or take advantage of higher rate limits in a pro account.
+standalone_container_registry_cache_enable: false
+standalone_container_registry_cache_upstream: "https://registry-1.docker.io"
+# standalone_container_registry_cache_username: 
+# standalone_container_registry_cache_password:

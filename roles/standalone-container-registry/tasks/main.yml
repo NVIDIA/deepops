@@ -1,0 +1,52 @@
+---
+- name: create local directory for configuration
+  file:
+    path: "{{ standalone_container_registry_config_dir }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0700"
+
+- name: add config file
+  template:
+    src: "{{ standalone_container_registry_config_template }}"
+    dest: "{{ standalone_container_registry_config_dir }}/config.yml"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+
+- name: install docker python3 module
+  apt:
+    name: python3-docker
+    state: present
+    update_cache: yes
+  when: ansible_distribution == "Ubuntu"
+- name: Enable EPEL repo
+  package:
+    name:
+      - epel-release
+    state: present
+  when: ansible_os_family == 'RedHat'
+- name: Install package dependencies
+  package:
+    name:
+      - python3-pip
+    state: present
+  when: ansible_os_family == "RedHat"
+- name: Install python3 dependencies
+  pip:
+    name:
+      - docker
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: run registry docker container
+  docker_container:
+    name: "{{ standalone_container_registry_name }}"
+    image: "{{ standalone_container_registry_image }}"
+    state: started
+    network_mode: host
+    restart: yes
+    restart_policy: unless-stopped
+    volumes:
+    - "{{ standalone_container_registry_config_dir }}/config.yml:/etc/docker/registry/config.yml"
