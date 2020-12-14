@@ -32,7 +32,7 @@ export AUTH_KFCTL_FILE=kfctl_v1.2.0-0-gbc038f9_linux.tar.gz # https://github.com
 export AUTH_KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.2.0/${KFCTL_FILE}"
 
 # Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
-export AUTH_CONFIG_URI="https://github.com/kubeflow/manifests/blob/v1.2-branch/kfdef/kfctl_istio_dex.v1.2.0.yaml"
+export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/v1.2-branch/kfdef/kfctl_istio_dex.v1.2.0.yaml"
 export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.2.0.yaml"
 
 # Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
