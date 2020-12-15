@@ -37,8 +37,9 @@ You can then mirror the relevant software in your offline environment.
     - [RHEL/CentOS](./redhat.md)
 - [Setting up MAAS offline](./maas.md)
 - [Slurm software](./slurm.md)
-- [Kubernetes software](./kubernetes.md)
+- [Kubernetes deployment with Kubespray](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/offline-environment.md)
 - [Other container images](./containers.md)
 - [Helm repositories](./helm.md)
+- [PyPI packages](./pypi.md)
 
 
