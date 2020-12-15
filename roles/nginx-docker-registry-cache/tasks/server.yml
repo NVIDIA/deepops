@@ -16,7 +16,7 @@
     path: "{{ item }}"
     owner: "root"
     group: "root"
-    mode: "0700"
+    mode: "0755"
     state: "directory"
   with_items:
   - "{{ nginx_docker_cache_mirror_path }}"
