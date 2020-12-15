@@ -18,7 +18,7 @@
   version: "v5.2.6"
 
 - src: nvidia.nvidia_driver
-  version: "v1.2.2"
+  version: "v2.0.0"
 
 - src: nvidia.nvidia_docker
   version: "v1.2.1"
