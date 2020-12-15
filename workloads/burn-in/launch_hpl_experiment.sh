@@ -337,8 +337,10 @@ jobid_list=()
 # Define hostfile for each iteration
 HFILE=/tmp/hfile.$$
 
+echo "Starting Experiments"
+echo "Experiment Results Directory: ${EXPDIR}"
+
 for N in $(seq ${niters}); do
-	echo "Starting Iteration $N"
 	P=1
 	INST=1
 	cat $MACHINEFILE | ${ORDER_CMD} > $HFILE
@@ -398,7 +400,6 @@ for N in $(seq ${niters}); do
 	        echo "Unused nodes for this iteration: ${HLIST}"
         fi
 	echo ""
-	echo "Ending Iteration $N"
 done
 
 wait
