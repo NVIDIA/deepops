@@ -191,7 +191,6 @@ else
 
 	export SYSCFG=${system}
 	export gpus_per_node=$(cat ${system} | GPU_AFFINITY | cut -f2 -d= | awk -F: '{print NF}' )
-	export SYSCFG=${system}
 	echo "HERE: $SYSCFG gpus=$gpus_per_node"
 fi
 
@@ -374,7 +373,7 @@ for N in $(seq ${niters}); do
 		# Submit the job in the workdir
 		pushd ${WORKDIR}
 
-		CMD="sbatch -J burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFG,GPUMEM,CRUNTIME,EXPDIR ${HPL_DIR}/submit_hpl.sh"
+		CMD="sbatch -J burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFGVAR,GPUMEM,CRUNTIME,EXPDIR ${HPL_DIR}/submit_hpl.sh"
                  
 		if [ ${verbose} -eq 1 ]; then
 		        echo "Submitting:  $CMD"
