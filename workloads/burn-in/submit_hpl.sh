@@ -1,7 +1,6 @@
 #!/bin/bash
 #location of HPL
 
-
 ### HERE we cannot do the trick of pulling the dirname off the script
 ### Because the batch systems may copy the script to a local location before
 ### Execution. So this means the path would be to a directory somewhere possibly
@@ -43,8 +42,8 @@ if [ x"${CONT}" = x"" ]; then
 	exit 1
 fi
 
-if [ x"${SYSCFG}" == x"" ]; then
-	echo "ERROR: SYSCFG must be defined. Exiting."
+if [ x"${SYSCFGVAR}" == x"" ]; then
+	echo "ERROR: SYSCFGVAR must be defined. Exiting."
 	exit 1
 fi
 
@@ -93,11 +92,11 @@ case ${CRUNTIME} in
 	enroot)
 		CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
                      --container-image="${CONT}" --container-mounts="${MOUNT}" \
-		     /workspace/hpl.sh --config ${SYSCFG} --dat /datfiles/HPL.dat" ;;
+		     /workspace/hpl.sh --config ${SYSCFGVAR} --dat /datfiles/HPL.dat" ;;
 	singularity)
 		CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
 		     singularity run --nv -B "${MOUNT}" "${CONT}" \
-		     /workspace/hpl.sh --config ${SYSCFG} --dat /datfiles/HPL.dat" ;;
+		     /workspace/hpl.sh --config ${SYSCFGVAR} --dat /datfiles/HPL.dat" ;;
 	baremetal)
 		#CMD="mpirun -np $NPROCS -bind-to none -x LD_LIBRARY_PATH ${LOCAL_MPIOPTS} ${mpiopts} ${HPL_SCRIPTS_DIR}/hpl.sh" 
 		echo "baremetal not supported yet"
