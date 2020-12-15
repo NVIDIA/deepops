@@ -31,11 +31,11 @@ cd deepops/workloads/burn-in/
 ```
 
 ```
-./launch_experiment_slurm.sh --sys <SYSTEM> --count <NODES_PER_JOBS> --container nvcr.io#nvidia/hpc-benchmarks:20.10-hpl --cruntime enroot
+./launch_hpl_experiment.sh --sys <SYSTEM> --count <NODES_PER_JOBS> --container nvcr.io#nvidia/hpc-benchmarks:20.10-hpl --cruntime enroot
 
 or
 
-./launch_experiment_slurm.sh -s <SYSTEM> -c <NODES_PER_JOBS> --container nvcr.io#nvidia/hpc-benchmarks:20.10-hpl  --cruntime enroot
+./launch_hpl_experiment.sh -s <SYSTEM> -c <NODES_PER_JOBS> --container nvcr.io#nvidia/hpc-benchmarks:20.10-hpl  --cruntime enroot
 ```
 
    -s|--sys <SYSTEM>
@@ -51,7 +51,7 @@ NOTE: For the Burn In Test, select the number of jobs (--count ) as 1 to run sin
 All results are written to a directory under the results subdirectory.  The launch script writes provides the location of that directory.  For example:
 
 ```
-$ ./launch_experiment_slurm.sh -s dgxa100_80G  -c 5 --container nvcr.io#nvidia/hpc-benchmarks:20.10-hpl  --cruntime enroot
+$ ./launch_hpl_experiment.sh -s dgxa100_80G  -c 5 --container nvcr.io#nvidia/hpc-benchmarks:20.10-hpl  --cruntime enroot
 
 Using contaner runtime enroot
 
@@ -130,7 +130,7 @@ Experiments are verified when all jobs are complete.  See the file verify_result
  * Run an experiment where each node generates a result to identify any slow nodes.  If any slow nodes are found, fix them.
 
 ```
-./launch_slurm_experiment.py -c 1 -s dgxa100_80GG --maxnodes <number of nodes to run single node burn-in> --container nvcr.io#nvidia/hpc-benchmarks:20.10-hpl  --cruntime enroot
+./launch_hpl_experiment.py -c 1 -s dgxa100_80GG --maxnodes <number of nodes to run single node burn-in> --container nvcr.io#nvidia/hpc-benchmarks:20.10-hpl  --cruntime enroot
 ```
 * Run multi-node jobs starting with two nodes, and increase them (four, eight, etc) until the size of the job to the next power of two would be greater than half the system.  At each node count, all runs should be completed successfully with similar performance.
 *Run two jobs at N/2 in size (N is the total number of nodes). 
@@ -138,7 +138,7 @@ Experiments are verified when all jobs are complete.  See the file verify_result
 
 
 ```
-./launch_experiment_slurm.sh -c <number of nodes> -s <system type>
+./launch_hpl_experiment.sh -c <number of nodes> -s <system type>
 
 ```
 
