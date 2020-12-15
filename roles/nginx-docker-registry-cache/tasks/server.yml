@@ -52,5 +52,6 @@
     - "{{ nginx_docker_cache_mirror_path }}:/docker_mirror_cache"
     - "{{ nginx_docker_cache_ca_path }}:/ca"
     env:
+      REGISTRIES: "{{ nginx_docker_cache_registry_string }}"
       ENABLE_MANIFEST_CACHE: "{{ nginx_docker_cache_manifests }}"
       MANIFEST_CACHE_DEFAULT_TIME: "{{ nginx_docker_cache_manifest_default_time }}"
