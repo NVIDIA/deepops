@@ -38,10 +38,17 @@ or
 ./launch_hpl_experiment.sh -s <SYSTEM> -c <NODES_PER_JOBS> --container nvcr.io#nvidia/hpc-benchmarks:20.10-hpl  --cruntime enroot
 ```
 
+Where:
+
+```
    -s|--sys <SYSTEM>
         * Set to the system type on which to run.  Ex: dgxa100_40G, dgxa100_80, generic
-    -c|--count <Count>
+   -c|--count <Count>
         * Set to the number of nodes to use per job
+   --container 
+        * Specify a continer URI or a local file (.sqsh for enroot, .sif for singularity)
+   --cruntime <runtime> 
+        * Specify the container runtime.  enroot is the only support runtime currently.
 
 
 The script will lookup all of the available batch nodes on the system and launch a series of jobs on each.  
