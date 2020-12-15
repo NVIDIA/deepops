@@ -245,7 +245,12 @@ if [ x"${cruntime}" != x"" ]; then
 		enroot)
 			# Need to convert the container and change all the slashes except the last one to #
 			# This expression below is probably not robust.
-			export CONT=$(echo ${container} | rev | sed 's/\//#/g' | sed 's/#/\//' | rev)
+			if [ ! -f ${container} ]; then
+				# Since the file doesn't exist, assume the CONTAINER is a URI
+				export CONT=$(echo ${container} | rev | sed 's/\//#/g' | sed 's/#/\//' | rev)
+			else
+				export CONT=${container}
+			fi
 			;;
 		bare)
 			echo "INFO: Using bare-metal runtime"
