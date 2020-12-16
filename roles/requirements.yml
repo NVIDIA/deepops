@@ -24,7 +24,7 @@
   version: "v1.2.1"
 
 - src: https://github.com/NVIDIA/ansible-role-enroot.git
-  version: "v0.3.0"
+  version: "v0.3.2"
 
 - src: geerlingguy.filebeat
   version: "2.0.1"
