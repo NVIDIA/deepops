@@ -36,7 +36,7 @@
         state: present
       when: (ansible_python.version.major == 2) and (ansible_os_family == "RedHat") and (ansible_distribution_major_version == "7")
 
-    - name: install python 2 libraries on RHEL/CentOS 7
+    - name: install python 2 libraries on EL7
       package:
         name:
         - python-setuptools
