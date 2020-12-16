@@ -80,7 +80,7 @@ mkdir -p $BUILDDIR
 #Variable definitions for CUDA and HPC-X Installs
 
 #CUDA Install Variables
-CUDA_VERSION=11.0.2
+CUDA_VERSION=11.1.1
 CUDA_HOME=${APPSDIR}/cuda/${CUDA_VERSION}
 mkdir -p ${CUDA_HOME}
 #echo $CUDA_HOME
@@ -121,10 +121,11 @@ if [ $BUILD_CUDA == 1 ]; then
     fi
 
    cd ${BUILDDIR}
-   CUDAPATH=http://developer.download.nvidia.com/compute/cuda/11.0.2/local_installers/cuda_11.0.2_450.51.05_linux.run
+   CUDAFN=cuda_11.1.1_455.32.00_linux.run
+   CUDAPATH=http://developer.download.nvidia.com/compute/cuda/${CUDA_VERSION}/local_installers/${CUDAFN}
    CUDAFN=$(basename ${CUDAPATH})
    rm -f ${CUDAFN}
-   wget http://developer.download.nvidia.com/compute/cuda/11.0.2/local_installers/${CUDAFN}
+   wget ${CUDAPATH}
 
    sh ${CUDAFN} --installpath=${CUDA_HOME} --silent --toolkit
 
