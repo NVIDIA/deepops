@@ -15,7 +15,6 @@ export HPL_FILE_DIR=${HPL_FILE_DIR:-${HPL_DIR}/hplfiles} # Shared location where
 #export PATH=/usr/local/cuda/bin:$PATH
 #export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
-echo "NVCC Version: $(nvcc -V)"
 echo "NVIDIA-SMI:"
 nvidia-smi
 
@@ -78,12 +77,23 @@ memclock=${NV_MEMCLOCK:-"877"}
 
 LOCAL_MPIOPTS="--mca btl_openib_warn_default_gid_prefix 0"
 
+export TEST_LOOPS=1
+export TEST_SYSTEM_PARAMS=1
+
+
 # Echo write nodelist
 echo "HOSTLIST: $(scontrol show hostname $SLURM_NODELIST | paste -s -d,)" 
 echo "" 
 
 ## Run HPL
 ####mpirun -np $NPROCS -bind-to none -x LD_LIBRARY_PATH ${LOCAL_MPIOPTS} ${mpiopts} ${HPL_SCRIPTS_DIR}/run_hpl_cuda11.0.sh 2>&1 
+
+if [ -f $SYSCFGVAR ]; then
+	if [ x"${CRUNTIME}" != x"baremetal" ]; then
+	        SYSCFGDIR="/datfiles/"
+	fi
+fi
+
 
 # Set the mount as the temporary directory
 MOUNT=$(pwd):/datfiles
@@ -92,11 +102,11 @@ case ${CRUNTIME} in
 	enroot)
 		CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
                      --container-image="${CONT}" --container-mounts="${MOUNT}" \
-		     /workspace/hpl.sh --config ${SYSCFGVAR} --dat /datfiles/HPL.dat" ;;
+		     /workspace/hpl.sh --config ${SYSCFGDIR}${SYSCFGVAR} --dat /datfiles/HPL.dat" ;;
 	singularity)
 		CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
 		     singularity run --nv -B "${MOUNT}" "${CONT}" \
-		     /workspace/hpl.sh --config ${SYSCFGVAR} --dat /datfiles/HPL.dat" ;;
+		     /workspace/hpl.sh --config ${SYSCFGDIR}${SYSCFGVAR} --dat /datfiles/HPL.dat" ;;
 	baremetal)
 		#CMD="mpirun -np $NPROCS -bind-to none -x LD_LIBRARY_PATH ${LOCAL_MPIOPTS} ${mpiopts} ${HPL_SCRIPTS_DIR}/hpl.sh" 
 		echo "baremetal not supported yet"

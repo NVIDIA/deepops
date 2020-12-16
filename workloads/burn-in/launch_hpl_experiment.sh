@@ -336,8 +336,9 @@ jobid_list=()
 # Define hostfile for each iteration
 HFILE=/tmp/hfile.$$
 
-echo "Starting Experiments"
-echo "Experiment Results Directory: ${EXPDIR}"
+echo ""
+echo "Starting Experiments: ${EXPDIR}"
+echo ""
 
 for N in $(seq ${niters}); do
 	P=1
@@ -365,15 +366,15 @@ for N in $(seq ${niters}); do
 		cp ${HPLDATFN} ${WORKDIR}/HPL.dat
 		if [ -f ${SYSCFG} ]; then
                         cp ${SYSCFG} ${WORKDIR}/syscfg.sh
-			SYSCFGVAR=syscfg.sh
+			export SYSCFGVAR=syscfg.sh
 		else
-			SYSCFGVAR=${SYSCFG}
+			export SYSCFGVAR=${SYSCFG}
                 fi
 
 		# Submit the job in the workdir
 		pushd ${WORKDIR}
 
-		CMD="sbatch -J burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFGVAR,GPUMEM,CRUNTIME,EXPDIR ${HPL_DIR}/submit_hpl.sh"
+		CMD="sbatch -J burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFG,SYSCFGVAR,GPUMEM,CRUNTIME,EXPDIR ${HPL_DIR}/submit_hpl.sh"
                  
 		if [ ${verbose} -eq 1 ]; then
 		        echo "Submitting:  $CMD"
