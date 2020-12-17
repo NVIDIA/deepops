@@ -30,5 +30,11 @@
 - name: install openshift python client for k8s_raw module
   yum:
     name: python2-openshift
-  when: ansible_os_family == 'RedHat'
+  when: ansible_os_family == 'RedHat' and ansible_distribution_major_version == "7"
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
+- name: install openshift python client for k8s_raw module
+  yum:
+    name: python3-openshift
+  when: ansible_os_family == 'RedHat' and ansible_distribution_major_version == "8"
   environment: "{{proxy_env if proxy_env is defined else {}}}"

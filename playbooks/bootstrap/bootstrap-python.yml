@@ -1,4 +1,5 @@
 ---
+# Initial bootstrap of Python 3 installation on all hosts
 - hosts: all
   become: true
   gather_facts: false
@@ -14,3 +15,30 @@
       register: output
       changed_when: output.stdout != ""
       when: proxy_env is defined
+
+
+# Install necessary Python packages for future pip and setuptools requirements
+- hosts: all
+  become: true 
+  gather_facts: true
+  tasks:
+    - name: install python 3 libraries if python 3 is present
+      package:
+        name:
+        - python3-setuptools
+        - python3-pip
+        state: present
+      when: ansible_python.version.major == 3
+
+    - name: install epel on EL7
+      package:
+        name: epel-release
+        state: present
+      when: (ansible_python.version.major == 2) and (ansible_os_family == "RedHat") and (ansible_distribution_major_version == "7")
+
+    - name: install python 2 libraries on EL7
+      package:
+        name:
+        - python-setuptools
+        - python-pip
+      when: (ansible_python.version.major == 2) and (ansible_os_family == "RedHat") and (ansible_distribution_major_version == "7")
