@@ -47,13 +47,13 @@ print("")
 print("Theoretical Max value of N: %d" % math.floor(v))
 
 # modify value for best fit for NB and ranks
-iv=math.floor(v/nb/ranks)
+iv=math.floor(v/nb)
 
 # Print list of N
 print("")
 print("List of N:")
 for v in range(iv-4,iv+2):
-    print("%d " % int(float(v)*nb*ranks),end="")
+    print("%d " % int(float(v)*nb),end="")
 
 print("")
 print("")
