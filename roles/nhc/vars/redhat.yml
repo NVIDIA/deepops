@@ -1,0 +1,4 @@
+---
+nhc_build_deps:
+- gcc
+- make

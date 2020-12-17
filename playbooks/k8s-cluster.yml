@@ -53,6 +53,11 @@
 - hosts: all
   gather_facts: true
   tasks:
+    - name: install epel
+      package:
+        name: epel-release
+        state: present
+      when: ansible_os_family == "RedHat"
     - name: install sshpass
       package:
         name: sshpass
