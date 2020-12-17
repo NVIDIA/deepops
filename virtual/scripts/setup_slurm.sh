@@ -39,5 +39,5 @@ ansible-playbook \
 	-i "${VIRT_DIR}/config/inventory" \
 	-l slurm-cluster \
 	-e "@${VIRT_DIR}/vars_files/virt_slurm.yml" ${ansible_extra_args} \
-	--tags undrain
+	--tags undrain \
 	"${ROOT_DIR}/playbooks/slurm-cluster/slurm.yml"
