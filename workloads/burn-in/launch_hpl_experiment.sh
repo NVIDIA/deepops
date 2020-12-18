@@ -36,7 +36,7 @@ walltime=00:30:00
 verbose=0
 nores=0
 cruntime=singularity
-container="nvcr.io#nvidia/hpc-benchmarks:20.10-hpl"
+container="nvcr.io/nvidia/hpc-benchmarks:20.10-hpl"
 ORDER_CMD="cat"
 
 print_usage() {
