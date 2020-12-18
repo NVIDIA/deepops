@@ -1,5 +1,5 @@
 #!/bin/bash 
-#Install dependencies for the HPL Burn-In Test.  It is assumed that Slurm Cluster Manger is configured with PMIx and hwloc. This script specifically installs the CUDA Toolkit by its .run installer, and UCX and OpenMPI via the HPC-X Software Toolkit. 
+#Install dependencies for the HPL Burn-In Test  It is assumed that Slurm Cluster Manger is configured with PMIx and hwloc. This script specifically installs the CUDA Toolkit by its .run installer, and UCX and OpenMPI via the HPC-X Software Toolkit. 
 
 
 #Usage instructions for build dependencies script
@@ -56,10 +56,11 @@ fi
 BUILD_HPCX=${buildhpcx:-1}
 export BUILD_HPCX
 
-ofed_major=${ofed_major:-5.0}
+ofed_major=${ofed_major:-5.1}
 echo "HPC-X for Mellanox OFED $ofed_major will be downloaded from"
 
 case ${ofed_major} in
+   "5.1") HPCX_URL="http://www.mellanox.com/downloads/hpc/hpc-x/v2.7/hpcx-v2.7.0-gcc-MLNX_OFED_LINUX-5.1-0.6.6.0-ubuntu20.04-x86_64.tbz"; echo $HPCX_URL ;;
    "5.0") HPCX_URL="http://www.mellanox.com/downloads/hpc/hpc-x/v2.7/hpcx-v2.7.0-gcc-MLNX_OFED_LINUX-5.0-1.0.0.0-ubuntu18.04-x86_64.tbz"; echo $HPCX_URL ;;
    "4.7") HPCX_URL="http://www.mellanox.com/downloads/hpc/hpc-x/v2.7/hpcx-v2.7.0-gcc-MLNX_OFED_LINUX-4.7-1.0.0.1-ubuntu18.04-x86_64.tbz"; echo $HPCX_URL ;;
    *) echo "Unable to find a matching MOFED version for HPCX, exiting." & exit 1 ;;
