@@ -4,7 +4,7 @@ HPL.out      output file name (if any)
 6            device out (6=stdout,7=stderr,file)
 6            # of problems sizes (N)
 #405504 Ns
-408384 408672 408960 409248 409536 409824
+411552 411840 412128 412416 412704 412992 
 1             # of NBs
 288          NBs
 0            PMAP process mapping (0=Row-,1=Column-major)
