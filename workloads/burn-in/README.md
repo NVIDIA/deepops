@@ -38,7 +38,6 @@ If not already created, create the file ~/.config/enroot/.credentials.  Add the 
 
 ```
 machine nvcr.io login $oauthtoken password <NVCR.IO KEY>
-I0MDk1NDAzNWZl
 machine authn.nvidia.com login $oauthtoken password <NVCR.IO KEY>
 ```
 Replace <NVCR.IO KEY> above with the your nvcr.io key.
@@ -54,7 +53,7 @@ docker login $oauthtoken
 Use your nvcr.io key as the password. Next, pull the container and create a local image.
 
 ```
-docker pull nvcr.io#nvidia/hpc-benchmarks:20.10-hpl > hpc-benchmarks.20.10-hpl.tgz
+docker pull nvcr.io/nvidia/hpc-benchmarks:20.10-hpl > hpc-benchmarks.20.10-hpl.tgz
 ```
 
 Then you can pass the file created here, hpc-benchmarks-20.10-hpl.tgz as an option to the launch script.
