@@ -1,0 +1,37 @@
+---
+- name: configure docker to use nginx proxy via http
+  template:
+    src: "{{ nginx_docker_cache_docker_config_src }}"
+    dest: "{{ nginx_docker_cache_docker_config_dest }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when: nginx_docker_cache_dockerd_clients
+  notify:
+  - restart docker
+
+- name: install pre-defined CA certificate
+  when: nginx_docker_cache_ca is defined
+  block:
+  - name: copy CA certificate in place
+    copy:
+      src: "{{ nginx_docker_cache_ca.crt }}"
+      dest: "{{ nginx_docker_cache_ca_client_crt_el }}"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+  - name: update CA cert bundle
+    command: update-ca-trust
+
+- name: install CA certificate from live proxy
+  when: nginx_docker_cache_ca is not defined
+  block:
+  - name: download CA certificate from live proxy
+    get_url:
+      url: "{{ nginx_docker_cache_proxy_url }}/ca.crt"
+      dest: "{{ nginx_docker_cache_ca_client_crt_el }}"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+  - name: update CA cert bundle
+    command: update-ca-trust
