@@ -11,6 +11,7 @@ nginx_docker_cache_manifest_default_time: "1h"
 
 nginx_docker_cache_docker_config_src: "http-proxy.conf"
 nginx_docker_cache_docker_config_dest: "/etc/systemd/system/docker.service.d/http-proxy.conf"
+nginx_docker_cache_dockerd_clients: true
 
 nginx_docker_cache_ca_client_crt: "/usr/share/ca-certificates/docker_registry_proxy.crt"
 nginx_docker_cache_ca_client_name: "docker_registry_proxy.crt"
