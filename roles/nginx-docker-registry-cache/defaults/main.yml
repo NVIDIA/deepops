@@ -22,5 +22,5 @@ nginx_docker_cache_proxy_url: "http://{{ groups[nginx_docker_cache_hostgroup][0]
 
 # Optional: pre-define CA certificate, key, and serial number file
 #nginx_docker_cache_ca:
-#- crt: "ca.crt"
-#- key: "ca.key"
+# crt: "ca.crt"
+# key: "ca.key"
