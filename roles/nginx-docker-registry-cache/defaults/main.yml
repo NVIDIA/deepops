@@ -18,7 +18,7 @@ nginx_docker_cache_ca_client_crt_el: "/etc/pki/ca-trust/source/anchors"
 nginx_docker_cache_ca_client_name: "docker_registry_proxy.crt"
 
 nginx_docker_cache_hostgroup: "cache"
-nginx_docker_cache_proxy_url: "http://{{ groups[nginx_docker_cache_hostgroup][0] | map('regex_replace', '(.*)', 'http://\\1:3128') }}"
+nginx_docker_cache_proxy_url: "http://{{ groups[nginx_docker_cache_hostgroup][0] }}:3128" 
 
 # Optional: pre-define CA certificate, key, and serial number file
 #nginx_docker_cache_ca:
