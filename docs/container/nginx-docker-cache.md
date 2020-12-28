@@ -47,19 +47,21 @@ The following variables are the most common configuration you may want to adjust
 ### Configuring a pre-generated CA
 
 By default, the proxy will generate a CA certificate and key on its first run, and make the certificate available for clients to download.
-If you choose, you can provide a pre-generated CA certificate and key which will be used instead.
+This is usually the fastest way to get up and running, but means that if you fully re-deploy the proxy server, you may need to re-download the CA certificate on the clients.
+
+If you choose, you can instead provide a pre-generated CA certificate and key and specify these be used.
+A sample script for generating the key and certificate can be found in [scripts/nginx-docker-cache/gen-ca.sh](../../scripts/nginx-docker-cache/gen-ca.sh).
 
 To specify the CA certificate and key which you wish to use, set the following variable:
 
 ```
 nginx_docker_cache_ca:
 - crt: "/path/to/ca.crt"
-- key: "/path-to/ca.key"
+- key: "/path/to/ca.key"
 ```
 
 This set of files will then be used for both the server and the clients.
 
-See the upstream [rpardini/docker-registry-proxy](https://github.com/rpardini/docker-registry-proxy) for more detail on correctly generating and using these files.
  
 ### Server deployment
 
