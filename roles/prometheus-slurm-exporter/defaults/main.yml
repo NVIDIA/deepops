@@ -7,6 +7,7 @@ slurm_install_prefix: /usr/local
 
 prometheus_config_dir: /etc/prometheus
 prometheus_cfg_endpoint_dir: "{{ prometheus_config_dir }}/endpoints"
+slurm_exporter_conf_template: "slurm-exporter.yml.j2"
 
 grafana_svc_name: "docker.grafana.service"
 grafana_data_dir: /var/lib/grafana
