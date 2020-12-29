@@ -378,7 +378,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL{instance=\"$hostname:9400\"}[$__interval]))",
+          "expr": "1e6*sum(DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL{instance=\"$hostname:9400\"})",
           "format": "time_series",
           "hide": false,
           "interval": "",
