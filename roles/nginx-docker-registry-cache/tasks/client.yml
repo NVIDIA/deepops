@@ -1,0 +1,6 @@
+---
+- include: client-ubuntu.yml
+  when: ansible_distribution == 'Ubuntu'
+
+- include: client-el.yml
+  when: ansible_os_family == 'RedHat'
