@@ -40,7 +40,7 @@ These include:
 | ---- | ---------------- | -------- | ---------------- |
 | `/etc/hosts` | `hosts_file_src` | List of hosts and IP addresses in the cluster | [hosts file manual](https://man7.org/linux/man-pages/man5/hosts.5.html) |
 | `/etc/slurm/slurm.conf` | `slurm_conf_template` | Slurm scheduler configuration | [Slurm configurator](https://slurm.schedmd.com/configurator.easy.html) |
-| `/etc/nhc/nhc.conf` | `nhc_conf_template` | Node Health Check configuration | [NHC documentation](https://github.com/mej/nhc/blob/master/README.md) |
+| `/etc/nhc/nhc.conf` | `nhc_config_template` | Node Health Check configuration | [NHC documentation](https://github.com/mej/nhc/blob/master/README.md) |
 | `/etc/prometheus/endpoints/node-exporter.yml` | `node_exporter_conf_template` | Prometheus endpoints for node-exporter | [Sample targets config](https://prometheus.io/docs/prometheus/latest/getting_started/#configure-prometheus-to-monitor-the-sample-targets) |
 | `/etc/prometheus/endpoints/dcgm-exporter.yml` | `nvidia_dcgm_exporter_conf_template` | Prometheus endpoints for dcgm-exporter | [Sample targets config](https://prometheus.io/docs/prometheus/latest/getting_started/#configure-prometheus-to-monitor-the-sample-targets) |
 | `/etc/prometheus/endpoints/slurm-exporter.yml` | `slurm_exporter_conf_template` | Prometheus endpoints for slurm-exporter | [Sample targets config](https://prometheus.io/docs/prometheus/latest/getting_started/#configure-prometheus-to-monitor-the-sample-targets) |
