@@ -296,7 +296,7 @@ elif [ ${KUBEFLOW_WAIT} ]; then
 else
   install_dependencies
   stand_up
-  install_mpi_operator
+  # install_mpi_operator # BUG: https://github.com/NVIDIA/deepops/issues/737
   get_url
   print_info
 fi
