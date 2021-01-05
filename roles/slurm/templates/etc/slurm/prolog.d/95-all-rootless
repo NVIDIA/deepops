@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+command -v singularity || exit 0
+/usr/local/bin/singularity config fakeroot -a "${SLURM_JOB_USER}"

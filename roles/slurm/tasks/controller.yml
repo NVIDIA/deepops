@@ -39,6 +39,7 @@
     target: '/lib64(/.*)?'
     setype: mysqld_db_t
     state: present
+    ignore_selinux_state: yes
   when: ansible_os_family == "RedHat"
 
 - name: Apply new SELinux file context to filesystem

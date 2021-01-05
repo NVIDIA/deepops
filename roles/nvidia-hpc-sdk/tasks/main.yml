@@ -30,6 +30,7 @@
     url: "{{ hpcsdk_download_url }}"
     dest: "{{ hpcsdk_dest_download_path }}"
     mode: "0444"
+    validate_certs: no
 
 - name: extract archive
   unarchive:
