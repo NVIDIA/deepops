@@ -37,26 +37,11 @@
   tags:
     - nfs
 
-- name: restart when exports change
-  service: name=nfs-kernel-server state=restarted
-  when: nfs_exports_copy.changed and ansible_os_family == "Debian"
-  tags:
-    - nfs
-
-- name: restart when exports change
-  service: name=nfs-server state=restarted
-  when: nfs_exports_copy.changed and ansible_os_family == "RedHat"
-  tags:
-    - nfs
-
 - name: ensure nfs server is running
-  service: name=nfs-kernel-server state=started enabled=yes
-  when: nfs_exports|length and ansible_os_family == "Debian"
-  tags:
-    - nfs
-
-- name: ensure nfs server is running
-  service: name=nfs-server state=started enabled=yes
-  when: nfs_exports|length and ansible_os_family == "RedHat"
+  service:
+    name: "{{ nfs_server_daemon }}"
+    state: started
+    enabled: yes
+  when: nfs_exports|length
   tags:
     - nfs
