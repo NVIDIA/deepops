@@ -1,45 +1,41 @@
 ---
 - include: get-time.yml
 
-
 # nvsm does not allow you to specify a dump location, so we search /tmp for the last dump
 - name: Get name of the latest dumpfile from nvsm
   shell: "ls -taA1 /tmp | grep nvsm-health.*tar.* | head -n 1"
   register: nvsm_dump_file
   ignore_errors: yes
 
-- name: Copy fw versions log file to local machine
-  fetch:
-    src: "{{ fw_dir }}/fw-versions.log"
-    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-fw-version.log"
-    flat: yes
+- name: Copy over all log files, etc.
   ignore_errors: yes
-
-- name: Copy health dump log file to local machine
   fetch:
-    src: "/tmp/{{ nvsm_dump_file.stdout }}"
-    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-{{ nvsm_dump_file.stdout }}"
+    src: "{{ fw_dir }}/{{ item }}"
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-{{ item }}"
     flat: yes
-  ignore_errors: yes
-
-- name: Copy show health log file to local machine
-  fetch:
-    src: "{{ fw_dir }}/nvsm-show-health.log"
-    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-nvsm-show-health.log"
-    flat: yes
-  ignore_errors: yes
-
-- name: Copy dcgm diag log file to local machine
-  fetch:
-    src: "{{ fw_dir }}/dcgm_diag_1.log"
-    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-dcgm_diag_1.log"
-    flat: yes
-  ignore_errors: yes
+  with_items:
+    - "fw-manifests.log"
+    - "fw-versions-pre-check.log"
+    - "{{ inventory_hostname }}.log"
+    - "fw-versions-post-check.log"
+    - "fw-versions.log"
+    - "fw-update.json"
+    - "{{ nvsm_dump_file.stdout }}"
+    - "nvsm-show-health.log"
+    - "dcgm_diag_1.log"
+    - "dcgm_diag_3.log"
 
 - name: Copy /var/log/syslog to local machine
   fetch:
     src: /var/log/syslog
     dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-syslog"
+    flat: yes
+  ignore_errors: yes
+
+- name: Copy /var/log/dmesg to local machine
+  fetch:
+    src: /var/log/dmesg
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-dmesg"
     flat: yes
   ignore_errors: yes
 
@@ -50,9 +46,3 @@
     flat: yes
   ignore_errors: yes
 
-- name: Copy ib/mlx to local machine
-  fetch:
-    src: "{{ fw_dir }}/{{ inventory_hostname }}.log"
-    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-ib-mlx.log"
-    flat: yes
-  ignore_errors: yes

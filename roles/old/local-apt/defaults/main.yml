@@ -1,9 +1,0 @@
-# Note: intentionally not defining `is_airgapped`
-# This is a global deepops variable outside the scope of this role;
-# however, this role does depend on the value of this variable.  
-# Ansible should throw an error if it is not defined.
-
-# Used, but not owned by this role.
-# is_airgapped: true
-
-with_local_apt: false

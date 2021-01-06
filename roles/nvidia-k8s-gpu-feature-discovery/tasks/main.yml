@@ -1,0 +1,14 @@
+---
+# While we would prefer to use the Ansible helm module, it's broken! :-(
+# See https://github.com/ansible/ansible/pull/57897
+# Unfortunately this will not be fixed until Ansible 2.10 which is not yet released.
+# So for now we will run helm commands directly...
+
+- name: install nvidia k8s gpu feature discovery helm repo
+  command: /usr/local/bin/helm repo add nvgfd "{{ k8s_gpu_feature_discovery_helm_repo }}"
+
+- name: update helm repos
+  command: /usr/local/bin/helm repo update
+
+- name: install nvidia k8s gpu feature discovery
+  command: /usr/local/bin/helm upgrade --install "{{ k8s_gpu_feature_discovery_release_name }}" "{{ k8s_gpu_feature_discovery_chart_name }}" --version "{{ k8s_gpu_feature_discovery_chart_version }}" --set "migStrategy={{ k8s_gpu_mig_strategy }}" --wait

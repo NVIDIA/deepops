@@ -2,16 +2,17 @@
 - name: default to building pmix
   set_fact:
     pmix_build: yes
+    pmix_ver_alt: "{{ pmix_version | replace('.','') }}"
 
 - name: check installed pmix version
-  shell: "{{ pmix_install_prefix }}/bin/pmix_info --version | grep PMIX: | awk '{print $2}'"
+  shell: "grep PMIX_NUMERIC_VERSION {{ pmix_install_prefix }}/include/pmix_version.h | awk '{print $3}' | tr -d 'x0'"
   register: pmix_info_version
   ignore_errors: yes
 
 - name: don't build pmix if it's already installed, unless forced
   set_fact:
     pmix_build: no
-  when: pmix_info_version.stdout == pmix_version and not pmix_force_rebuild
+  when: pmix_info_version.stdout == pmix_ver_alt and not pmix_force_rebuild
 
 - name: install pmix build dependencies
   apt:

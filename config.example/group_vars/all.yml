@@ -40,11 +40,8 @@ chrony_config_server:
   - 2.pool.ntp.org
   - 3.pool.ntp.org
 
-# Enable docker iptables
-# If this isn't set, containers won't have access to the outside net
-# See https://github.com/kubernetes-sigs/kubespray/issues/2002
-docker_iptables_enabled: true
-
+# Set hostname based on inventory file
+deepops_set_hostname: true
 
 ################################################################################
 # SOFTWARE                                                                     #
@@ -126,12 +123,26 @@ gpu_clock_lock: "1507,1507"
 # Playbook: docker, nvidia-docker, k8s-cluster
 # 
 # For supported Docker versions, see: kubespray/roles/container-engine/docker/vars/*
-docker_version: '18.09'
+docker_install: yes
+docker_version: '19.03'
 docker_dns_servers_strict: no
 docker_storage_options: -s overlay2
 #docker_options: "--bip=192.168.99.1/24"
-# Install DeepOps version of Docker on DGX
-docker_override_dgx: false
+# Enable docker iptables
+# If this isn't set, containers won't have access to the outside net
+# See https://github.com/kubernetes-sigs/kubespray/issues/2002
+docker_iptables_enabled: true
+# Docker daemon logins
+#   Note: example only! you should put these in an Ansible Vault file for security!
+#
+#docker_login_registries:
+#- registry: docker.io
+#  username: myuser
+#  password: mypassword
+#  email: docker@docker.io
+#- registry: nvcr.io
+#  username: '$oauthtoken'
+#  password: mypassword
 
 # Enroot configuration
 # Playbook: slurm, slurm-cluster
@@ -168,7 +179,6 @@ bind_paths: []
   #- /mnt/shared
 golang_install_dir: '/opt/go/{{ golang_version }}'
 golang_gopath: /opt/go/packages
-
 
 ################################################################################
 # AUTH                                                                         #
@@ -211,7 +221,7 @@ maas_adminusers:
 maas_dns_domain: 'deepops.local'
 maas_region_controller: '192.168.1.1'
 maas_region_controller_url: 'http://{{ maas_region_controller }}:5240/MAAS'
-maas_repo: 'ppa:maas/stable'
+maas_repo: 'ppa:maas/2.8'
 
 # Defines if maas user should generate ssh keys
 # Usable for remote KVM/libvirt power actions
@@ -220,6 +230,21 @@ maas_setup_user: false
 maas_single_node_install: true
 
 maas_kvm: false
+
+################################################################################
+# NVIDIA Datacenter GPU Manager                                                #
+################################################################################
+# DCGM is available through package repositories for DGX, but for other host
+# types you must download from the NVIDIA Developer portal at
+# https://developer.nvidia.com/dcgm
+# To install DCGM, please download the correct package type(s) and set the
+# following variables to a path where the file exists on the Ansible control
+# machine.
+#
+# dcgm_rpm_package: "/tmp/datacenter-gpu-manager.rpm"
+# dcgm_deb_package: "/tmp/datacenter-gpu-manager.deb"
+
+install_dcgm: false
 
 ################################################################################
 # Misc.                                                                        #
@@ -239,3 +264,18 @@ deepops_venv: '{{ deepops_dir }}/venv'
 # OpenMPI
 # Playbook: openmpi
 openmpi_version: 4.0.3
+
+# Disable cloud-init
+deepops_disable_cloud_init: true
+
+################################################################################
+# Container registry                                                           #
+################################################################################
+standalone_container_registry_cache_enable: true 
+standalone_container_registry_port: "5000"
+
+# To configure some set of hosts as insecure registries, list them here.
+# Slurm and K8s cluster playbooks will automatically use the master nodes for
+# these if not specified.
+#docker_insecure_registries: ["<host>:<port>"]
+#docker_registry_mirrors: ["http://<host>:<port>"]

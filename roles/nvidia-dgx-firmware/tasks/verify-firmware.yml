@@ -1,0 +1,26 @@
+---
+- name: "Parse FW Update output"
+  command: "python3 {{ fw_dir }}/parse_manifest.py parse_update_json {{ fw_dir }}/fw-update.json"
+  register: result
+
+- name: To json
+  set_fact:
+    fw_update_json: "{{ result.stdout }}"
+
+- name: "FW Update Check"
+  debug:
+    msg: "FW Update Success"
+  when: fw_update_json.State != "Success"
+
+- name: Ensure firmware was updated and everything is up-to-date. Skip if force update was used.
+  block:
+    - include: check-firmware.yml
+    - name: "Ensure all fw versions are up-to-date after the update - skip if force update was used or specific target fw was updated"
+      debug:
+        msg: ""
+      failed_when: firmware_needs_upgrade | default(true)
+      when: target_fw == 'all' and force_parameter == '' and fw_update_json.State == "Success" # If we forced it or didn't upgrade everything this check would always fail # TODO: parse from json
+  rescue:
+    - name: Show debug information for firmware update mismatch
+      debug:
+        var: firmware_versions_response.stdout

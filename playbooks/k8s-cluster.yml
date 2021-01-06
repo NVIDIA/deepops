@@ -2,7 +2,7 @@
 # Kubernetes Cluster Playbook
 
 # Install python required for Ansible
-- include: bootstrap-python.yml
+- include: bootstrap/bootstrap-python.yml
   tags:
     - bootstrap
 
@@ -22,21 +22,32 @@
     - local
 
 # Set up passwordless sudo and SSH keys if needed
-- include: bootstrap-ssh.yml
+- include: bootstrap/bootstrap-ssh.yml
   tags:
     - bootstrap
-- include: bootstrap-sudo.yml
+- include: bootstrap/bootstrap-sudo.yml
   tags:
     - bootstrap
 
+# Disable cloud-init
+- include: generic/disable-cloud-init.yml
+  when: deepops_disable_cloud_init
+
 # Configure Chrony (NTP) sync
-- include: chrony-client.yml
+- include: generic/chrony-client.yml
   when: chrony_install
 
 # Install the OpenShift API libraries required by the GPU plugin
-- include: bootstrap-openshift.yml
+- include: bootstrap/bootstrap-openshift.yml
   tags:
     - bootstrap
+
+# Configure hostnames, /etc/hosts
+- include: generic/hosts.yml
+
+# Set up a local cluster container registry
+- include: container/standalone-container-registry.yml hostlist=kube-master
+  when: kube_enable_container_registry|default(true)
 
 # Install 'sshpass' program for: https://github.com/ansible/ansible/issues/56629
 - hosts: all
@@ -52,7 +63,7 @@
 
 # Install Kubernetes
 # for configuration, see: config/group_vars/k8s-cluster.yml
-- include: ../kubespray/cluster.yml
+- include: ../submodules/kubespray/cluster.yml
   tags:
     - k8s
   vars:
@@ -107,25 +118,31 @@
     - local
 
 # Install NVIDIA driver on GPU servers
-- include: nvidia-driver.yml
+- include: nvidia-software/nvidia-driver.yml
   tags:
     - nvidia
   when: deepops_gpu_operator_enabled | default('false') | bool == false
 
 # Install NVIDIA container runtime on GPU servers
-- include: nvidia-docker.yml
+- include: container/nvidia-docker.yml
+  tags:
+    - nvidia
+  when: deepops_gpu_operator_enabled | default('false') | bool == false
+
+# Install k8s GPU feature discovery
+- include: k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml
   tags:
     - nvidia
   when: deepops_gpu_operator_enabled | default('false') | bool == false
 
 # Install k8s GPU device plugin
-- include: k8s-gpu-plugin.yml
+- include: k8s-cluster/nvidia-k8s-gpu-device-plugin.yml
   tags:
     - nvidia
   when: deepops_gpu_operator_enabled | default('false') | bool == false
 
 # Install NVIDIA GPU Operator
-- include: nvidia-gpu-operator.yml
+- include: k8s-cluster/nvidia-gpu-operator.yml
   tags:
     - nvidia
   when: deepops_gpu_operator_enabled | default('false') | bool == true
@@ -200,4 +217,15 @@
   tags:
     - local
 
+# Remove taint from kube-master nodes.
+# This keeps backwards compatibility and allows a few services (monitoring/etc.) to run properly.
+- hosts: kube-master
+  gather_facts: false
+  vars:
+    ansible_become: no
+  tasks:
+    - name: kubeadm | Remove taint for master with node role
+      command: "{{ artifacts_dir }}/kubectl --kubeconfig {{ artifacts_dir }}/admin.conf taint node {{ inventory_hostname }} node-role.kubernetes.io/master:NoSchedule-"
+      delegate_to: localhost
+      failed_when: false # Taint will not be present if kube-master also under kube-node
 

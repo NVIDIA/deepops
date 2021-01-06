@@ -7,6 +7,7 @@ echo "  \"cpu_topology\": {"
 echo "    \"sockets\": \"$SOCKETS\","
 echo "    \"cores_per_socket\": \"$CORESPERSOCKET\","
 echo "    \"threads_per_core\": \"$THREADSPERCORE\"",
+echo "    \"physical_cores\": \"$(expr $SOCKETS \* $CORESPERSOCKET)\"",
 echo "    \"logical_cpus\": \"$(expr $SOCKETS \* $CORESPERSOCKET \* $THREADSPERCORE)\""
 echo "  },"
 echo "  \"gpu_topology\": ["

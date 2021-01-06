@@ -1,0 +1,47 @@
+# NHC -- Custom checks for DeepOps
+
+function check_nv_drv_version() {
+	expected_vers=$1
+	if ! cat /proc/driver/nvidia/version | head -n1 | grep $expected_vers 2>&1 >/dev/null ; then
+		echo "GPU driver version incorrect"
+		return 1
+	fi
+	return 0
+}
+
+function check_nv_gpu_count() {
+	expected_count=$1
+	actual_count="$(nvidia-smi -L | wc -l)"
+	if [ $expected_count -ne $actual_count ]; then
+		echo "GPU count incorrect"
+		return 1
+	fi
+	return 0
+}
+
+function check_nv_retired_pages() {
+	if nvidia-smi --query-gpu=retired_pages.pending --format=csv | grep -i yes 2>&1 >/dev/null ; then
+		echo "GPU retired pages pending, need to reboot"
+		return 1
+	fi
+	return 0
+}
+
+function check_nv_pcie_link_width() {
+	expected=$1
+	for actual in $(nvidia-smi --query-gpu=pcie.link.width.current --format=csv | grep -v pcie.link.width.current); do
+		if [ $actual -ne $expected ]; then
+			echo "GPU link width incorrect - $actual"
+			return $actual 
+		fi
+	done
+	return 0
+}
+
+function check_nv_dcgmi_diag() {
+	if dcgmi diag -r 1 2>&1 | grep -i -E 'Error|Fail' ; then
+		echo "DCGM diag failed"
+		return 1
+	fi
+	return 0
+}

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: manager
+        env:
+          - name: USE_ISTIO
+            valueFrom:
+              configMapKeyRef:
+                name: notebook-controller-config
+                key: USE_ISTIO
+          - name: ISTIO_GATEWAY
+            valueFrom:
+              configMapKeyRef:
+                name: notebook-controller-config
+                key: ISTIO_GATEWAY
+          - name: ENABLE_CULLING
+            value: "false" # Off by default
+          - name: IDLE_TIME
+            value: "1440" # 1 day
+          - name: CULLING_CHECK_PERIOD
+            value: "5"

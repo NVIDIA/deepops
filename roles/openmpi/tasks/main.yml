@@ -118,3 +118,7 @@
   args:
     chdir: "{{ openmpi_build_dir }}"
   when: openmpi_build
+
+- name: run ldconfig to ensure libs are found
+  command: "ldconfig"
+  when: openmpi_build

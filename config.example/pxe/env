@@ -1,6 +1,6 @@
 ## Docker Compose settings
 COMPOSE_PROJECT_NAME=deepops
-COMPOSE_FILE=containers/dgxie/docker-compose.yml
+COMPOSE_FILE=src/containers/dgxie/docker-compose.yml
 
 ## DHCP/PXE server settings
 DHCP_ENABLE=1

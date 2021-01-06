@@ -30,6 +30,7 @@
       command: update-grub
     - name: reboot after updating grub config
       reboot:
+        reboot_timeout: "{{ slurm_node_reboot_timeout }}"
   when: update_grub.changed and ansible_os_family == "Debian"
 
 - name: update grub
@@ -38,7 +39,15 @@
       command: grub2-mkconfig -o /boot/grub2/grub.cfg
     - name: reboot after updating grub config
       reboot:
+        reboot_timeout: "{{ slurm_node_reboot_timeout }}"
   when: update_grub.changed and ansible_os_family == "RedHat"
+
+- name: create sysconfig dir
+  file:
+    path: "{{ slurm_sysconf_dir }}"
+    state: directory
+    owner: root
+    mode: 0755
 
 - name: create slurm directories
   file:
@@ -50,7 +59,6 @@
     - "{{ slurm_config_dir }}"
     - "{{ slurm_config_dir }}/shared"
     - "{{ slurm_config_dir }}/shared/bin"
-    - "{{ slurm_sysconf_dir }}"
     - /var/log/slurm
     - /var/spool/slurm/d
   tags:
@@ -137,5 +145,14 @@
       -account required {{ slurm_pam_lib_dir }}/pam_slurm_adopt.so
     insertafter: EOF
     marker: "# {mark} ANSIBLE MANAGED BLOCK (ansible-role-slurm)"
+  tags:
+    - config
+
+- name: comment out pam_systemd.so as it conflicts with pam_slurm_adapt.so, see https://slurm.schedmd.com/pam_slurm_adopt.html
+  replace:
+    path: /etc/pam.d/common-session
+    regexp: '^([^#].*pam_systemd.so.*)'
+    replace: '# \1 # ANSIBLE MANAGED (ansible-role-slurm)'
+  when: ansible_distribution == 'Ubuntu'
   tags:
     - config

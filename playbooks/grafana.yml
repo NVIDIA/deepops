@@ -1,9 +1,0 @@
----
-- include: docker.yml
-
-- hosts: "{{ hostlist | default('all') }}"
-  become: yes
-  tasks:
-    - name: configure grafana
-      include_role:
-        name: grafana

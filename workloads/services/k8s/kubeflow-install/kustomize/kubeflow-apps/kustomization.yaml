@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# TODO: Remove this when the bug is fixed in v1.3 # BUG: https://github.com/kubeflow/manifests/pull/1686/files
+images:
+- name: gcr.io/kubeflow-images-public/jupyter-web-app
+  newName: gcr.io/kubeflow-images-public/jupyter-web-app
+  newTag: vmaster-ge4456300
+
+# TODO: This is not getting picked up by the configmap and we are using the .cache file instead, figure this out
+# Used for idle notebook culling
+- literals:
+  - USE_ISTIO=true
+  - ISTIO_GATEWAY=kubeflow/kubeflow-gateway
+  - ENABLE_CULLING="false" # Off by default
+  - IDLE_TIME="1440" # 1 day
+  - CULLING_CHECK_PERIOD="5"
+  name: notebook-controller-config

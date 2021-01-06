@@ -1,0 +1,5 @@
+---
+nhc_build_deps:
+  - build-essential
+
+nhc_ssh_daemon: "sshd:"

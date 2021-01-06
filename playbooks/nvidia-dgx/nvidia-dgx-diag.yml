@@ -1,0 +1,16 @@
+---
+# This playbook is meant to diagnose/debug a cluster of DGX systems
+# It is built around DGX-1/DGX-2 but parts of the role will work for any Tesla GPU system
+# Because this is built as a diagnostic tool, many tasks have ignore_error set to true, this allows best-effort debugging
+
+- hosts: all
+  become: yes
+  gather_facts: no
+  strategy: free
+  tasks:
+    - name: Include NVIDIA DGX Firmware role
+      include_role:
+        name: nvidia-dgx-firmware
+      vars:
+        run_diagnostics: true
+        update_firmware: false

@@ -15,12 +15,14 @@ cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
 # Pinned Ansible version
 ANSIBLE_OK="2.7.8"
 ANSIBLE_VERSION="2.9.5"
-PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/proxy.sh | grep -v ^$ | wc -l`
-PIP="${PIP:-pip}"
+PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh | grep -v ^$ | wc -l`
+PIP="${PIP:-pip3}"
+
+JINJA2_VERSION="${JINJA2_VERSION:-2.11.1}"
 
 as_sudo(){
     if [ $PROXY_USE -gt 0 ]; then
-        cmd="sudo -H bash -c '. ${SCRIPT_DIR}/proxy.sh && $1'"
+        cmd="sudo -H bash -c '. ${SCRIPT_DIR}/deepops/proxy.sh && $1'"
     else
         cmd="sudo bash -c '$1'"
     fi
@@ -29,7 +31,7 @@ as_sudo(){
 
 as_user(){
     if [ $PROXY_USE -gt 0 ]; then
-        cmd="bash -c '. ${SCRIPT_DIR}/proxy.sh && $1'"
+        cmd="bash -c '. ${SCRIPT_DIR}/deepops/proxy.sh && $1'"
     else
         cmd="bash -c '$1'"
     fi
@@ -44,60 +46,60 @@ case "$ID" in
 
         # Install pip
         if ! which ${PIP} >/dev/null 2>&1; then
-            echo "Installing python pip..."
-            as_sudo 'yum -y install python36-pip python-pip' >/dev/null
+            echo "Installing python3 pip..."
+            as_sudo 'yum -y install python36-pip' >/dev/null
         fi
         ${PIP} --version
 
         # Use virtualenv vs system pip when we're running under Jenkins
         if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
-            # Install python virtualenv
+            # Install python3 virtualenv
             type virtualenv >/dev/null 2>&1
             if [ $? -ne 0 ] ; then
-                as_sudo 'yum -y install python-virtualenv' >/dev/null
+                as_sudo 'yum -y install python3-virtualenv' >/dev/null
             fi
             # Create virtual environment
             virtualenv env
             # Use virtual environment
             . env/bin/activate
             # Upgrade jinja2
-            as_user "${PIP} install --upgrade Jinja2"
+            as_user "${PIP} install --upgrade Jinja2==${JINJA2_VERSION}"
             # Install ansible
             as_user "${PIP} install ansible==${ANSIBLE_VERSION}"
             # Install netaddr
             as_user "${PIP} install netaddr"
             # Install ruamel.yaml
             as_user "${PIP} install ruamel.yaml"
-            # Install python mysql client library
+            # Install python3 mysql client library
             as_user "${PIP} install PyMySQL"
         fi
 
         # Ensure Jinja2 is updated
         echo "Upgrading jinja2"
-        as_sudo "${PIP} install --upgrade Jinja2"
+        as_sudo "${PIP} install --upgrade Jinja2==${JINJA2_VERSION}"
 
         # Check Ansible version and install with pip
         if ! which ansible >/dev/null 2>&1; then
             as_sudo "${PIP} install ansible==${ANSIBLE_VERSION}" >/dev/null
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
-            if ! python -c "from distutils.version import LooseVersion; print(LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version'))" | grep True >/dev/null 2>&1 ; then
+            if ! python3 -c "from distutils.version import LooseVersion; print(LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version'))" | grep True >/dev/null 2>&1 ; then
                 echo "Unsupported version of Ansible: ${current_version}"
                 echo "Version must be ${ANSIBLE_OK} or greater"
                 exit 1
             fi
-            if python -c "from distutils.version import LooseVersion; print(LooseVersion('$current_version') < LooseVersion('$ANSIBLE_VERSION'))" | grep True >/dev/null 2>&1 ; then
+            if python3 -c "from distutils.version import LooseVersion; print(LooseVersion('$current_version') < LooseVersion('$ANSIBLE_VERSION'))" | grep True >/dev/null 2>&1 ; then
                 echo "Upgrading Ansible version to ${ANSIBLE_VERSION}..."
                 as_sudo "${PIP} install ansible==${ANSIBLE_VERSION}" >/dev/null
             fi
         fi
         ansible --version | head -1
 
-        # Install python-netaddr
-        python -c 'import netaddr' >/dev/null 2>&1
+        # Install python3-netaddr
+        python3 -c 'import netaddr' >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
             echo "Installing Python dependencies..."
-            as_sudo 'yum -y install python36 python36-netaddr python-netaddr' >/dev/null
+            as_sudo 'yum -y install python36 python36-netaddr' >/dev/null
             as_sudo 'ln -s /usr/bin/python36 /usr/bin/python3'
         fi
 
@@ -117,13 +119,19 @@ case "$ID" in
         fi
         ipmitool -V
 
-
         # Install wget
         if ! which wget >/dev/null 2>&1; then
             echo "Installing wget..."
             as_sudo 'yum -y install wget' >/dev/null
         fi
         wget --version | head -1
+
+        # Install sshpass
+        if ! which sshpass >/dev/null 2>&1; then
+            echo "Installing sshpass..."
+            as_sudo 'yum -y install sshpass' >/dev/null
+        fi
+        sshpass -V | head -1
         ;;
     ubuntu*)
 	# No interactive prompts from apt during this process
@@ -147,19 +155,19 @@ case "$ID" in
         # Install pip
         if ! which ${PIP} >/dev/null 2>&1; then
             echo "Installing pip..."
-            as_sudo 'apt-get -y install python3-pip python-pip' >/dev/null
+            as_sudo 'apt-get -y install python3-pip' >/dev/null
         fi
         ${PIP} --version
 
         # Install setuptools
-        if ! dpkg -l python-setuptools >/dev/null 2>&1; then
+        if ! dpkg -l python3-setuptools >/dev/null 2>&1; then
             echo "Installing setuptools..."
-            as_sudo 'apt-get -y install python-setuptools' >/dev/null
+            as_sudo 'apt-get -y install python3-setuptools' >/dev/null
         fi
 
         # Use virtualenv vs system pip when we're running under Jenkins
         if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
-            # Install python virtualenv
+            # Install python3 python3-virtualenv
             type virtualenv >/dev/null 2>&1
             if [ $? -ne 0 ] ; then
                 as_sudo 'apt-get -y install virtualenv' >/dev/null
@@ -172,7 +180,7 @@ case "$ID" in
             as_user "${PIP} install ansible==${ANSIBLE_VERSION}"
             # Install netaddr
             as_user "${PIP} install netaddr" >/dev/null
-            # Install python mysql client library
+            # Install python3 mysql client library
             as_user "${PIP} install PyMySQL"
         fi
 
@@ -181,23 +189,23 @@ case "$ID" in
             as_sudo "${PIP} install ansible==${ANSIBLE_VERSION}" >/dev/null
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
-            if ! python -c "from distutils.version import LooseVersion; print(LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version'))" | grep True >/dev/null 2>&1 ; then
+            if ! python3 -c "from distutils.version import LooseVersion; print(LooseVersion('$ANSIBLE_OK') <= LooseVersion('$current_version'))" | grep True >/dev/null 2>&1 ; then
                 echo "Unsupported version of Ansible: ${current_version}"
                 echo "Version must be ${ANSIBLE_OK} or greater"
                 exit 1
             fi
-            if python -c "from distutils.version import LooseVersion; print(LooseVersion('$current_version') < LooseVersion('$ANSIBLE_VERSION'))" | grep True >/dev/null 2>&1 ; then
+            if python3 -c "from distutils.version import LooseVersion; print(LooseVersion('$current_version') < LooseVersion('$ANSIBLE_VERSION'))" | grep True >/dev/null 2>&1 ; then
                 echo "Upgrading Ansible version to ${ANSIBLE_VERSION}..."
                 as_sudo "${PIP} install ansible==${ANSIBLE_VERSION}" >/dev/null
             fi
         fi
         ansible --version | head -1
 
-        # Install python-netaddr
-        python -c 'import netaddr' >/dev/null 2>&1
+        # Install python3-netaddr
+        python3 -c 'import netaddr' >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
             echo "Installing Python dependencies..."
-            as_sudo 'apt-get -y install python-netaddr python3-netaddr' >/dev/null
+            as_sudo 'apt-get -y install python3-netaddr' >/dev/null
         fi
 
         # Install git
@@ -225,7 +233,7 @@ case "$ID" in
         ;;
     *)
         echo "Unsupported Operating System $ID_LIKE"
-        echo "Please install Ansible, Git, and python-netaddr manually"
+        echo "Please install Ansible, Git, and python3-netaddr manually"
         ;;
 esac
 
@@ -233,7 +241,7 @@ if ! grep -i deepops README.md >/dev/null 2>&1 ; then
     cd "${SCRIPT_DIR}"
     if ! test -d deepops ; then
         if [ $PROXY_USE -gt 0 ]; then
-            . ${SCRIPT_DIR}/proxy.sh && git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
+            . ${SCRIPT_DIR}/deepops/proxy.sh && git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
         else
             git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
         fi
@@ -246,9 +254,9 @@ ansible-galaxy --version >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
     echo "Updating Ansible Galaxy roles..."
     if [ $PROXY_USE -gt 0 ]; then
-        . ${SCRIPT_DIR}/proxy.sh && ansible-galaxy install --force -r requirements.yml >/dev/null
+        . ${SCRIPT_DIR}/deepops/proxy.sh && ansible-galaxy install --force -r roles/requirements.yml >/dev/null
     else
-        ansible-galaxy install --force -r requirements.yml >/dev/null
+        ansible-galaxy install --force -r roles/requirements.yml >/dev/null
     fi
 
 
@@ -260,7 +268,7 @@ fi
 git status >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
     if [ $PROXY_USE -gt 0 ]; then
-        . ${SCRIPT_DIR}/proxy.sh && git submodule update --init
+        . ${SCRIPT_DIR}/deepops/proxy.sh && git submodule update --init
     else
         git submodule update --init
     fi

@@ -1,0 +1,5 @@
+---
+- name: install DCGM from repos
+  package:
+    name: "datacenter-gpu-manager"
+    state: present
