@@ -1,4 +1,10 @@
 ---
+collections:
+
+- name: ansible.posix
+  version: 1.1.1
+
+roles:
 
 - src: dev-sec.ssh-hardening
   version: "6.1.3"
