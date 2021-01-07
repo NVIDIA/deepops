@@ -30,9 +30,9 @@ For detailed help or guidance, read through our [Getting Started Guide](docs/) o
 
 DeepOps currently supports the following Linux distributions:
 
-* NVIDIA DGX OS 4
-* Ubuntu 18.04 LTS
-* CentOS 7
+* NVIDIA DGX OS 4, 5
+* Ubuntu 18.04 LTS, 20.04 LTS
+* CentOS 7, 8
 
 ### Kubernetes
 
