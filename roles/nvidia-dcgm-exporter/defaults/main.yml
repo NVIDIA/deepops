@@ -6,6 +6,7 @@ nvidia_dcgm_enabled: yes
 
 prometheus_config_dir: /etc/prometheus
 prometheus_cfg_endpoint_dir: "{{ prometheus_config_dir }}/endpoints"
+nvidia_dcgm_exporter_conf_template: "dcgm-exporter.yml.j2"
 
 has_gpus: false
 
