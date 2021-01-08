@@ -378,6 +378,16 @@ for N in $(seq ${niters}); do
 		if [ ${nores} == 1 ]; then
 			HLIST=""
 			DEPENDENCY="--dependency=singleton"
+
+			### You cannot provide an include list, you can only include the full list to use, not a range. 
+			### So the includelist is not supported in this mode
+                        #if [ x"${includelist}" != x"" ]; then
+			#	DEPENDENCY="$DEPENDENCY -w ${includelist}" 
+	                #fi
+
+                        if [ x"${excludelist}" != x"" ]; then
+				DEPENDENCY="$DEPENDENCY -x ${excludelist}" 
+	                fi
 		else
     		        HLIST="-w $(scontrol show hostlist $(tail +$P ${HFILE} | head -${nodes_per_job} | sort | paste -d, -s))"
 			DEPENDENCY=""
