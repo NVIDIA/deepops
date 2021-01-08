@@ -176,11 +176,11 @@ elif [ x"${system}" == x"dgx2" ]; then
 	export SYSCFG=syscfg-dgx2.sh
 elif [ x"${system}" == x"dgxa100_40G" ]; then
 	export gpus_per_node=8
-	export SYSCFG=dgx-a100
+	export SYSCFG=syscfg-dgxa100-40gb.sh
 	export GPUMEM=40
 elif [ x"${system}" == x"dgxa100_80G" ]; then
 	export gpus_per_node=8
-	export SYSCFG=dgx-a100
+	export SYSCFG=syscfg-dgxa100-80gb.sh
 	export GPUMEM=80
 else
 	echo "GENERIC SYSTEMS are not supported yet"
@@ -336,10 +336,6 @@ jobid_list=()
 # Define hostfile for each iteration
 HFILE=/tmp/hfile.$$
 
-echo ""
-echo "Starting Experiments: ${EXPDIR}"
-echo ""
-
 for N in $(seq ${niters}); do
 	P=1
 	INST=1
@@ -372,7 +368,7 @@ for N in $(seq ${niters}); do
                 fi
 
 		# Submit the job in the workdir
-		pushd ${WORKDIR}
+		pushd ${WORKDIR} > /dev/null 2>&1
 
 		CMD="sbatch -J burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFG,SYSCFGVAR,GPUMEM,CRUNTIME,EXPDIR ${HPL_DIR}/submit_hpl.sh"
                  
@@ -386,7 +382,7 @@ for N in $(seq ${niters}); do
 			#exit $? 
 		fi
 
-                popd
+                popd > /dev/null 2>&1
 
 		jobid_list+=($jobid)
 
@@ -416,6 +412,10 @@ SQUEUEFN=/tmp/squeue.data.$$
 jobs_tbd=1
 p=0
 display_row=25
+
+echo ""
+echo "Monitoring Experiments: ${EXPDIR}"
+echo ""
 
 while [ ${jobs_tbd} != 0 ]; do
 	if [ $(( p % display_row )) == 0 ]; then

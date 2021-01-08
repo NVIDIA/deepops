@@ -112,7 +112,7 @@ case ${CRUNTIME} in
 		echo "baremetal not supported yet"
 		exit 1
 		CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
-		     ./hpl.sh --config ${SYSCFGVAR} --dat ./HPL.dat" 
+		     ./hpl.sh --config ${SYSCFGVAR} --cpu-cores-per-task ${cpucorespertask}  --dat ./HPL.dat" 
 		;;
 	*)
 		echo "ERROR: Runtime ${CRUNTIME} not supported.  Exiting"
