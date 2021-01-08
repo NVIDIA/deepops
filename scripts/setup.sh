@@ -254,9 +254,11 @@ ansible-galaxy --version >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
     echo "Updating Ansible Galaxy roles..."
     if [ $PROXY_USE -gt 0 ]; then
-        . ${SCRIPT_DIR}/deepops/proxy.sh && ansible-galaxy install --force -r roles/requirements.yml >/dev/null
+        . ${SCRIPT_DIR}/deepops/proxy.sh && ansible-galaxy collection install --force -r roles/requirements.yml >/dev/null
+        . ${SCRIPT_DIR}/deepops/proxy.sh && ansible-galaxy role install --force -r roles/requirements.yml >/dev/null
     else
-        ansible-galaxy install --force -r roles/requirements.yml >/dev/null
+        ansible-galaxy collection install --force -r roles/requirements.yml >/dev/null
+        ansible-galaxy role install --force -r roles/requirements.yml >/dev/null
     fi
 
 

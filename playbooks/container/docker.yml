@@ -11,12 +11,12 @@
   tasks:
     - name: include kubespray task to set facts required for docker role
       include: ../../submodules/kubespray/roles/kubernetes/preinstall/tasks/0040-set_facts.yml
-      when: docker_install
+      when: docker_install | default('yes')
     - name: remove docker overrides, specifically to deal with conflicting options from DGX OS
       file:
         path: /etc/systemd/system/docker.service.d/docker-override.conf
         state: absent
-      when: docker_install
+      when: docker_install | default('yes')
 
 - hosts: "{{ hostlist | default('all') }}"
   become: true
@@ -30,7 +30,7 @@
     fallback_ips: []
   roles:
     - role: kubespray-defaults
-      when: docker_install
+      when: docker_install | default('yes')
     - role: "../../submodules/kubespray/roles/container-engine/docker"
-      when: docker_install
+      when: docker_install | default('yes')
   environment: "{{ proxy_env if proxy_env is defined else {} }}"

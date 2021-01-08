@@ -5,6 +5,13 @@ mkdir ${logdir}
 
 # Provisioner configuration
 cp config/inventory ${logdir}
+git branch > ${logdir}/git-branch.log
+git status > ${logdir}/git-status.log
+git diff > ${logdir}/git-diff.log
+git log --pretty=oneline | head -n 20 > ${logdir}/git-log.log
+
+# GPU configuration
+ansible kube-node -ba "nvidia-smi" -vv > ${logdir}/nvidia-smi.log
 
 # Docker configuration
 ansible kube-node -ba "docker info" -vv > ${logdir}/docker-info.log
