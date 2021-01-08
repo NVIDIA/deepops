@@ -235,5 +235,4 @@
       failed_when: false # Taint will not be present if kube-master also under kube-node
 
 - include: k8s-cluster/nfs-client-provisioner.yml
-  tags:
-    - k8s_nfs_client_provisioner
+  when: k8s_nfs_client_provisioner

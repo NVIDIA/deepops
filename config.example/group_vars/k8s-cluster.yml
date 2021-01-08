@@ -44,6 +44,9 @@ hosts_add_ansible_managed_hosts_groups: ["k8s-cluster"]
 
 # NFS Client Provisioner 
 # Playbook: nfs-client-provisioner.yml
+k8s_nfs_client_provisioner: true
+k8s_deploy_nfs_server: true
+k8s_nfs_mkdir: true # Set to false if an export dir is already configured with proper permissions
 k8s_nfs_server: '{{ groups["kube-master"][0] }}'
 k8s_nfs_export_path: '/export/deepops_nfs'
 
