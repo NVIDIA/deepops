@@ -77,6 +77,10 @@ Other Options:
 	* Specify container runtime.  Options are singularity, enroot, and bare (bare-metal)
     --nores
         * Do not request specific nodes when running tests
+    -w 
+        * Node include list (must overlap with nodes in the partition)
+    -x 
+        * Node exclude list
     -r|--random
         * Randomize which nodes get used each iteration
     -v|--verbose
@@ -138,6 +142,9 @@ while [ $# -gt 0 ]; do
 		-t|--walltime) walltime="$2"; shift 2 ;;
 		-r|--random) ORDER_CMD=shuf; shift 1;;
 		-v|--verbose) verbose=1; shift 1 ;;
+		-w) includelist="$2"; shift 2 ;;
+		-x) excludelist="$2"; shift 2 ;;
+
 		--nores) nores=1; shift 1 ;;
 		--usehca) usehca="$2"; shift 2;;
 	        --maxnodes) maxnodes="$2"; shift 2 ;;	
@@ -309,6 +316,27 @@ export NODELIST=$(sinfo -p ${partition} | grep ${partition} | grep " idle " | aw
 
 export MACHINEFILE=/tmp/mfile.$$
 scontrol show hostname ${NODELIST} | head -${maxnodes} > $MACHINEFILE
+
+# If there is an include list, process that
+if [ x"${includelist}" != x"" ]; then
+	echo "Include List: ${includelist}"
+	export INCLUDELIST=/tmp/mfile.include.$$
+	scontrol show hostname ${includelist} > $INCLUDELIST
+	cat ${MACHINEFILE} ${INCLUDELIST} | sort | uniq -c | awk '{if ($1>1) print $2}' > /tmp/t2.$$
+	mv /tmp/t2.$$ ${MACHINEFILE}
+	rm ${INCLUDELIST}
+fi
+
+# If there is an exclude list, process that
+if [ x"${excludelist}" != x"" ]; then
+	echo "Exclude List: ${excludelist}"
+	export EXCLUDELIST=/tmp/mfile.exclude.$$
+	scontrol show hostname ${excludelist} > $EXCLUDELIST
+	cat ${MACHINEFILE} ${MACHINEFILE} ${EXCLUDELIST} | sort | uniq -c | awk '{if ($1==2) print $2}' > /tmp/t2.$$
+	mv /tmp/t2.$$ ${MACHINEFILE}
+	rm ${EXCLUDELIST}
+fi
+
 export total_nodes=$(cat $MACHINEFILE | wc -l)
 
 if [ $total_nodes -eq 0 ]; then
@@ -316,6 +344,10 @@ if [ $total_nodes -eq 0 ]; then
 	echo ""
 	exit 1
 fi
+
+echo  ""
+echo "Working Nodelist: $(scontrol show hostlist $(cat $MACHINEFILE | tr '\n' ','))"
+echo ""
 
 
 ### Report all variables
@@ -339,14 +371,15 @@ HFILE=/tmp/hfile.$$
 for N in $(seq ${niters}); do
 	P=1
 	INST=1
-	cat $MACHINEFILE | ${ORDER_CMD} > $HFILE
+        echo "Working Nodelist: $(scontrol show hostlist $(cat $MACHINEFILE | tr '\n' ','))"
+	cat ${MACHINEFILE} | ${ORDER_CMD} > $HFILE
 	while [ $(( P + nodes_per_job - 1 ))  -le ${total_nodes} ]; do
 		# Create hostlist per iter
 		if [ ${nores} == 1 ]; then
 			HLIST=""
 			DEPENDENCY="--dependency=singleton"
 		else
-    		        HLIST="-x $(scontrol show hostlist $(tail +$P ${HFILE} | head -${nodes_per_job} | sort | paste -d, -s))"
+    		        HLIST="-w $(scontrol show hostlist $(tail +$P ${HFILE} | head -${nodes_per_job} | sort | paste -d, -s))"
 			DEPENDENCY=""
 		fi
 
