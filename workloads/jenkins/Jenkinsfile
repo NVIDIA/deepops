@@ -61,11 +61,6 @@ pipeline {
              bash -x ./workloads/jenkins/scripts/test-local-registry.sh
           '''
 
-          echo "Test Rook+Ceph installation"
-          sh '''
-            timeout 2200 bash -x ./workloads/jenkins/scripts/test-ceph.sh
-          '''
-
           echo "Test Monitoring installation"
           sh '''
             timeout 800 bash -x ./workloads/jenkins/scripts/test-monitoring.sh

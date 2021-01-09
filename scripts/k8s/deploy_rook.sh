@@ -20,6 +20,10 @@ DEEPOPS_CONFIG_DIR=${DEEPOPS_CONFIG_DIR:-"${ROOT_DIR}/config"}
 DEEPOPS_ROOK_USER="${DEEPOPS_ROOK_USER:-admin}"
 DEEPOPS_ROOK_PASS="${DEEPOPS_ROOK_PASS:-deepops}"
 
+# Setting to set Rook as default or non-default storageclass
+DEEPOPS_ROOK_SC_NAME="${DEEPOPS_ROOK_SC_NAME:-rook-ceph-block}"
+DEEPOPS_ROOK_NO_DEFAULT="${DEEPOPS_ROOK_NO_DEFAULT:-}"
+
 if [ ! -d "${DEEPOPS_CONFIG_DIR}" ]; then
     echo "Can't find configuration in ${DEEPOPS_CONFIG_DIR}"
     echo "Please set DEEPOPS_CONFIG_DIR env variable to point to config location"
@@ -33,7 +37,8 @@ function help_me() {
   echo "-p    Print out the connection info for Rook-Ceph."
   echo "-d    Delete Rook from your system (this delete any created volumes)."
   echo "-w    Poll for rook-ceph to reach a healthy and initialized state."
-  echo "-u    Create a new dashboard user (default username: 'admin' password: 'deepops'."
+  echo "-u    Create a new dashboard user (default username: 'admin' password: 'deepops', set with env variables DEEPOPS_ROOK_USER/DEEPOPS_ROOK_PASS)."
+  echo "-x    Install Rook-Ceph, but do not set it as the Default StorageClass."
 }
 
 
@@ -82,9 +87,8 @@ function print_rook() {
 
   echo
   echo "Ceph deployed, it may take up to 10 minutes for storage to be ready"
-  echo "If install takes more than 30 minutes be sure you have cleaned up any previous Rook installs by running this script with the delete flag (-d) and have installed the required libraries using the bootstrap-rook.yml playbook"
-  echo "Monitor readiness with:"
-  echo "kubectl -n rook-ceph exec -ti ${rook_toolspod} -- ceph status | grep up:active"
+  echo "If install takes more than 30 minutes be sure you have cleaned up any previous Rook installs by running '${0} -d' and have installed the required libraries using the bootstrap-rook.yml playbook"
+  echo "Monitor readiness with: ${0} -w"
   echo
 
   echo "Ceph dashboard: ${rook_ceph_dashboard}"
@@ -102,7 +106,7 @@ function create_ceph_user() {
 
 
 function get_opts() {
-  while getopts "uhwdp" option; do
+  while getopts "uhwdpx" option; do
     case $option in
       w)
         ROOK_CEPH_POLL=true
@@ -115,6 +119,9 @@ function get_opts() {
         ;;
       u)
         ROOK_CEPH_USER=true
+        ;;
+      x)
+        DEEPOPS_ROOK_NO_DEFAULT="true"
         ;;
       h)
         help_me
@@ -166,6 +173,10 @@ function install_rook() {
   fi
 
   sleep 5
+
+  if [ "${DEEPOPS_ROOK_NO_DEFAULT}" ]; then
+    kubectl patch StorageClass ${DEEPOPS_ROOK_SC_NAME} -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
+  fi
 
   print_rook
 }

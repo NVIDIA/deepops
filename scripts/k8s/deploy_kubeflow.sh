@@ -32,7 +32,7 @@ export AUTH_KFCTL_FILE=kfctl_v1.2.0-0-gbc038f9_linux.tar.gz # https://github.com
 export AUTH_KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.2.0/${KFCTL_FILE}"
 
 # Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
-export AUTH_CONFIG_URI="https://github.com/kubeflow/manifests/blob/v1.2-branch/kfdef/kfctl_istio_dex.v1.2.0.yaml"
+export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/v1.2-branch/kfdef/kfctl_istio_dex.v1.2.0.yaml"
 export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.2.0.yaml"
 
 # Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
@@ -112,10 +112,11 @@ function install_dependencies() {
           ;;
   esac
 
-  # Rook
-  kubectl get storageclass 2>&1 | grep "No resources found." >/dev/null 2>&1
-  if [ $? -eq 0 ] ; then
+  # StorageClasse (for volumes and MySQL DB)
+  kubectl get storageclass 2>&1 | grep "(default)" >/dev/null 2>&1
+  if [ $? -ne 0 ] ; then
       echo "No storageclass found"
+      echo "To setup the nfs-client-provisioner (preferred), run: ansible-playbook playbooks/k8s-cluster/nfs-client-provisioner.yml"
       echo "To provision Ceph storage, run: ./scripts/k8s/deploy_rook.sh"
       exit 1
   fi
@@ -144,7 +145,7 @@ function install_mpi_operator() {
     grep /kustomize/v |\
     sort | tail -n 1 |\
     xargs curl -s -O -L
-  tar xzf ./kustomize_v*_linux_amd64.tar.gz
+  tar xzf ./kustomize_v*_linux_*.tar.gz
   mv kustomize ${KUSTOMIZE}
 
   mkdir -p ${KUBEFLOW_MPI_DIR}
@@ -295,7 +296,7 @@ elif [ ${KUBEFLOW_WAIT} ]; then
 else
   install_dependencies
   stand_up
-  install_mpi_operator
+  # install_mpi_operator # BUG: https://github.com/NVIDIA/deepops/issues/737
   get_url
   print_info
 fi

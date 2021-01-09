@@ -56,11 +56,6 @@ pipeline {
              bash -x ./workloads/jenkins/scripts/test-local-registry.sh
           '''
 
-          echo "Test Rook+Ceph installation"
-          sh '''
-             timeout 2200 bash -x ./workloads/jenkins/scripts/test-ceph.sh
-          '''
-
           echo "Test Kubeflow installation"
           sh '''
              timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
@@ -79,6 +74,11 @@ pipeline {
           echo "Test Kubeflow pipeline"
           sh '''
              timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
+          '''
+
+          echo "Test Rook+Ceph installation"
+          sh '''
+             timeout 2200 bash -x ./workloads/jenkins/scripts/test-ceph.sh
           '''
 
           echo "Start new virtual environment pre-Slurm checks"
@@ -159,11 +159,6 @@ pipeline {
              bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
           '''
 
-          echo "Test Rook+Ceph installation"
-          sh '''
-             timeout 2200 bash -x ./workloads/jenkins/scripts/test-ceph.sh
-          '''
-
           echo "Test Kubeflow installation"
           sh '''
              timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
@@ -182,6 +177,11 @@ pipeline {
           echo "Test Kubeflow pipeline"
           sh '''
              timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
+          '''
+
+          echo "Test Rook+Ceph installation"
+          sh '''
+             timeout 2200 bash -x ./workloads/jenkins/scripts/test-ceph.sh
           '''
 
           echo "Start new virtual environment pre-Slurm checks"

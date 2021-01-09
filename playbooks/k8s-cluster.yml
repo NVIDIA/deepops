@@ -234,3 +234,5 @@
       delegate_to: localhost
       failed_when: false # Taint will not be present if kube-master also under kube-node
 
+- include: k8s-cluster/nfs-client-provisioner.yml
+  when: k8s_nfs_client_provisioner
