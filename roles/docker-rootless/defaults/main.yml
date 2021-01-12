@@ -1,0 +1,5 @@
+---
+# Install for rootless docker.
+
+# Directory to install in
+rootlessdocker_install_dir: "{{ sm_software_path }}/rootless-docker"

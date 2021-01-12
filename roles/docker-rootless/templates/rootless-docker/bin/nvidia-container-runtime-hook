@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/bin/nvidia-container-runtime-hook -config="{{ rootlessdocker_install_dir }}/config/nvidia-container-runtime/config.toml" "$@"
