@@ -72,22 +72,20 @@ echo "============================="
 echo "" 
 
 #### Set Node information
-gpuclock=${NV_GPUCLOCK:-"1312"}
-memclock=${NV_MEMCLOCK:-"877"}
+NV_MEMCLOCK=$(grep -w GPU_CLOCK ${SYSCFGVAR} | cut -f2 -d= | cut -f1 -d, | sed 's/"//g')
+NV_GPUCLOCK=$(grep -w GPU_CLOCK ${SYSCFGVAR} | cut -f2 -d= | cut -f2 -d, | sed 's/"//g')
+
+echo "NV_MEMCLOCK: ${NV_MEMCLOCK}"
+echo "NV_GPUCLOCK: ${NV_GPUCLOCK}"
+
 
 LOCAL_MPIOPTS="--mca btl_openib_warn_default_gid_prefix 0"
-
-export TEST_LOOPS=1
-export TEST_SYSTEM_PARAMS=1
-
 
 # Echo write nodelist
 echo "HOSTLIST: $(scontrol show hostname $SLURM_NODELIST | paste -s -d,)" 
 echo "" 
 
 ## Run HPL
-####mpirun -np $NPROCS -bind-to none -x LD_LIBRARY_PATH ${LOCAL_MPIOPTS} ${mpiopts} ${HPL_SCRIPTS_DIR}/run_hpl_cuda11.0.sh 2>&1 
-
 if [ -f $SYSCFGVAR ]; then
 	if [ x"${CRUNTIME}" != x"baremetal" ]; then
 	        SYSCFGDIR="/datfiles/"
@@ -97,6 +95,16 @@ fi
 
 # Set the mount as the temporary directory
 MOUNT=$(pwd):/datfiles
+
+# First Set clocks
+
+# nvidia-smi must be setup for setting clocks
+
+set -x
+SUDOCLOCKS=sudo 
+srun -N ${NNODES} -n${NNODES} ${SUDOCLOCKS} nvidia-smi -lgc ${NV_GPUCLOCK}
+
+# Now run the container
 
 case ${CRUNTIME} in
 	enroot)
