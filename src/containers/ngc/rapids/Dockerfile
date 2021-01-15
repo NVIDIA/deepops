@@ -41,10 +41,6 @@ RUN source activate ${CONDA_ENV} && \
 RUN source activate ${CONDA_ENV} && \
     conda install -c conda-forge dask-kubernetes==0.11.0 && conda clean -yac *
 
-# Download example rapids noebooks
-RUN cd /rapids && git clone https://github.com/rapidsai/notebooks.git && cd notebooks && \
-    git submodule update --init --remote --no-single-branch --depth 1
-
 # Expose Jupyter and Dask ports
 EXPOSE 8888
 EXPOSE 8787
