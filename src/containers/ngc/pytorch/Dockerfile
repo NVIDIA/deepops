@@ -1,5 +1,8 @@
 # https://ngc.nvidia.com/catalog/containers/nvidia:pytorch
-FROM nvcr.io/nvidia/pytorch:20.01-py3
+FROM nvcr.io/nvidia/pytorch:20.12-py3
+
+# Set to noninteractive for apt-get installs
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Install some extra packages to ease development
 RUN apt-get update && \
@@ -7,21 +10,32 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/*
 
 # Install nodejs, it is a dependency for Jupyter labextensions
-RUN conda install nodejs=10.13.0 && conda clean -yac *
+# xxx RUN conda install -c conda-forge nodejs && conda clean -yac *
 
 # Install the NVIDIA Jupyter Dashboard
-RUN conda install -y -c conda-forge jupyterlab-nvdashboard==0.1.11 && conda clean -yac * && \
-    jupyter labextension install jupyterlab-nvdashboard
+# XXX: Not yet supported by Jupyterlab 3 https://github.com/rapidsai/jupyterlab-nvdashboard/pull/85:
+# RUN source "$NVM_DIR/nvm.sh" && \
+#     conda install -y -c conda-forge jupyterlab-nvdashboard==0.4.0 && conda clean -yac * && \
+#     jupyter labextension install jupyterlab-nvdashboard
 
 # Install ipyvolume for clean HTML5 visualizations
-RUN  conda install -y -c conda-forge ipyvolume==0.5.2 && conda clean -yac * && \
-     jupyter labextension install ipyvolume
+RUN source "$NVM_DIR/nvm.sh" && \
+    conda install -y -c conda-forge ipyvolume==0.5.2 && conda clean -yac * && \
+    jupyter labextension install ipyvolume
 
 # Install toc to build table of ontents in Jupyter, not available through Conda
-RUN jupyter labextension install @jupyterlab/toc
+RUN source "$NVM_DIR/nvm.sh" && \
+    jupyter labextension install @jupyterlab/toc
 
 # Install graphviz for clean graph/node/edge rendering
-RUN  conda install -c conda-forge python-graphviz=0.13.2 graphviz=2.42.3 && conda clean -yac *
+RUN source "$NVM_DIR/nvm.sh" && \
+    conda install -c conda-forge python-graphviz=0.13.2 graphviz=2.42.3 && conda clean -yac *
+
+# Get latest pip updates
+RUN  pip install --upgrade pip
+
+# Download DeepLearningExamples
+RUN cd /workspace && git clone https://github.com/NVIDIA/DeepLearningExamples.git
 
 # Expose Jupyter & Tensorboard
 EXPOSE 8888
