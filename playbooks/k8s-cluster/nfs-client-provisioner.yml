@@ -27,7 +27,7 @@
     - nfs_is_server: yes
     when: k8s_deploy_nfs_server
 
-- hosts: "all"
+- hosts: "k8s-cluster"
   become: yes
   roles:
     - nfs
