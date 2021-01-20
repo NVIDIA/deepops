@@ -30,7 +30,7 @@ This document presents one possible configuration for a DGX cluster. Many other 
 Installation involves first bootstrapping management server(s) with a Kubernetes installation and persistent volume storage using Ceph. Cluster services for provisioning operating systems, monitoring, and mirroring container and package repos are then deployed on Kubernetes. From there, DGX servers are booted and installed with the DGX base OS, and Kubernetes is extended across the entire cluster to facilitate job management. An optional login server can be used to allow users a place to interact with data locally and launch jobs. The Slurm job scheduler can also be installed in parallel with Kubernetes to facilitate easier large-scale training jobs or more traditional HPC workloads.
 
 For more information on deploying DGX in the datacenter, consult the
-[DGX Data Center Reference Design Whitepaper](https://nvidia-gpugenius.highspot.com/viewer/5b33fecf1279587c07d8ac86)
+[DGX Data Center Reference Design Whitepapers](https://www.nvidia.com/en-us/data-center/dgx-pod/#:~:text=NVIDIA%20DGX%20POD%E2%84%A2%20is,design%20built%20on%20NVIDIA%20DGX)
 
 ## Prerequisites
 
