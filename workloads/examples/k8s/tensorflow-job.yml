@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tf-job
+spec:
+  template:
+    spec:
+      containers:
+        - name: tf-job-container
+          image:  nvcr.io/nvidia/tensorflow:20.12-tf1-py3
+          command: ["/bin/sh"]
+          args: ["-c", "python /workspace/nvidia-examples/cnn/resnet.py --layers=50 --batch_size=512"]
+          resources:
+            limits:
+              nvidia.com/gpu: 1
