@@ -14,18 +14,17 @@ This directory contains several yaml files that can be used to deploy various ve
 
 #### Run a Jupyter Notebook environment - Docker
 
-To launch an interactive TensorFlow notebook run the below command and then access Jupyter from the IP of the machine you ran the command on at http://<IP>:30008
+To launch an interactive TensorFlow notebook run the below command and then access Jupyter from the IP of the machine you ran the command on at http://${local_ip}:30008
 
 ```sh
 docker run --rm -it -p 30008:8888  nvcr.io/nvidia/tensorflow:20.12-tf1-py3  jupyter lab  --notebook-dir=/workspace --ip=0.0.0.0 --no-browser --allow-root --port=8888 --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.allow_origin='*' --NotebookApp.base_url=${NB_PREFIX}
 ```
-> Note: Most NGC containers contain Jupyter, to run another container such as PyTorch swap out `nvidia/tensorflow:20.12-tf1-py3`. Most NGC containers provide example notebooks in `/workspace/nvidia-examples`.
+> Note: Most NGC containers contain Jupyter, to run another container such as PyTorch swap out `nvidia/tensorflow:20.12-tf1-py3` for another Docker image (`nvcr.io/nvidia/pytorch:20.12-py3`). Most NGC containers provide example notebooks in `/workspace/nvidia-examples`.
 
 #### Run a DL workload - Docker
 
 Verify Docker is running with GPU support by running the below command. This will execute a ResNet training job on synthetic data.
 
-Docker command:
 ```sh
 docker run --rm -it  nvcr.io/nvidia/tensorflow:20.12-tf1-py3 python /workspace/nvidia-examples/cnn/resnet.py --layers=50 --batch_size=512
 ```
@@ -43,7 +42,7 @@ Expected output, performance will vary:
     80  80.0  1386.2  0.001  0.978 0.02988
     90  90.0  1073.2  0.000  0.978 0.00025
 ```
-> Note: This was run on a DGX Station and most of the output is not shown here.
+> Note: This was run on a DGX Station. Some the output was omitted.
 
 
 ### Kubernetes workloads
@@ -84,11 +83,25 @@ Delete the Job by running:
 kubectl delete -f tensorflow-job.yml
 ```
 
+#### Run a DL workload with kubectl - Kubernetes
+
+The same ResNet workload can be run with a single `kubectl` command:
+
+```sh
+ kubectl run --rm -it --image=nvcr.io/nvidia/tensorflow:20.12-tf1-py3 --limits="nvidia.com/gpu=1" tensorflow-pod -- python /workspace/nvidia-examples/cnn/resnet.py --layers=50 --batch_size=512
+```
+
+Alternatively, a bash prompt can be reached by not specifying a command.
+
+```sh
+ kubectl run --rm -it --image=nvcr.io/nvidia/tensorflow:20.12-tf1-py3 --limits="nvidia.com/gpu=1" tensorflow-pod
+```
+
 #### Run a Multinode workload - Kubernetes
 
 This requires the MPI Operator to be installed as described in the Kubeflow install [here](../../../docs/k8s-cluster/kubeflow.md#kubeflow) and the official MPI Operator docs [here](https://github.com/kubeflow/mpi-operator/tree/master/).
 
-Run the below kubectl command to create a multinode MPI job. Before
+Run the below kubectl command to create a multinode MPI job.
 
 An MPIJob will launch `M` workers. Each worker will run its own `Pod`, each with `N` GPUs. For most workloads it is appropriate to set `N` to the number of GPUs on a node (i.e. 8 for a DGX-1). Update the values of `M` and `N` in the `tensorflow-mpi-job.yml` YAML file and set the number of processes to be `M` * `N`.
 
@@ -126,7 +139,41 @@ Delete the MPIJob by running:
 kubectl delete -f tensorflow-mpi-job.yml
 ```
 
+#### Other examples - Kubernetes
+
+Run and view the output of a CUDA nbody application:
+
+```sh
+kubectl create -f nbody.yml
+kubectl wait --timeout=600s --for=condition=Ready  -l app=cuda-nbody pod
+kubectl logs -f -l app=cuda-nbody
+kubectl delete -f nbody.yml
+```
+
+Run a MNIST job with PyTorch:
+```sh
+kubectl create -f pytorch-job.yml
+kubectl wait --timeout=600s --for=condition=Ready  -l job-name=pytorch-job pod
+kubectl logs -f -l job-name=pytorch-job
+kubectl delete -f pytorch-job.yml
+```
+
+Expected output:
+```sh
+Train Epoch: 4 [55680/60000 (93%)]      Loss: 0.010437
+Train Epoch: 4 [56320/60000 (94%)]      Loss: 0.041916
+Train Epoch: 4 [56960/60000 (95%)]      Loss: 0.035813
+Train Epoch: 4 [57600/60000 (96%)]      Loss: 0.062634
+Train Epoch: 4 [58240/60000 (97%)]      Loss: 0.075980
+Train Epoch: 4 [58880/60000 (98%)]      Loss: 0.025073
+Train Epoch: 4 [59520/60000 (99%)]      Loss: 0.033341
+
+Test set: Average loss: 0.0407, Accuracy: 9866/10000 (99%)
+```
+
 
 ### Kubeflow workloads
 
 For example workloads to deploy into Kubeflow see the Kubeflow NGC inegration [README](../../../src/containers/ngc/).
+
+Also see the several kubeflow-* folders that contain example Kubeflow pipelines and workloads.
