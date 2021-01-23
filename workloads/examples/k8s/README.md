@@ -141,7 +141,7 @@ kubectl delete -f tensorflow-mpi-job.yml
 
 #### Other examples - Kubernetes
 
-Run and view the output of a CUDA nbody application:
+##### Run and view the output of a CUDA nbody application:
 
 ```sh
 kubectl create -f nbody.yml
@@ -150,7 +150,22 @@ kubectl logs -f -l app=cuda-nbody
 kubectl delete -f nbody.yml
 ```
 
-Run a MNIST job with PyTorch:
+Expected output:
+
+```sh
+...
+
+GPU Device 0: "Tesla V100-DGXS-32GB" with compute capability 7.0
+
+> Compute 7.0 CUDA device: [Tesla V100-DGXS-32GB]
+number of bodies = 1000192
+1000192 bodies, total time for 10 iterations: 18702.180 ms
+= 534.902 billion interactions per second
+= 10698.048 single-precision GFLOP/s at 20 flops per interaction
+```
+
+##### Run a MNIST job with PyTorch:
+
 ```sh
 kubectl create -f pytorch-job.yml
 kubectl wait --timeout=600s --for=condition=Ready  -l job-name=pytorch-job pod
@@ -159,6 +174,7 @@ kubectl delete -f pytorch-job.yml
 ```
 
 Expected output:
+
 ```sh
 Train Epoch: 4 [55680/60000 (93%)]      Loss: 0.010437
 Train Epoch: 4 [56320/60000 (94%)]      Loss: 0.041916
