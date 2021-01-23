@@ -17,14 +17,13 @@ This directory contains several yaml files that can be used to deploy various ve
 To launch an interactive TensorFlow notebook run the below command and then access Jupyter from the IP of the machine you ran the command on at http://<IP>:30008
 
 ```sh
-docker run --rm -it -p 30008:8888  nvcr.io/nvidia/tensorflow:20.12-tf1-py3  jupyter lab  --notebook-dir=/workspace --ip=0.0.0.0 --no-browse
-r --allow-root --port=8888 --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.allow_origin='*' --NotebookApp.base_url=${NB_PREFIX}
+docker run --rm -it -p 30008:8888  nvcr.io/nvidia/tensorflow:20.12-tf1-py3  jupyter lab  --notebook-dir=/workspace --ip=0.0.0.0 --no-browser --allow-root --port=8888 --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.allow_origin='*' --NotebookApp.base_url=${NB_PREFIX}
 ```
 > Note: Most NGC containers contain Jupyter, to run another container such as PyTorch swap out `nvidia/tensorflow:20.12-tf1-py3`. Most NGC containers provide example notebooks in `/workspace/nvidia-examples`.
 
 #### Run a DL workload - Docker
 
-Verify Docker is running with GPU support by running the below command. This will execute a resnet training job on synthetic data.
+Verify Docker is running with GPU support by running the below command. This will execute a ResNet training job on synthetic data.
 
 Docker command:
 ```sh
@@ -55,7 +54,13 @@ Run the same Jupyter notebook through Kubernetes by running the below commands. 
 
 ```sh
 kubectl create -f tensorflow-notebook.yml
-kubectl wait --timeout=600s --for=condition=Ready pod/tensorflow-notebook
+kubectl wait --timeout=600s --for=condition=Ready  -l app=tensorflow-notebook pod
+```
+
+Delete the notebook by running:
+
+```sh
+kubectl delete -f tensorflow-notebook.yml
 ```
 
 #### Run a DL workload - Kubernetes
@@ -69,9 +74,15 @@ kubectl create -f tensorflow-job.yml
 View the results by viewing the Pod logs:
 
 ```sh
-kubectl logs tensorflow-job
+kubectl logs -f -l controller-uid=$(kubectl get job tensorflow-job -o jsonpath={.metadata.labels.controller-uid})
 ```
 > Note: The results are expected to be the same or similar to the Docker results.
+
+Delete the Job by running:
+
+```sh
+kubectl delete -f tensorflow-job.yml
+```
 
 #### Run a Multinode workload - Kubernetes
 
@@ -102,6 +113,19 @@ After properly modifying the YAML file, deploy it with:
 ```sh
 kubectl create -f tensorflow-mpi-job.yml
 ```
+
+To view the results, wait a few moments for the Pods to start and run:
+
+```sh
+kubectl logs -f -l job-name=tensorflow-mpi-job-launcher
+```
+
+Delete the MPIJob by running:
+
+```sh
+kubectl delete -f tensorflow-mpi-job.yml
+```
+
 
 ### Kubeflow workloads
 
