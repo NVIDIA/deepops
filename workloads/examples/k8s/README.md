@@ -97,7 +97,7 @@ Alternatively, a bash prompt can be reached by not specifying a command.
  kubectl run --rm -it --image=nvcr.io/nvidia/tensorflow:20.12-tf1-py3 --limits="nvidia.com/gpu=1" tensorflow-pod
 ```
 
-#### Run a Multinode workload - Kubernetes
+#### Run a Multinode deep learning workload - Kubernetes
 
 This requires the MPI Operator to be installed as described in the Kubeflow install [here](../../../docs/k8s-cluster/kubeflow.md#kubeflow) and the official MPI Operator docs [here](https://github.com/kubeflow/mpi-operator/tree/master/).
 
@@ -137,6 +137,23 @@ Delete the MPIJob by running:
 
 ```sh
 kubectl delete -f tensorflow-mpi-job.yml
+```
+
+#### Run a Multinode machine learning workload - Kubernetes
+
+[RAPIDS](https://rapids.ai/) is a GPU accelerated machine learning library that can scale to multi-gpu and multi-node in Kubernetes using [dask](https://dask.org/) and [dask kubernetes](https://kubernetes.dask.org/en/latest/).
+
+To run through a basic K8s scaling use case in Kubernetes run the below command and visit the management node IP at http://${mgmt_ip}:30008, then open the `Scaling Dask in Kubernetes.ipynb` notebook (based on a [kubernetes dask usage tutorial](https://github.com/supertetelman/k8s-rapids-dask)).
+
+```sh
+kubectl create -f rapids-dask-notebook.yml
+kubectl wait --timeout=600s --for=condition=Ready  -l app=rapids-dask-notebook pod
+```
+
+Delete the Notebook by running:
+
+```sh
+kubectl delete -f rapids-dask-notebook.yml
 ```
 
 #### Other examples - Kubernetes
