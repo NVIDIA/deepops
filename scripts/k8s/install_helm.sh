@@ -4,6 +4,7 @@ set -x
 
 HELM_INSTALL_DIR=/usr/local/bin
 HELM_INSTALL_SCRIPT_URL="${HELM_INSTALL_SCRIPT_URL:-https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3}"
+HELM_MINIMUM_VERSION=v3.4.1+gc4e7485
 
 if ! kubectl version ; then
     echo "Unable to talk to Kubernetes API"
@@ -29,7 +30,13 @@ case "$ID" in
         ;;
 esac
 
-if ! type helm >/dev/null 2>&1 ; then
+helm_version=$(helm version --short)
+helm_min_installed=$(echo -e "${HELM_MINIMUM_VERSION}\n${helm_version}"| sort -V | head -n 1)
+if [ "${HELM_MINIMUM_VERSION}" != "${helm_min_installed}" ]; then
+    if [ "${helm_version}" != "" ]; then
+        sudo mv $(which helm) "$(which helm).bak"
+        echo "Helm ${helm_version} currently installed, upgrading to ${HELM_MINIMUM_VERSION}"
+    fi
     curl -fsSL -o /var/tmp/get_helm.sh "${HELM_INSTALL_SCRIPT_URL}"
     chmod +x /var/tmp/get_helm.sh
     #sed -i 's/sudo//g' /var/tmp/get_helm.sh
