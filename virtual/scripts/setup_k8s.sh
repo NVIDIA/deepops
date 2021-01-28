@@ -49,10 +49,3 @@ kubectl get nodes
 
 # Deploy monitoring (optional)
 "${ROOT_DIR}/scripts/k8s/deploy_monitoring.sh"
-
-# Deploy container registry (optional)
-ansible-playbook \
-	-b -i "${VIRT_DIR}/config/inventory" \
-	-e "@${VIRT_DIR}/vars_files/virt_k8s.yml" \
-	${ansible_extra_args} \
-	"${ROOT_DIR}/playbooks/k8s-cluster/container-registry.yml"
