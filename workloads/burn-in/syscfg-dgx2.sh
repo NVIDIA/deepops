@@ -4,5 +4,4 @@ CPU_CORES_PER_RANK=3
 MEM_AFFINITY="0:0:0:0:0:0:0:01:1:1:1:1:1:1:1:1"
 UCX_AFFINITY="mlx5_1:mlx5_1:mlx5_2:mlx5_2:mlx5_3:mlx5_3:mlx5_4:mlx5_4:mlx5_7:mlx5_7:mlx5_8:mlx5_8:mlx5_9:mlx5_9:mlx5_10:mlx_10"
 GPU_CLOCK="877,1530"
-export LD_LIBRARY_PATH="/usr/local/cuda/compat:$LD_LIBRARY_PATH"
 
