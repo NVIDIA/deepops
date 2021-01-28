@@ -35,7 +35,7 @@ source "${VIRT_DIR}/k8s_environment.sh"
 # Verify that the cluster is up
 file ${K8S_CONFIG_DIR}/artifacts/kubectl && chmod +x ${K8S_CONFIG_DIR}/artifacts/kubectl
 kubectl get nodes
-#kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
+#kubectl run gpu-test --rm -t -i --restart=Never --image=nvcr.io/nvidia/cuda:10.1-base-ubuntu18.04 --limits=nvidia.com/gpu=1 -- nvidia-smi
 
 # Install helm
 "${ROOT_DIR}/scripts/k8s/install_helm.sh"
