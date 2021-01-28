@@ -5,7 +5,7 @@ MEM_AFFINITY="2:3:0:1:6:7:4:5"
 UCX_AFFINITY="mlx5_0:mlx5_1:mlx5_2:mlx5_3:mlx5_6:mlx5_7:mlx5_8:mlx5_9"
 GPU_CLOCK="1593,1275"
 
-export LD_LIBRARY_PATH="/usr/local/cuda/compat:$LD_LIBRARY_PATH"
+#export LD_LIBRARY_PATH="/usr/local/cuda/compat:$LD_LIBRARY_PATH"
 
 export MONITOR_GPU=1
 export TEST_SYSTEM_PARAMS=1
