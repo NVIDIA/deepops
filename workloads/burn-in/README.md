@@ -32,7 +32,7 @@ cd deepops/workloads/burn-in/
 
 To access the HPL container from nvcr.io it is necessary to setup authentication keys.  Please go to nvcr.io and follow the instructions there to create a key (if you have not already done so).
 
-###  for Enroot to nvcr.io
+###  To allow Enroot to access nvcr.io
 
 If not already created, create the file ~/.config/enroot/.credentials.  Add the following entries to that file:
 
