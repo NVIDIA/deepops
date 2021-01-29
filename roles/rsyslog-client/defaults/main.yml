@@ -1,0 +1,5 @@
+---
+# Not defined by default, must be defined to configure
+# rsyslog_client_tcp_host: "10.0.0.1"
+
+rsyslog_client_tcp_port: "514"
