@@ -1,14 +1,8 @@
 ---
 # See the GitHub code repo: https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
 
-# TODO: Remove this when helm version is bumped and '--create-namespace' is available
-- name: create nfs-client-provision namespace
-  command: "{{ artifacts_dir }}/kubectl create --kubeconfig {{ artifacts_dir }}/admin.conf namespace deepops-nfs-client-provisioner"
-  ignore_errors: true
-  delegate_to: localhost
-
 - name: install nfs-client-provisioner
-  command: /usr/local/bin/helm upgrade --kubeconfig {{ artifacts_dir }}/admin.conf --install "{{ k8s_nfs_client_release_name }}" "{{ playbook_dir }}/../../{{ k8s_nfs_client_local_submodule }}" --namespace deepops-nfs-client-provisioner --set nfs.server="{{ k8s_nfs_server }}" --set nfs.path="{{ k8s_nfs_export_path }}" --set storageClass.defaultClass="{{ k8s_nfs_default_sc }}" --wait
+  command: /usr/local/bin/helm upgrade --kubeconfig {{ artifacts_dir }}/admin.conf --install "{{ k8s_nfs_client_release_name }}" "{{ playbook_dir }}/../../{{ k8s_nfs_client_local_submodule }}" --create-namespace --namespace deepops-nfs-client-provisioner --set nfs.server="{{ k8s_nfs_server }}" --set nfs.path="{{ k8s_nfs_export_path }}" --set storageClass.defaultClass="{{ k8s_nfs_default_sc }}" --wait
   delegate_to: localhost
 
 # TODO: Update this to use a non-local helm repo when a new maintainer takes on this project
@@ -19,4 +13,4 @@
 #   command: /usr/local/bin/helm repo update
 
 # - name: install nfs-client-provisioner
-#   command: /usr/local/bin/helm upgrade --install "{{ k8s_nfs_client_release_name }}" "{{ k8s_nfs_client_chart_name }}" --namespace deepops-nfs-client-provisioner --version "{{ k8s_nfs_client_chart_version }}" --set nfs.server="{{ k8s_nfs_server }}" --set nfs.path="{{ k8s_nfs_export_path }}" --set storageClass.defaultClass="{{ k8s_nfs_default_sc }}" --wait
+#   command: /usr/local/bin/helm upgrade --install "{{ k8s_nfs_client_release_name }}" "{{ k8s_nfs_client_chart_name }}" --create-namespace --namespace deepops-nfs-client-provisioner --version "{{ k8s_nfs_client_chart_version }}" --set nfs.server="{{ k8s_nfs_server }}" --set nfs.path="{{ k8s_nfs_export_path }}" --set storageClass.defaultClass="{{ k8s_nfs_default_sc }}" --wait
