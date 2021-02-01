@@ -1,4 +1,4 @@
-# NVIDIA Diagnostics & DGX Firmware Upgraes
+# NVIDIA Diagnostics & DGX Firmware Upgrades
 
 The `nvidia-dgx-firmware` role has been built to perform several administrative tasks cluster-wide.
 

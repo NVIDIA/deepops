@@ -6,7 +6,7 @@ Ansible role that can be used to deploy NetApp Trident within a Kubernetes clust
 Requirements
 ------------
 
-**Prerequesites:**
+**Prerequisites:**
 
 1. 'kubectl' must be installed on the target host.
 2. '~/.kube/config' must be configured, on the target host, for access to the cluster that you wish to deploy Trident to.

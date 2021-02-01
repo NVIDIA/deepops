@@ -92,7 +92,7 @@ cd config/kubeflow-install
 
 A common issue with Kubeflow installation is that no DefaultStorageClass has been defined or that Ceph has been not been deployed correctly.
 
-This can be idenfitied if most of the Kubeflow Pods are running and the MySQL pod and several others remain in a Pending state. The GUI may also load and throw a "Profile Error". Run the following to debug further:
+This can be identified if most of the Kubeflow Pods are running and the MySQL pod and several others remain in a Pending state. The GUI may also load and throw a "Profile Error". Run the following to debug further:
 
 ```sh
 kubectl get pods -n kubeflow

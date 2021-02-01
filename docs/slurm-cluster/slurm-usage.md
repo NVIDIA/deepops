@@ -96,7 +96,7 @@ JOBID PARTITION     NAME     USER    STATE       TIME TIME_LIMI  NODES NODELIST(
 9     batch         bash   user01  RUNNING       5:43 UNLIMITED      1 dgx1
 ```
 
-To see just the running jobs for a particulare user `USERNAME`:
+To see just the running jobs for a particular user `USERNAME`:
 
 ```sh
 $ squeue -l -u USERNAME

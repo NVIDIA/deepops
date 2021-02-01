@@ -14,7 +14,7 @@ lock(resource: null, label: 'gpu', quantity: 1, variable: 'GPUDATA')
 
 ## Jenkinsfile
 
-This is the original Jenkinsfile that runs everytime a PR is created. It does a quick test to verify:
+This is the original Jenkinsfile that runs every time a PR is created. It does a quick test to verify:
 
 * K8S deploys
 * Slurm Deploys

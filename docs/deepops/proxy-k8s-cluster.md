@@ -9,10 +9,10 @@ Proxy format: http://user:password@proxyIP:Proxy:Port/
 Playbook k8s-cluster.yml
 ----------
 
-To prepare using proxies for the installation of DeepOps via the k8s-cluster.yml playbook, there are 2 additional seteps required. After downloading deepops via git, edit the script `proxy.sh` before executing step `#2 Set up your provisoning machine`. Then after the Kubernetes cluster is up and running use the proxies to complete the additional found in `Using Kubernetes`. Below are the details. 
+To prepare using proxies for the installation of DeepOps via the k8s-cluster.yml playbook, there are 2 additional steps required. After downloading deepops via git, edit the script `proxy.sh` before executing step `#2 Set up your provisoning machine`. Then after the Kubernetes cluster is up and running use the proxies to complete the additional found in `Using Kubernetes`. Below are the details. 
 
 ### Edit proxy.sh
-Manually edit the file and provide the necessary values for all 3 varaibles - HTTPS_PROXY, HTTP_PROXY, NO_PROXY. The NO_PROXY variable should have a comma separated list of hostnames, IP addresses, domain names, or a mixture of both. Asterisks can be used as wildcards.
+Manually edit the file and provide the necessary values for all 3 variables - HTTPS_PROXY, HTTP_PROXY, NO_PROXY. The NO_PROXY variable should have a comma separated list of hostnames, IP addresses, domain names, or a mixture of both. Asterisks can be used as wildcards.
 
 ```
 # Example Proxy details
@@ -23,7 +23,7 @@ export no_proxy="localhost,cluster.local,127.0.0.1,::1,10.0.2.10,10.0.2.20,10.0.
 
 The presence of values in the config file directs the `scripts/setup.sh` script to use its environment variables to download/install software. It will also update the `config/group_vars/all.yml` so that the ansible playbooks will also use proxies. 
 
-_Its important to note that docker will also be configued to use the proxy to download containers._
+_Its important to note that docker will also be configured to use the proxy to download containers._
 
 ### Using Kubernetes
 

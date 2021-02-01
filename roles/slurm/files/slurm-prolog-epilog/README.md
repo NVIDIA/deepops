@@ -88,7 +88,7 @@ Successfully ran diagnostic for group.
 
 This script will reset the application clocks on the GPUs, activate accounting, and clear the current logs. 
 Inside this script there is a section that is commented out.  That commented out section would execute a 
-reset of the gpu.  That is an action is is not always guarenteed to succeed and should be done with caution. 
+reset of the gpu.  That is an action is is not always guaranteed to succeed and should be done with caution. 
 
 ## GPU Check
  - prolog-lspci

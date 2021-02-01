@@ -41,7 +41,7 @@ After building the docker images locally, they can be pushed to a private Docker
 
 ## Kubeflow Integration
 
-As of v1.2.0, Kubeflow requires containers to start Jupyter, VSCode, or anohter web application in order to deploy through Kubeflow Notebooks.
+As of v1.2.0, Kubeflow requires containers to start Jupyter, VSCode, or another web application in order to deploy through Kubeflow Notebooks.
 
 A bare-minimum Dockerfile must define the `FROM`, `ENTRYPOINT`, and `CMD`, similar to below. Note that the `base_url` must be defined for Kubeflow to redirect properly.
 

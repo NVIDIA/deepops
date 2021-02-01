@@ -10,14 +10,14 @@ Set up a virtual cluster with DeepOps. Useful for...
 
 ### Hardware Requirements
 
-The host machine should have enough resources to fufill the minimum VM needs...
+The host machine should have enough resources to fulfill the minimum VM needs...
 
 Total: 8 vCPU, 22 GB RAM, 96 GB Storage
 * virtual-login01: 2 vCPU, 2GB RAM and 32GB Storage
 * virtual-mgmt01: 4 vCPU, 4GB RAM and 32GB Storage
 * virtual-gpu01: 2 vCPU, 16GB RAM and 32GB Storage
 
-If deploying kubeflow or another resource-intensive application in this environment, more vCPU, RAM, and storage resouces must be allocated to virtual-mgmt01 especially.
+If deploying kubeflow or another resource-intensive application in this environment, more vCPU, RAM, and storage resources must be allocated to virtual-mgmt01 especially.
 
 ### Operating System Requirements
 

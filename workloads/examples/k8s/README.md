@@ -207,6 +207,6 @@ Test set: Average loss: 0.0407, Accuracy: 9866/10000 (99%)
 
 ### Kubeflow workloads
 
-For example workloads to deploy into Kubeflow see the Kubeflow NGC inegration [README](../../../src/containers/ngc/).
+For example workloads to deploy into Kubeflow see the Kubeflow NGC integration [README](../../../src/containers/ngc/).
 
 Also see the several kubeflow-* folders that contain example Kubeflow pipelines and workloads.

@@ -51,7 +51,7 @@ In many cases, a good way to get started with one of these files is to run DeepO
 ## Separate specific functions on different hardware
 
 To minimize hardware requirements for cluster management services, DeepOps deploys a single Slurm head node by default.
-This head node provides multiple servies to the rest of the cluster, including:
+This head node provides multiple services to the rest of the cluster, including:
 
 * Slurm controller and database
 * NFS shared filesystem
@@ -180,7 +180,7 @@ In order to disable NFS server deployment, you should set:
 slurm_enable_nfs_server: false
 ```
 
-Then, to configure all hosts to mount from one or more external serveris, configure:
+Then, to configure all hosts to mount from one or more external servers, configure:
 
 ```
 nfs_client_group: "slurm-cluster"

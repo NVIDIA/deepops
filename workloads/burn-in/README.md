@@ -4,7 +4,7 @@
 
 This repository contains scripts and configuration files to use the GPU optimized version of HPL as a burnin test for GPU-based clusters.  The burnin test will repeatedly run HPL on different node counts to verify that each node, and each group of nodes, is providing the expected performance.  If a job runs slowly, it is an indicator that there is an issue with the node or network.  All nodes should perform equally.  
 
-If the expected performance is seen, the user can be confident that the nodes are working correctly.  If a Top500 submittal is desired, there are additional optimizations than can done to maximize performance.  Please work with an NVIDIA Solutions Architect (SA) to review the Burn In Test results so that additional perfomance may be obtained.
+If the expected performance is seen, the user can be confident that the nodes are working correctly.  If a Top500 submission is desired, there are additional optimizations than can done to maximize performance.  Please work with an NVIDIA Solutions Architect (SA) to review the Burn In Test results so that additional performance may be obtained.
 
 Currently, only clusters built with DGX-1V-16GB, DGX-1V-32GB, DGX-2, and DGXA100 are supported.  If you have an OEM GPU-based system, contact your NVIDIA SA for additional assistance.
 
