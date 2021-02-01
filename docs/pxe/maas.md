@@ -63,7 +63,7 @@ Please consult your hypervisor documentation for instructions on doing this.
 
 Once MAAS is installed, the most straightforward way to configure it is via the web interface.
 
-To reach the web inteface, navigate to `http://192.168.122.90:5240/MAAS` in your web browser, and log in using the username and password you set in your configuration.
+To reach the web interface, navigate to `http://192.168.122.90:5240/MAAS` in your web browser, and log in using the username and password you set in your configuration.
 
 ### SSH keys
 
@@ -71,7 +71,7 @@ After you've logged in, the first thing MAAS will ask for is that you provide on
 These keys will be used to automatically set up passwordless SSH on all the nodes which you provision using MAAS.
 Make sure this is a key you can easily use to reach your servers, because this is the only way you will be able to log into servers provisioned by MAAS!
 
-If you have public keys posted on Github or Launchpad, MAAS will offer to import these.
+If you have public keys posted on GitHub or Launchpad, MAAS will offer to import these.
 Otherwise you should select "Upload" as the source and copy-paste your public keys into the text box provided.
 Then click the button to go to the MAAS dashboard.
 
@@ -127,7 +127,7 @@ The list of machines should now include one entry.
 The name of the new machine will be auto-generated from an adjective and an animal, for example "alert-pigeon".
 
 Click the name of the new machine, and this will navigate to a page for this machine.
-It should show several auto-detected details about the machine, such as the nymber of CPUs, the memory, and the storage available on the machine.
+It should show several auto-detected details about the machine, such as the number of CPUs, the memory, and the storage available on the machine.
 If you want to, you can also rename the machine by clicking the name at the top of the page.
 
 Before we can deploy this machine, we have to configure it so that MAAS can turn it on or off (or tell MAAS that we will do this manually).
@@ -138,7 +138,7 @@ Before we can deploy this machine, we have to configure it so that MAAS can turn
     If this has already been selected to a pre-configured value, you're good to go, because MAAS has autodetected how to control the power on this node!
 1. If it's not yet selected, click the drop-down menu and it will show several different types of power control available.
     For a physical machine, the most common choice will be "IPMI", and will require you to fill in the username and password for the server BMC. 
-    MAAS also supports power control via several different types of hypervisors, such as VMWare; these may also require credentials to access.
+    MAAS also supports power control via several different types of hypervisors, such as VMware; these may also require credentials to access.
     If none of these are available for your hypervisor, click "Manual". This will allow you to proceed with deploying your node, but you will have to manually boot it up when needed.
 1. Click "Save changes"
 

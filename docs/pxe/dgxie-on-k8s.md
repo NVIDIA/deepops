@@ -4,7 +4,7 @@ DGXie is an all-in-one container for DHCP, DNS, and PXE, specifically tailored t
 
 ## Setup
 
-You will need to download the official DGX Base OS ISO image to your provisioning machine. The latest DGX Base OS is available via the NVIDIA Entperprise Support Portal (ESP).
+You will need to download the official DGX Base OS ISO image to your provisioning machine. The latest DGX Base OS is available via the NVIDIA Enterprise Support Portal (ESP).
 
 Copy the DGX Base OS ISO to shared storage via a container running in Kubernetes, substituting the path to the DGX ISO you downloaded (be sure to wait for the `iso-loader` POD to be in the *Running* state before attempting to copy the ISO):
 

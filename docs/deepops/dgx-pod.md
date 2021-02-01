@@ -177,7 +177,7 @@ k8-mgmt03        Ready    master   21m   v1.12.5
    Follow the setup, configure, and deploy instructions in the [DGXie Guide](dgxie.md).
 
 
-> Note: The following K8s services are especially helpful for air-gapped environemnts
+> Note: The following K8s services are especially helpful for air-gapped environments
 
 3. (Optional) Deploy Internal Container Registry
 
@@ -257,7 +257,7 @@ ansible dgx-servers -k -a 'hostname'
 
 ### 6. Deploy Kubernetes to the compute node(s)
 
-1. Run the same `k8s-cluster` ansible-playbook, but this time, we run against both the managment nodes (kube-master) and GPU nodes GPU nodes (kube-node).
+1. Run the same `k8s-cluster` ansible-playbook, but this time, we run against both the management nodes (kube-master) and GPU nodes GPU nodes (kube-node).
 
    ```sh
    # NOTE: If SSH requires a password, add: `-k`

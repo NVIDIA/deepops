@@ -7,11 +7,11 @@ High-Performance RoCE Implementation in Multi-Node Kubernetes Cluster
 
 ## Solution Overview and Scope
 
-   The goal of this solution to provide a high performance GPU on-demands Ethernet based multi-node Kubernetes environment so data scientists, researchers and developers can launch their ML/AI workloads quickly on a containerized environment without worrying about underlying computation infrastructure's compatibility metrix on different hardware, software and performance. This implementation guide is built up with 3 nodes cluster in a lab environment, all the detailed hardware, software requirements list here are pertinent to this environment but can be served as a general reference on where you see fit to your particular case. In this 3-node Kubernetes cluster, One DGX-1 is configured exclusively as a Kubernetes master node, ideally a well-designed Kubernetes HA cluster should have minimal 3 master nodes formed a stacked control plane, but that's not the focus of this exercise and one master node doesn't have any functional impact on our pod, especially for the RoCE functions. But it's recommended to follow general HA best practice design in a production environment.  Two other DGX-1s are configured as GPU worker nodes. Each GPU worker node is equipped with 8*V100 Tesla GPUs and two Mellanox ConnectX-5 VPI dual mode (InfiniBand or Ethernet) 100G network cards, which are operated in Ethernet mode in this lab. A Mellanox Spectrum Ethernet switch is used to connect those two worker nodes. A separate management switch is provisioned to provide housekeeping management functions.  Opensource Kubernetes with Nvidia GPU plugins are running on top of those 3 nodes to provide containerized GPU-on-demand services for various ML/AI workload. Open MPI, Nvidia NCCL with CUDA, ResNet image classification with Tensorflow and Horovod framework are used as application workload to validate solution, especially the performance. 
+   The goal of this solution to provide a high performance GPU on-demands Ethernet based multi-node Kubernetes environment so data scientists, researchers and developers can launch their ML/AI workloads quickly on a containerized environment without worrying about underlying computation infrastructure's compatibility matrix on different hardware, software and performance. This implementation guide is built up with 3 nodes cluster in a lab environment, all the detailed hardware, software requirements list here are pertinent to this environment but can be served as a general reference on where you see fit to your particular case. In this 3-node Kubernetes cluster, One DGX-1 is configured exclusively as a Kubernetes master node, ideally a well-designed Kubernetes HA cluster should have minimal 3 master nodes formed a stacked control plane, but that's not the focus of this exercise and one master node doesn't have any functional impact on our pod, especially for the RoCE functions. But it's recommended to follow general HA best practice design in a production environment.  Two other DGX-1s are configured as GPU worker nodes. Each GPU worker node is equipped with 8*V100 Tesla GPUs and two Mellanox ConnectX-5 VPI dual mode (InfiniBand or Ethernet) 100G network cards, which are operated in Ethernet mode in this lab. A Mellanox Spectrum Ethernet switch is used to connect those two worker nodes. A separate management switch is provisioned to provide housekeeping management functions.  Opensource Kubernetes with Nvidia GPU plugins are running on top of those 3 nodes to provide containerized GPU-on-demand services for various ML/AI workload. Open MPI, Nvidia NCCL with CUDA, ResNet image classification with Tensorflow and Horovod framework are used as application workload to validate solution, especially the performance. 
 
 ## RoCE Design Considerations
 
-   100GbE RoCE is used here to provide the interconect between two GPU worker nodes. RoCE provides the Remote Direct Memory Access (RDMA) across the Ethernet and IP network from one host to another with reduced latency and lower CPU overhead. Traditionally Ethernet and IP network are considered as a "lossy" network since they're not designed to provide an end-to-end loseless transmission, the packet drops occured during the transmission are supposed to be taken care of by upper layer protocols. RoCE switch remedies this by utilizing PFC and ECN to manage the traffic flow and congestions. In our lab we have taken following considerations into our implementation:
+   100GbE RoCE is used here to provide the interconnect between two GPU worker nodes. RoCE provides the Remote Direct Memory Access (RDMA) across the Ethernet and IP network from one host to another with reduced latency and lower CPU overhead. Traditionally Ethernet and IP network are considered as a "lossy" network since they're not designed to provide an end-to-end lossless transmission, the packet drops occurred during the transmission are supposed to be taken care of by upper layer protocols. RoCE switch remedies this by utilizing PFC and ECN to manage the traffic flow and congestions. In our lab we have taken following considerations into our implementation:
 
    * Enable and configure RoCE properly wherever it's applicable:
      * Use RoCE NICs in servers with appropriate drivers installed. 
@@ -19,7 +19,7 @@ High-Performance RoCE Implementation in Multi-Node Kubernetes Cluster
      * Software libraries that can take advantage RoCE.
    * LACP or any link bundle with multiple NICs are not recommended since it doesn't work well with RoCE and RDMA in general. It's recommended to have each NIC on a separate subnet.  
    * Ideally each NIC should be on a separate "rail" to form a multi-rail topology. At the minimal, NICs on the same PCIe switch and NUMA node should spread out to different physical switches. please refer to server hardware block diagram on how the NICs and GPUs are connected internally.
-   * SRIOV with RoCE is the key technology to enable Kubernetes pod to achieve near line rate performance and low latency. Single Root I/O Virtualization (SRIOV) virtualize a single physical RoCE NIC into multiple virtual RoCE interfaces (it's called VF in SRIOV's terminology) and directly attaches it to Kubernetes pod without going through the Linux kernel, so higher perforamnce and lower latency can be achieved because the entire data path is now bypassing the Linux kernel. 
+   * SRIOV with RoCE is the key technology to enable Kubernetes pod to achieve near line rate performance and low latency. Single Root I/O Virtualization (SRIOV) virtualize a single physical RoCE NIC into multiple virtual RoCE interfaces (it's called VF in SRIOV's terminology) and directly attaches it to Kubernetes pod without going through the Linux kernel, so higher performance and lower latency can be achieved because the entire data path is now bypassing the Linux kernel. 
 
 ## Key Hardware & Software Requirements
 
@@ -60,7 +60,7 @@ add switch PFC, ECN configuration
 
    Install a supported operating system on all servers utilizing the [DGXie](/docs/pxe/dgxie-container.md) provisioning container, via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)), or server BMC/console.
 
-   > NOTE: During OS installation, it is ideal if the identical user/password is configured. Otherwise, follow step 4 below to create an idential user across all nodes in the cluster.
+   > NOTE: During OS installation, it is ideal if the identical user/password is configured. Otherwise, follow step 4 below to create an identical user across all nodes in the cluster.
 
 
 3. Verify SRIOV is enabled in server BIOS and RoCE is working on the physical NIC level
@@ -110,7 +110,7 @@ add switch PFC, ECN configuration
 
 4. Set up your management node.
 
-   Install Ansible and required software on the mangement node.
+   Install Ansible and required software on the management node.
 
    DeepOps uses a single management node deploy all other software to the cluster. This process may take several minutes as ansible-galaxy roles are downloaded and python packages are installed. For more information on Ansible and why we use it, consult the [Ansible Guide](ANSIBLE.md).
 
@@ -208,7 +208,7 @@ add switch PFC, ECN configuration
 
    Use DeepOps RoCE_backend deployment scripts to deploy following components to the Kubernetes cluster, those steps are also described in detail in this [doc](https://github.com/NVIDIA/deepops/tree/master/roles/roce_backend):
 
-   * Upgrade Mellanox OFED driver package to the appropriate veersion to active SRIOV VFs
+   * Upgrade Mellanox OFED driver package to the appropriate version to active SRIOV VFs
    * Multus CNI to support multiple NICs in Kubernetes pod
    * SR-IOV CNI and SRIOV device plugin
    * DHCP CNI for pod IP addresses management for SR-IOV RoCE interfaces
@@ -324,7 +324,7 @@ add switch PFC, ECN configuration
 
    > Note: This is not a performance benchmark testing so we don't fine tune any hardware and software stack parameters, application, etc. The results are considered as an "out-of-box" number that can be observed in regular customer environments with the solution we documented here. For more background about NCCL, see the following [blog post](https://devblogs.nvidia.com/scaling-deep-learning-training-nccl/). 
 
-   Horovod is a distributed deep learning training framework for TensorFlow, Keras, PyTorch, and Apache MXNet. Horovod project team choose MPI over distributed TensorFlow with parameter servers because MPI model is much easy and straightforward to implement. Following Horovod's Github [document](https://github.com/horovod/horovod), we also did a few TensorFlow ResNet image classification tests with Horovod build-in benchmark test, the results are shown below:
+   Horovod is a distributed deep learning training framework for TensorFlow, Keras, PyTorch, and Apache MXNet. Horovod project team choose MPI over distributed TensorFlow with parameter servers because MPI model is much easy and straightforward to implement. Following Horovod's GitHub [document](https://github.com/horovod/horovod), we also did a few TensorFlow ResNet image classification tests with Horovod build-in benchmark test, the results are shown below:
 
 
    ```sh
@@ -344,24 +344,24 @@ add switch PFC, ECN configuration
    ```
 
 
-## Performance Validation with Baremeal and Non-RoCE Kubernetes Pods
+## Performance Validation with Baremetal and Non-RoCE Kubernetes Pods
 
-   Additioanl tests are performed to compare the performance on multi-node baremetal servers and non-RoCE kubernetes pods. For multi-node baremetal server NCCL testing, we follow the documentations on those sites to install and compile NCCL and Open MPI:  https://github.com/NVIDIA/nccl and https://www.open-mpi.org/. For non-RoCE Kubernetes pods testing, we simiply deattached the SRIOV/RoCE interfaces from Kubernetes job file so NCCL will run over traditional IP sockets. We run multiple tests in each scenarios to eliminates the outliers and the results show SRIOV with RoCE in Kubernetes can delivery the same performance as in baremetal servers.
+   Additional tests are performed to compare the performance on multi-node baremetal servers and non-RoCE kubernetes pods. For multi-node baremetal server NCCL testing, we follow the documentations on those sites to install and compile NCCL and Open MPI:  https://github.com/NVIDIA/nccl and https://www.open-mpi.org/. For non-RoCE Kubernetes pods testing, we simply detached the SRIOV/RoCE interfaces from Kubernetes job file so NCCL will run over traditional IP sockets. We run multiple tests in each scenarios to eliminates the outliers and the results show SRIOV with RoCE in Kubernetes can delivery the same performance as in baremetal servers.
 
-NCCL Latency comparision (NCCL ring topology): 
+NCCL Latency comparison (NCCL ring topology): 
 
 ![alt text](img/nccl_latency_ring.PNG "NCCL latency, ring")
 
 
-NCCL Bandwidth comparision (NCCL ring topology): 
+NCCL Bandwidth comparison (NCCL ring topology): 
 
 ![alt text](img/nccl_bandwidth_ring.PNG "NCCL bandwidth, ring")
 
-   > Note: The bare-metal results are overlaping with Kubernetes SRIOV+RoCE because the number is almost identical.
+   > Note: The bare-metal results are overlapping with Kubernetes SRIOV+RoCE because the number is almost identical.
 
 ### Troubleshoot 
 
-   NCCL tests ususally runs pretty fast and can finish in a few minutes once the job is launched and pod is running, but in case you run into any problem that you want to troubleshoot, for example, if the job launching pod stays in "running" state for extended period of time or in "error" states, you can "describe" the pod or check the running log of the pod to get further information. Also it's helpful to enable NCCL debug information when you launch the job. 
+   NCCL tests usually runs pretty fast and can finish in a few minutes once the job is launched and pod is running, but in case you run into any problem that you want to troubleshoot, for example, if the job launching pod stays in "running" state for extended period of time or in "error" states, you can "describe" the pod or check the running log of the pod to get further information. Also it's helpful to enable NCCL debug information when you launch the job. 
 
 
    ```sh

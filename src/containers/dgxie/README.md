@@ -13,7 +13,7 @@ Otherwise, follow each of the sections below in order:
 ## Connect the laptop to the network
 
 Connect the built-in ethernet to the private network where the DGX are connected, and the usb-ethernet dongle to a public, internet accessible network, if available.
- The install process does not require an internet connection, but it may be usefull later for updating or installing extra software.
+ The install process does not require an internet connection, but it may be useful later for updating or installing extra software.
 
 This assumes the built-in ethernet interface is the "public" network and the usb-ethernet dongle is the "private" network where the DGX are connected
 
