@@ -54,8 +54,9 @@ get_all_helm_tgzs() {
 echo "Mirroring Helm charts locally"
 HELM_DEST_DIR="${HELM_DEST_DIR:-${DEST_DIR}/helm}"
 
-HELM_STABLE_CHARTS_URL="${HELM_STABLE_CHARTS_URL:-https://kubernetes-charts.storage.googleapis.com}"
+HELM_STABLE_CHARTS_URL="${HELM_STABLE_CHARTS_URL:-https://charts.helm.sh/stable}"
 HELM_ROOK_CHARTS_URL="${HELM_ROOK_CHARTS_URL:-https://charts.rook.io/master}"
+HELM_JUPYTER_CHARTS_URL="${HELM_JUPYTER_CHARTS_URL:-https://jupyterhub.github.io/helm-chart}"
 
 mkdir -p "${HELM_DEST_DIR}/mirror"
 pushd "${HELM_DEST_DIR}"
