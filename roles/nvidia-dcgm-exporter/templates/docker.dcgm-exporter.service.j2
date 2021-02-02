@@ -9,7 +9,7 @@ Restart=always
 ExecStartPre=-/usr/bin/docker stop %n
 ExecStartPre=-/usr/bin/docker rm %n
 ExecStartPre=/usr/bin/docker pull {{ nvidia_dcgm_container }}
-ExecStart=/usr/bin/docker run --rm --cpus="{{ nvidia_dcgm_max_cpu }}" --name %n -p 9400:9400 {{ nvidia_dcgm_container }}
+ExecStart=/usr/bin/docker run --rm --gpus all --cpus="{{ nvidia_dcgm_max_cpu }}" --name %n -p 9400:9400 {{ nvidia_dcgm_container }}
 
 [Install]
 WantedBy=multi-user.target
