@@ -21,6 +21,9 @@ ansible_extra_args=""
 if [ "${DEEPOPS_OFFLINE}" -ne 0 ]; then
 	ansible_extra_args="-e "@${VIRT_DIR}/config/airgap/offline_repo_vars.yml""
 fi
+if [ ${DEEPOPS_K8S_OPERATOR} ]; then
+	ansible_extra_args="${ansible_extra_args} -e deepops_gpu_operator_enabled=true"
+fi
 
 # Deploy the K8s cluster
 ansible-playbook \
