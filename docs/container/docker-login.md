@@ -51,7 +51,7 @@ The [Singularity documentation](https://sylabs.io/guides/3.5/user-guide/singular
 ### Enroot
 
 [Enroot](https://github.com/NVIDIA/enroot) uses credentials configured through `$ENROOT_CONFIG_PATH/.credentials`.
-In most Slurm installations, `ENROOT_CONFIG_PATH` will be `$HOME/.config`.
+In most Slurm installations, `ENROOT_CONFIG_PATH` will be `$HOME/.config/enroot`.
 Because Enroot pulls containers on the fly as Slurm jobs start, the credentials file needs to be accessible in a shared filesystem which all nodes can access at job start.
 
 The file format for the credentials file looks like this:
