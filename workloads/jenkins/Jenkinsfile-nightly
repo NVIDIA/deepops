@@ -101,6 +101,7 @@ pipeline {
 
           echo "Verify we can run a GPU job"
           sh '''
+            export DEEPOPS_K8S_OPERATOR=true
             timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
           '''
 
@@ -227,6 +228,7 @@ pipeline {
 
           echo "Verify we can run a GPU job"
           sh '''
+            export DEEPOPS_K8S_OPERATOR=true
             timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
           '''
 
