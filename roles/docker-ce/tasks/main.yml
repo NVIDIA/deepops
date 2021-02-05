@@ -1,0 +1,47 @@
+---
+- name: 'install docker dependencies'
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+  with_items:
+    - 'apt-transport-https'
+    - 'ca-certificates'
+
+- name: 'add Docker repository apt key'
+  apt_key:
+    url: 'https://download.docker.com/linux/ubuntu/gpg'
+    id: '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'
+    state: 'present'
+  register: 'add_repository_key'
+  ignore_errors: true
+
+- name: 'add Docker repository'
+  apt_repository:
+    repo: '{{ docker_apt_repository }}'
+    state: 'present'
+    update_cache: 'yes'
+
+- name: 'install Docker'
+  apt:
+    name: 'docker-ce={{ docker_version }}'
+    name: 'docker-ce'
+    state: 'present'
+
+- name: 'enable docker systemd service'
+  service:
+    name: 'docker'
+    state: 'started'
+    enabled: 'yes'
+
+- name: 'copy docker daemon configuration'
+  copy:
+    src: 'daemon.json'
+    dest: '/etc/docker/daemon.json'
+
+- name: 'add users to docker group'
+  user:
+    name: '{{ item }}'
+    groups: 'docker'
+    append: 'yes'
+  with_items: '{{ docker_group_members }}'
+  when: docker_group_members
