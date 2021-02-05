@@ -115,7 +115,7 @@ ansible-playbook playbooks/k8s-cluster/nfs-client-provisioner.yml
 
 To skip this installation set `k8s_nfs_client_provisioner` to `false`.
 
-#### Ceph Cluster
+#### Ceph Cluster (deprecated)
 
 
 For a non-nfs based alternative, deploy a Ceph cluster running on Kubernetes for services that require persistent storage (such as Kubeflow):

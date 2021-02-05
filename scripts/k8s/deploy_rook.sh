@@ -30,6 +30,7 @@ if [ ! -d "${DEEPOPS_CONFIG_DIR}" ]; then
     exit 1
 fi
 
+echo "DEPRECATION NOTICE: This script is deprecated with no support and not guaranteed to work"
 
 function help_me() {
   echo "Usage:"
