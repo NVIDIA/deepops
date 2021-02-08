@@ -1,0 +1,30 @@
+---
+- name: Uninstall current version of rclone
+  become: yes
+  shell: rm /usr/bin/rclone /usr/local/share/man/man1/rclone.1 '{{ rclone_config_location }}/rclone.conf'
+  ignore_errors: yes
+
+- name: Install rclone
+  shell: curl https://rclone.org/install.sh | sudo bash
+
+- name: Create rclone config directory
+  file:
+    path: '{{ rclone_config_location }}'
+    state: directory
+    mode: 0777
+  become: yes
+
+- name: Set up rclone config
+  template:
+    src: rclone.conf.j2
+    dest: '{{ rclone_config_location }}/rclone.conf'
+  become: yes
+
+- name: Add RCLONE_CONFIG to /etc/environment
+  become: yes
+  lineinfile:
+    dest: "/etc/environment"
+    state: present
+    regexp: "^RCLONE_CONFIG="
+    line: "RCLONE_CONFIG={{ rclone_config_location }}/rclone.conf"
+

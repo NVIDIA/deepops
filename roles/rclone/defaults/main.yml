@@ -1,0 +1,27 @@
+---
+# For more information or rclone see https://rclone.org
+
+rclone_config_location: '/opt/rclone'
+rclone_cluster_name: sr-cluster 
+rclone_key_id: INSERT_ACCESS_KEY
+rclone_access_key: INSERT_ACCESS_KEYID
+rclone_type: s3
+rclone_provider: AWS
+rclone_region: us-west-2
+
+rclone_configs:
+    - name: "{{ rclone_cluster_name }}"
+      properties:
+          type: "{{ rclone_type }}"
+          provider: "{{ rclone_provider }}"
+          env_auth: false
+          access_key_id: "{{ rclone_key_id }}"
+          secret_access_key: "{{ rclone_access_key }}"
+          region: "{{ rclone_region }}"
+          location_constraint: "{{ rclone_region }}"
+          acl: private
+          #storage_class: DEEP_ARCHIVE
+          #endpoint:""
+          #location_constraint:
+          #server_side_encryption =
+          #storage_class =

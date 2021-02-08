@@ -279,3 +279,14 @@ standalone_container_registry_port: "5000"
 # these if not specified.
 #docker_insecure_registries: ["<host>:<port>"]
 #docker_registry_mirrors: ["http://<host>:<port>"]
+
+
+################################################################################
+# rclone configuration
+################################################################################
+#rclone_cluster_name: deepops_cluster
+#rclone_type: s3
+#rclone_provider: AWS
+#rclone_region: us-west-2
+#rclone_key_id: INSERT_KEY_ID
+#rclone_access_key: INSERT_ACCESS_KEY
