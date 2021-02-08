@@ -3,7 +3,7 @@
   become: yes
   yum:
     name: 
-      - "epel-release"
+      - "{{ epel_package }}"
     state: latest
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 

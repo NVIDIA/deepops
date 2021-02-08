@@ -4,3 +4,5 @@ sm_prefix: "/sw"
 sm_module_root: "{{ sm_prefix }}/modules"
 sm_module_path: "{{ sm_module_root }}/all"
 sm_software_path: "{{ sm_prefix }}/software"
+
+epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"

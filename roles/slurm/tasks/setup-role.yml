@@ -14,6 +14,6 @@
 - name: add epel repo
   yum:
     name: 
-      - "epel-release"
+      - "{{ epel_package }}"
     state: latest
   when: ansible_os_family == "RedHat"
