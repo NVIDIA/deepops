@@ -1,9 +1,12 @@
 Building DeepOps Offline
 ========================
 
-## UNDER CONSTRUCTION
+## EXPERIMENTAL
 
-This feature is currently incomplete and in development.
+Deploying DeepOps without Internet access is currently an experimental feature and is still in development.
+This is not guaranteed to work for any given release, and may break without notice.
+
+In our current iteration,
 
 - Currently only CentOS is targeted for offline support.
 - DGXie and PXE containers are not yet supported.
