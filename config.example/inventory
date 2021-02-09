@@ -36,8 +36,8 @@
 #gpu02
 
 [k8s-cluster:children]
-kube-master 	 
-kube-node 	 
+kube-master
+kube-node
 
 ######
 # SLURM
