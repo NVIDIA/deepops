@@ -28,3 +28,8 @@
     state: restarted
     enabled: yes
   when: is_compute
+
+- name: restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted

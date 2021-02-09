@@ -21,6 +21,11 @@
 - include: shmfix.yml
   when: is_compute and slurm_fix_shm
 
+- include: logging.yml
+  tags:
+  - rsyslog
+  - logging
+
 - include: undrain.yml
   when: is_compute
 
