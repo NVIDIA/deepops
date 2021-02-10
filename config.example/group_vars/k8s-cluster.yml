@@ -67,7 +67,8 @@ docker_registry_mirrors: "{{ groups['kube-master'] | map('regex_replace', '^(.*)
 ################################################################################
 # Logging with rsyslog                                                         #
 ################################################################################
-kube_enable_rsyslog: true
+kube_enable_rsyslog_server: true
+kube_enable_rsyslog_client: true
 rsyslog_server_hostname: "{{ groups['kube-master'][0] }}"
 rsyslog_client_tcp_host: "{{ rsyslog_server_hostname }}"
 rsyslog_client_group: "k8s-cluster"

@@ -243,8 +243,8 @@
 - include: generic/rsyslog-server.yml
   vars:
     hostlist: "{{ rsyslog_server_hostname | default('kube-master[0]') }}"
-  when: kube_enable_rsyslog|default(true)
+  when: kube_enable_rsyslog_server|default(true)
 - include: generic/rsyslog-client.yml
   vars:
     hostlist: "{{ rsyslog_client_group | default('k8s-cluster') }}"
-  when: kube_enable_rsyslog|default(true)
+  when: kube_enable_rsyslog_client|default(true)
