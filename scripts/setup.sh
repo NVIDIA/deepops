@@ -42,7 +42,8 @@ as_user(){
 case "$ID" in
     rhel*|centos*)
         # Enable EPEL (required for Pip)
-        as_sudo 'yum -y install epel-release'
+        EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${VERSION_ID}.noarch.rpm"
+        as_sudo "yum -y install ${EPEL_URL}"
 
         # Install pip
         if ! which ${PIP} >/dev/null 2>&1; then
