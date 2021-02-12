@@ -56,6 +56,11 @@ pipeline {
              bash -x ./workloads/jenkins/scripts/test-local-registry.sh
           '''
 
+          echo "Verify rsyslog forwarding is working for the k8s cluster"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/test-rsyslog-k8s.sh
+          '''
+
           echo "Test Kubeflow installation"
           sh '''
              timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
@@ -127,6 +132,11 @@ pipeline {
             timeout 60 bash -x ./workloads/jenkins/scripts/test-mpi-job.sh
           '''
 
+          echo "Verify rsyslog forwarding is working for the slurm cluster"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/test-rsyslog-slurm.sh
+          '''
+
           echo "Reset repo and unmunge files"
           sh '''
             git reset --hard
@@ -176,6 +186,11 @@ pipeline {
           echo "Verify ingress config"
           sh '''
              bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
+          '''
+
+          echo "Verify rsyslog forwarding is working for the k8s cluster"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/test-rsyslog-k8s.sh
           '''
 
           echo "Test Kubeflow installation"
@@ -469,6 +484,11 @@ pipeline {
           echo "Test MPI"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-mpi-job.sh
+          '''
+
+          echo "Verify rsyslog forwarding is working for the slurm cluster"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/test-rsyslog-slurm.sh
           '''
         }
       }
