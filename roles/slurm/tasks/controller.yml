@@ -93,6 +93,7 @@
   template:
     src: "{{ slurm_dbd_conf_template }}"
     dest: "{{ slurm_config_dir }}/slurmdbd.conf"
+    owner: "{{ slurm_username }}"
     mode: 0600
   notify:
   - restart slurmdbd
