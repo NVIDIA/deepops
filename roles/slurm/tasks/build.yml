@@ -36,24 +36,24 @@
     slurm_downgrade: no
 
 - name: check installed slurm version
-  shell: "{{ slurm_install_prefix }}/bin/sinfo --version | awk '{print $2}'"
-  register: sinfo_version
+  shell: "{{ slurm_install_prefix }}/sbin/slurmd --version | awk '{print $2}'"
+  register: slurmd_reported_version
   ignore_errors: yes
 
 - name: don't build slurm if it's already installed, unless forced
   set_fact:
     slurm_build: no
-  when: sinfo_version.stdout == slurm_version and not slurm_force_rebuild
+  when: slurmd_reported_version.stdout == slurm_version and not slurm_force_rebuild
 
 - name: upgrade?
   set_fact:
     slurm_upgrade: yes
-  when: sinfo_version.stdout and sinfo_version.stdout is version(slurm_version, '<')
+  when: slurmd_reported_version.stdout and slurmd_reported_version.stdout is version(slurm_version, '<')
 
 - name: downgrade?
   set_fact:
     slurm_downgrade: yes
-  when: sinfo_version.stdout and sinfo_version.stdout is version(slurm_version, '>')
+  when: slurmd_reported_version.stdout and slurmd_reported_version.stdout is version(slurm_version, '>')
 
 - name: going to rebuild slurm?
   debug:
