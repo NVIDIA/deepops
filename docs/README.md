@@ -23,6 +23,11 @@ git checkout tags/20.12
 
 3. Pick one of the [Deployment Options](/README.md#deployment-options) mentioned in the main [README](/README.md), following the installation instructions. For example, if deploying a hybrid cluster, all features of DeepOps may be deployed by following the [DGX POD Hybrid Cluster](deepops/dgx-pod.md) guide.
 
+## Configuration
+
+The various components of DeepOps include a variety of configuration options which can be adjusted using the [DeepOps configuration directory](../config.example).
+To learn more about how to use this directory and customize your DeepOps cluster, read more about [how to configure DeepOps](./deepops/configuration.md).
+
 ## Modularity
 
 Each of the deployment options in DeepOps is highly modular and does not need to be deployed as-is. It’s strongly encouraged to read through the installation scripts and examine the playbooks to see which components should be disabled or replaced with custom components. Otherwise, the defaults are an opinionated approach to deploying the cluster for that deployment option.
