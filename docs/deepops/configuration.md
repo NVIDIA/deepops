@@ -139,10 +139,10 @@ These variables go in files named for each host in the `host_vars` directory:
 
 ```
 config/host_vars/
-└── example01
+└── gpu01
 ```
 
-The variables in `host_vars/example01` would only be applied for a host named `example01`.
+The variables in `host_vars/gpu01` would only be applied for a host named `gpu01`.
 
 
 ## Adding custom playbooks
