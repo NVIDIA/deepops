@@ -20,13 +20,15 @@ While the example configuration contains good defaults (in our opinion!), every 
 
 For example, you may choose to:
 
-- Enable or disable optional features, such as installing a container registry;
-- Change the version of software being installed, such as the Slurm version;
+- Enable or disable optional features, such as installing a container registry
+- Change the version of software being installed, such as the Slurm version
 - Or change the download URL used for a software install, if you want to point to a different mirror
 
 However, unless you're developing changes to DeepOps itself, you should never have to make changes *outside your configuration directory*.
 (If you do, that's a sign that we haven't made our playbooks configurable enough, and you should open an issue or PR to fix that!)
+
 Ideally, we expect that all customizations for a specific cluster should be made in the configuration directory for that cluster.
+There are a few exceptions to this in the [example workloads directory](../../workloads), but in most cases it should be possible to copy these to your config directory to manage with the rest of your configuration.
 
 
 ## Modifying the Ansible inventory
@@ -45,6 +47,9 @@ my-cluster-compute-01      ansible_host=10.0.0.2
 my-cluster-compute-02      ansible_host=10.0.0.3
 ```
 
+(Note that, by default, DeepOps will set the hostname of these machines to match the inventory hostname!
+If you don't want this, you can set `deepops_set_hostname: false` using the instructions in [the next section](#modifying-ansible-variables).)
+
 The example DeepOps inventory also includes groups for the different components of Kubernetes clusters (`kube-master`, `etcd`, and `kube-node`),
 and groups for the different components of Slurm clusters (`slurm-master` and `slurm-node`).
 These groups are used by DeepOps to determine which playbooks run on which nodes for each type of cluster,
@@ -62,6 +67,11 @@ my-cluster-compute-02
 
 If you want to further sub-divide your cluster, or target particular hosts with playbooks, you can add other inventory groups to this file!
 For example, if you have a host that you will use as a separate NFS server, you may want to create an `nfs-server` group and only run the [NFS server playbook](../../playbooks/generic/nfs-server.yml) on that host.
+You can restrict the hosts that will run an Ansible playbook using the `--limit` or `-l` flag, e.g.:
+
+```
+ansible-playbook -l nfs-server playbooks/generic/nfs-server.yml
+```
 
 For more information on using Ansible inventory files, we recommend reading the [Ansible documentation](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html).
 
@@ -109,7 +119,7 @@ However, you can override these values by adding them to your DeepOps configurat
 These variables are specified in files named for the inventory group used, in the `config/group_vars` directory:
 
 ```
-group_vars/
+config/group_vars/
 ├── all.yml
 ├── k8s-cluster.yml
 ├── netapp-trident.yml
@@ -128,7 +138,7 @@ such as installing a different version of the NVIDIA driver on a host where you'
 These variables go in files named for each host in the `host_vars` directory:
 
 ```
-host_vars/
+config/host_vars/
 └── example01
 ```
 
@@ -144,7 +154,7 @@ If you wrote an Ansible playbook for installing Pingus on your cluster (to give 
 you would put it in your `config/playbooks` directory:
 
 ```
-playbooks/
+config/playbooks/
 └── pingus.yml
 ```
 
@@ -165,8 +175,8 @@ We recommend creating a separate Git repository for managing your cluster config
 A good practice is to start a new Git repository by copying the example configuration:
 
 ```
-$ cp -R config.example/ config.my-cluster/
-$ cd config.my-cluster/
+$ cp -R config.example/ config/
+$ cd config
 $ git init
 $ git commit -am "Start from the example configuration"
 ```
@@ -216,4 +226,3 @@ You can then run Ansible for each of the clusters independently by specifying th
 ```
 ansible-playbook -i config.cluster-1/inventory playbooks/slurm-cluster.yml
 ```
-

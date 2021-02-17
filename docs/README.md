@@ -25,8 +25,7 @@ git checkout tags/20.12
 
 ## Configuration
 
-The various components of DeepOps include a variety of configuration options which can be adjusted using the [DeepOps configuration directory](../config.example).
-To learn more about how to use this directory and customize your DeepOps cluster, read more about [how to configure DeepOps](./deepops/configuration.md).
+To learn more about how to use this directory and customize your DeepOps cluster, see [how to configure DeepOps](./deepops/configuration.md).
 
 ## Modularity
 
