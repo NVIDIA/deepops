@@ -1,3 +1,18 @@
+---
+- name: install dependencies (Ubuntu)
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ pyxis_ubuntu_deps }}"
+  when: ansible_distribution == "Ubuntu"
+
+- name: install dependencies (EL)
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ pyxis_el_deps }}"
+  when: ansible_os_family == "RedHat"
+
 - name: install slurm-pmi hook
   file:
     path: /etc/enroot/hooks.d/50-slurm-pmi.sh

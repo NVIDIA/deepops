@@ -6,3 +6,9 @@ slurm_pyxis_tarball_url: "https://github.com/NVIDIA/pyxis/archive/v{{ slurm_pyxi
 
 is_controller: no
 is_compute: no
+
+pyxis_ubuntu_deps:
+- "bsdmainutils"
+
+pyxis_el_deps:
+- "util-linux"
