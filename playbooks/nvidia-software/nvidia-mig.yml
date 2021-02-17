@@ -50,7 +50,8 @@
     - name: enable MIG mode (per device)
       command: nvidia-smi -mig 1 -i "{{ deepops_mig_devices }}"
       tags: enable, never
-      when: deepops_mig_devices | default("") != ""
+      when: deepops_mig_devices | default("") != "" and  deepops_mig_devices | default("") != "all"
+
     - name: disable MIG mode (all devices)
       command: nvidia-smi -mig 0
       tags: disable, never
@@ -58,7 +59,7 @@
     - name: disable MIG mode (per device)
       command: nvidia-smi -mig 0 -i "{{ deepops_mig_devices }}"
       tags: disable, never
-      when: deepops_mig_devices | default("") != ""
+      when: deepops_mig_devices | default("") != "" and  deepops_mig_devices | default("") != "all"
 
 
     # Post-tasks
