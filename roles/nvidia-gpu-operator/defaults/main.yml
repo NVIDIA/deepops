@@ -1,7 +1,34 @@
 ---
+# See GitHub for more information https://github.com/NVIDIA/gpu-operator
+
+# For vGPU support, this role require a manual build step to create a driver container image in a private registry
+# See https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html#considerations-to-install-gpu-operator-with-nvidia-vgpu-driver
+#  for additional details around buidling/pushing/using driver containers and setting gpu_operator_driver_version to the correct value
+
 # Vars needed to install operator
 gpu_operator_helm_repo: "https://nvidia.github.io/gpu-operator"
 gpu_operator_chart_name: "nvidia/gpu-operator"
 gpu_operator_release_name: "nvidia-gpu-operator"
 gpu_operator_chart_version: "1.5.1"
 k8s_gpu_mig_strategy: "mixed"
+
+# XXX: This currently appears to be hardcoded in the operator
+gpu_operator_namespace: "gpu-operator-resources"
+
+# Defaults from https://github.com/NVIDIA/gpu-operator/blob/master/deployments/gpu-operator/values.yaml
+gpu_operator_default_runtime: "docker"
+gpu_operator_driver_registry: "nvcr.io/nvidia"
+gpu_operator_driver_version: "450.80.02"
+gpu_operator_plugin_args: "--mig-strategy={{ k8s_gpu_mig_strategy }},--pass-device-specs=false,--fail-on-init-error=true,--device-list-strategy=envvar"
+
+# Variables used if driver containers are in a private registry (i.e. beta drivers & vGPU)
+## Flag that determines whether to add a k8s secret for private containers
+gpu_operator_create_secret: false
+## Name of k8s secret (typically "" or "registry-secret")
+gpu_operator_registry_secret: ""
+## This should remain as $oauthtoken if using an NGC API key
+gpu_operator_registry_username: "$oauthtoken"
+## This is most likely an NGC API key
+gpu_operator_registry_password: ""
+## This is most likely an NGC email
+gpu_operator_registry_email: ""
