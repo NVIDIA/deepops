@@ -5,7 +5,6 @@
   become: yes
 
   vars:
-    # Blank for none, all for all, and comma seperated list of device index otherwise (1,2,3)
     deepops_mig_devices: "all"
     nv_services:
       - nvsm
@@ -60,7 +59,6 @@
       command: nvidia-smi -mig 0 -i "{{ deepops_mig_devices }}"
       tags: disable, never
       when: deepops_mig_devices | default("") != "" and  deepops_mig_devices | default("") != "all"
-
 
     # Post-tasks
     - name: wait for MIG stuff to settle down and nvidia-persistenced to start again

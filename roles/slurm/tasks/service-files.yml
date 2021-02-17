@@ -8,6 +8,7 @@
     - slurmctld.service
     - slurmdbd.service
   when: is_controller
+  ignore_errors: yes
 
 - name: copy service files
   copy:
@@ -17,3 +18,4 @@
   with_items:
     - slurmd.service
   when: is_compute
+  ignore_errors: yes

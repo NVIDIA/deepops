@@ -2,7 +2,7 @@
 
 # Get the DeepOps root_dir and config_dir
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-ROOT_DIR="${SCRIPT_DIR}/.."
+ROOT_DIR="${SCRIPT_DIR}/../.."
 CONFIG_DIR="${ROOT_DIR}/config"
 
 # Specify credentials for the default user.
@@ -26,19 +26,18 @@ export KUBEFLOW_MPI_DIR="${KUBEFLOW_MPI_DIR:-${KF_DIR}/mpi}"
 export KUBEFLOW_MPI_MANIFESTS_REPO="${KUBEFLOW_MPI_MANIFESTS_REPO:-https://github.com/kubeflow/manifests}"
 
 # Download URLs and versions, note the kfctl version does not always match the manifest/config version, but best-effort should be made to keep their versions close
-export KFCTL_FILE=kfctl_v1.1.0-0-g9a3621e_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.1.0
-export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.1.0/${KFCTL_FILE}"
-export AUTH_KFCTL_FILE=kfctl_v1.1.0-0-g9a3621e_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.1.0
-export AUTH_KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.1.0/${KFCTL_FILE}"
+export KFCTL_FILE=kfctl_v1.2.0-0-gbc038f9_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.2.0
+export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.2.0/${KFCTL_FILE}"
+export AUTH_KFCTL_FILE=kfctl_v1.2.0-0-gbc038f9_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.2.0
+export AUTH_KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.2.0/${KFCTL_FILE}"
 
 # Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
-export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/6dcebbe263bc98c62aee9bff4364f7dfb3efe254/kfdef/kfctl_istio_dex.v1.1.0.yaml"
-export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.1.0.yaml" # Not yet a release version, but likely https://github.com/kubeflow/manifests/releases/tag/v1.1-rc.3
+export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/v1.2-branch/kfdef/kfctl_istio_dex.v1.2.0.yaml"
+export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.2.0.yaml"
 
 # Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
-export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/master/kfdef/kfctl_k8s_istio.yaml" # Not a hash or branch tag because of https://github.com/kubeflow/manifests/pull/1459
-export CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.yaml" #  Not v1.0.2 due to https://github.com/kubeflow/manifests/issues/991
-
+export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/v1.2-branch/kfdef/kfctl_k8s_istio.v1.2.0.yaml"
+export CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.v1.2.0.yaml"
 
 
 function help_me() {
@@ -113,10 +112,11 @@ function install_dependencies() {
           ;;
   esac
 
-  # Rook
-  kubectl get storageclass 2>&1 | grep "No resources found." >/dev/null 2>&1
-  if [ $? -eq 0 ] ; then
+  # StorageClasse (for volumes and MySQL DB)
+  kubectl get storageclass 2>&1 | grep "(default)" >/dev/null 2>&1
+  if [ $? -ne 0 ] ; then
       echo "No storageclass found"
+      echo "To setup the nfs-client-provisioner (preferred), run: ansible-playbook playbooks/k8s-cluster/nfs-client-provisioner.yml"
       echo "To provision Ceph storage, run: ./scripts/k8s/deploy_rook.sh"
       exit 1
   fi
@@ -145,7 +145,7 @@ function install_mpi_operator() {
     grep /kustomize/v |\
     sort | tail -n 1 |\
     xargs curl -s -O -L
-  tar xzf ./kustomize_v*_linux_amd64.tar.gz
+  tar xzf ./kustomize_v*_linux_*.tar.gz
   mv kustomize ${KUSTOMIZE}
 
   mkdir -p ${KUBEFLOW_MPI_DIR}
@@ -189,13 +189,15 @@ function stand_up() {
      exit 1
   fi
 
+  # Copy over DeepOps custom configurations & bugfixes
+  cp -r workloads/services/k8s/kubeflow-install/ config/
   sed -i '/metadata:.*/a\  ClusterName: cluster.local' ${CONFIG_FILE} # BUGFIX: Need to add the ClusterName for proper deletion:https://github.com/kubeflow/kubeflow/issues/4815
 
   # Update Kubeflow with the NGC containers and NVIDIA configurations
   # BUG: Commented out until NGC containers add Kubeflow support, see https://github.com/NVIDIA/deepops/tree/master/src/containers/ngc
   # ${SCRIPT_DIR}/update_kubeflow_config.py
 
-  # XXX: Add potential CONFIG customizations here before applying
+  # XXX: Add potential CONFIG customizations here before applying (these can be checked in to workloads/services/k8s/kubeflow-install/)
   ${KFCTL} apply -V -f ${CONFIG_FILE}
   popd
 }
@@ -294,7 +296,7 @@ elif [ ${KUBEFLOW_WAIT} ]; then
 else
   install_dependencies
   stand_up
-  install_mpi_operator
+  # install_mpi_operator # BUG: https://github.com/NVIDIA/deepops/issues/737
   get_url
   print_info
 fi

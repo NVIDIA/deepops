@@ -27,17 +27,17 @@
     with_items:
     - "git"
     - "yum-utils"
-    - "python-pip"
+    - "python3-pip"
     - "bzip2"
-  - name: install python gpg integration (Ubuntu)
+  - name: install python3 gpg integration (Ubuntu)
     package:
       name: "{{ item }}"
       state: present
     with_items:
     - "libgpgme-dev"
-    - "python-gpg"
+    - "python3-gpg"
     when: ansible_distribution == "Ubuntu"
-  - name: install python gpg integration (Ubuntu)
+  - name: install python3 gpg integration (Ubuntu)
     pip:
       name: "pygpgme"
     when: ansible_distribution == "Ubuntu"

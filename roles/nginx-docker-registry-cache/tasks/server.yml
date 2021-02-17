@@ -1,0 +1,57 @@
+---
+- name: Install package dependencies
+  package:
+    name:
+    - "python3-pip"
+    - "python3-setuptools"
+    state: present
+
+- name: Install Python Docker dependencies
+  pip:
+    name: "docker"
+    state: present
+
+- name: Ensure data directories exist
+  file:
+    path: "{{ item }}"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+    state: "directory"
+  with_items:
+  - "{{ nginx_docker_cache_mirror_path }}"
+  - "{{ nginx_docker_cache_ca_path }}"
+
+- name: Add pre-defined CA key file
+  copy:
+    src: "{{ nginx_docker_cache_ca.key }}"
+    dest: "{{ nginx_docker_cache_ca_path }}/ca.key"
+    owner: "root"
+    group: "root"
+    mode: "0400"
+  when: nginx_docker_cache_ca is defined
+
+- name: Add pre-defined CA certificate
+  copy:
+    src: "{{ nginx_docker_cache_ca.crt }}"
+    dest: "{{ nginx_docker_cache_ca_path }}/ca.crt"
+    owner: "root"
+    group: "root"
+    mode: "0444"
+  when: nginx_docker_cache_ca is defined
+
+- name: Run caching proxy
+  docker_container:
+    name: "{{ nginx_docker_cache_name }}"
+    image: "{{ nginx_docker_cache_image }}"
+    state: started
+    network_mode: host
+    restart: yes
+    restart_policy: unless-stopped
+    volumes:
+    - "{{ nginx_docker_cache_mirror_path }}:/docker_mirror_cache"
+    - "{{ nginx_docker_cache_ca_path }}:/ca"
+    env:
+      REGISTRIES: "{{ nginx_docker_cache_registry_string }}"
+      ENABLE_MANIFEST_CACHE: "{{ nginx_docker_cache_manifests }}"
+      MANIFEST_CACHE_DEFAULT_TIME: "{{ nginx_docker_cache_manifest_default_time }}"

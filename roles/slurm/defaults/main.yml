@@ -1,6 +1,3 @@
-epel_baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"
-epel_gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
-
 slurm_build_dir: /opt/deepops/build/slurm
 hwloc_build_dir: /opt/deepops/build/hwloc
 pmix_build_dir: /opt/deepops/build/pmix
@@ -27,6 +24,9 @@ slurm_allow_ssh_user: []
 
 slurm_db_username: slurm
 slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
+
+slurm_enable_ha: false
+slurm_ha_state_save_location: "/sw/slurm"
 
 is_controller: no
 is_compute: no
@@ -62,6 +62,9 @@ slurm_oversubscribe: "NO"
 # Sets: DefaultTime={{ slurm_default_job_timelimit }}
 # Default: <not included>
 # slurm_default_job_timelimit: 
+
+# Maximum time to wait for Slurm compute nodes to reboot during playbook setup
+slurm_node_reboot_timeout: 600
 
 # Set up prolog and epilog
 slurm_enable_prolog_epilog: true

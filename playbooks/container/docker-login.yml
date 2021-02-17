@@ -1,0 +1,9 @@
+---
+# Ensure Docker is installed and configured
+- include: docker.yml
+
+# Log into Docker registries
+- hosts: "{{ hostlist | default('all') }}"
+  become: yes
+  roles:
+  - docker-login

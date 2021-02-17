@@ -18,6 +18,19 @@
     mode: 0644
   notify: restart prometheus
 
+- name: install pip
+  package:
+    name: python3-pip
+
+- name: install docker libraries
+  pip:
+    name: docker
+
+- name: create a persistent docker volume for metrics
+  docker_volume:
+    name: "{{ prometheus_docker_volume_name }}"
+    state: "present"
+
 - name: install systemd unit file
   template:
     src: templates/docker.prometheus.service.j2

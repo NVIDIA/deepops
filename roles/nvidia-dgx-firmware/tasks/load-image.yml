@@ -1,14 +1,57 @@
 ---
+- name: Starting load image step
+  debug:
+    msg: "Starting now"
 
-- name: Copy DGX firmware container tarball to temporary directory on remote node
+# Verify the local container exists, then copy it over if necessary and verify it is loaded into Docker
+- name: Check if container tarball exists locally
+  stat:
+    path: "{{ firmware_container_src_dir }}/{{ firmware_update_container }}"
+  register: tarball_local_exists
+  delegate_to: 127.0.0.1
+  failed_when: not tarball_local_exists.stat.exists
+  run_once: true
+- name: Check if container tarball exists remotely
+  stat:
+    path: "{{ fw_dir }}/{{ firmware_update_container }}"
+  register: tarball_exists
+  failed_when: false
+- name: Copy DGX firmware container tarball to temporary directory on remote node if it is not there
   copy:
     src: "{{ firmware_container_src_dir }}/{{ firmware_update_container }}"
     dest: "{{ fw_dir }}"
-  ignore_errors: yes
+  when: not tarball_exists.stat.exists 
 
+# Verify Remote tarball is correct before loading it
+- name: Get md5sum of remote tarball
+  stat:
+    path: "{{ fw_dir }}/{{ firmware_update_container }}"
+  register: tarball_exists
+- name: Verify remote and local container tarballs having matching md5sum
+  debug:
+    msg: Containers match
+  failed_when: tarball_exists.stat.checksum != tarball_local_exists.stat.checksum
+
+# Verify Docker is up load the image
+- name: Ensure Docker is running
+  service:
+    name: docker
+    state: started
 # Using 'command' instead of 'docker_image' since docker-py is required to use 'docker_image'
 - name: Load image from archive
   command: "docker load -i {{ firmware_update_container }}"
   args:
     chdir: "{{ fw_dir }}"
   ignore_errors: yes
+  register: load_image_output
+- name: Print the response from the load image command
+  debug:
+    msg: "{{ load_image_output }}"
+
+# Verify the image was loaded
+- name: List available Docker images
+  command: "docker images"
+  register: list_image_output
+- name: Print the response from the list image command
+  debug:
+    msg: "{{ list_image_output }}"

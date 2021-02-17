@@ -30,7 +30,7 @@ This document presents one possible configuration for a DGX cluster. Many other 
 Installation involves first bootstrapping management server(s) with a Kubernetes installation and persistent volume storage using Ceph. Cluster services for provisioning operating systems, monitoring, and mirroring container and package repos are then deployed on Kubernetes. From there, DGX servers are booted and installed with the DGX base OS, and Kubernetes is extended across the entire cluster to facilitate job management. An optional login server can be used to allow users a place to interact with data locally and launch jobs. The Slurm job scheduler can also be installed in parallel with Kubernetes to facilitate easier large-scale training jobs or more traditional HPC workloads.
 
 For more information on deploying DGX in the datacenter, consult the
-[DGX Data Center Reference Design Whitepaper](https://nvidia-gpugenius.highspot.com/viewer/5b33fecf1279587c07d8ac86)
+[DGX Data Center Reference Design Whitepapers](https://www.nvidia.com/en-us/data-center/dgx-pod/#:~:text=NVIDIA%20DGX%20POD%E2%84%A2%20is,design%20built%20on%20NVIDIA%20DGX)
 
 ## Prerequisites
 
@@ -174,10 +174,10 @@ k8-mgmt03        Ready    master   21m   v1.12.5
 
    If you already have DHCP, DNS, or PXE servers you can skip this step.
 
-   Follow the setup, configure, and deploy instructions in the [DGXie Guide](dgxie.md).
+   Follow the setup, configure, and deploy instructions in the [DGXie Guide](../pxe/dgxie-on-k8s.md).
 
 
-> Note: The following K8s services are especially helpful for air-gapped environemnts
+> Note: The following K8s services are especially helpful for air-gapped environments
 
 3. (Optional) Deploy Internal Container Registry
 
@@ -185,7 +185,7 @@ k8-mgmt03        Ready    master   21m   v1.12.5
    one that is resolvable outside the cluster), add `-e container_registry_hostname=registry.example.com`.
 
    ```sh
-   ansible-playbook --tags container-registry playbooks/k8s-cluster/k8s-services.yml
+   ansible-playbook --tags container-registry playbooks/k8s-cluster/container-registry.yml
    ```
 
 3. (Optional) Deploy Internal Repositories
@@ -257,7 +257,7 @@ ansible dgx-servers -k -a 'hostname'
 
 ### 6. Deploy Kubernetes to the compute node(s)
 
-1. Run the same `k8s-cluster` ansible-playbook, but this time, we run against both the managment nodes (kube-master) and GPU nodes GPU nodes (kube-node).
+1. Run the same `k8s-cluster` ansible-playbook, but this time, we run against both the management nodes (kube-master) and GPU nodes GPU nodes (kube-node).
 
    ```sh
    # NOTE: If SSH requires a password, add: `-k`
@@ -361,7 +361,7 @@ Deploy a Ceph cluster running on Kubernetes for services that require persistent
 Poll the Ceph status by running:
 
 ```sh
-./scripts/k8s/poll_ceph.sh
+./scripts/k8s/deploy_rook.sh -w
 ```
 
 #### Monitoring
@@ -373,16 +373,16 @@ Deploy Prometheus and Grafana to monitor Kubernetes and cluster nodes:
 ```
 
 The services can be reached from the following addresses:
-* Grafana: http://mgmt:30200
-* Prometheus: http://mgmt:30500
-* Alertmanager: http://mgmt:30400
+* Grafana: http://\<kube-master\>:30200
+* Prometheus: http://\<kube-master\>:30500
+* Alertmanager: http://\<kube-master\>:30400
 
 #### Logging
 
 Follow the [ELK Guide](elk.md) to setup logging in the cluster.
 
 The service can be reached from the following address:
-* Kibana: http://mgmt:30700
+* Kibana: http://\<kube-master\>:30700
 
 
 #### Kubeflow

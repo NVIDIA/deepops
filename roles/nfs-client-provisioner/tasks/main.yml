@@ -1,0 +1,16 @@
+---
+# See the GitHub code repo: https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
+
+- name: install nfs-client-provisioner
+  command: /usr/local/bin/helm upgrade --kubeconfig {{ artifacts_dir }}/admin.conf --install "{{ k8s_nfs_client_release_name }}" "{{ playbook_dir }}/../../{{ k8s_nfs_client_local_submodule }}" --create-namespace --namespace deepops-nfs-client-provisioner --set nfs.server="{{ k8s_nfs_server }}" --set nfs.path="{{ k8s_nfs_export_path }}" --set storageClass.defaultClass="{{ k8s_nfs_default_sc }}" --wait
+  delegate_to: localhost
+
+# TODO: Update this to use a non-local helm repo when a new maintainer takes on this project
+# - name: install nfs-client-provisioner helm repo
+#   command: /usr/local/bin/helm repo add "{{k8s_nfs_client_repo_name}}" "{{ k8s_nfs_client_helm_repo }}"
+
+# - name: update helm repos
+#   command: /usr/local/bin/helm repo update
+
+# - name: install nfs-client-provisioner
+#   command: /usr/local/bin/helm upgrade --install "{{ k8s_nfs_client_release_name }}" "{{ k8s_nfs_client_chart_name }}" --create-namespace --namespace deepops-nfs-client-provisioner --version "{{ k8s_nfs_client_chart_version }}" --set nfs.server="{{ k8s_nfs_server }}" --set nfs.path="{{ k8s_nfs_export_path }}" --set storageClass.defaultClass="{{ k8s_nfs_default_sc }}" --wait

@@ -42,10 +42,22 @@
   tags:
     - bootstrap
 
+# Configure hostnames, /etc/hosts
+- include: generic/hosts.yml
+
+# Set up a local cluster container registry
+- include: container/standalone-container-registry.yml hostlist=kube-master
+  when: kube_enable_container_registry|default(true)
+
 # Install 'sshpass' program for: https://github.com/ansible/ansible/issues/56629
 - hosts: all
   gather_facts: true
   tasks:
+    - name: install epel
+      package:
+        name: epel-release
+        state: present
+      when: ansible_os_family == "RedHat"
     - name: install sshpass
       package:
         name: sshpass
@@ -118,6 +130,12 @@
 
 # Install NVIDIA container runtime on GPU servers
 - include: container/nvidia-docker.yml
+  tags:
+    - nvidia
+  when: deepops_gpu_operator_enabled | default('false') | bool == false
+
+# Install k8s GPU feature discovery
+- include: k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml
   tags:
     - nvidia
   when: deepops_gpu_operator_enabled | default('false') | bool == false
@@ -211,8 +229,13 @@
   vars:
     ansible_become: no
   tasks:
+    - name: Install Helm on admin node
+      command: "sh {{ playbook_dir }}/../scripts/k8s/install_helm.sh"
+      delegate_to: localhost
     - name: kubeadm | Remove taint for master with node role
       command: "{{ artifacts_dir }}/kubectl --kubeconfig {{ artifacts_dir }}/admin.conf taint node {{ inventory_hostname }} node-role.kubernetes.io/master:NoSchedule-"
       delegate_to: localhost
       failed_when: false # Taint will not be present if kube-master also under kube-node
 
+- include: k8s-cluster/nfs-client-provisioner.yml
+  when: k8s_nfs_client_provisioner

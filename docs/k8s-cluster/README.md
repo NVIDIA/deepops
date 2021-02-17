@@ -72,7 +72,7 @@ Instructions for deploying a GPU cluster with Kubernetes
    Optionally, test a GPU job to ensure that your Kubernetes setup can tap into GPUs. 
 
    ```sh
-   kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 nvidia-smi
+   kubectl run gpu-test --rm -t -i --restart=Never --image=nvcr.io/nvidia/cuda:10.1-base-ubuntu18.04 --limits=nvidia.com/gpu=1 nvidia-smi
    ```
    
    Optionally, verify all GPU nodes plug-ins in the Kubernetes cluster with following script.
@@ -100,9 +100,25 @@ Run the following script to create an administrative user and print out the dash
 
 ### Persistent Storage
 
-#### Ceph Cluster
+#### NFS Client Provisioner
 
-Deploy a Ceph cluster running on Kubernetes for services that require persistent storage (such as Kubeflow):
+The default behavior of DeepOps is to setup an NFS server on the first `kube-master` node. This temporary NFS server is used by the `nfs-client-provisioner` which is installed as the default StorageClass of a standard DeepOps deployment.
+
+
+To use an existing nfs server server update the `k8s_nfs_server` and `k8s_nfs_export_path` variables in `config/group_vars/k8s-cluster.yml` and set the `k8s_deploy_nfs_server` to false in `config/group_vars/k8s-cluster.yml`. Additionally, the `k8s_nfs_mkdir` variable can be set to `false` if the export directory is already configured on the server.
+
+To manually install or re-install the `nfs-client-provisioner` run:
+
+```sh
+ansible-playbook playbooks/k8s-cluster/nfs-client-provisioner.yml
+```
+
+To skip this installation set `k8s_nfs_client_provisioner` to `false`.
+
+#### Ceph Cluster (deprecated)
+
+
+For a non-nfs based alternative, deploy a Ceph cluster running on Kubernetes for services that require persistent storage (such as Kubeflow):
 
 ```sh
 ./scripts/k8s/deploy_rook.sh
@@ -111,7 +127,7 @@ Deploy a Ceph cluster running on Kubernetes for services that require persistent
 Poll the Ceph status by running (this script will return when Ceph initialization is complete):
 
 ```sh
-./scripts/k8s/poll_ceph.sh
+./scripts/k8s/deploy_rook.sh -w
 ```
 
 #### NetApp Trident
@@ -158,16 +174,20 @@ Deploy Prometheus and Grafana to monitor Kubernetes and cluster nodes:
 ```
 
 The services can be reached from the following addresses:
-* Grafana: http://mgmt:30200
-* Prometheus: http://mgmt:30500
-* Alertmanager: http://mgmt:30400
+* Grafana: http://\<kube-master\>:30200
+* Prometheus: http://\<kube-master\>:30500
+* Alertmanager: http://\<kube-master\>:30400
+
+We deploy our monitoring services using the [prometheus-operator](https://github.com/prometheus-operator/prometheus-operator) project.
+For documentation on configuring and managing the monitoring services, please see the [prometheus-operator user guides](https://github.com/prometheus-operator/prometheus-operator/tree/master/Documentation/user-guides).
+The source for our built-in Grafana dashboards can be found in [src/dashboards](../../src/dashboards).
 
 ### Logging
 
 Follow the [Logging Guide](logging.md) to setup logging in the cluster.
 
 The service can be reached from the following address:
-* Kibana: http://mgmt:30700
+* Kibana: http://\<kube-master\>:30700
 
 ### Container Registry
 
@@ -175,7 +195,7 @@ The default container registry hostname is `registry.local`. To set another host
 one that is resolvable outside the cluster), add `-e container_registry_hostname=registry.example.com`.
 
 ```sh
-ansible-playbook --tags container-registry playbooks/k8s-cluster/k8s-services.yml
+ansible-playbook --tags container-registry playbooks/k8s-cluster/container-registry.yml
 ```
 
 ### Load Balancer and Ingress

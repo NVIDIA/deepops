@@ -16,13 +16,16 @@ slurm_password: ReplaceWithASecurePasswordInTheVault
 slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 #slurm_max_job_timelimit: INFINITE
 #slurm_default_job_timelimit:
-slurm_controller_host: "{{ groups['slurm-master'][0] }}"
-slurm_compute_hosts: "{{ groups['slurm-node'] }}"
-slurm_enable_monitoring: true
 
 # Ensure hosts file generation only runs across slurm cluster
 hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
 
+# Enable Slurm high-availability mode
+# NOTE: The location for Slurm saved state needs to reside in a location shared by all Slurm controller nodes
+#       Ideally this is on external NFS server and not the primary control node, since its failure
+#       would also take down that NFS share
+slurm_enable_ha: false
+slurm_ha_state_save_location: "/sw/slurm"
 
 # Slurm configuration is auto-generated from templates in the `slurm` role.
 # If you want to override any of these files with custom config files, please
@@ -36,6 +39,8 @@ hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
 ################################################################################
 # Optional installs                                                            #
 ################################################################################
+slurm_configure_etc_hosts: yes
+dns_mode: none
 slurm_cluster_install_cuda: yes
 slurm_cluster_install_nvidia_driver: yes
 slurm_cluster_install_singularity: no
@@ -68,8 +73,8 @@ slurm_enable_nfs_server: true
 slurm_enable_nfs_client_nodes: true
 
 # Inventory host groups to use for NFS server or clients
-nfs_server_group: "slurm-master"
-nfs_client_group: "slurm-node"
+nfs_server_group: "slurm-master[0]"
+nfs_client_group: "slurm-master[1:],slurm-node"
 
 ################################################################################
 # SOFTWARE MODULES (SM)                                                        #
@@ -97,6 +102,9 @@ spack_default_packages:
 - "cuda@10.2.89"
 - "openmpi@3.1.6 +cuda +pmi schedulers=auto"
 
+# Which host should we run installs on for software going into the NFS share?
+sm_install_host: "slurm-master[0]"
+
 ################################################################################
 # NVIDIA HPC SDK                                                               #
 ################################################################################
@@ -119,7 +127,7 @@ hpcsdk_install_in_path: false
 slurm_cluster_install_openmpi: false
 openmpi_version: 4.0.4
 openmpi_install_prefix: "/usr/local"
-openmpi_configure: "./configure --prefix={{ openmpi_install_prefix }} --disable-dependency-tracking --disable-getpwuid --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }} --with-pmi={{ slurm_install_prefix }} --with-slurm={{ slurm_install_prefix }}"
+openmpi_configure: "./configure --prefix={{ openmpi_install_prefix }} --disable-dependency-tracking --disable-getpwuid --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }} --with-pmi={{ slurm_install_prefix }} --with-slurm={{ slurm_install_prefix }} --with-libevent=/usr"
 
 ################################################################################
 # Open OnDemand                                                                #
@@ -163,3 +171,19 @@ slurm_health_check_program: "/usr/sbin/nhc"
 #
 # For documentation on the file format, see:
 # https://github.com/mej/nhc/blob/master/README.md
+
+################################################################################
+# Container registry                                                           #
+################################################################################
+slurm_enable_container_registry: true
+docker_insecure_registries: "{{ groups['slurm-master'] | map('regex_replace', '^(.*)$', '\\1:5000') | list + ['registry.local:31500'] }}"
+docker_registry_mirrors: "{{ groups['slurm-master'] | map('regex_replace', '^(.*)$', 'http://\\1:5000') | list }}"
+
+################################################################################
+# Monitoring stack                                                             #
+################################################################################
+slurm_enable_monitoring: true
+
+# Inventory host groups where cluster monitoring services will be installed
+# (Prometheus, Grafana, etc)
+slurm_monitoring_group: "slurm-master"

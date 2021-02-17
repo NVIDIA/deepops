@@ -10,16 +10,15 @@
  {{ ansible_hostname }} || check_fs_mount_rw /
 
 # Check that Ethernet connections are up
+# (commented out as this detects interfaces that may not need to be online)
 {% set my_interfaces = ansible_interfaces|select('match', '(?!^(lo|docker|nodelocaldns)).*')|default(None) -%}
 {% for interface in my_interfaces %}
- {{ ansible_hostname }} || check_hw_eth {{ interface }}
+# {{ ansible_hostname }} || check_hw_eth {{ interface }}
 {% endfor %}
 
 # Check that expected processes are running
- {{ ansible_hostname }} || check_ps_service -u root sshd
- {{ ansible_hostname }} || check_ps_service -d rpc.statd nfslock
+ {{ ansible_hostname }} || check_ps_service -u root -d {{ nhc_ssh_daemon }} sshd
  {{ ansible_hostname }} || check_ps_service -u root slurmd
- {{ ansible_hostname }} || check_ps_service -u root docker
 
 {% if ansible_local.gpus.count > 0 %}
 #############################################################################

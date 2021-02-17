@@ -1,6 +1,6 @@
 ---
 # Playbook designed to run a NCCL test across all nodes in a cluster of DGX-1s
-- hosts: slurm-master
+- hosts: slurm-master[0]
   vars:
     nccl_test_repo: "deepops/nccl-tests-tf20.06-ubuntu18.04:latest" # Public repository for nccl performance/validation tests
     num_gpus: 8 # A DGX A100 Server has 8 GPUs
@@ -17,7 +17,7 @@
         num_nodes: "{{ node_out.stdout }}"
     - name: Set cmd variable
       set_fact:
-        cmd: "srun -N {{ num_nodes }} -G {{ num_nodes * num_gpus }} --ntasks-per-node={{ num_gpus }} --mpi=pmix --exclusive  --container-image={{ nccl_test_repo }} all_reduce_perf -b 1M -e 4G -f 2 -g {{ num_gpus }}"
+        cmd: "srun -N {{ num_nodes }} -G {{ num_nodes|int * num_gpus }} --ntasks-per-node={{ num_gpus }} --mpi=pmix --exclusive  --container-image={{ nccl_test_repo }} all_reduce_perf -b 1M -e 4G -f 2 -g {{ num_gpus }}"
     - name: Print node/gpu counts
       debug:
               msg:
@@ -26,7 +26,7 @@
 
     - name: Execute NCCL test across all nodes and GPUs
       shell: >
-              srun -N {{ num_nodes }} -G {{ num_nodes * num_gpus }} --ntasks-per-node={{ num_gpus }} --mpi=pmix --exclusive  --container-image={{ nccl_test_repo }} all_reduce_perf -b 1M -e 4G -f 2 -g {{ num_gpus }}
+              srun -N {{ num_nodes }} -G {{ num_nodes|int * num_gpus }} --ntasks-per-node={{ num_gpus }} --mpi=pmix --exclusive  --container-image={{ nccl_test_repo }} all_reduce_perf -b 1M -e 4G -f 2 -g {{ num_gpus }}
       register: out
     - name: Print results
       debug: 

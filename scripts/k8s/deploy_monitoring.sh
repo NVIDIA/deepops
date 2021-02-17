@@ -4,6 +4,7 @@
 # https://github.com/NVIDIA/gpu-monitoring-tools
 # https://ngc.nvidia.com/catalog/helm-charts/nvidia:gpu-operator
 # https://ngc.nvidia.com/catalog/containers/nvidia:k8s:dcgm-exporter
+# https://github.com/prometheus-community/helm-charts
 
 # Ensure we start in the correct working directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -19,9 +20,12 @@ if [ ! -d "${DEEPOPS_CONFIG_DIR}" ]; then
         exit 1
 fi
 
-HELM_CHARTS_REPO_STABLE="${HELM_CHARTS_REPO_STABLE:-https://kubernetes-charts.storage.googleapis.com}"
-HELM_PROMETHEUS_CHART_VERSION="${HELM_PROMETHEUS_CHART_VERSION:-8.15.0}"
-ingress_name="nginx-ingress"
+HELM_CHARTS_REPO_PROMETHEUS="${HELM_CHARTS_REPO_PROMETHEUS:-https://prometheus-community.github.io/helm-charts}"
+HELM_PROMETHEUS_CHART_VERSION="${HELM_PROMETHEUS_CHART_VERSION:-10.0.2}"
+ingress_name="ingress-nginx"
+
+PROMETHEUS_YAML_CONFIG="${PROMETHEUS_YAML_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/monitoring.yml}"
+PROMETHEUS_YAML_NO_PERSIST_CONFIG="${PROMETHEUS_YAML_NO_PERSIST_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/monitoring-no-persist.yml}"
 
 function help_me() {
     echo "This script installs the DCGM exporter, Prometheus, Grafana, and configures a GPU Grafana dashboard."
@@ -31,11 +35,12 @@ function help_me() {
     echo "-h      This message."
     echo "-p      Print monitoring URLs."
     echo "-d      Delete monitoring namespace and crds. Note, this may delete PVs storing prometheus metrics."
+    echo "-x      Disable persistent data, this deploys Prometheus with no PV backing resulting in a loss of data across reboots."
     echo "delete  Legacy positional argument for delete. Same as -d flag."
 }
 
 function get_opts() {
-    while getopts "hdp" option; do
+    while getopts "hdpx" option; do
         case $option in
             d)
                 delete_monitoring
@@ -48,6 +53,10 @@ function get_opts() {
             p)
                 print_monitoring
                 exit 0
+                ;;
+            x)
+		PROMETHEUS_YAML_CONFIG="${PROMETHEUS_YAML_NO_PERSIST_CONFIG}"
+		PROMETHEUS_NO_PERSIST="true"
                 ;;
             * )
                 # Leave this here to preserve legacy positional args behavior
@@ -65,7 +74,9 @@ function get_opts() {
 
 function delete_monitoring() {
     helm uninstall prometheus-operator
+    helm uninstall kube-prometheus-stack -n monitoring
     helm uninstall "${ingress_name}"
+    helm uninstall "nginx-ingress" # Delete legacy naming
     kubectl delete crd prometheuses.monitoring.coreos.com
     kubectl delete crd prometheusrules.monitoring.coreos.com
     kubectl delete crd servicemonitors.monitoring.coreos.com
@@ -76,9 +87,9 @@ function delete_monitoring() {
 }
 
 function setup_prom_monitoring() {
-    # Add Helm stable repo if it doesn't exist
-    if ! helm repo list | grep stable >/dev/null 2>&1 ; then
-        helm repo add stable "${HELM_CHARTS_REPO_STABLE}"
+    # Add Helm prometheus-community repo if it doesn't exist
+    if ! helm repo list | grep prometheus-community >/dev/null 2>&1 ; then
+        helm repo add prometheus-community "${HELM_CHARTS_REPO_PROMETHEUS}"
     fi
 
     # Configure air-gapped deployment
@@ -106,8 +117,8 @@ function setup_prom_monitoring() {
     # Get IP information of master and ingress
     get_ips
 
-    if kubectl describe service -l "app=${ingress_name},component=controller" | grep 'LoadBalancer Ingress' >/dev/null 2>&1; then
-        lb_ip="$(kubectl describe service -l "app=${ingress_name},component=controller" | grep 'LoadBalancer Ingress' | awk '{print $3}')"
+    if kubectl describe service -l "app.kubernetes.io/name=${ingress_name},app.kubernetes.io/component=controller" | grep 'LoadBalancer Ingress' >/dev/null 2>&1; then
+        lb_ip="$(kubectl describe service -l "app.kubernetes.io/name=${ingress_name},app.kubernetes.io/component=controller" | grep 'LoadBalancer Ingress' | awk '{print $3}')"
         ingress_ip_string="$(echo ${lb_ip} | tr '.' '-').nip.io"
         echo "Using load balancer url: ${ingress_ip_string}"
     fi
@@ -118,13 +129,13 @@ function setup_prom_monitoring() {
     if ! kubectl get ns monitoring >/dev/null 2>&1 ; then
         kubectl create ns monitoring
     fi
-    if ! helm status -n monitoring prometheus-operator >/dev/null 2>&1 ; then
+    if ! helm status -n monitoring kube-prometheus-stack >/dev/null 2>&1 ; then
         helm install \
-            prometheus-operator \
-            stable/prometheus-operator \
+            kube-prometheus-stack \
+            prometheus-community/kube-prometheus-stack \
             --version "${HELM_PROMETHEUS_CHART_VERSION}" \
             --namespace monitoring \
-            --values ${DEEPOPS_CONFIG_DIR}/helm/monitoring.yml \
+            --values "${PROMETHEUS_YAML_CONFIG}" \
             --set alertmanager.ingress.hosts[0]="alertmanager-${ingress_ip_string}" \
             --set prometheus.ingress.hosts[0]="prometheus-${ingress_ip_string}" \
             --set grafana.ingress.hosts[0]="grafana-${ingress_ip_string}" \
@@ -168,14 +179,14 @@ function print_monitoring() {
     get_ips
 
     # Get Grafana auth details
-    grafana_user=$(kubectl -n monitoring get secrets prometheus-operator-grafana -o 'go-template={{ index .data "admin-user" }}' | base64 -d)
-    grafana_password=$(kubectl -n monitoring get secrets prometheus-operator-grafana -o 'go-template={{ index .data "admin-password" }}' | base64 -d)
+    grafana_user=$(kubectl -n monitoring get secrets kube-prometheus-stack-grafana -o 'go-template={{ index .data "admin-user" }}' | base64 -d)
+    grafana_password=$(kubectl -n monitoring get secrets kube-prometheus-stack-grafana -o 'go-template={{ index .data "admin-password" }}' | base64 -d)
 
     # Use NodePort directly if the IP string uses the master IP, otherwise use Ingress URL
     if echo "${ingress_ip_string}" | grep "${master_ip}" >/dev/null 2>&1; then
-        grafana_port=$(kubectl -n monitoring get svc prometheus-operator-grafana --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
-        prometheus_port=$(kubectl -n monitoring get svc prometheus-operator-prometheus --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
-        alertmanager_port=$(kubectl -n monitoring get svc prometheus-operator-alertmanager --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
+        grafana_port=$(kubectl -n monitoring get svc kube-prometheus-stack-grafana --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
+        prometheus_port=$(kubectl -n monitoring get svc kube-prometheus-stack-prometheus --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
+        alertmanager_port=$(kubectl -n monitoring get svc kube-prometheus-stack-alertmanager --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
 
         export grafana_url="http://${master_ip}:${grafana_port}/"
         export prometheus_url="http://${master_ip}:${prometheus_port}/"
@@ -192,16 +203,39 @@ function print_monitoring() {
     echo "Alertmanager: ${alertmanager_url}"
 }
 
+
+function install_dependencies() {
+    # kubect/K8s
+    kubectl version
+    if [ $? -ne 0 ] ; then
+        echo "Unable to talk to Kubernetes API"
+        exit 1
+    fi
+
+    # Install/initialize Helm if needed
+    ./scripts/k8s/install_helm.sh
+    # StorageClasse (for volumes and MySQL DB)
+    kubectl get storageclass 2>&1 | grep "(default)" >/dev/null 2>&1
+    if [ $? -ne 0 ] ; then
+        echo "No storageclass found"
+	echo "This is required to persist Prometheus data"
+	echo ""
+	if [ "${PROMETHEUS_NO_PERSIST}" ]; then
+	    echo "WARNING: Persistence has been disabled, rebooting or migrating the Prometheus Pod will result in loss of all data"
+	    sleep 5 # Sleep to give the user time to see a warning
+	else
+            echo "To continue without persistent storage, run '${0} -x'"
+            echo "To setup the nfs-client-provisioner (preferred), run: ansible-playbook playbooks/k8s-cluster/nfs-client-provisioner.yml"
+            echo "To provision Ceph storage, run: ./scripts/k8s/deploy_rook.sh"
+            exit 1
+	fi
+    fi
+}
+
+
 get_opts ${@}
 
-kubectl version
-if [ $? -ne 0 ] ; then
-    echo "Unable to talk to Kubernetes API"
-    exit 1
-fi
-
-# Install/initialize Helm if needed
-./scripts/k8s/install_helm.sh
+install_dependencies
 
 setup_prom_monitoring
 setup_gpu_monitoring

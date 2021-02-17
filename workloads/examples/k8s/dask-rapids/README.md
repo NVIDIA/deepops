@@ -141,7 +141,7 @@ Feel free to adjust the number of CPU cores or GPUs used and the parameters for 
 ## Experimenting further
 
 The base container we used for this benchmark contains more examples using RAPIDS in the `cuml/` directory,
-as well as an end-to-end wokrflow example based on a Fannie Mae mortgage dataset in the `mortgage/` directory.
+as well as an end-to-end workflow example based on a Fannie Mae mortgage dataset in the `mortgage/` directory.
 Both directories can be accessed easily via JupyterLab.
 
 You can also experiment with the custom container by making changes to the `Dockerfile` used to create it,

@@ -1,5 +1,5 @@
 # https://ngc.nvidia.com/catalog/containers/nvidia:rapidsai:rapidsai
-FROM nvcr.io/nvidia/rapidsai/rapidsai:cuda10.1-runtime-ubuntu18.04 
+FROM nvcr.io/nvidia/rapidsai/rapidsai:0.17-cuda11.0-runtime-ubuntu18.04
 
 # RAPIDS is installed using conda and we need to work from this environment
 ENV CONDA_ENV rapids
@@ -10,15 +10,24 @@ RUN source activate ${CONDA_ENV} && \
     apt-get install -y screen unzip git vim htop font-manager && \
     rm -rf /var/lib/apt/*
 
-# Install the NVIDIA Jupyter Dashboard
-RUN source activate ${CONDA_ENV} && \
-    conda install -y -c conda-forge jupyterlab-nvdashboard==0.1.11 && conda clean -yac * && \
-    jupyter labextension install jupyterlab-nvdashboard
+# Install Jupyterlab manager
+RUN source activate $CONDA_ENV && \
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager
 
 # Install ipyvolume for clean HTML5 visualizations
 RUN source activate ${CONDA_ENV} && \
     conda install -y -c conda-forge ipyvolume==0.5.2 && conda clean -yac * && \
     jupyter labextension install ipyvolume
+
+# Add deck.gl Jupyer visualization tools
+RUN source activate $CONDA_ENV && \
+    conda install -y -c conda-forge pydeck && \
+    DECKGL_SEMVER=`python -c "import pydeck; print(pydeck.frontend_semver.DECKGL_SEMVER)"` && \
+    jupyter labextension install @deck.gl/jupyter-widget@$DECKGL_SEMVER
+
+RUN source activate $CONDA_ENV && \
+    conda install -y -c conda-forge ipympl==0.5.8 && \
+    jupyter labextension install jupyter-matplotlib@0.7.4
 
 # Install toc to build table of ontents in Jupyter, not available through Conda
 RUN source activate ${CONDA_ENV} && \
@@ -30,7 +39,7 @@ RUN source activate ${CONDA_ENV} && \
 
 # Install dask_kubernetes for deploying works through K8S and monitoring through Jupyter
 RUN source activate ${CONDA_ENV} && \
-    conda install -c conda-forge dask-kubernetes==0.10.1 && conda clean -yac *
+    conda install -c conda-forge dask-kubernetes==0.11.0 && conda clean -yac *
 
 # Expose Jupyter and Dask ports
 EXPOSE 8888

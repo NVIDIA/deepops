@@ -1,0 +1,26 @@
+---
+nginx_docker_cache_name: "deepops-nginx-docker-cache"
+nginx_docker_cache_image: "rpardini/docker-registry-proxy:0.6.1"
+
+nginx_docker_cache_mirror_path: "/opt/deepops/nginx-docker-cache/mirror"
+nginx_docker_cache_ca_path: "/opt/deepops/nginx-docker-cache/ca"
+
+nginx_docker_cache_registry_string: "quay.io k8s.gcr.io gcr.io nvcr.io"
+nginx_docker_cache_manifests: "false"
+nginx_docker_cache_manifest_default_time: "1h"
+
+nginx_docker_cache_docker_config_src: "http-proxy.conf"
+nginx_docker_cache_docker_config_dest: "/etc/systemd/system/docker.service.d/http-proxy.conf"
+nginx_docker_cache_dockerd_clients: true
+
+nginx_docker_cache_ca_client_crt_ubuntu: "/usr/share/ca-certificates/docker_registry_proxy.crt"
+nginx_docker_cache_ca_client_crt_el: "/etc/pki/ca-trust/source/anchors"
+nginx_docker_cache_ca_client_name: "docker_registry_proxy.crt"
+
+nginx_docker_cache_hostgroup: "cache"
+nginx_docker_cache_proxy_url: "http://{{ groups[nginx_docker_cache_hostgroup][0] }}:3128" 
+
+# Optional: pre-define CA certificate, key, and serial number file
+#nginx_docker_cache_ca:
+# crt: "ca.crt"
+# key: "ca.key"

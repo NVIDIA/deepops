@@ -14,11 +14,11 @@ spec:
       labels:
         app: cuda-nbody
     spec:
-      nodeSelector:
-        hardware-type: NVIDIAGPU
       containers:
         - name: cuda-nbody-container
           image: nvcr.io/nvidia/k8s/cuda-sample:nbody
+          command: ["/bin/sh"]
+          args: ["-c", "nbody -benchmark -numbodies=1000192"]
           resources:
             limits:
               nvidia.com/gpu: 1

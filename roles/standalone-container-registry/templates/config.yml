@@ -1,0 +1,17 @@
+version: 0.1
+storage:
+  filesystem:
+    rootdirectory: /var/lib/registry
+http:
+  addr: "0.0.0.0:{{ standalone_container_registry_port }}"
+log:
+  accesslog:
+    disabled: false
+{% if standalone_container_registry_cache_enable -%}
+proxy:
+  remoteurl: {{ standalone_container_registry_cache_upstream }}
+  {% if standalone_container_registry_cache_username is defined -%}
+  username: {{ standalone_container_registry_cache_username }}
+  password: {{ standalone_container_registry_cache_password }}
+  {% endif -%}
+{% endif -%}

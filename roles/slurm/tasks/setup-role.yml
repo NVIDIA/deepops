@@ -12,9 +12,8 @@
     - always
 
 - name: add epel repo
-  yum_repository:
-    name: epel
-    description: EPEL YUM repo
-    baseurl: "{{ epel_baseurl }}"
-    gpgkey: "{{ epel_gpgkey }}"
+  yum:
+    name: 
+      - "epel-release"
+    state: latest
   when: ansible_os_family == "RedHat"

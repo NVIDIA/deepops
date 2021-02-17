@@ -1,0 +1,24 @@
+---
+- name: Check for DGX
+  when: ansible_product_name is search("DGX")
+  set_fact:
+    dcgm_is_dgx: true
+
+- name: DGX tasks
+  when: dcgm_is_dgx
+  include: install-dgx.yml
+
+- name: Ubuntu tasks
+  when: (ansible_distribution == "Ubuntu") and not dcgm_is_dgx
+  include: install-ubuntu.yml
+
+- name: Red Hat family tasks
+  when: (ansible_os_family == "RedHat") and not dcgm_is_dgx
+  include: install-redhat.yml
+
+- name: Start the DCGM service
+  systemd:
+    daemon_reload: yes
+    name: "dcgm"
+    state: "started"
+    enabled: true

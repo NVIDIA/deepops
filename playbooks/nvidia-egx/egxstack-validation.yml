@@ -142,7 +142,7 @@
       ignore_errors: yes
 
     - name: Validating the GPU Operator installation
-      shell: kubectl run gpu-test --rm -t -i --restart=Never --image=nvidia/cuda --limits=nvidia.com/gpu=1 -- nvidia-smi
+      shell: kubectl run gpu-test --rm -t -i --restart=Never --image=nvcr.io/nvidia/cuda:10.1-base-ubuntu18.04 --limits=nvidia.com/gpu=1 -- nvidia-smi
       register: cuda
       ignore_errors: yes
 

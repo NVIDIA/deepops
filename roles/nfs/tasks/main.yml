@@ -1,4 +1,17 @@
 ---
+- name: gather os specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+      - "{{ ansible_distribution|lower }}.yml"
+      - "{{ ansible_os_family|lower }}.yml"
+      paths:
+      - ../vars
+      skip: true
+  tags:
+    - vars
+    - nfs
+
 - name: install ubuntu packages
   apt:
     name: nfs-common
@@ -29,6 +42,8 @@
 - include: server.yml
   when: nfs_is_server
 
+- include: firewall.yml
+  when: nfs_is_server
+
 - include: client.yml
   when: nfs_is_client
-

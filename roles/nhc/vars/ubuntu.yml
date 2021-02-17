@@ -1,0 +1,3 @@
+---
+nhc_build_deps:
+  - build-essential
