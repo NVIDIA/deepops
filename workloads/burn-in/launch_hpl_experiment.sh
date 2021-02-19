@@ -31,7 +31,7 @@ partition="batch"
 usehca=0
 usegres=1
 maxnodes=9999
-restype=""
+grestype=""
 mpiopts=""
 walltime=00:30:00
 verbose=0
@@ -69,7 +69,7 @@ Other Options:
         * Sets string with additional OpenMPI options to pass to mpirun.  Default is none.
     --usegres <Val>
 	* Enable/disable use of GRES options in Slurm (1/0).  Default is ${usegres}.
-    --restype <val>
+    --grestype <val>
         * Specify if you need to specify a specific gputype when submitting to your batch system with gpu options.  
     --gpuclock <MHz>
         * Set specific clock to use during run.  Default is to set the clocks to maximum.
@@ -117,6 +117,7 @@ function find_hpl_dat_file() {
                         20) PxQ=20x8 ;;
                         32) PxQ=16x16 ;;
                         64) PxQ=32x16 ;;
+			128) PxQ=32x32 ;;
                         *) echo "ERROR: There is no defined mapping for ${nnodes} nodes for system ${system}.  Exiting" 
                 esac
         elif [ ${gpus_per_node} == 16 ]; then
@@ -156,7 +157,7 @@ while [ $# -gt 0 ]; do
 	        --maxnodes) maxnodes="$2"; shift 2 ;;	
 		--mpiopts) mpiopts="$2"; shift 2 ;;
 		--usegres) usegres="$2"; shift 2 ;;
-		--restype) restype="$2"; shift 2 ;;
+		--grestype) grestype="$2"; shift 2 ;;
 		--gpuclock) gpuclock="$2" ; shift 2 ;;
 		--memclock) memclock="$2" ; shift 2 ;;
 		--hpldat) hpldat="$2"; shift 2 ;;
@@ -219,12 +220,12 @@ case ${SYSCFG} in
 esac
 	   
 if [ x"${usegres}" == x"1" ]; then
-	if [ x"${restype}" != x"" ]; then
-		resstr="${restype}:"
+	if [ x"${grestype}" != x"" ]; then
+		gresstr="${grestype}:"
 	else
-		resstr=""
+		gresstr=""
 	fi
-	gresstr="--gpus-per-node=${resstr}${gpus_per_node}"
+	gresstr="--gpus-per-node=${gresstr}${gpus_per_node}"
 fi
 
 if [ x"${gpuclock}" != x"" ]; then
