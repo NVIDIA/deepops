@@ -80,7 +80,7 @@ Other Options:
     --cruntime <container runtime>
 	* Specify container runtime.  Options are singularity, enroot, and bare (bare-metal)
     --nores
-        * Do not request specific nodes when running tests
+	* Do not request specific nodes or try to control how jobs are placed on the system (better for experiments while in production)
     -w 
         * Node include list (must overlap with nodes in the partition)
     -x 
@@ -262,6 +262,7 @@ if [ x"${cruntime}" != x"" ]; then
 			export CONT=${siffn}
 			;;
 		enroot)
+			echo "INFO: Using enroot runtime"
 			# Need to convert the container and change all the slashes except the last one to #
 			# This expression below is probably not robust.
 			if [ ! -f ${container} ]; then
@@ -298,9 +299,9 @@ else
 		exit 1
 	fi
 	# Line 10 is Number of PQ pairs, line 11 is P, line 12 is Q
-	NPQ=$(cat ${hpldat} | tail +10 | head -1 | awk '{print $1}')
-	P=$(cat ${hpldat} | tail +11 | head -1 | awk '{print $1}')
-	Q=$(cat ${hpldat} | tail +12 | head -1 | awk '{print $1}')
+	NPQ=$(cat ${hpldat} | tail -n +10 | head -1 | awk '{print $1}')
+	P=$(cat ${hpldat} | tail -n +11 | head -1 | awk '{print $1}')
+	Q=$(cat ${hpldat} | tail -n +12 | head -1 | awk '{print $1}')
 	if [ ${NPQ} -ne 1 ]; then
 		echo "WARNING: Node allocation is only going to match the first P*Q pair"
 	fi
@@ -325,18 +326,19 @@ fi
 mkdir -p $EXPDIR
 
 # Grab nodelist and node count from the batch queue
-export NODELIST=$(sinfo -p ${partition} | grep ${partition} | grep " idle " | awk '{print $6}')
 
+# look for all idle nodes in the partition and creating a working nodelist as $MACHINEFILE
+export NODELIST=$(sinfo -p ${partition} | grep ${partition} | grep " idle " | awk '{print $6}')
 export MACHINEFILE=/tmp/mfile.$$
-scontrol show hostname ${NODELIST} | head -${maxnodes} > $MACHINEFILE
+scontrol show hostname ${NODELIST} > $MACHINEFILE
 
 # If there is an include list, process that
 if [ x"${includelist}" != x"" ]; then
-	echo "Include List: ${includelist}"
+    	echo "Include List: ${includelist}"
 	export INCLUDELIST=/tmp/mfile.include.$$
 	scontrol show hostname ${includelist} > $INCLUDELIST
-	cat ${MACHINEFILE} ${INCLUDELIST} | sort | uniq -c | awk '{if ($1>1) print $2}' > /tmp/t2.$$
-	mv /tmp/t2.$$ ${MACHINEFILE}
+	cat ${MACHINEFILE} ${INCLUDELIST} | sort | uniq -c | awk '{if ($1>1) print $2}' > ${MACHINEFILE}.t2
+	mv ${MACHINEFILE}.t2 ${MACHINEFILE}
 	rm ${INCLUDELIST}
 fi
 
@@ -345,10 +347,14 @@ if [ x"${excludelist}" != x"" ]; then
 	echo "Exclude List: ${excludelist}"
 	export EXCLUDELIST=/tmp/mfile.exclude.$$
 	scontrol show hostname ${excludelist} > $EXCLUDELIST
-	cat ${MACHINEFILE} ${MACHINEFILE} ${EXCLUDELIST} | sort | uniq -c | awk '{if ($1==2) print $2}' > /tmp/t2.$$
-	mv /tmp/t2.$$ ${MACHINEFILE}
+	cat ${MACHINEFILE} ${MACHINEFILE} ${EXCLUDELIST} | sort | uniq -c | awk '{if ($1==2) print $2}' > ${MACHINEFILE}.t2
+	mv ${MACHINFILE}.t2 ${MACHINEFILE}
 	rm ${EXCLUDELIST}
 fi
+
+# Trim the nodelist down to the maxnode setting
+cat ${MACHINEFILE} | head -${maxnodes} > ${MACHINEFILE}.t2
+mv ${MACHINEFILE}.t2 ${MACHINEFILE}
 
 export total_nodes=$(cat $MACHINEFILE | wc -l)
 
@@ -361,7 +367,6 @@ fi
 echo  ""
 echo "Working Nodelist: $(scontrol show hostlist $(cat $MACHINEFILE | tr '\n' ','))"
 echo ""
-
 
 ### Report all variables
 echo ""
@@ -384,25 +389,30 @@ HFILE=/tmp/hfile.$$
 for N in $(seq ${niters}); do
 	P=1
 	INST=1
-        echo "Working Nodelist: $(scontrol show hostlist $(cat $MACHINEFILE | tr '\n' ','))"
-	cat ${MACHINEFILE} | ${ORDER_CMD} > $HFILE
+
+	if [ ${nores} != 1 ]; then
+                echo "Working Nodelist: $(scontrol show hostlist $(cat $MACHINEFILE | tr '\n' ','))"
+      	        cat ${MACHINEFILE} | ${ORDER_CMD} > $HFILE
+	fi
+
 	while [ $(( P + nodes_per_job - 1 ))  -le ${total_nodes} ]; do
 		# Create hostlist per iter
 		if [ ${nores} == 1 ]; then
 			HLIST=""
 			DEPENDENCY="--dependency=singleton"
 
-			### You cannot provide an include list, you can only include the full list to use, not a range. 
-			### So the includelist is not supported in this mode
-                        #if [ x"${includelist}" != x"" ]; then
-			#	DEPENDENCY="$DEPENDENCY -w ${includelist}" 
-	                #fi
+                        if [ x"${includelist}" != x"" ]; then
+				echo "Include lists are not supported with --nores"
+			        ### You cannot provide an include list, you can only include the full list to use, not a range. 
+			        ### So the includelist is not supported in this mode
+                       		#  DEPENDENCY="$DEPENDENCY -w ${includelist}" 
+	                fi
 
                         if [ x"${excludelist}" != x"" ]; then
 				DEPENDENCY="$DEPENDENCY -x ${excludelist}" 
 	                fi
 		else
-    		        HLIST="-w $(scontrol show hostlist $(tail +$P ${HFILE} | head -${nodes_per_job} | sort | paste -d, -s))"
+    		        HLIST="-w $(scontrol show hostlist $(tail -n +$P ${HFILE} | head -${nodes_per_job} | sort | paste -d, -s))"
 			DEPENDENCY=""
 		fi
 
@@ -447,7 +457,7 @@ for N in $(seq ${niters}); do
 	done
 	if [ $(( P - 1 )) -lt ${total_nodes} ]; then
 	        # Print out the extra nodes not used
-	        HLIST=$(scontrol show hostlist $(tail +$P ${HFILE} | sort | paste -d, -s))
+	        HLIST=$(scontrol show hostlist $(tail -n +$P ${HFILE} | sort | paste -d, -s))
 	        echo ""
 	        echo "Unused nodes for this iteration: ${HLIST}"
         fi
@@ -505,12 +515,11 @@ VLOGFN=${EXPDIR}/verify_results.txt
 echo "Run Summary:"
 echo "Experiment Results Directory: ${EXPDIR}"
 echo "Total Nodes: ${total_nodes}"
-echo "Nodes Per Job:: ${nodes_per_job}"
+echo "Nodes Per Job: ${nodes_per_job}"
 echo "Verify Log: ${VLOGFN}"
 
 echo ""
 echo "To rerun the verification: ${HPL_SCRIPTS_DIR}/verify_hpl_experiment.py ${EXPDIR}"
 echo ""
-
 
 
