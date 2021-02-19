@@ -27,10 +27,11 @@ export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}} # The shared directory whe
 
 ## Set default options
 niters=5
-partition=batch
+partition="batch"
 usehca=0
 usegres=1
 maxnodes=9999
+restype=""
 mpiopts=""
 walltime=00:30:00
 verbose=0
@@ -38,6 +39,7 @@ nores=0
 cruntime=singularity
 container="nvcr.io/nvidia/hpc-benchmarks:20.10-hpl"
 ORDER_CMD="cat"
+slurmopts=""
 
 print_usage() {
    cat << EOF
@@ -67,6 +69,8 @@ Other Options:
         * Sets string with additional OpenMPI options to pass to mpirun.  Default is none.
     --usegres <Val>
 	* Enable/disable use of GRES options in Slurm (1/0).  Default is ${usegres}.
+    --restype <val>
+        * Specify if you need to specify a specific gputype when submitting to your batch system with gpu options.  
     --gpuclock <MHz>
         * Set specific clock to use during run.  Default is to set the clocks to maximum.
     --memclock <MHz>
@@ -81,6 +85,8 @@ Other Options:
         * Node include list (must overlap with nodes in the partition)
     -x 
         * Node exclude list
+    --slurmopts
+        * Use to set any slurm variables not supported by other options.  Ex: --slurmopt "--exclusive --constraint su2"
     -r|--random
         * Randomize which nodes get used each iteration
     -v|--verbose
@@ -150,11 +156,13 @@ while [ $# -gt 0 ]; do
 	        --maxnodes) maxnodes="$2"; shift 2 ;;	
 		--mpiopts) mpiopts="$2"; shift 2 ;;
 		--usegres) usegres="$2"; shift 2 ;;
+		--restype) restype="$2"; shift 2 ;;
 		--gpuclock) gpuclock="$2" ; shift 2 ;;
 		--memclock) memclock="$2" ; shift 2 ;;
 		--hpldat) hpldat="$2"; shift 2 ;;
 		--cruntime) cruntime="$2"; shift 2 ;;
 		--container) container="$2"; shift 2 ;;
+		--slurmopts) slurmopts="$2"; shift 2 ;;
 		*) echo "Option <$1> Not understood" ; exit 1 ;;
 
         esac
@@ -211,7 +219,12 @@ case ${SYSCFG} in
 esac
 	   
 if [ x"${usegres}" == x"1" ]; then
-	gresstr="--gpus-per-node ${gpus_per_node}"
+	if [ x"${restype}" != x"" ]; then
+		resstr="${restype}:"
+	else
+		resstr=""
+	fi
+	gresstr="--gpus-per-node=${resstr}${gpus_per_node}"
 fi
 
 if [ x"${gpuclock}" != x"" ]; then
@@ -223,7 +236,6 @@ fi
 
 if [ x"${cruntime}" != x"" ]; then
 	# Validate runtime is correct
-	echo "Using contaner runtime ${cruntime}"
 	case "${cruntime}" in
 		singularity)
 			echo "INFO: Using singularity runtime"
@@ -353,7 +365,7 @@ echo ""
 ### Report all variables
 echo ""
 echo "Experiment Variables:"
-for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system cruntime CONT nodes_per_job gpus_per_node gpuclock memclock  niters partition usehca maxnodes mpiopts gresstr total_nodes hpldat; do
+for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system cruntime CONT nodes_per_job gpus_per_node gpuclock memclock niters partition slurmopts usehca maxnodes mpiopts gresstr total_nodes hpldat; do
 	echo -n "${V}: "
         if [ x"${!V}" != x"" ]; then	
         	echo "${!V}"
@@ -413,7 +425,7 @@ for N in $(seq ${niters}); do
 		# Submit the job in the workdir
 		pushd ${WORKDIR} > /dev/null 2>&1
 
-		CMD="sbatch -J burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFG,SYSCFGVAR,GPUMEM,CRUNTIME,EXPDIR ${HPL_DIR}/submit_hpl.sh"
+		CMD="sbatch -J burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} ${slurmopts} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFG,SYSCFGVAR,GPUMEM,CRUNTIME,EXPDIR ${HPL_DIR}/submit_hpl.sh"
                  
 		if [ ${verbose} -eq 1 ]; then
 		        echo "Submitting:  $CMD"
