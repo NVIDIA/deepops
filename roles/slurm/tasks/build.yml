@@ -124,7 +124,13 @@
   command: make -j uninstall
   args:
     chdir: "{{ slurm_build_dir }}"
-  ignore_errors: yes
+  register: slurm_make_uninstall
+  failed_when:
+    - slurm_make_uninstall.rc != 0
+    - "\"make: *** No rule to make target 'uninstall'\" not in slurm_make_uninstall.stderr"
+  changed_when:
+    - slurm_make_uninstall.rc == 0
+    - "\"uninstall: rm -f\" in slurm_make_uninstall.stdout"
   when: slurm_build
   tags:
     - uninstall
@@ -133,7 +139,13 @@
   command: make distclean
   args:
     chdir: "{{ slurm_build_dir }}"
-  ignore_errors: yes
+  register: slurm_make_distclean
+  failed_when:
+    - slurm_make_distclean.rc != 0
+    - "\"make: *** No rule to make target 'distclean'\" not in slurm_make_distclean.stderr"
+  changed_when:
+    - slurm_make_distclean.rc == 0
+    - "\"rm -f\" in slurm_make_distclean.stdout"
   when: slurm_build
 
 - name: configure

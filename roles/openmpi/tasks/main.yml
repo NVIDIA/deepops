@@ -89,7 +89,13 @@
   command: make -j uninstall
   args:
     chdir: "{{ openmpi_build_dir }}"
-  ignore_errors: yes
+  register: openmpi_make_uninstall
+  failed_when:
+    - openmpi_make_uninstall.rc != 0
+    - "\"make: *** No rule to make target 'uninstall'\" not in openmpi_make_uninstall.stderr"
+  changed_when:
+    - openmpi_make_uninstall.rc == 0
+    - "\"uninstall: rm -f\" in openmpi_make_uninstall.stdout"
   when: openmpi_build
   tags:
     - uninstall
@@ -98,7 +104,13 @@
   command: make distclean
   args:
     chdir: "{{ openmpi_build_dir }}"
-  ignore_errors: yes
+  register: openmpi_make_distclean
+  failed_when:
+    - openmpi_make_distclean.rc != 0
+    - "\"make: *** No rule to make target 'distclean'\" not in openmpi_make_distclean.stderr"
+  changed_when:
+    - openmpi_make_distclean.rc == 0
+    - "\"rm -f\" in openmpi_make_distclean.stdout"
   when: openmpi_build
 
 - name: configure openmpi
