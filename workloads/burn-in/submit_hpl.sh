@@ -100,7 +100,6 @@ MOUNT=$(pwd):/datfiles
 
 # nvidia-smi must be setup for setting clocks
 
-set -x
 SUDOCLOCKS=sudo 
 srun -N ${NNODES} -n${NNODES} ${SUDOCLOCKS} nvidia-smi -lgc ${NV_GPUCLOCK}
 
