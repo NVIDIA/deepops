@@ -9,7 +9,10 @@ export MONITOR_GPU=1
 export TEST_SYSTEM_PARAMS=1
 export TEST_LOOPS=1
 export GPU_CLOCK_WARNING=1275
-export GPU_POWER_WARNING=410
+export GPU_POWER_WARNING=400
 export GPU_PCIE_GEN_WARNING=4
 export GPU_PCIE_WIDTH_WARNING=16
+
+## Depending on driver version, you may need to uncomment the following line
+# export LD_LIBRARY_PATH="/usr/local/cuda/compat:$LD_LIBRARY_PATH
 
