@@ -379,7 +379,7 @@ The services can be reached from the following addresses:
 
 #### Logging
 
-Follow the [ELK Guide](elk.md) to setup logging in the cluster.
+Follow the [ELK Guide](../k8s-cluster/logging.md) to setup logging in the cluster.
 
 The service can be reached from the following address:
 * Kibana: http://\<kube-master\>:30700
