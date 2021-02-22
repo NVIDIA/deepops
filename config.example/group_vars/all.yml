@@ -109,6 +109,13 @@ users:
 # NVIDIA GPU configuration
 # Playbook: nvidia-cuda
 cuda_version: cuda-toolkit-11-0
+
+# DGX-specific vars may be used to target specific models,
+# because available versions for DGX may differ from the generic repo
+#cuda_dgx_1_version: "{{ cuda_version }}"
+#cuda_dgx_2_version: "{{ cuda_version }}"
+#cuda_dgx_a100_version: "{{ cuda_version }}"
+
 # Playbook: nvidia-set-gpu-clocks
 # Resets the Gpu clocks to the default values. (see the `--reset-gpu-clocks` flag in nvidia-smi for more)
 gpu_clock_reset: no

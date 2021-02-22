@@ -2,10 +2,11 @@
 # 'cuda' is the generic package and will pull the latest version
 cuda_version: "cuda-toolkit-11-0"
 
-# DGX-specific versions
-cuda_dgx_1_version: "cuda-toolkit-10-1"
-cuda_dgx_2_version: "cuda-toolkit-10-1"
-cuda_dgx_a100_version: "cuda-toolkit-11-0"
+# DGX-specific vars may be used to target specific models,
+# because available versions for DGX may differ from the generic repo
+cuda_dgx_1_version: "{{ cuda_version }}"
+cuda_dgx_2_version: "{{ cuda_version }}"
+cuda_dgx_a100_version: "{{ cuda_version }}"
 
 # To install a specific CUDA package on DGX, define cuda_dgx_override.
 # We override DGX version separately because DGX OS may release at a different
