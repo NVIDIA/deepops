@@ -93,6 +93,19 @@ The services can be reached from the following addresses:
 * Prometheus: http://\<slurm-master\>:9090
 
 
+## Centralized syslog
+
+To enable syslog forwarding from the cluster nodes to the first Slurm controller node, you can set the following variables in your DeepOps configuration:
+
+```
+slurm_enable_rsyslog_server: true
+slurm_enable_rsyslog_client: true
+```
+
+For more information about our syslog forwarding functionality, please see the [centralized syslog guide](../misc/syslog.md).
+ 
+
+
 ## Configuring shared filesystems
 
 For information about configuring a shared NFS filesystem on your Slurm cluster, see the documentation on [Slurm and NFS](./slurm-nfs.md).
