@@ -29,4 +29,4 @@ ssh \
 	-l vagrant \
 	-i "${HOME}/.ssh/id_rsa" \
 	"10.0.0.2${GPU01}" \
-	"sudo grep -R -E '.*virtual-gpu.*${RSYSLOG_TAG}' /var/log/hosts/ | grep -v mgmt"
+	"sudo grep -R -E '.*virtual-gpu.*${RSYSLOG_TAG}' /var/log/deepops-hosts/ | grep -v mgmt"
