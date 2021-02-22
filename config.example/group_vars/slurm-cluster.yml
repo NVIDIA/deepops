@@ -109,7 +109,12 @@ sm_install_host: "slurm-master[0]"
 # NVIDIA HPC SDK                                                               #
 ################################################################################
 slurm_install_hpcsdk: true
-hpcsdk_version: "2020_207"
+
+# Select the version of HPC SDK to download
+hpcsdk_major_version: "21"
+hpcsdk_minor_version: "2"
+hpcsdk_file_cuda: "11.2"
+hpcsdk_arch: "x86_64"
 
 # In a Slurm cluster, default to setting up HPC SDK as modules rather than in
 # the default user environment
