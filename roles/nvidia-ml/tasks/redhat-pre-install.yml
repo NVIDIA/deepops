@@ -2,7 +2,7 @@
 - name: add epel repo
   yum:
     name: 
-      - "epel-release"
+      - "{{ epel_package }}"
     state: latest
 
 - name: add repo

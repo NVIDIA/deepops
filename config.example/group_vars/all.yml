@@ -87,6 +87,8 @@ deepops_set_hostname: true
 #    path: /export/shared
 #    options: async,vers=3
 
+# Extra Packages for Enterprise Linux (RHEL/CentOS)
+epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
 
 ################################################################################
 # USERS                                                                        #

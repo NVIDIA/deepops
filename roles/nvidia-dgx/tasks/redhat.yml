@@ -5,7 +5,7 @@
 - name: Add epel repo
   yum:
     name: 
-      - "epel-release"
+      - "{{ epel_package }}"
     state: latest
 
 - name: Add DGX repo

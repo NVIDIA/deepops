@@ -21,9 +21,9 @@
   when: ansible_distribution == 'Ubuntu'
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
-- name: install epel-release for CentOS
+- name: install EPEL for CentOS
   yum:
-    name: epel-release
+    name: "{{ epel_package }}"
   when: ansible_distribution == "CentOS"
 
   # TODO: Verify that RHEL  does not require venv
