@@ -100,7 +100,7 @@ One common way to accomplish this transfer is to bundle the downloaded files int
 
 ```
 $ sudo yum install genisoimage
-$ sudo genisoimage -o /tmp/packes.iso /var/repos
+$ sudo genisoimage -o /tmp/packages.iso /var/repos
 ```
 
 
