@@ -15,9 +15,13 @@
 - include: compute.yml
   when: is_compute
 
+- include: misc-node.yml
+  when: (not is_compute) and (not is_controller)
+
 - include: shmfix.yml
   when: is_compute and slurm_fix_shm
 
 - include: undrain.yml
+  when: is_compute
 
 - include: build-cleanup.yml

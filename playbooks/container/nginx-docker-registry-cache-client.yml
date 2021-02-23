@@ -1,0 +1,10 @@
+---
+- include: docker.yml
+
+- hosts: "{{ hostlist | default('all') }}"
+  become: yes
+  tasks:
+  - name: configure nginx container caching proxy client
+    include_role:
+      name: "nginx-docker-registry-cache"
+      tasks_from: client

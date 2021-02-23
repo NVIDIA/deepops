@@ -1,6 +1,6 @@
 # Kubeflow
 
-[Kubeflow](https://www.kubeflow.org/docs/) is a K8S native tool that eases the Deep Learning and Machine Learning lifecycle.
+[Kubeflow](https://www.kubeflow.org/docs/) is a K8s native tool that eases the Deep Learning and Machine Learning lifecycle.
 
 Kubeflow allows users to request specific resources (such as number of GPUs and CPUs), specify Docker images, and easily launch and develop through Jupyter models. Kubeflow makes it easy to create persistent home directories, mount data volumes, and share notebooks within a team.
 
@@ -16,7 +16,7 @@ As part of the Kubeflow installation, the MPI Operator will also be installed. T
 
 Deploy Kubernetes by following the [DeepOps Kubernetes Deployment Guide](README.md)
 
-Deploy [Ceph](kubernetes-cluster.md#persistent-storage). Kubeflow requires a DefaultStorageClass to be defined, either deploy Ceph or use an alternative StorageClass.
+Kubeflow requires a DefaultStorageClass to be defined. By default DeepOps installs the `nfs-client-provisioner` using the [nfs-client-provisioner.yml playbook](../../playbooks/k8s-cluster/nfs-client-provisioner.yml). This playbook can re run manually. As an NFS alternative [Ceph](../../scripts/k8s/deploy_rook.sh), [Trident](../../playbooks/k8s-cluster/netapp-trident.yml) or an alternative StorageClass can be used.
 
 Deploy Kubeflow:
 
@@ -59,7 +59,6 @@ Usage:
 -h    This message.
 -p    Print out the connection info for Kubeflow.
 -d    Delete Kubeflow from your system (skipping the CRDs and istio-system namespace that may have been installed with Kubeflow.
--D    Deprecated, same as -d. Previously 'Fully Delete Kubeflow from your system along with all Kubeflow CRDs the istio-system namespace. WARNING, do not use this option if other components depend on istio.'
 -x    Install Kubeflow with multi-user auth (this utilizes Dex, the default is no multi-user auth).
 -c    Specify a different Kubeflow config to install with (this option is deprecated).
 -w    Wait for Kubeflow homepage to respond (also polls for various Kubeflow Deployments to have an available status).
@@ -93,25 +92,33 @@ cd config/kubeflow-install
 
 A common issue with Kubeflow installation is that no DefaultStorageClass has been defined or that Ceph has been not been deployed correctly.
 
-This can be idenfitied if most of the Kubeflow Pods are running and the MySQL pod and several others remain in a Pending state. The GUI may also load and throw a "Profile Error". Run the following to debug further:
+This can be identified if most of the Kubeflow Pods are running and the MySQL pod and several others remain in a Pending state. The GUI may also load and throw a "Profile Error". Run the following to debug further:
 
 ```sh
 kubectl get pods -n kubeflow
 ```
 > NOTE: Everything should be in a running state.
 
-Verify Ceph is running and/or a DefaultStorageClass is defined:
+If `nfs-client-provisioner` was used as the Default StorageClass verify it is running and set:
 
 ```
+helm list | grep nfs-client
 kubectl get storageclass | grep default
+```
+> NOTE: If NFS is being used, the helm application should be in a `deployed` state and `nfs-client` should be the default StorageClass.
+
+If Ceph was installed, verify it is running:
+
+```
 ./scripts/k8s/deploy_rook.sh -w
+kubectl get storageclass | grep default
 ```
 > NOTE: If Ceph is being used, `deploy_rook.sh -w` should exit after several seconds and Ceph should be the default StorageClass. 
 
 
 To correct this issue:
 1. Uninstall Rook/Ceph: `./scripts/k8s/deploy_rook.sh -d`
-2. Uninstall Kubeflow: `./scripts/k8s/deploy_kubeflow.sh -D`
+2. Uninstall Kubeflow: `./scripts/k8s/deploy_kubeflow.sh -d`
 3. Re-install Rook/ceph: `./scripts/k8s/deploy_rook.sh`
 4. Poll for Ceph to initialize (wait for this script to exit): `./scripts/k8s/deploy_rook.sh -w`
 5. Re-install Kubeflow: `./scripts/k8s/deploy_kubeflow.sh`

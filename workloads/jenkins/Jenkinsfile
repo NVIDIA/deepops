@@ -51,9 +51,14 @@ pipeline {
              bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
           '''
 
-          echo "Test Rook+Ceph installation"
+          echo "Verify registry mirror"
           sh '''
-            timeout 2200 bash -x ./workloads/jenkins/scripts/test-ceph.sh
+             bash -x ./workloads/jenkins/scripts/test-deepops-registry-mirror.sh
+          '''
+
+          echo "Verify in-cluster k8s docker registry"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/test-local-registry.sh
           '''
 
           echo "Test Monitoring installation"

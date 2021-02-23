@@ -10,7 +10,14 @@ slurm_allow_ssh_user:
 # Perform cleanup tasks during the install to minimize disk space impact
 hpcsdk_clean_up_tarball_after_extract: true
 hpcsdk_clean_up_temp_dir: true
-slurm_build_dir_cleanup: true
+slurm_build_dir_cleanup: false
 
-# Build OpenMPI locally for testing
-slurm_cluster_install_openmpi: true
+slurm_enable_monitoring: false
+slurm_enable_container_registry: false
+slurm_cluster_install_nvidia_driver: false
+slurm_cluster_install_cuda: false
+slurm_install_hpcsdk: false
+slurm_cluster_install_singularity: false
+slurm_install_enroot: false
+slurm_install_pyxis: false
+slurm_version: "20.11.3"

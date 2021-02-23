@@ -4,7 +4,7 @@ DGXie is an all-in-one container for DHCP, DNS, and PXE, specifically tailored t
 
 ## Download DGX ISO
 
-You will need to download the official DGX Base OS ISO image to your provisioning machine. The latest DGX Base OS is available via the NVIDIA Entperprise Support Portal (ESP).
+You will need to download the official DGX Base OS ISO image to your provisioning machine. The latest DGX Base OS is available via the NVIDIA Enterprise Support Portal (ESP).
 
 Update the `DATA_DIR` specified in `config/pxe/env` and copy the DGX Base OS ISO there.
 
@@ -16,7 +16,7 @@ Update the `config/pxe/dnsmasq.extra.conf` with additional options, such as assi
 
 DGXie uses docker-compose to build and run. The `src/containers/dgxie/docker-compose-yml` file consumes several environment variables that are defined in `config/pxe/env`. Changes to the DHCP range, network used for serving up PXE files, and other values can be updated there. Be sure to update the `eth1` and `eth0` values to match your machine interfaces or the DGXie will fail to start.
 
-   > Note: This assumes you have run the setup.sh script. If you have not, you must manually copy the example config and install docker/docker-compopse.
+   > Note: This assumes you have run the setup.sh script. If you have not, you must manually copy the example config and install docker/docker-compose.
 
 ## Deploy DGXie container
 

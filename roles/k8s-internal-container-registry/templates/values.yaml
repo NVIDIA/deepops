@@ -1,0 +1,20 @@
+persistence:
+  enabled: "{{ container_registry_persistence_enabled }}"
+  deleteEnabled: "{{ container_registry_delete_enabled }}"
+  {% if container_registry_persistence_enabled %}size: "{{ container_registry_storage_size }}"{% endif %}
+
+nodeSelector:
+  node-role.kubernetes.io/master: ""
+service:
+  type: "{{ container_registry_service_type }}"
+  {% if container_registry_service_type == "NodePort" %}nodePort: "{{ container_registry_node_port }}"{% endif %}
+
+ingress:
+  enabled: "{{ container_registry_ingress_enabled }}"
+  hosts:
+  - "{{ container_registry_hostname }}"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: "{{ container_registry_ingress_size }}"

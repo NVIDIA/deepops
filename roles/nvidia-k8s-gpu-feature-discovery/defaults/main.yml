@@ -2,5 +2,5 @@
 k8s_gpu_feature_discovery_helm_repo: "https://nvidia.github.io/gpu-feature-discovery"
 k8s_gpu_feature_discovery_chart_name: "nvgfd/gpu-feature-discovery"
 k8s_gpu_feature_discovery_release_name: "gpu-feature-discovery"
-k8s_gpu_feature_discovery_chart_version: "0.2.0"
+k8s_gpu_feature_discovery_chart_version: "0.3.0"
 k8s_gpu_mig_strategy: "mixed"

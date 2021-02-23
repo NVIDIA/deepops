@@ -1,7 +1,11 @@
 ---
+- name: Starting diagnostics step
+  debug:
+    msg: "Starting now"
 
-- include: get-firmware.yml
+- include: check-firmware.yml
+  ignore_errors: true
 - include: get-health.yml
+  ignore_errors: true
 - include: get-ib.yml
-- include: transfer-logs.yml
-
+  ignore_errors: true

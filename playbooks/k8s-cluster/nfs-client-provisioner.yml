@@ -1,0 +1,44 @@
+---
+# This playbook is used to setup the nfs-client-provisioner
+# If the cluster already has an nfs server setup run with --skip-tags="nfs_server,nfs_mkdir"
+#   Otherwhise an NFS server will be configured on kube-master[0] 
+# After settting up an NFS server, nfs software is installed on all nodes
+# Lastly, the nfs-client-provisioner is helm installed using the role
+#
+# TODO: This uses a local submodule because 'stable' is EOL and a new repo is not yet up
+#
+# The default NFS configuration of this playbook is not meant for production systems
+#   For production deployments please configur NFS with storage-partner guidance
+#
+# Install the required NFS software on all nodes and then helm install the nfs-client 
+- hosts: kube-master[0]
+  become: yes
+  tasks:
+  - name: Make sure NFS directory exists and is globally writable
+    file:
+      path: "{{ k8s_nfs_export_path }}"
+      state: directory
+      mode: "u=rwx,g=rwx,o=rwx"
+    when: k8s_nfs_mkdir and k8s_deploy_nfs_server 
+  - name: Deploy NFS server master
+    include_role:
+      name: nfs
+    vars:
+    - nfs_is_server: yes
+    when: k8s_deploy_nfs_server
+
+- hosts: "k8s-cluster"
+  become: yes
+  roles:
+    - nfs
+  tags:
+    - nfs_software
+
+- hosts: kube-master[0]
+  become: true
+  tasks:
+    - name: install nfs-client-provisioner
+      include_role:
+        name: nfs-client-provisioner
+      when: k8s_nfs_client_provisioner
+  environment: "{{proxy_env if proxy_env is defined else {}}}"

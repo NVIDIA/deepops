@@ -2,7 +2,7 @@ Software modules for Slurm clusters
 ===================================
 
 Slurm clusters will frequently provide a bare-metal development environment in the form of "Environment Modules".
-Enviroment Modules provide a convenient way to dynamically change the user's environment variables, such as `PATH` or `LD_LIBRARY_PATH`, to enable use of software installed in different locations.
+Environment Modules provide a convenient way to dynamically change the user's environment variables, such as `PATH` or `LD_LIBRARY_PATH`, to enable use of software installed in different locations.
 This makes it easy to install multiple versions of the same software package and dynamically switch between them, such as different versions of CUDA or OpenMPI.
 
 DeepOps installs the Lmod tool for managing your Environment Modules.
@@ -34,7 +34,7 @@ ansible-playbook -l slurm-cluster playbooks/slurm-cluster/spack-modules.yml
 Once you have installed Spack, you can view the list of installed Environment Modules using the `module avail` command:
 
 ```bash
-vagrant@virtual-login01:~$ module avail
+login01:~$ module avail
 
 ------------------------------------------- /sw/spack/share/spack/modules/linux-ubuntu18.04-ivybridge --------------------------------------------
    autoconf-2.69-gcc-7.5.0-hfxfrih          libsigsegv-2.12-gcc-7.5.0-2yve3ej    perl-5.30.3-gcc-7.5.0-khsv2dq
@@ -53,15 +53,15 @@ You can then load a chosen module using `module load`.
 Loading a module will change your active environment variables (such as `PATH`) to add the software package in question to your environment.
 
 ```bash
-vagrant@virtual-login01:~$ module load cuda-10.2.89-gcc-7.5.0-sozilk3
-vagrant@virtual-login01:~$ which nvcc
+login01:~$ module load cuda-10.2.89-gcc-7.5.0-sozilk3
+login01:~$ which nvcc
 /sw/spack/opt/spack/linux-ubuntu18.04-ivybridge/gcc-7.5.0/cuda-10.2.89-sozilk3ahqmsg3nndyifhv7hhw2j6cgt/bin/nvcc
 ```
 
 In addition to using Environment Modules directly, Spack also provides a mechanism to load and unload modules directly using the `spack` command.
 
 ```bash
-vagrant@virtual-login01:~$ spack find
+login01:~$ spack find
 ==> 20 installed packages
 -- linux-ubuntu18.04-ivybridge / gcc@7.5.0 ----------------------
 autoconf@2.69    gdbm@1.18.1    libpciaccess@0.13.5  libxml2@2.9.10  numactl@2.0.12  pkgconf@1.7.3       xz@5.2.5
@@ -105,7 +105,7 @@ ansible-playbook -l slurm-cluster playbooks/slurm-cluster/easybuild-modules.yml
 Once you have installed EasyBuild, you can view the list of installed Environment Modules using the `module avail` command:
 
 ```bash
-vagrant@virtual-login01:~$ module avail
+login01:~$ module avail
 
 ------------------------------------------------------------------------------------------------- /sw/modules/all --------------------------------------------------------------------------------------------------
    Bison/3.3.2    EasyBuild/4.2.2 (L)    M4/1.4.18    binutils/2.32    flex/2.6.4    help2man/1.47.4    zlib/1.2.11
@@ -121,8 +121,8 @@ You can then load a chosen module using `module load`.
 Loading a module will change your active environment variables (such as `PATH`) to add the software package in question to your environment.
 
 ```bash
-vagrant@virtual-login01:~$ module load flex/2.6.4
-vagrant@virtual-login01:~$ which flex
+login01:~$ module load flex/2.6.4
+login01:~$ which flex
 /sw/software/flex/2.6.4/bin/flex
 ```
 

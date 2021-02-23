@@ -23,7 +23,7 @@ HELM_CHARTS_REPO_METALLB="${HELM_CHARTS_REPO_METALLB:-https://charts.bitnami.com
 HELM_METALLB_CHART_VERSION=${HELM_METALLB_CHART_VERSION:-0.1.24}
 if ! helm repo list | grep bitnami  >/dev/null 2>&1 ; then
 	helm repo add bitnami "${HELM_CHARTS_REPO_METALLB}"
-	helm repo upate
+	helm repo update
 fi
 
 # We need to dynamically set up Helm args, so let's use an array
@@ -37,5 +37,6 @@ fi
 
 # Set up the MetalLB load balancer
 if ! helm status metallb >/dev/null 2>&1; then
-	helm install --wait metallb bitnami/metallb "${helm_install_args[@]}" --version ${HELM_METALLB_CHART_VERSION}
+	kubectl create namespace deepops-loadbalancer
+	helm install --wait metallb bitnami/metallb "${helm_install_args[@]}" --version ${HELM_METALLB_CHART_VERSION} --namespace deepops-loadbalancer
 fi

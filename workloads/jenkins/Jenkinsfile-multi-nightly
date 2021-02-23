@@ -51,9 +51,9 @@ pipeline {
              bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
           '''
 
-          echo "Test Rook+Ceph installation"
+          echo "Verify local docker registry"
           sh '''
-             timeout 2200 bash -x ./workloads/jenkins/scripts/test-ceph.sh
+             bash -x ./workloads/jenkins/scripts/test-local-registry.sh
           '''
 
           echo "Test Kubeflow installation"
@@ -152,11 +152,6 @@ pipeline {
           echo "Verify ingress config"
           sh '''
              bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
-          '''
-
-          echo "Test Rook+Ceph installation"
-          sh '''
-             timeout 2200 bash -x ./workloads/jenkins/scripts/test-ceph.sh
           '''
 
           echo "Test Kubeflow installation"

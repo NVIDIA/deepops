@@ -1,2 +1,3 @@
 deepops_dir: /opt/deepops
 deepops_venv: '{{ deepops_dir }}/venv'
+epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"

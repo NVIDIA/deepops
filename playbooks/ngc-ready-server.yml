@@ -16,9 +16,9 @@
   vars:
     ngc_container_tag: 18.10-py3
   tasks:
-    - name: install docker python module
+    - name: install docker python3 module
       apt:
-        name: python-docker
+        name: python3-docker
         state: present
         update_cache: yes
       when: ansible_distribution == "Ubuntu"
@@ -31,10 +31,10 @@
     - name: Install package dependencies
       package:
         name:
-          - python-pip
+          - python3-pip
         state: present
       when: ansible_os_family == "RedHat"
-    - name: Install python dependencies
+    - name: Install python3 dependencies
       pip:
         name:
           - docker
@@ -43,7 +43,7 @@
     - name: pull CUDA container
       docker_container:
         name: gpu-test-pull
-        image: nvcr.io/nvidia/cuda
+        image: nvcr.io/nvidia/cuda:10.1-base-ubuntu18.04
         auto_remove: yes
         pull: yes
       tags:
@@ -52,7 +52,7 @@
     - name: test CUDA container
       docker_container:
         name: gpu-test
-        image: nvcr.io/nvidia/cuda
+        image: nvcr.io/nvidia/cuda:10.1-base-ubuntu18.04
         detach: no
         command: nvidia-smi -L
       register: cuda

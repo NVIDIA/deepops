@@ -1,0 +1,82 @@
+# Template Node Health Check for DGX A100
+#
+# Note that you should probably edit this file to be more suitable for your
+# deployment! In particular, this configuration:
+#
+#   - Assumes all IB interfaces are configured for HDR IB
+#   - Assumes you have RAID configured and mounted
+#   - Assumes a 2 TB memory config
+#   - Assumes you are running DCGM
+#   - Assumes Ethernet interface names from Ubuntu DGX OS
+
+# CPU and memory
+
+ * || check_hw_cpuinfo 2 128 256
+ * || check_hw_physmem 2064135MB 2064135MB 5%
+
+# Ethernet: 10GbE RJ45
+
+ * || check_hw_eth enp226s0
+
+# Ethernet: Mellanox ConnectX-6
+
+ * || check_hw_eth enp97s0f1
+
+# IB devices
+# Assumes all IB devices are configured at HDR, you may need to adjust this
+# based on your local configuration
+
+ * || check_hw_ib 200 mlx5_0:1
+ * || check_hw_ib 200 mlx5_1:1
+ * || check_hw_ib 200 mlx5_2:1
+ * || check_hw_ib 200 mlx5_3:1
+ * || check_hw_ib 200 mlx5_4:1
+ * || check_hw_ib 200 mlx5_5:1
+ * || check_hw_ib 200 mlx5_6:1
+ * || check_hw_ib 200 mlx5_7:1
+ * || check_hw_ib 200 mlx5_8:1
+ * || check_hw_ib 200 mlx5_9:1
+ * || check_hw_ib 200 mlx5_10:1
+ * || check_hw_ib 200 mlx5_11:1
+
+# Local filesystems
+
+ * || check_fs_mount_rw -t "ext4" -s "/dev/nvme3n1p2" -f "/"
+ * || check_fs_used / 90%
+ * || check_fs_mount_rw -t "ext4" -s "/dev/mapper/raid-raidlv" -f "/raid"
+ * || check_fs_used /raid 95%
+ * || check_fs_mount_rw -t "tmpfs" -s "tmpfs" -f "/tmp"
+ * || check_fs_used /tmp 95%
+
+# Remote filesystems - Examples only
+
+# * || check_fs_mount_rw -t "nfs4" -s "nfs01:/export/home" -f "/home"
+# * || check_fs_mount_rw -t "lustre" -s "lustre01@o2ib,lustre02@02ib:/scratch" -f "/scratch"
+
+# Basic GPU checks
+
+ * || check_nv_gpu_count 8
+ * || check_nv_pcie_link_width 16
+ * || check_nv_retired_pages
+ * || check_nv_dcgmi_diag
+
+# Driver check - Example only - Use to pin driver version
+# * || check_nv_drv_version 450.80.2
+
+# Service checks
+
+ * || check_ps_service -u root sshd
+ * || check_ps_service -d rsyslogd rsyslog
+ * || check_ps_service -u root slurmd
+ * || check_ps_service -u munge -d munged munge
+ * || check_ps_service -u nvidia-persistenced nvidia-persistenced
+ * || check_ps_service -u root -d nv-fabricmanager nvidia-fabricmanager
+ * || check_ps_service -d nv-hostengine dcgm
+
+# Kernel module checks - Only check modules not covered via other tests
+
+ * || check_cmd_output -t 2 -r 0 -m "/nv_peer_mem/" "/sbin/lsmod"
+
+# Load average check - Check for ridiculously high load
+
+ * || check_ps_loadavg 300

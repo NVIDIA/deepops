@@ -5,6 +5,8 @@
 
 - hosts: all
   become: yes
+  gather_facts: no
+  strategy: free
   tasks:
     - name: Include NVIDIA DGX Firmware role
       include_role:

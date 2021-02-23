@@ -7,7 +7,7 @@ High-Performance RoCE Implementation in Multi-Node Kubernetes Cluster
 
 ## Solution Overview and Scope
 
-   The goal of this solution to provide a high performance GPU on-demands Ethernet based multi-node Kubernetes environment so data scientists, researchers and developers can launch their ML/AI workloads quickly on a containerized environment without worrying about underlying computation infrastructure's compatibility metrix on different hardware, software and performance. This implementation guide is built up with 3 nodes cluster in a lab environment, all the detailed hardware, software requirements list here are pertinent to this environment but can be served as a general reference on where you see fit to your particular case. In this 3-node Kubernetes cluster, One DGX-1 is configured exclusively as a Kubernetes master node, ideally a well-designed Kubernetes HA cluster should have minimal 3 master nodes formed a stacked control plane, but that's not the focus of this exercise and one master node doesn't have any functional impact on our pod, especially for the RoCE functions. But it's recommended to follow general HA best practice design in a production environment.  Two other DGX-1s are configured as GPU worker nodes. Each GPU worker node is equipped with 8*V100 Tesla GPUs and two Mellanox ConnectX-5 VPI dual mode (InfiniBand or Ethernet) 100G network cards, which are operated in Ethernet mode in this lab. A Mellanox Spectrum Ethernet switch is used to connect those two worker nodes. A separate management switch is provisioned to provide housekeeping management functions.  Opensource Kubernetes with Nvidia GPU plugins are running on top of those 3 nodes to provide containerized GPU-on-demand services for various ML/AI workload. Open MPI, Nvidia NCCL with CUDA, ResNet image classification with Tensorflow and Horovod framework are used as application workload to validate solution, especially the performance. 
+   The goal of this solution to provide a high performance GPU on-demands Ethernet based multi-node Kubernetes environment so data scientists, researchers and developers can launch their ML/AI workloads quickly on a containerized environment without worrying about underlying computation infrastructure's compatibility matrix on different hardware, software and performance. This implementation guide is built up with 3 nodes cluster in a lab environment, all the detailed hardware, software requirements list here are pertinent to this environment but can be served as a general reference on where you see fit to your particular case. In this 3-node Kubernetes cluster, One DGX-1 is configured exclusively as a Kubernetes master node, ideally a well-designed Kubernetes HA cluster should have minimal 3 master nodes formed a stacked control plane, but that's not the focus of this exercise and one master node doesn't have any functional impact on our pod, especially for the RoCE functions. But it's recommended to follow general HA best practice design in a production environment.  Two other DGX-1s are configured as GPU worker nodes. Each GPU worker node is equipped with 8*V100 Tesla GPUs and two Mellanox ConnectX-5 VPI dual mode (InfiniBand or Ethernet) 100G network cards, which are operated in Ethernet mode in this lab. A Mellanox Spectrum Ethernet switch is used to connect those two worker nodes. A separate management switch is provisioned to provide housekeeping management functions.  Opensource Kubernetes with Nvidia GPU plugins are running on top of those 3 nodes to provide containerized GPU-on-demand services for various ML/AI workload. Open MPI, Nvidia NCCL with CUDA, ResNet image classification with Tensorflow and Horovod framework are used as application workload to validate solution, especially the performance. 
 
 ## RoCE Design Considerations
 
@@ -60,7 +60,7 @@ add switch PFC, ECN configuration
 
    Install a supported operating system on all servers utilizing the [DGXie](/docs/pxe/dgxie-container.md) provisioning container, via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)), or server BMC/console.
 
-   > NOTE: During OS installation, it is ideal if the identical user/password is configured. Otherwise, follow step 4 below to create an idential user across all nodes in the cluster.
+   > NOTE: During OS installation, it is ideal if the identical user/password is configured. Otherwise, follow step 4 below to create an identical user across all nodes in the cluster.
 
 
 3. Verify SRIOV is enabled in server BIOS and RoCE is working on the physical NIC level
@@ -342,7 +342,6 @@ add switch PFC, ECN configuration
    Img/sec per GPU: 234.8 +-42.0
    Total img/sec on 16 GPU(s): 3756.0 +-672.7
    ```
-
 
 ## Performance Validation with Bare Metal and Non-RoCE Kubernetes Pods
 

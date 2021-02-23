@@ -40,7 +40,7 @@ These instructions assume that:
     ```
     $ source /usr/local/anaconda/bin/activate /shared/conda
     $ pip install git+https://github.com/rapidsai/dask-xgboost@dask-cudf
-    $ pip install git+https://github.com/rapidsai/dask-cuda@master
+    $ pip install git+https://github.com/rapidsai/dask-cuda@main
     ```
 1. Make a `/shared/benchmark` directory for working files while we run.
     ```

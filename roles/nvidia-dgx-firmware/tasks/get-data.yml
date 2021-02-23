@@ -1,5 +1,4 @@
 ---
-
 # This is used to generate a spreadsheet mapping NICs/IPs/Hostnames to a cluster of DGX-2s
 - name: Run NVSM human-readable health show
   shell: "osversion=`cat /etc/dgx-release | grep 'DGX_SWBUILD_VERSION'`; host=`hostname`; copper_mac=`ip addr | grep -A 1 enp6s0 | grep link | awk '{print $2}'`; bmc_ip=`sudo ipmitool lan print | grep -i 'IP Address              :' | awk '{print $4}'`; bmc_mac=`sudo ipmitool lan print | grep -i 'MAC Address' | awk '{print $4}'`;host_mac=`ifconfig {{ nv_mgmt_interface }} | grep 'ether' | awk '{print $2}'`;host_ip=`ifconfig {{ nv_mgmt_interface }} | grep 'inet ' | awk '{print $2}'`;data=\"${host_ip},${host_mac},${bmc_ip},${bmc_mac},${copper_mac},${host},${osversion}\";echo ${data}"

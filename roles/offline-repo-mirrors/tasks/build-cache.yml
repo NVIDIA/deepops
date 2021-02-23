@@ -77,8 +77,8 @@
   - "pip"
   when: download_pip_packages
 
-- name: download python packages
-  command: "pip download --dest {{ offline_cache_dir }}/pip {{ item.name }}"
+- name: download python3 packages
+  command: "pip3 download --dest {{ offline_cache_dir }}/pip {{ item.name }}"
   with_items: "{{ pip_package_list }}"
   when: download_pip_packages
 

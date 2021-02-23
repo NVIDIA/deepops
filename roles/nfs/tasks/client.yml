@@ -20,11 +20,17 @@
   tags:
     - nfs
 
-- name: rhel | install management prereq
+- name: rhel 7 | install management prereq
   yum:
     name: "libsemanage-python"
     state: present
-  when: ansible_os_family == "RedHat"
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+
+- name: rhel 8 | install management prereq
+  yum:
+    name: "python3-libsemanage"
+    state: present
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
 
 - name: rhel | enable nfs home directory usage
   seboolean:

@@ -1,0 +1,53 @@
+apiVersion: kubeflow.org/v1alpha2
+kind: MPIJob
+metadata:
+  name: tensorflow-mpi-job
+spec:
+  slotsPerWorker: 1
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+        spec:
+          containers:
+          - image: "nvcr.io/nvidia/tensorflow:20.12-tf1-py3"
+            name: tensorflow-mpi-job-container
+            command:
+            - mpirun
+            - -np
+            - "4"
+            - -bind-to
+            - none
+            - -map-by
+            - slot
+            - -x
+            - NCCL_DEBUG=INFO
+            - -x
+            - LD_LIBRARY_PATH
+            - -x
+            - PATH
+            - -mca
+            - pml
+            - ob1
+            - -mca
+            - btl
+            - ^openib
+            - --allow-run-as-root
+            - python
+            - /workspace/nvidia-examples/cnn/resnet.py
+            - --layers
+            - "50"
+            - --batch_size
+            - "512"
+    Worker:
+      # The number of workers (M)
+      replicas: 4
+      template:
+        spec:
+          containers:
+          - image: "nvcr.io/nvidia/tensorflow:20.12-tf1-py3"
+            name: tensorflow-mpi-job-container
+            resources:
+              limits:
+                # The number of GPUs per-worker (N)
+                nvidia.com/gpu: 1

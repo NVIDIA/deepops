@@ -1,11 +1,10 @@
 ---
-- name: restart nfs
-  service: name=nfs-kernel-server state=restarted
-  when: ansible_os_family == "Debian"
-
-- name: restart nfs
-  service: name=nfs-server state=restarted
-  when: ansible_os_family == "RedHat"
-
 - name: restart rpcbind
-  service: name=rpcbind state=restarted
+  service:
+    name: rpcbind
+    state: restarted
+
+- name: restart nfs
+  service:
+    name: "{{ nfs_server_daemon }}"
+    state: restarted

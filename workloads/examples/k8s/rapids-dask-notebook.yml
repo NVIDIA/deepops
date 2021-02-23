@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rapids-dask-notebook
+  labels:
+    app: rapids-dask-notebook
+spec:
+  selector:
+    matchLabels:
+      app: rapids-dask-notebook    
+  template:
+    metadata:
+      labels:
+        app: rapids-dask-notebook
+    spec:
+      containers:
+        - name: rapids-dask-notebook-container
+          image: supertetelman/rapids-dask:cuda10.1-runtime-ubuntu18.04-py3.8
+          ports:
+            - containerPort: 8888
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rapids-dask-notebook
+  labels:
+    app: rapids-dask-notebook
+spec:
+  selector:
+    app: rapids-dask-notebook
+  type: NodePort
+  ports:
+    - targetPort: 8888
+      nodePort: 30008
+      port: 8888
+      name: http
+      protocol: TCP
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: dask-scaler
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: dask-scaler
+subjects:
+- kind: ServiceAccount
+  name: default
+roleRef:
+  kind: Role
+  name: dask-scaler
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dask-rapids
