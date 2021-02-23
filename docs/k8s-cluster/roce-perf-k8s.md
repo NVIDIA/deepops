@@ -350,12 +350,12 @@ add switch PFC, ECN configuration
 
 NCCL Latency comparision (NCCL ring topology): 
 
-![alt text](img/nccl_latency_ring.PNG "NCCL latency, ring")
+![alt text](../img/nccl_latency_ring.PNG "NCCL latency, ring")
 
 
 NCCL Bandwidth comparision (NCCL ring topology): 
 
-![alt text](img/nccl_bandwidth_ring.PNG "NCCL bandwidth, ring")
+![alt text](../img/nccl_bandwidth_ring.PNG "NCCL bandwidth, ring")
 
    > Note: The bare-metal results are overlaping with Kubernetes SRIOV+RoCE because the number is almost identical.
 
