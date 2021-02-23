@@ -343,21 +343,20 @@ add switch PFC, ECN configuration
    Total img/sec on 16 GPU(s): 3756.0 +-672.7
    ```
 
+## Performance Validation with Bare Metal and Non-RoCE Kubernetes Pods
 
-## Performance Validation with Baremetal and Non-RoCE Kubernetes Pods
-
-   Additional tests are performed to compare the performance on multi-node baremetal servers and non-RoCE kubernetes pods. For multi-node baremetal server NCCL testing, we follow the documentations on those sites to install and compile NCCL and Open MPI:  https://github.com/NVIDIA/nccl and https://www.open-mpi.org/. For non-RoCE Kubernetes pods testing, we simply detached the SRIOV/RoCE interfaces from Kubernetes job file so NCCL will run over traditional IP sockets. We run multiple tests in each scenarios to eliminates the outliers and the results show SRIOV with RoCE in Kubernetes can delivery the same performance as in baremetal servers.
+   Additional tests are performed to compare the performance on multi-node bare metal servers and non-RoCE kubernetes pods. For multi-node bare metal server NCCL testing, we follow the documentations on those sites to install and compile NCCL and Open MPI:  https://github.com/NVIDIA/nccl and https://www.open-mpi.org/. For non-RoCE Kubernetes pods testing, we simply detached the SRIOV/RoCE interfaces from Kubernetes job file so NCCL will run over traditional IP sockets. We run multiple tests in each scenarios to eliminates the outliers and the results show SRIOV with RoCE in Kubernetes can delivery the same performance as in bare metal servers.
 
 NCCL Latency comparison (NCCL ring topology): 
 
-![alt text](img/nccl_latency_ring.PNG "NCCL latency, ring")
+![alt text](../img/nccl_latency_ring.PNG "NCCL latency, ring")
 
 
 NCCL Bandwidth comparison (NCCL ring topology): 
 
-![alt text](img/nccl_bandwidth_ring.PNG "NCCL bandwidth, ring")
+![alt text](../img/nccl_bandwidth_ring.PNG "NCCL bandwidth, ring")
 
-   > Note: The bare-metal results are overlapping with Kubernetes SRIOV+RoCE because the number is almost identical.
+   > Note: The bare metal results are overlapping with Kubernetes SRIOV+RoCE because the number is almost identical.
 
 ### Troubleshoot 
 
