@@ -1,0 +1,75 @@
+VAGRANTFILE_API_VERSION = "2"
+BOX_IMAGE = "centos/8"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.ssh.insert_key = false
+  config.ssh.private_key_path = ["~/.ssh/id_rsa", "~/.vagrant.d/insecure_private_key"]
+  config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "~/.ssh/authorized_keys"
+
+  config.vm.define "virtual-mgmt01" do |mgmt|
+    mgmt.vm.provider "libvirt" do |v|
+      v.memory = 2048
+      v.cpus = 2
+    end 
+    mgmt.vm.box = BOX_IMAGE
+    mgmt.vm.network :private_network, ip: "10.0.0.2"
+  end
+
+  config.vm.define "virtual-mgmt02" do |mgmt|
+    mgmt.vm.provider "libvirt" do |v|
+      v.memory = 2048
+      v.cpus = 2 
+    end
+    mgmt.vm.box = BOX_IMAGE
+    mgmt.vm.network :private_network, ip: "10.0.0.3"
+  end
+
+  config.vm.define "virtual-mgmt03" do |mgmt|
+    mgmt.vm.provider "libvirt" do |v|
+      v.memory = 2048 
+      v.cpus = 2
+    end
+    mgmt.vm.box = BOX_IMAGE
+    mgmt.vm.network :private_network, ip: "10.0.0.4"
+  end 
+
+  config.vm.define "virtual-login01" do |login|
+    login.vm.provider "libvirt" do |v|
+      v.memory = 6144
+      v.cpus = 4
+    end
+    login.vm.box = BOX_IMAGE 
+    login.vm.network :private_network, ip: "10.0.0.5"
+  end
+
+  config.vm.define "virtual-gpu01" do |gpu|
+    config.vm.provider "libvirt" do |v|
+      v.memory = 16384
+      v.cpus = 2 
+      v.machine_type = "q35"
+      v.cpu_mode = "host-passthrough"
+      # comment in for pci passthrough (and change bus according
+      # to local hw setup - `lspci -nnk | grep NVIDIA`)
+      # BUS-GPU01 is a magic string used by automation, this should be removed
+      #BUS-GPU01 v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
+    end
+    gpu.vm.box = BOX_IMAGE
+    gpu.vm.network :private_network, ip: "10.0.0.6"
+  end 
+
+  config.vm.define "virtual-gpu02" do |gpu|
+    config.vm.provider "libvirt" do |v|
+      v.memory = 16384
+      v.cpus = 2
+      v.machine_type = "q35"
+      v.cpu_mode = "host-passthrough"
+      # comment in for pci passthrough (and change bus according
+      # to local hw setup - `lspci -nnk | grep NVIDIA`)
+      # BUS-GPU02 is a magic string used by automation, this should be removed
+      #BUS-GPU02 v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
+    end 
+    gpu.vm.box = BOX_IMAGE
+    gpu.vm.network :private_network, ip: "10.0.0.7"
+  end
+
+end
