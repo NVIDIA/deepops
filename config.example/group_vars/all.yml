@@ -292,7 +292,6 @@ standalone_container_registry_port: "5000"
 ################################################################################
 # Configuration for NGC-Ready playbok                                          #
 ################################################################################
-ngc_ready_epel_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
 ngc_ready_cuda_container: "nvcr.io/nvidia/cuda:10.1-base-ubuntu18.04"
 ngc_ready_pytorch: "nvcr.io/nvidia/pytorch:18.10-py3"
 ngc_ready_tensorflow: "nvcr.io/nvidia/tensorflow:18.10-py3"

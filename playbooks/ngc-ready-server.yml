@@ -23,7 +23,7 @@
     - name: Enable EPEL repo
       package:
         name:
-          - "{{ ngc_ready_epel_url }}" 
+          - "{{ epel_package }}"
         state: present
       when: ansible_os_family == 'RedHat'
     - name: Install package dependencies
