@@ -20,11 +20,11 @@ The NCCL test will use the NCCL all_reduce_perf test to validate fabric correctn
 
 ## Getting started
 
-Copy the DeepOps repo to the user's home directory of the slurm cluster to be tested or clone it from github.com.. It is assumed that this directory is on a shared filed system. Place the hpl binary in the burn-in directory (`deepops/workloads/burn-in`) and run launch_experiment_slurm.sh.
+Copy the DeepOps repo to the user's home directory of the slurm cluster to be tested or clone it from github.com.. It is assumed that this directory is on a shared filed system. Place the hpl binary in the bit directory (`deepops/workloads/bit`) and run launch_experiment_slurm.sh.
 
 ```sh
 git clone https://github.com/NVIDIA/deepops.git
-cd deepops/workloads/burn-in/
+cd deepops/workloads/bit/
 
 ```
 
@@ -93,12 +93,12 @@ $ ./launch_hpl_experiment.sh -s dgxa100_80G  -c 5 --cruntime enroot
 Using contaner runtime enroot
 
 Experiment Variables:
-HPL_DIR: /home/juser/deepops/workloads/burn-in
-HPL_SCRIPTS_DIR: /home/juser/deepops/workloads/burn-in
-EXPDIR: /home/juser/deepops/workloads/burn-in/results/1node_dgxa100_80G_20201215104946
+HPL_DIR: /home/juser/deepops/workloads/bit
+HPL_SCRIPTS_DIR: /home/juser/deepops/workloads/bit
+EXPDIR: /home/juser/deepops/workloads/bit/results/1node_dgxa100_80G_20201215104946
 system: dgxa100_80G
 cruntime: enroot
-CONT: /home/juser/deepops/workloads/burn-in/nvidia+hpc-benchmarks+20.10-hpl.sqsh
+CONT: /home/juser/deepops/workloads/bit/nvidia+hpc-benchmarks+20.10-hpl.sqsh
 nodes_per_job: 1
 gpus_per_node: 8
 gpuclock: <Not Set>
@@ -129,7 +129,7 @@ No Issues Found
 
 Summary:
 
-    Experiment Dir: /home/juser/deepops/workloads/burn-in/results/1node_dgxa100_80G_20201215104946
+    Experiment Dir: /home/juser/deepops/workloads/bit/results/1node_dgxa100_80G_20201215104946
         Total Jobs: 5
          Slow Jobs: 0
        Failed Jobs: 0
@@ -146,12 +146,12 @@ Summary:
 
 
 Run Summary:
-Experiment Results Directory: /home/juser/deepops/workloads/burn-in/results/1node_dgxa100_80G_20201215104946
+Experiment Results Directory: /home/juser/deepops/workloads/bit/results/1node_dgxa100_80G_20201215104946
 Total Nodes: 5
 Nodes Per Job:: 1
-Verify Log: /home/juser/deepops/workloads/burn-in/results/1node_dgxa100_80G_20201215104946/verify_results.txt
+Verify Log: /home/juser/deepops/workloads/bit/results/1node_dgxa100_80G_20201215104946/verify_results.txt
 
-To rerun the verification: /home/juser/deepops/workloads/burn-in/verify_hpl_experiment.py /home/juser/deepops/workloads/burn-in/results/1node_dgxa100_80G_20201215104946
+To rerun the verification: /home/juser/deepops/workloads/bit/verify_hpl_experiment.py /home/juser/deepops/workloads/bit/results/1node_dgxa100_80G_20201215104946
 
 ```
 
@@ -163,11 +163,11 @@ At the end of each job, a result will be reported that says if the individual jo
 
 Experiments are verified when all jobs are complete.  See the file verify_results.txt in the experiment directory.
 
-## How to use these scripts to burn-in the cluster
+## How to use these scripts to burnn in the cluster
  * Run an experiment where each node generates a result to identify any slow nodes.  If any slow nodes are found, fix them.
 
 ```
-./launch_hpl_experiment.py -c 1 -s dgxa100_80GG --maxnodes <number of nodes to run single node burn-in>  --cruntime enroot
+./launch_hpl_experiment.py -c 1 -s dgxa100_80GG --maxnodes <number of nodes to run single node>  --cruntime enroot
 ```
 * Run multi-node jobs starting with two nodes, and increase them (four, eight, etc) until the size of the job to the next power of two would be greater than half the system.  At each node count, all runs should be completed successfully with similar performance.
 *Run two jobs at N/2 in size (N is the total number of nodes). 
