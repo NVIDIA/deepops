@@ -200,4 +200,4 @@ slurm_enable_rsyslog_server: true
 slurm_enable_rsyslog_client: true
 rsyslog_server_hostname: "{{ groups['slurm-master'][0] }}"
 rsyslog_client_tcp_host: "{{ rsyslog_server_hostname }}"
-rsyslog_client_group: "slurm-node"
+rsyslog_client_group: "slurm-cluster"
