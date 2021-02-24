@@ -68,7 +68,13 @@
   command: make -j uninstall
   args:
     chdir: "{{ pmix_build_dir }}"
-  ignore_errors: yes
+  register: pmix_make_uninstall
+  failed_when:
+    - pmix_make_uninstall.rc != 0
+    - "\"make: *** No rule to make target 'uninstall'\" not in pmix_make_uninstall.stderr"
+  changed_when:
+    - pmix_make_uninstall.rc == 0
+    - "\"uninstall: rm -f\" in pmix_make_uninstall.stdout"
   when: pmix_build
   tags:
     - uninstall
@@ -77,7 +83,13 @@
   command: make distclean
   args:
     chdir: "{{ pmix_build_dir }}"
-  ignore_errors: yes
+  register: pmix_make_distclean
+  failed_when:
+    - pmix_make_distclean.rc != 0
+    - "\"make: *** No rule to make target 'distclean'\" not in pmix_make_distclean.stderr"
+  changed_when:
+    - pmix_make_distclean.rc == 0
+    - "\"rm -f\" in pmix_make_distclean.stdout"
   when: pmix_build
 
 - name: configure pmix
