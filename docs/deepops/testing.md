@@ -14,6 +14,8 @@ DeepOps CI contains two types of automated tests:
 
 * PR tests. These are faster and are executed against every open PR when commits are made to `master`. They are also when a commit is made to any DeepOps branch (`release-20.12`, `master`, etc.). Results are integrated into GitHub.
 
+In addition to the automated tests, we also provide developers the a method to manually kick off a test run against one or more deployment configurations in parallel from the below testing matrix through the [Jenkins-matrix](../../workloads/jenkins/Jenkinsfile-matrix) Jenkinsfile.
+
 ### Tests
 
 A short description of the nightly testing is outlined below. The full suit of tests can be reviewed in the [jenkins](../../workloads/jenkins) directory. Additional details can be found [here](../../workloads/jenkins/README.md).
@@ -24,8 +26,9 @@ A short description of the nightly testing is outlined below. The full suit of t
 | Test | [PR](../../workloads/jenkins/Jenkinsfile) | [Nightly](../../workloads/jenkins/Jenkinsfile-nightly) | [Nightly Multi-node](../../workloads/jenkins/Jenkinsfile-multi-nightly) | Comments |
 | --- | --- | --- | --- | --- |
 | Ubuntu 18.04 | x | x | x | |
-| Ubuntu 20.04 | | | | Support planned |
+| Ubuntu 20.04 | | | | x |
 | CentOS 7 | | x | x | |
+| CentOS | | | x | |
 | DGX OS | | | | No automated testing support |
 | RHEL | | | | No testing support |
 | 1 mgmt node | x | x | | |
