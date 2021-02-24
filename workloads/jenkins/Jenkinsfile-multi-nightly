@@ -138,6 +138,11 @@ pipeline {
              bash -x ./workloads/jenkins/scripts/test-rsyslog-slurm.sh
           '''
 
+          echo "Test GPU job"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+          '''
+
           echo "Reset repo and unmunge files"
           sh '''
             git reset --hard
@@ -244,6 +249,11 @@ pipeline {
           echo "Verify rsyslog forwarding is working for the slurm cluster"
           sh '''
              bash -x ./workloads/jenkins/scripts/test-rsyslog-slurm.sh
+          '''
+
+          echo "Test GPU job"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
           '''
 
           echo "Reset repo and unmunge files"
@@ -366,6 +376,11 @@ pipeline {
              bash -x ./workloads/jenkins/scripts/test-rsyslog-slurm.sh
           '''
 
+          echo "Test GPU job"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+          '''
+
           echo "Reset repo and unmunge files"
           sh '''
             git reset --hard
@@ -473,6 +488,11 @@ pipeline {
           echo "Verify rsyslog forwarding is working for the slurm cluster"
           sh '''
              bash -x ./workloads/jenkins/scripts/test-rsyslog-slurm.sh
+          '''
+
+          echo "Test GPU job"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
           '''
         }
       }
