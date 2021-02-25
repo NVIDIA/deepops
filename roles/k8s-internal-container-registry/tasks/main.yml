@@ -19,4 +19,4 @@
     mode: "0644"
 
 - name: install container-registry
-  command: "{{ helm_cmd }} upgrade --install -f {{ container_registry_values_path }} --version {{ container_registry_version }} --namespace {{ container_registry_namespace }} {{ container_registry_installed_name }} {{ container_registry_chart_name }}" 
+  command: "{{ helm_cmd }} upgrade --install -f {{ container_registry_values_path }} --version {{ container_registry_version }} --create-namespace --namespace {{ container_registry_namespace }} {{ container_registry_installed_name }} {{ container_registry_chart_name }}" 

@@ -191,8 +191,7 @@ The service can be reached from the following address:
 
 ### Container Registry
 
-The default container registry hostname is `registry.local`. To set another hostname (for example,
-one that is resolvable outside the cluster), add `-e container_registry_hostname=registry.example.com`.
+The default container registry hostname is `registry.local`. To set another hostname (for example, one that is resolvable outside the cluster), add `-e container_registry_hostname=registry.example.com`.
 
 ```sh
 ansible-playbook --tags container-registry playbooks/k8s-cluster/container-registry.yml
