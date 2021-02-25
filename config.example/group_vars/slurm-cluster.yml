@@ -192,3 +192,12 @@ slurm_enable_monitoring: true
 # Inventory host groups where cluster monitoring services will be installed
 # (Prometheus, Grafana, etc)
 slurm_monitoring_group: "slurm-master"
+
+################################################################################
+# Logging with rsyslog                                                         #
+################################################################################
+slurm_enable_rsyslog_server: true
+slurm_enable_rsyslog_client: true
+rsyslog_server_hostname: "{{ groups['slurm-master'][0] }}"
+rsyslog_client_tcp_host: "{{ rsyslog_server_hostname }}"
+rsyslog_client_group: "slurm-cluster"

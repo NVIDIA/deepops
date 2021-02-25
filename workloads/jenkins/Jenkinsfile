@@ -61,6 +61,11 @@ pipeline {
              bash -x ./workloads/jenkins/scripts/test-local-registry.sh
           '''
 
+          echo "Verify rsyslog forwarding is working for the k8s cluster"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/test-rsyslog-k8s.sh
+          '''
+
           echo "Test Monitoring installation"
           sh '''
             timeout 800 bash -x ./workloads/jenkins/scripts/test-monitoring.sh
@@ -89,6 +94,11 @@ pipeline {
           echo "Test MPI"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-mpi-job.sh
+          '''
+
+          echo "Verify rsyslog forwarding is working for the slurm cluster"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/test-rsyslog-slurm.sh
           '''
         }
       }

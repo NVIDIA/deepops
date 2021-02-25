@@ -184,7 +184,20 @@ The source for our built-in Grafana dashboards can be found in [src/dashboards](
 
 ### Logging
 
-Follow the [Logging Guide](logging.md) to setup logging in the cluster.
+#### Centralized syslog
+
+To enable syslog forwarding from the cluster nodes to the first Kubernetes controller node, you can set the following variables in your DeepOps configuration:
+
+```
+kube_enable_rsyslog_server: true
+kube_enable_rsyslog_client: true
+```
+
+For more information about our syslog forwarding functionality, please see the [centralized syslog guide](../misc/syslog.md).
+
+#### ELK logging
+
+Follow the [ELK logging Guide](logging.md) to setup logging in the cluster.
 
 The service can be reached from the following address:
 * Kibana: http://\<kube-master\>:30700

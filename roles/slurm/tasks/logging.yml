@@ -1,0 +1,10 @@
+---
+- name: import slurm logs into rsyslog
+  template:
+    src: "etc/rsyslog.d/99-slurm.conf"
+    dest: "/etc/rsyslog.d/99-slurm.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  notify:
+  - restart rsyslog

@@ -63,3 +63,12 @@ nfs_exports:
 kube_enable_container_registry: true
 docker_insecure_registries: "{{ groups['kube-master']|map('regex_replace', '^(.*)$', '\\1:5000')|list + ['registry.local:31500']}}"
 docker_registry_mirrors: "{{ groups['kube-master'] | map('regex_replace', '^(.*)$', 'http://\\1:5000') | list }}"
+
+################################################################################
+# Logging with rsyslog                                                         #
+################################################################################
+kube_enable_rsyslog_server: true
+kube_enable_rsyslog_client: true
+rsyslog_server_hostname: "{{ groups['kube-master'][0] }}"
+rsyslog_client_tcp_host: "{{ rsyslog_server_hostname }}"
+rsyslog_client_group: "k8s-cluster"

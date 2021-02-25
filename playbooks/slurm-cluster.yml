@@ -92,6 +92,16 @@
 - include: slurm-cluster/nvidia-dcgm-exporter.yml
   when: slurm_enable_monitoring
 
+# Set up rsyslog forwarding from compute nodes to head node
+- include: generic/rsyslog-server.yml
+  vars:
+    hostlist: "{{ rsyslog_server_hostname | default('slurm-master[0]') }}"
+  when: slurm_enable_rsyslog_server|default(true)
+- include: generic/rsyslog-client.yml
+  vars:
+    hostlist: "{{ rsyslog_client_group | default('slurm-node') }}"
+  when: slurm_enable_rsyslog_client|default(true)
+
 # Install Singularity
 - include: container/singularity.yml
   when: slurm_cluster_install_singularity|default(true)
