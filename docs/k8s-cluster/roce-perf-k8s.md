@@ -350,14 +350,13 @@ add switch PFC, ECN configuration
 NCCL Latency comparison (NCCL ring topology): 
 
 ![alt text](../img/nccl_latency_ring.PNG "NCCL latency, ring"){:height="500px" width="500px"}
-
-<img src="https://github.com/NVIDIA/deepops/raw/master/docs/img/nccl_latency_ring.PNG" width="50%" height="50%">
-<img src="https://github.com/NVIDIA/deepops/raw/master/docs/img/nccl_latency_ring.PNG" width="500px" height="500px">
+<img src="https://github.com/NVIDIA/deepops/raw/master/docs/img/nccl_latency_ring.PNG" width="80%" height="80%">
 
 
 NCCL Bandwidth comparison (NCCL ring topology): 
 
 ![alt text](../img/nccl_bandwidth_ring.PNG "NCCL bandwidth, ring")
+<img src="https://github.com/NVIDIA/deepops/raw/master/docs/img/nccl_bandwidth_ring.PNG" width="80%" height="80%">
 
    > Note: The bare metal results are overlapping with Kubernetes SRIOV+RoCE because the number is almost identical.
 
