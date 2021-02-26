@@ -366,14 +366,16 @@ NCCL Bandwidth comparison (NCCL ring topology):
 
 On top of NCCL baseline verification, TensorFlow based Resnet-50 image classification is selected and tested in this Kubernetes cluster to compare the performance with and without RoCE from application point of view. The test setup is identical to the previous NCCL tests, however, that up-to-date latest software are used. You can find the Dockfile and job files in the example section:
 
-•       Ubuntu 20.04
-•       TensorFlow 2.4.1
-•       CUDA 11.2.1
-•       NCCL 2.8.4
-•       Horovod 0.21.3
-•       OpenMPI 4.1.0
-•       MOFED 5.2-2.2.0.0
-•       Kubernetes v1.18.9
+
+   * Ubuntu 20.04
+   * TensorFlow 2.4.1
+   * CUDA 11.2.1
+   * NCCL 2.8.4
+   * Horovod 0.21.3
+   * OpenMPI 4.1.0
+   * MOFED 5.2-2.2.0.0
+   * Kubernetes v1.18.9
+   * Latest MPI-Operator
 
 <img src="https://github.com/NVIDIA/deepops/raw/master/docs/img/roce_resnet50.png" width="80%" height="80%">
 
