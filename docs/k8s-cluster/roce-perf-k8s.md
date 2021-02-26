@@ -349,7 +349,7 @@ add switch PFC, ECN configuration
 
 NCCL Latency comparison (NCCL ring topology): 
 
-![alt text](../img/nccl_latency_ring.PNG "NCCL latency, ring")
+![alt text](../img/nccl_latency_ring.PNG "NCCL latency, ring"){:height="50%" width="50%"}
 
 
 NCCL Bandwidth comparison (NCCL ring topology): 
