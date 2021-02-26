@@ -105,6 +105,11 @@ pipeline {
           sh '''
              bash -x ./workloads/jenkins/scripts/test-rsyslog-slurm.sh
           '''
+
+          echo "Test GPU job"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+          '''
         }
       }
     }

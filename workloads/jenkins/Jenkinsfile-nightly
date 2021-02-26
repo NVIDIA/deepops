@@ -143,6 +143,11 @@ pipeline {
              bash -x ./workloads/jenkins/scripts/test-rsyslog-slurm.sh
           '''
 
+          echo "Test GPU job"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+          '''
+
           echo "Reset repo and unmunge files"
           sh '''
             git reset --hard
@@ -246,6 +251,11 @@ pipeline {
             timeout 60 bash -x ./workloads/jenkins/scripts/test-mpi-job.sh
           '''
 
+          echo "Test GPU job"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+          '''
+          
           echo "Test Enroot"
           sh '''
             timeout 120 bash -x ./workloads/jenkins/scripts/test-slurm-enroot-job.sh
@@ -374,6 +384,11 @@ pipeline {
             timeout 60 bash -x ./workloads/jenkins/scripts/test-mpi-job.sh
           '''
 
+          echo "Test GPU job"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+          '''
+          
           echo "Test Enroot"
           sh '''
             timeout 120 bash -x ./workloads/jenkins/scripts/test-slurm-enroot-job.sh
@@ -486,6 +501,11 @@ pipeline {
           echo "Verify rsyslog forwarding is working for the slurm cluster"
           sh '''
              bash -x ./workloads/jenkins/scripts/test-rsyslog-slurm.sh
+          '''
+
+          echo "Test GPU job"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
           '''
         }
       }
