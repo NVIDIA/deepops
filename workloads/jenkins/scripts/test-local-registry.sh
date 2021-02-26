@@ -14,7 +14,7 @@ ansible-playbook \
         "${ROOT_DIR}/playbooks/k8s-cluster/container-registry.yml"
 
 # Wait for Docker registry to be online
-kubectl wait --for=condition=ready --timeout=600s pod -l app=docker-registry
+kubectl wait --for=condition=ready --timeout=600s pod -n deepops-docker -l app=docker-registry
 
 # Upload script for pushing image to registry
 scp  \
