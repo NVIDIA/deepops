@@ -351,7 +351,8 @@ NCCL Latency comparison (NCCL ring topology):
 
 ![alt text](../img/nccl_latency_ring.PNG "NCCL latency, ring"){:height="500px" width="500px"}
 
-#<img src="https://your-image-url.type" width="100" height="100">
+<img src="https://github.com/NVIDIA/deepops/raw/master/docs/img/nccl_latency_ring.PNG" width="50%" height="50%">
+<img src="https://github.com/NVIDIA/deepops/raw/master/docs/img/nccl_latency_ring.PNG" width="500px" height="500px">
 
 
 NCCL Bandwidth comparison (NCCL ring topology): 
