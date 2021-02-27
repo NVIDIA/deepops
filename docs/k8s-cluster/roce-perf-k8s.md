@@ -377,10 +377,10 @@ On top of NCCL baseline verification, TensorFlow based Resnet-50 image classific
    * Kubernetes v1.18.9
    * Latest MPI-Operator
 
-<img src="https://github.com/NVIDIA/deepops/raw/master/docs/img/roce_resnet50.png" width="80%" height="80%">
+<img src="https://github.com/NVIDIA/deepops/raw/master/docs/img/roce_resnet50.PNG" width="80%" height="80%">
 
 
-It shows RoCE improves application performance by ~7-8% over non-RoCE configuration in our small setup out of box without any fine-tune. We expect the performance will be further improved on large scale setup with parameters tunning. It’s also interesting to note that the performance improvement is consistent across the board with synthetic data, real image dataset with 1 or 10 epochs in this configuration, so infrastructure team can start with synthetic data to validate the setup without waiting for the readiness of the real dataset. However, we still recommend to conduct a thorough evaluation with all components, including the real application and dataset for your production environment.
+It shows RoCE improves application performance by ~7-8% over non-RoCE configuration in our small setup (only have 2 x 100Gbps RoCE interfaces) out of box without any fine-tune. We expect the performance will be further improved on large scale setup with parameters tunning. It’s also interesting to note that the performance improvement is consistent across the board with synthetic data, real image dataset with 1 or 10 epochs in this configuration, so infrastructure team can start with synthetic data to validate the setup without waiting for the readiness of the real dataset. However, we still recommend to conduct a thorough evaluation with all components, including the real application and dataset for your production environment.
 
 
 ### Troubleshoot 
