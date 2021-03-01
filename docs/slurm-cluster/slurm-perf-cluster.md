@@ -60,7 +60,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    > NOTE: Be warned that `/etc/hostname` and `/etc/hosts` on each host will be modified to the name(s) specified in the inventory file, so it is best to use the actual names of the hosts.
 
-   When modifying the inventory, if the hosts are not accessible from the provisioning node by their hostname, supply an an `ansible_host`. For example:
+   When modifying the inventory, if the hosts are not accessible from the provisioning node by their hostname, supply an `ansible_host`. For example:
 
    ```yml
    # in config/inventory...
