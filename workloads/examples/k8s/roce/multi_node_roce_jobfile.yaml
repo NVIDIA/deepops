@@ -1,0 +1,60 @@
+### This example uses synthetic data
+### mgmt01:5000/roce_multinode_benchmark is the container image hosted in a private registry
+### sriov111,sriov112 are two RoCE interfaces
+###
+apiVersion: kubeflow.org/v1
+kind: MPIJob
+metadata:
+  name: tf-roce
+spec:
+  slotsPerWorker: 8
+  cleanPodPolicy: Running
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+         spec:
+           containers:
+           - image: mgmt01:5000/roce_multinode_benchmark
+             name: tf-roce
+             command:
+             - sh
+             - "-c"
+             - |
+               /bin/bash << 'EOF'
+               mpirun --allow-run-as-root \
+                 -np 16 \
+                 -bind-to none -map-by slot \
+                 -x NCCL_DEBUG=INFO \
+                 -x NCCL_DEBUG_SUBSYS=NET \
+                 -x NCCL_IB_DISABLE=0 \
+                 -x NCCL_NET_GDR_LEVEL=2 \
+                 -x LD_LIBRARY_PATH \
+                 -x PATH \
+                 -mca pml ob1 \
+                 -mca btl_tcp_if_exclude docker0,lo \
+                 -mca btl ^openib \
+                 python3 scripts/tf_cnn_benchmarks/tf_cnn_benchmarks.py \
+                 --model=vgg16 \
+                 --batch_size=64 \
+                 --variable_update=horovod \
+                 && sleep 5 
+               EOF
+    Worker:
+      replicas: 2
+      template:
+        metadata:
+          annotations:
+            k8s.v1.cni.cncf.io/networks: sriov111,sriov112
+        spec:
+          containers:
+          - image: mgmt01:5000/roce_multinode_benchmark
+            name: tf-roce
+            securityContext:
+              capabilities:
+                add: [ "IPC_LOCK" ]
+            resources:
+              limits:
+                intel.com/sriov_111: 1
+                intel.com/sriov_112: 1
+                nvidia.com/gpu: 8
