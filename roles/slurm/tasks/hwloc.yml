@@ -67,13 +67,7 @@
   command: make -j uninstall
   args:
     chdir: "{{ hwloc_build_dir }}"
-  register: hwloc_make_uninstall
-  failed_when:
-    - hwloc_make_uninstall.rc != 0
-    - "\"make: *** No rule to make target 'uninstall'\" not in hwloc_make_uninstall.stderr"
-  changed_when:
-    - hwloc_make_uninstall.rc == 0
-    - "\"uninstall: rm -f\" in hwloc_make_uninstall.stdout"
+  ignore_errors: yes
   when: hwloc_build
   tags:
     - uninstall
@@ -82,13 +76,7 @@
   command: make distclean
   args:
     chdir: "{{ hwloc_build_dir }}"
-  register: hwloc_make_distclean
-  failed_when:
-    - hwloc_make_distclean.rc != 0
-    - "\"make: *** No rule to make target 'distclean'\" not in hwloc_make_distclean.stderr"
-  changed_when:
-    - hwloc_make_distclean.rc == 0
-    - "\"rm -f\" in hwloc_make_distclean.stdout"
+  ignore_errors: yes
   when: hwloc_build
 
 - name: configure hwloc
