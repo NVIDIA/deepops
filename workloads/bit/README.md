@@ -56,16 +56,14 @@ Use your nvcr.io key as the password. Next, pull the container and create a loca
 docker pull nvcr.io/nvidia/hpc-benchmarks:20.10-hpl > hpc-benchmarks.20.10-hpl.tgz
 ```
 
-Then you can pass the file created here, hpc-benchmarks-20.10-hpl.tgz as an option to the launch script.
-
 ## Basic Launch Command
 
 ```
-./launch_hpl_experiment.sh --sys <SYSTEM> --count <NODES_PER_JOBS> --cruntime enroot (--container hpc-benchmarks.20.10-hpl.tgz)
+./launch_hpl_experiment.sh --sys <SYSTEM> --count <NODES_PER_JOBS> --cruntime enroot 
 
 or
 
-./launch_hpl_experiment.sh -s <SYSTEM> -c <NODES_PER_JOBS> --cruntime enroot (--container hpc-benchmarks.20.10-hpl.tgz)
+./launch_hpl_experiment.sh -s <SYSTEM> -c <NODES_PER_JOBS> --cruntime enroot
 ```
 
 Where:
@@ -79,16 +77,18 @@ Where:
         * Specify an alternate continer URI or a local file (.sqsh for enroot, .sif for singularity)
    --cruntime <runtime> 
         * Specify the container runtime.  enroot is the only support runtime currently.
+   -h|--help
+        * Provide a full list of options
 
 
-The script will lookup all of the available batch nodes on the system and launch a series of jobs on each.  
+The script will lookup all of the available batch nodes on the system and launch a series of jobs on each.  More options exist to use BIT on non-standard systems.  Use the --help option for a full list of options.
 
 NOTE: For the Burn In Test, select the number of jobs (--count ) as 1 to run single node HPL on all available nodes within the cluster.
 
 All results are written to a directory under the results subdirectory.  The launch script writes provides the location of that directory.  For example:
 
 ```
-$ ./launch_hpl_experiment.sh -s dgxa100_80G  -c 5 --cruntime enroot
+$ ./launch_hpl_experiment.sh -s dgxa100_80G  -c 1 -i 5  --cruntime enroot
 
 Using contaner runtime enroot
 
@@ -101,11 +101,8 @@ cruntime: enroot
 CONT: /home/juser/deepops/workloads/bit/nvidia+hpc-benchmarks+20.10-hpl.sqsh
 nodes_per_job: 1
 gpus_per_node: 8
-gpuclock: <Not Set>
-memclock: <Not Set>
 niters: 1
 partition: admin
-usehca: 0
 maxnodes: 5
 mpiopts: <Not Set>
 gresstr: <Not Set>

@@ -28,7 +28,6 @@ export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}} # The shared directory whe
 ## Set default options
 niters=5
 partition="batch"
-usehca=0
 usegres=1
 maxnodes=9999
 grestype=""
@@ -61,8 +60,6 @@ Other Options:
         * Set the Slurm partition to use.  Default is ${partition}."
     -a|--account <Slurm Account>
         * Set the Slurm accoutn to use.  Default is None."
-    --usehca <Use HCA Affinity>
-        * Use HCA affinity. Set to 1 to enable.  Default is ${usehca}."    
     --maxnodes <Number_of_nodes>
         * Set the maximum number of nodes to use per experiment.  This is used for testing.  Default is all of them."
     --mpiopts <Options>
@@ -71,10 +68,6 @@ Other Options:
 	* Enable/disable use of GRES options in Slurm (1/0).  Default is ${usegres}.
     --grestype <val>
         * Specify if you need to specify a specific gputype when submitting to your batch system with gpu options.  
-    --gpuclock <MHz>
-        * Set specific clock to use during run.  Default is to set the clocks to maximum.
-    --memclock <MHz>
-        * Set specific clock to use during run.  Default is to set the clocks to maximum.
     --container <container URL>
         * Set container to use
     --cruntime <container runtime>
@@ -153,13 +146,10 @@ while [ $# -gt 0 ]; do
 		-x) excludelist="$2"; shift 2 ;;
 
 		--nores) nores=1; shift 1 ;;
-		--usehca) usehca="$2"; shift 2;;
 	        --maxnodes) maxnodes="$2"; shift 2 ;;	
 		--mpiopts) mpiopts="$2"; shift 2 ;;
 		--usegres) usegres="$2"; shift 2 ;;
 		--grestype) grestype="$2"; shift 2 ;;
-		--gpuclock) gpuclock="$2" ; shift 2 ;;
-		--memclock) memclock="$2" ; shift 2 ;;
 		--hpldat) hpldat="$2"; shift 2 ;;
 		--cruntime) cruntime="$2"; shift 2 ;;
 		--container) container="$2"; shift 2 ;;
@@ -226,13 +216,6 @@ if [ x"${usegres}" == x"1" ]; then
 		gresstr=""
 	fi
 	gresstr="--gpus-per-node=${gresstr}${gpus_per_node}"
-fi
-
-if [ x"${gpuclock}" != x"" ]; then
-	NV_GPUCLOCK=${gpuclock}
-fi
-if [ x"${memclock}" != x"" ]; then
-	NV_MEMCLOCK=${memclock}
 fi
 
 if [ x"${cruntime}" != x"" ]; then
@@ -371,7 +354,7 @@ echo ""
 ### Report all variables
 echo ""
 echo "Experiment Variables:"
-for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system cruntime CONT nodes_per_job gpus_per_node gpuclock memclock niters partition slurmopts usehca maxnodes mpiopts gresstr total_nodes hpldat; do
+for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system cruntime CONT nodes_per_job gpus_per_node niters partition slurmopts maxnodes mpiopts gresstr total_nodes hpldat; do
 	echo -n "${V}: "
         if [ x"${!V}" != x"" ]; then	
         	echo "${!V}"
@@ -436,7 +419,7 @@ for N in $(seq ${niters}); do
 		# Submit the job in the workdir
 		pushd ${WORKDIR} > /dev/null 2>&1
 
-		CMD="sbatch -J burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} ${slurmopts} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFG,SYSCFGVAR,GPUMEM,CRUNTIME,EXPDIR ${HPL_DIR}/submit_hpl.sh"
+		CMD="sbatch -J sa:bit:burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} ${slurmopts} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFG,SYSCFGVAR,GPUMEM,CRUNTIME,EXPDIR ${HPL_DIR}/submit_hpl.sh"
                  
 		if [ ${verbose} -eq 1 ]; then
 		        echo "Submitting:  $CMD"
