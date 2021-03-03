@@ -9,7 +9,7 @@
 gpu_operator_helm_repo: "https://nvidia.github.io/gpu-operator"
 gpu_operator_chart_name: "nvidia/gpu-operator"
 gpu_operator_release_name: "nvidia-gpu-operator"
-gpu_operator_chart_version: "1.5.2"
+gpu_operator_chart_version: "1.6.0"
 k8s_gpu_mig_strategy: "mixed"
 
 # XXX: This currently appears to be hardcoded in the operator
@@ -18,8 +18,8 @@ gpu_operator_namespace: "gpu-operator-resources"
 # Defaults from https://github.com/NVIDIA/gpu-operator/blob/master/deployments/gpu-operator/values.yaml
 gpu_operator_default_runtime: "docker"
 gpu_operator_driver_registry: "nvcr.io/nvidia"
-gpu_operator_driver_version: "450.80.02"
-gpu_operator_plugin_args: "--mig-strategy={{ k8s_gpu_mig_strategy }},--pass-device-specs=false,--fail-on-init-error=true,--device-list-strategy=envvar,--nvidia-driver-root=/run/nvidia/driver"
+gpu_operator_driver_version: "460.32.03"
+gpu_operator_plugin_args: "--mig-strategy={{ k8s_gpu_mig_strategy }},--pass-device-specs=true,--fail-on-init-error=true,--device-list-strategy=envvar,--nvidia-driver-root=/run/nvidia/driver"
 
 # Variables used if driver containers are in a private registry (i.e. beta drivers & vGPU)
 ## Flag that determines whether to add a k8s secret for private containers
