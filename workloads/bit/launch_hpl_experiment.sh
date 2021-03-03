@@ -463,7 +463,7 @@ p=0
 display_row=25
 
 echo ""
-echo "Monitoring Experiments: ${EXPDIR}"
+echo "Experiment Directory: ${EXPDIR}"
 echo ""
 
 while [ ${jobs_tbd} != 0 ]; do

@@ -16,10 +16,5 @@ export GPU_PCIE_WIDTH_WARNING=16
 ## Depending on driver version, you may need to uncomment the following line
 # export LD_LIBRARY_PATH="/usr/local/cuda/compat:$LD_LIBRARY_PATH
 
-export MONITOR_GPU=1
-export TEST_SYSTEM_PARAMS=1
-export TEST_LOOPS=1
-export GPU_CLOCK_WARNING=1530
-export GPU_POWER_WARNING=300
-export GPU_PCIE_GEN_WARNING=3
-export GPU_PCIE_WIDTH_WARNING=16
+export UCX_TLS=all
+export OMPI_MCA_pml_ucx_verbose=100
