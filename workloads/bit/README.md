@@ -176,6 +176,14 @@ Experiments are verified when all jobs are complete.  See the file verify_result
 
 ```
 
-## Using the test on generic systems
+## Choosing the right system
+Several different DGX system configurations are supported.  These include:
 
-Todo
+* DGX-1V 16GB    - syscfg-dgx1v-16gb.sh
+* DGX-1V 32GB    - syscfg-dgx1v-32gb.sh
+* DGX2           - syscfg-dgx2.sh
+* DGX A100 40GB  - syscfg-dgxa100-40gb.sh
+* DGX A100 80GB  - syscfg-dgxa100-80gb.sh
+
+Note: The network topology of the DGX A100 40GB can vary depending on if you the node has the optional additional network card added.  Please edit the configuration file to match your node configuration.
+

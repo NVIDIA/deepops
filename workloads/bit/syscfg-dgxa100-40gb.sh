@@ -2,8 +2,16 @@ CPU_AFFINITY="32-47:48-63:0-15:16-31:96-111:112-127:64-79:80-95"
 CPU_CORES_PER_RANK=12
 GPU_AFFINITY="0:1:2:3:4:5:6:7"
 MEM_AFFINITY="2:3:0:1:6:7:4:5"
-UCX_AFFINITY="mlx5_0:mlx5_1:mlx5_2:mlx5_3:mlx5_6:mlx5_7:mlx5_8:mlx5_9"
 GPU_CLOCK="1380,1275"
+
+## Use this setting for the DGX A100 with additional MLNX Adapter
+## This is default on the DGX A100 80GB nodes.
+# UCX_AFFINITY="mlx5_0:mlx5_1:mlx5_2:mlx5_3:mlx5_6:mlx5_7:mlx5_8:mlx5_9"
+
+## Use thius setting for the DGX A100 with standard MLNX Adapter configuration
+## This is default on the DGX A100 40GB node, but may have been upgraded
+## on a 40GB node.
+UCX_AFFINITY="mlx5_0:mlx5_1:mlx5_2:mlx5_3:mlx5_4:mlx5_5:mlx5_6:mlx5_7"
 
 export MONITOR_GPU=1
 export TEST_SYSTEM_PARAMS=1
