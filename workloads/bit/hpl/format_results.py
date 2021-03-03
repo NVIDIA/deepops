@@ -85,8 +85,20 @@ print("")
 print("Comma Separated Results for Experiement: "+expdir)
 print("")
 
+## Print headers
+maxexp=0
 for k,v in sorted(res.items()):
-    print("%s,%s" % (k,",".join(res[k])))
+    l=len(res[k])
+    if l > maxexp:
+        maxexp=l
+
+print("Nodelist;",end="")
+for n in range(1,maxexp+1):
+    print("Exp %d;" % n,end="")
+print("")
+
+for k,v in sorted(res.items()):
+    print("%s;%s" % (k,";".join(res[k])))
 
         
 
