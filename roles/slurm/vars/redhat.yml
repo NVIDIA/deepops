@@ -13,6 +13,7 @@ slurm_build_deps:
   - http-parser-devel
   - json-c-devel
   - perl-ExtUtils-MakeMaker
+  - libatomic
 
 slurm_pmix_deps:
   - "@Development Tools"
