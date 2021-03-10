@@ -343,20 +343,45 @@ add switch PFC, ECN configuration
    Total img/sec on 16 GPU(s): 3756.0 +-672.7
    ```
 
-## Performance Validation with Bare Metal and Non-RoCE Kubernetes Pods
+## Performance Comparison to Non-RoCE Environment
 
-   Additional tests are performed to compare the performance on multi-node bare metal servers and non-RoCE kubernetes pods. For multi-node bare metal server NCCL testing, we follow the documentations on those sites to install and compile NCCL and Open MPI:  https://github.com/NVIDIA/nccl and https://www.open-mpi.org/. For non-RoCE Kubernetes pods testing, we simply detached the SRIOV/RoCE interfaces from Kubernetes job file so NCCL will run over traditional IP sockets. We run multiple tests in each scenarios to eliminates the outliers and the results show SRIOV with RoCE in Kubernetes can delivery the same performance as in bare metal servers.
+We used NCCL as a baseline then used ResNet-50 with TensorFlow as an application to compare the performance of RoCE enabled Kubernetes cluster with non-RoCE and bare metal cluster. 
 
-NCCL Latency comparison (NCCL ring topology): 
+###  NCCL Performance Comparison with Bare Metal and Non-RoCE Kubernetes Pod
 
-![alt text](../img/nccl_latency_ring.PNG "NCCL latency, ring")
+   NCCL tests are performed as a baseline to compare the performance on multi-node bare metal servers and non-RoCE kubernetes pods. For multi-node bare metal server NCCL testing, we follow the documentations on those sites to install and compile NCCL and Open MPI:  https://github.com/NVIDIA/nccl and https://www.open-mpi.org/.  For non-RoCE Kubernetes pods testing, we simply disabled the RoCE function from Kubernetes job file so NCCL will run over traditional IP sockets. We run multiple tests in each scenarios to eliminates the outliers and the results show SRIOV with RoCE in Kubernetes can delivery the same performance as in bare metal servers.
+
+NCCL Latency comparison (NCCL ring topology):
+
+<img src="https://github.com/NVIDIA/deepops/raw/master/docs/img/nccl_latency_ring.PNG" width="80%" height="80%">
 
 
-NCCL Bandwidth comparison (NCCL ring topology): 
+NCCL Bandwidth comparison (NCCL ring topology):
 
-![alt text](../img/nccl_bandwidth_ring.PNG "NCCL bandwidth, ring")
+<img src="https://github.com/NVIDIA/deepops/raw/master/docs/img/nccl_bandwidth_ring.PNG" width="80%" height="80%">
 
-   > Note: The bare metal results are overlapping with Kubernetes SRIOV+RoCE because the number is almost identical.
+   > Note: The bare-metal results are overlapping with Kubernetes SRIOV+RoCE because the number is almost identical.
+
+### ResNet-50 with TensorFlow Performance Comparison with Non-RoCE Kubernetes Pod 
+
+On top of NCCL baseline verification, TensorFlow based Resnet-50 image classification is selected and tested in this Kubernetes cluster to compare the performance with and without RoCE from application point of view. The test setup is identical to the previous NCCL tests, however, that up-to-date latest software are used. You can find the Dockfile and job files in the example section:
+
+
+   * Ubuntu 20.04
+   * TensorFlow 2.4.1
+   * CUDA 11.2.1
+   * NCCL 2.8.4
+   * Horovod 0.21.3
+   * OpenMPI 4.1.0
+   * MOFED 5.2-2.2.0.0
+   * Kubernetes v1.18.9
+   * Latest MPI-Operator
+
+<img src="https://github.com/NVIDIA/deepops/raw/master/docs/img/roce_resnet50.PNG" width="80%" height="80%">
+
+
+It shows RoCE improves application performance by ~7-8% over non-RoCE configuration in our small setup (only have 2 x 100Gbps RoCE interfaces) out of box without any fine-tune. We expect the performance will be further improved on large scale setup with parameters tunning. It’s also interesting to note that the performance improvement is consistent across the board with synthetic data, real image dataset with 1 or 10 epochs in this configuration, so infrastructure team can start with synthetic data to validate the setup without waiting for the readiness of the real dataset. However, we still recommend to conduct a thorough evaluation with all components, including the real application and dataset for your production environment.
+
 
 ### Troubleshoot 
 
