@@ -159,7 +159,7 @@
 
 - name: comment out pam_systemd.so in RHEL as it conflicts with pam_slurm_adapt.so, see https://slurm.schedmd.com/pam_slurm_adopt.html
   replace:
-    path: /etc/pam.d//password-auth-ac
+    path: /etc/pam.d/password-auth
     regexp: '^([^#].*pam_systemd.so.*)'
     replace: '# \1 # ANSIBLE MANAGED (ansible-role-slurm)'
   when: ansible_os_family == "RedHat"
