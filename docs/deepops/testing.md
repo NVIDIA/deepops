@@ -39,7 +39,7 @@ A short description of the nightly testing is outlined below. The full suit of t
 | Verify GPU workload with srun | x | x | x |
 | Verify Slurm nfs mount | x | x | x | |
 | Verify basic mpi job in Slurm | x | x | x | |
-| Verify basic enoort job in Slurm | x | x | x | No current CentOS support |
+| Verify basic enroot job in Slurm | x | x | x | No current CentOS support |
 | Verify rsyslog setup in Slurm | x | x | x | |
 | Verify rsyslog setup in K8s | x | x | x | |
 | Deploys K8s (No GPU Operator) | x | x | x | |
