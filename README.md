@@ -16,9 +16,9 @@ Check out the [video tutorial](https://drive.google.com/file/d/1RNLQYlgJqE8JMv0n
 
 ## Releases
 
-Latest release: [DeepOps 20.12 Release](https://github.com/NVIDIA/deepops/releases/tag/20.12)
+Latest release: [DeepOps 21.03 Release](https://github.com/NVIDIA/deepops/releases/tag/21.03)
 
-It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally functional but may change significantly between releases.
+It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally [functional](docs/deepops/testing.md) but may change significantly between releases.
 
 ## Getting Started
 

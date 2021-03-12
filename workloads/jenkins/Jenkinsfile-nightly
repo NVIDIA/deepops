@@ -258,7 +258,7 @@ pipeline {
           
           echo "Test Enroot"
           sh '''
-            timeout 120 bash -x ./workloads/jenkins/scripts/test-slurm-enroot-job.sh
+            # TODO: ISSUE-784 timeout 120 bash -x ./workloads/jenkins/scripts/test-slurm-enroot-job.sh
           '''
 
           echo "Reset repo and unmunge files"
@@ -495,7 +495,7 @@ pipeline {
 
           echo "Test Enroot"
           sh '''
-            timeout 120 bash -x ./workloads/jenkins/scripts/test-slurm-enroot-job.sh
+             # TODO: ISSUE-784 timeout 120 bash -x ./workloads/jenkins/scripts/test-slurm-enroot-job.sh
           '''
 
           echo "Verify rsyslog forwarding is working for the slurm cluster"
