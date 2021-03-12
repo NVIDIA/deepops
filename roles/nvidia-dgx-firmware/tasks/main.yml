@@ -30,6 +30,22 @@
   - include: load-image.yml
     when: load_firmware
 
+  # Shut down services and unload drivers
+  - name: stop system services
+    systemd:
+      state: stopped
+      enabled: no
+      name: "{{ item }}"
+    with_items: "{{ nv_services }}"
+    when: update_firmware
+
+  - name: unload drivers
+    modprobe:
+      state: absent
+      name: "{{ item }}"
+    with_items: "{{ nv_modules }}"
+    when: update_firmware
+
   # Update the FW and reboot if necessary
   - include: update-firmware.yml
     when: update_firmware
