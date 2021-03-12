@@ -14,7 +14,7 @@
 
 # This is an optimization, checking the firmware versions can take a long time, so unless we are forcing an update only do this once
 - name: Check firmware version
-  shell: "docker run --rm --privileged  -v /:/hostfs {{ firmware_update_repo }}:{{ firmware_update_tag }} show_version | tee {{ fw_dir }}/fw-versions{{ run_diagnostics_type }}.log"
+  shell: "docker run -ti --rm --privileged  -v /:/hostfs {{ firmware_update_repo }}:{{ firmware_update_tag }} show_version | tee {{ fw_dir }}/fw-versions{{ run_diagnostics_type }}.log"
   register: firmware_versions_response
 
 - name: Print show_fw_manifest output

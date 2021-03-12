@@ -10,7 +10,7 @@ update_firmware: false
 load_firmware: true
 
 # Remove all log files and any loaded Docker images on all nodes
-clean_firmware: true
+clean_fw: true
 
 # These two actions can take a very long time, and dcgm_stress especially can stress hardware
 dcgm_stress: false
@@ -39,8 +39,9 @@ fw_dir: "/opt/deepops/nvfw"
 # nv_mgmt_interface: enp2s0f1 # DGX-Station
 nv_mgmt_interface: enp225s0f0 # DGX A100
 
-# Target_fw can be set to 'all' or something specific (sbios, bmc, etc. - check container release notes on
+# Target_fw can be set to 'all' or something specific (SBIOS, BMC, etc. - check container release notes on
 # NVIDIA Enterprise support portal for details on valid options)
+# Current valid options: CEC SBIOS BMC VBIOS FPGA SSD SWITCH CPLD
 # target_fw: all
 target_fw: all
 
@@ -49,3 +50,18 @@ force_update: false
 
 # Reboot timeout (in seconds)
 reboot_timeout: 600
+
+nv_services:
+  - nvsm
+  - nvidia-persistenced
+  - nvidia-fabricmanager
+  - nv_peer_mem
+  - dcgm
+  - docker
+nv_modules:
+  - nv_peer_mem
+  - nvidia_uvm
+  - nvidia_drm
+  - nvidia_modeset
+  - nvidia
+
