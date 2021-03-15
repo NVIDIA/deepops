@@ -20,6 +20,12 @@ PIP="${PIP:-pip3}"
 
 JINJA2_VERSION="${JINJA2_VERSION:-2.11.1}"
 
+# exit if run as root
+if [ $(id -u) -eq 0 ] ; then
+    echo "Please run as a regular user"
+    exit
+fi
+
 as_sudo(){
     if [ $PROXY_USE -gt 0 ]; then
         cmd="sudo -H bash -c '. ${SCRIPT_DIR}/deepops/proxy.sh && $1'"
