@@ -16,8 +16,8 @@ JINJA2_VERSION="${JINJA2_VERSION:-2.11.1}"      # Jinja2 required version
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
 
-DEPS_DEB=(git sshpass wget)
-DEPS_RPM=(git sshpass wget)
+DEPS_DEB=(git python3-virtualenv sshpass wget)
+DEPS_RPM=(git python3-virtualenv sshpass wget)
 PIP="${PIP:-pip3}"
 PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh 2>/dev/null | grep -v ^$ | wc -l`
 
@@ -50,13 +50,32 @@ as_user(){
     eval $cmd
 }
 
+# Install software dependencies
+case "$ID" in
+    rhel*|centos*)
+        # Enable EPEL (required for Pip)
+        EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
+        EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
+        as_sudo "yum -yq install ${EPEL_URL}"
+
+        as_sudo "yum -yq install ${DEPS_RPM[@]}"
+        ;;
+    ubuntu*)
+        as_sudo 'apt-get -q update'
+        as_sudo "apt -yq install ${DEPS_RPM[@]}"
+        ;;
+    *)
+        echo "Unsupported Operating System $ID_LIKE"
+        echo "Please install ${DEPS_RPM[@]} manually"
+        ;;
+esac
+
 # Install python3 virtualenv
 case "$ID" in
     rhel*|centos*)
         as_sudo 'yum -yq install python3-virtualenv'
         ;;
     ubuntu*)
-        as_sudo 'apt-get -q update'
         as_sudo 'apt-get -yq install virtualenv'
         ;;
     *)
@@ -68,38 +87,17 @@ case "$ID" in
         ;;
 esac
 
-# Create virtual environment
+# Create virtual environment and install python dependencies
 sudo mkdir -p "${VENV_DIR}"
 sudo chown -R $(id -u):$(id -g) "${VENV_DIR}"
-virtualenv -q "${VENV_DIR}"
-# Use virtual environment
+virtualenv --python=python3 -q "${VENV_DIR}"
 . "${VENV_DIR}/bin/activate"
-# Install Python dependencies
 as_user "${PIP} install -q --upgrade \
     ansible==${ANSIBLE_VERSION} \
     Jinja2==${JINJA2_VERSION} \
     netaddr \
     ruamel.yaml \
     PyMySQL"
-
-# Install software dependencies
-case "$ID" in
-    rhel*|centos*)
-        # Enable EPEL (required for Pip)
-        EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
-        EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
-        as_sudo "yum -y install ${EPEL_URL}"
-
-        as_sudo "yum -y install ${DEPS_RPM[@]}"
-        ;;
-    ubuntu*)
-        as_sudo "apt -y install ${DEPS_RPM[@]}"
-        ;;
-    *)
-        echo "Unsupported Operating System $ID_LIKE"
-        echo "Please install ${DEPS_RPM[@]} manually"
-        ;;
-esac
 
 # Clone DeepOps git repo if running standalone
 if ! grep -i deepops README.md >/dev/null 2>&1 ; then
@@ -111,21 +109,19 @@ if ! grep -i deepops README.md >/dev/null 2>&1 ; then
 fi
 
 # Install Ansible Galaxy roles
-ansible-galaxy --version >/dev/null 2>&1
-if [ $? -eq 0 ] ; then
+if command -v ansible-galaxy &> /dev/null ; then
     echo "Updating Ansible Galaxy roles..."
     as_user ansible-galaxy collection install --force -r roles/requirements.yml >/dev/null
     as_user ansible-galaxy role install --force -r roles/requirements.yml >/dev/null
 else
-    echo "ERROR: Unable to install Ansible Galaxy roles"
+    echo "ERROR: Unable to install Ansible Galaxy roles, 'ansible-galaxy' command not found"
 fi
 
 # Update submodules
-git status >/dev/null 2>&1
-if [ $? -eq 0 ] ; then
+if command -v git &> /dev/null ; then
     as_user git submodule update --init
 else
-    echo "ERROR: Unable to update Git submodules"
+    echo "ERROR: Unable to update Git submodules, 'git' command not found"
 fi
 
 # Copy default configuration
@@ -136,3 +132,7 @@ if [ ! -d "${CONFIG_DIR}" ] ; then
 else
     echo "Configuration directory '${CONFIG_DIR}' exists, not overwriting"
 fi
+
+echo "*** Setup complete ***"
+echo "To use Ansible, run: source ${VENV_DIR}/bin/activate"
+echo
