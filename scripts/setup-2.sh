@@ -73,7 +73,7 @@ esac
 # Create virtual environment and install python dependencies
 sudo mkdir -p "${VENV_DIR}"
 sudo chown -R $(id -u):$(id -g) "${VENV_DIR}"
-deactivate &> /dev/null
+deactivate nondestructive &> /dev/null
 virtualenv --python=python3 -q "${VENV_DIR}"
 . "${VENV_DIR}/bin/activate"
 as_user "${PIP} install -q --upgrade \
