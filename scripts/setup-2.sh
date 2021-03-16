@@ -96,6 +96,7 @@ if ! grep -i deepops README.md >/dev/null 2>&1 ; then
         cd deepops
     else
         echo "ERROR: Unable to check out DeepOps git repo, 'git' command not found"
+        exit
     fi
 fi
 
