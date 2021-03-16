@@ -58,7 +58,6 @@ case "$ID" in
         EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
         EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
         as_sudo "yum -yq install ${EPEL_URL}"
-
         as_sudo "yum -yq install ${DEPS_RPM[@]}"
         ;;
     ubuntu*)
