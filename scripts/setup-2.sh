@@ -19,6 +19,8 @@ cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
 
 DEPS_DEB=(git python3-virtualenv sshpass wget)
 DEPS_RPM=(git python3-virtualenv sshpass wget)
+EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
+EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
 PIP="${PIP:-pip3}"
 PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh 2>/dev/null | grep -v ^$ | wc -l`
 
@@ -54,10 +56,7 @@ as_user(){
 # Install software dependencies
 case "$ID" in
     rhel*|centos*)
-        # Enable EPEL (required for sshpass package)
-        EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
-        EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
-        as_sudo "yum -yq install ${EPEL_URL}"
+        as_sudo "yum -yq install ${EPEL_URL}"       # Enable EPEL (required for sshpass package)
         as_sudo "yum -yq install ${DEPS_RPM[@]}"
         ;;
     ubuntu*)
