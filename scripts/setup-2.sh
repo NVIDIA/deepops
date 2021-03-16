@@ -19,7 +19,7 @@ cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
 DEPS_DEB=(git sshpass wget)
 DEPS_RPM=(git sshpass wget)
 PIP="${PIP:-pip3}"
-PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh | grep -v ^$ | wc -l`
+PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh 2>/dev/null | grep -v ^$ | wc -l`
 
 # No interactive prompts from Apt during this process
 export DEBIAN_FRONTEND=noninteractive
