@@ -70,26 +70,10 @@ case "$ID" in
         ;;
 esac
 
-# Install python3 virtualenv
-case "$ID" in
-    rhel*|centos*)
-        as_sudo 'yum -yq install python3-virtualenv'
-        ;;
-    ubuntu*)
-        as_sudo 'apt-get -yq install virtualenv'
-        ;;
-    *)
-        if ! command -v virtualenv &> /dev/null ; then
-            echo "Unsupported Operating System $ID_LIKE"
-            echo "Please install virtualenv manually"
-            exit
-        fi
-        ;;
-esac
-
 # Create virtual environment and install python dependencies
 sudo mkdir -p "${VENV_DIR}"
 sudo chown -R $(id -u):$(id -g) "${VENV_DIR}"
+deactivate &> /dev/null
 virtualenv --python=python3 -q "${VENV_DIR}"
 . "${VENV_DIR}/bin/activate"
 as_user "${PIP} install -q --upgrade \
