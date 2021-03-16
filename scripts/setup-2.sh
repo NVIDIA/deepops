@@ -85,7 +85,7 @@ if command -v virtualenv &> /dev/null ; then
     deactivate nondestructive &> /dev/null
     virtualenv -q --python="${PYTHON_BIN}" "${VENV_DIR}"
     . "${VENV_DIR}/bin/activate"
-    as_user "${PIP} install --upgrade pip"
+    as_user "${PIP} install -q --upgrade pip"
     as_user "${PIP} install -q --upgrade \
         ansible==${ANSIBLE_VERSION} \
         Jinja2==${JINJA2_VERSION} \
