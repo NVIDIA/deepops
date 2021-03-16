@@ -19,7 +19,7 @@ VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environ
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
 
-DEPS_DEB=(git python3-virtualenv sshpass wget)
+DEPS_DEB=(git virtualenv python3-virtualenv sshpass wget)
 DEPS_RPM=(git python3-virtualenv sshpass wget)
 EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
 EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
