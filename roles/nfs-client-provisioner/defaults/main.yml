@@ -1,0 +1,10 @@
+# Vars needed to install nfs-client-provisioner
+k8s_nfs_server: "127.0.0.1"
+k8s_nfs_export_path: "/export/deepops_nfs"
+k8s_nfs_default_sc: "true"
+k8s_nfs_client_repo_name: "deepops"
+k8s_nfs_client_helm_repo: "https://supertetelman.github.io/charts/"
+k8s_nfs_client_chart_name: "{{ k8s_nfs_client_repo_name }}/nfs-client-provisioner"
+k8s_nfs_client_release_name: "nfs-client-provisioner"
+k8s_nfs_client_chart_version: "1.2.9"
+k8s_nfs_client_local_submodule: "./submodules/charts/stable/nfs-client-provisioner/"

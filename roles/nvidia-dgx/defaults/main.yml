@@ -1,5 +1,6 @@
 nvidia_dgx_rhel_baseurl: "https://international.download.nvidia.com/dgx/repos/{{ dgx_repo_dir }}/"
 nvidia_dgx_rhel_gpgkey: "https://international.download.nvidia.com/dgx/repos/RPM-GPG-KEY-dgx-cosmos-support"
+epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
 
 nvidia_dgx_ubuntu_baseurl: "http://international.download.nvidia.com/dgx/repos"
 nvidia_dgx_ubuntu_gpgkey: "https://international.download.nvidia.com/dgx/repos/bionic/pool/multiverse/d/dgx-repo-keys/dgx-repo-keys_2.0_amd64.deb"

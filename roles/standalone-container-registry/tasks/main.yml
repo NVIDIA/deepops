@@ -24,7 +24,7 @@
 - name: Enable EPEL repo
   package:
     name:
-      - epel-release
+      - "{{ epel_package }}"
     state: present
   when: ansible_os_family == 'RedHat'
 - name: Install package dependencies

@@ -43,7 +43,7 @@
     - name: pull CUDA container
       docker_container:
         name: gpu-test-pull
-        image: nvcr.io/nvidia/cuda
+        image: nvcr.io/nvidia/cuda:10.1-base-ubuntu18.04
         auto_remove: yes
         pull: yes
       tags:
@@ -52,7 +52,7 @@
     - name: test CUDA container
       docker_container:
         name: gpu-test
-        image: nvcr.io/nvidia/cuda
+        image: nvcr.io/nvidia/cuda:10.1-base-ubuntu18.04
         detach: no
         command: nvidia-smi -L
       register: cuda

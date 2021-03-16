@@ -1,0 +1,9 @@
+# https://ngc.nvidia.com/catalog/containers/nvidia:rapidsai:rapidsai
+FROM nvcr.io/nvidia/rapidsai/rapidsai:0.17-cuda10.1-runtime-ubuntu18.04
+
+# RAPIDS is installed using conda and we need to work from this environment
+ENV CONDA_ENV rapids
+
+# Start using the built in RAPIDS conda environment
+ENTRYPOINT ["/bin/sh"]
+CMD ["-c", "/opt/conda/envs/${CONDA_ENV}/bin/jupyter lab  --notebook-dir=/rapids --ip=0.0.0.0 --no-browser --allow-root --port=8888 --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.allow_origin='*' --NotebookApp.base_url=${NB_PREFIX}"]

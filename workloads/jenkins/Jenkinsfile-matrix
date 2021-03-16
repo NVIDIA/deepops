@@ -1,0 +1,227 @@
+// This Jenkins file is meant to allow a customized set of deployment tasks to be manually triggered
+// The primary use case for Jenkinsfile is quick smoke tests against a specific deployment configuration
+//
+// TODO: This should acts as a wrapper around the exising Jenkinsfile-nightly tests, but instead it runs a simplified test suite
+//
+// Use case 1: Allow a user to run the nightly tests on a single combination of deployment options
+// Use case 2: Allow a user to specify a group of deployment options and run them in parallel
+
+// Configuration options defaults
+// The assumption is that if Jenkins passess through 'all' each option must be tested
+//   Otherwise, the default in Jenkins should match the default here and that is used
+Map matrix_axes = [
+  DEEPOPS_VAGRANT_OS: ['centos', 'ubuntu'],
+  DEEPOPS_OS_VERSION: ['', '18.04', '20.04', '7', '8'],
+  DEEPOPS_FULL_INSTALL: ['', 'multinode'],
+  DEEPOPS_DEPLOYMENT_PLATFORM: ['slurm', 'k8s'],
+  DEEPOPS_BRANCH: ['master'],
+  DEEPOPS_REPO: ['https://github.com/NVIDIA/deepops.git'],
+  DEEPOPS_K8S_OPERATOR: ['', 'true']
+]
+
+// Override default values as specified by the manual builds with a special case for 'all'
+if("$DEEPOPS_VAGRANT_OS" != "all") {
+  matrix_axes['DEEPOPS_VAGRANT_OS'] = ["$DEEPOPS_VAGRANT_OS"]
+}
+if("$DEEPOPS_FULL_INSTALL" != "all") {
+  matrix_axes['DEEPOPS_FULL_INSTALL'] = ["$DEEPOPS_FULL_INSTALL"]
+}
+if("$DEEPOPS_DEPLOYMENT_PLATFORM" != "all") {
+  matrix_axes['DEEPOPS_DEPLOYMENT_PLATFORM'] = ["$DEEPOPS_DEPLOYMENT_PLATFORM"]
+}
+if("$DEEPOPS_K8S_OPERATOR" != "all") {
+  matrix_axes['DEEPOPS_K8S_OPERATOR'] = ["$DEEPOPS_K8S_OPERATOR"]
+}
+if("$DEEPOPS_OS_VERSION" != "all") {
+  matrix_axes['DEEPOPS_OS_VERSION'] = ["$DEEPOPS_OS_VERSION"]
+}
+
+// Special case for branch and repo, these cannot be blank
+if("$DEEPOPS_BRANCH" != "") {
+  matrix_axes['DEEPOPS_BRANCH'] = ["$DEEPOPS_BRANCH"]
+}
+if("$DEEPOPS_REPO" != "") {
+  matrix_axes['DEEPOPS_REPO'] = ["$DEEPOPS_REPO"]
+}
+
+// Default values
+String GPUCOUNT = 1 // Default to 1 GPU resource, use 2 if in 'multinode'
+
+Map tasks = [failFast: false] // Map that will hold all 'tasks' to run, failFast to continue in case of a single failure
+List axes = getMatrixAxes(matrix_axes).findAll { axis -> 1 == 1 } // List of combinations
+
+// Template code to convert matrix above into a usable list of configuration combinations
+@NonCPS
+List getMatrixAxes(Map matrix_axes) {
+  List axes = []
+  matrix_axes.each { axis, values ->
+    List axisList = []
+    values.each { value ->
+      axisList << [(axis): value]
+    }
+    axes << axisList
+  }
+  axes.combinations()*.sum()
+}
+
+// Generate a 'task' for each of the valid combinations
+for(int i = 0; i < axes.size(); i++) {
+  // convert the Axis into valid values for withEnv step
+  Map axis = axes[i]
+  List axisEnv = axis.collect { k, v ->
+    "${k}=${v}"
+  }
+  tasks[axisEnv.join(', ')] = { ->
+    node() {
+      withEnv(axisEnv) {
+        if("$DEEPOPS_FULL_INSTALL" == "multinode") {
+          GPUCOUNT=2
+        }
+
+        lock(resource: null, label: 'gpu', quantity: "${GPUCOUNT}", variable: 'GPUDATA') {
+
+          stage("Setup-${DEEPOPS_DEPLOYMENT_PLATFORM}-${DEEPOPS_VAGRANT_OS}-${DEEPOPS_FULL_INSTALL}") {
+            checkout([$class: 'GitSCM', branches: [[name: "*/$DEEPOPS_BRANCH"]],
+              userRemoteConfigs: [[url: "$DEEPOPS_REPO"]]]) // TODO: There is a timing bug here where this is pegged to a branch, not necessarily commit ID across tasks
+
+            echo "Reset repo and unmunge files"
+            sh '''
+              git reset --hard
+              rm -rf config
+            '''
+
+            echo "Munge files for testing"
+            sh '''
+              bash -x ./workloads/jenkins/scripts/munge-files.sh
+            '''
+
+            echo "Tear down any Vagrant that was not cleaned up"
+            sh '''
+              pwd
+              cd virtual && ./vagrant_shutdown.sh || true
+            '''
+
+            echo "Vagrant Up"
+            sh '''
+              bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
+            '''
+          }
+
+          if("$DEEPOPS_DEPLOYMENT_PLATFORM" == "slurm") {
+            stage("Deployment-${DEEPOPS_DEPLOYMENT_PLATFORM}-${DEEPOPS_VAGRANT_OS}-${DEEPOPS_FULL_INSTALL}") {
+              echo "Set up Slurm"
+              sh '''
+                bash -x ./workloads/jenkins/scripts/test-setup-slurm.sh
+              '''
+
+              echo "Verify we can run a basic Slurm job"
+              sh '''
+                timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-job.sh
+              '''
+
+              echo "Test GPU job"
+              sh '''
+                timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+              '''
+            }
+          }
+
+          if("$DEEPOPS_DEPLOYMENT_PLATFORM" == "k8s") {
+            stage("Deployment-${DEEPOPS_DEPLOYMENT_PLATFORM}-${DEEPOPS_VAGRANT_OS}-${DEEPOPS_FULL_INSTALL}") {
+              echo "Set up K8S"
+              sh '''
+                bash -x ./workloads/jenkins/scripts/test-cluster-up.sh
+              '''
+            
+              echo "Get K8S Cluster Status"
+              sh '''
+                bash -x ./workloads/jenkins/scripts/get-k8s-debug.sh
+              '''
+
+              echo "Verify we can run a GPU job"
+              sh '''
+                timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
+              '''
+            }
+          }
+
+          if("$DEEPOPS_DEPLOYMENT_PLATFORM" == "slurm") {
+            stage("Services-${DEEPOPS_DEPLOYMENT_PLATFORM}-${DEEPOPS_VAGRANT_OS}-${DEEPOPS_FULL_INSTALL}") {
+              echo "Test NFS"
+              sh '''
+                timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-nfs-mount.sh
+              '''
+
+              echo "Test MPI"
+              sh '''
+               timeout 60 bash -x ./workloads/jenkins/scripts/test-mpi-job.sh
+              '''
+
+              echo "Test Enroot"
+              sh '''
+                timeout 120 bash -x ./workloads/jenkins/scripts/test-slurm-enroot-job.sh
+              '''
+            }  
+          }
+
+          if("$DEEPOPS_DEPLOYMENT_PLATFORM" == "k8s") {
+            stage("Services-${DEEPOPS_DEPLOYMENT_PLATFORM}-${DEEPOPS_VAGRANT_OS}-${DEEPOPS_FULL_INSTALL}") {
+              echo "Verify local docker registry"
+              sh '''
+                 bash -x ./workloads/jenkins/scripts/test-local-registry.sh
+              '''
+
+              echo "Verify ingress config"
+              sh '''
+                bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
+              '''
+
+              echo "Test Kubeflow installation"
+              sh '''
+                timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
+              '''
+
+              echo "Test Monitoring installation"
+              sh '''
+                timeout 800 bash -x ./workloads/jenkins/scripts/test-monitoring.sh
+              '''
+
+              echo "Test Dashboard installation"
+              sh '''
+                timeout 180 bash -x ./workloads/jenkins/scripts/test-dashboard.sh
+              '''
+
+              echo "Test Kubeflow pipeline"
+              sh '''
+                 timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
+              '''
+            }
+          }
+        }
+        // TODO: There seems to be a bug here if tasks fail, they do not get cleaned up properly
+        // XXX: Not sure if the cleanup should live inside or outside of the lock. Also, this doesn't seem to work.
+        post {
+          always {
+            echo "Final cleanup"
+            sh '''
+              pwd
+              cd virtual && ./vagrant_shutdown.sh
+            '''
+          }
+        }
+      }
+    }
+  }
+}
+
+
+/*
+stage('Stop Any Old Builds') {
+  milestone label: '', ordinal:  Integer.parseInt(env.BUILD_ID) - 1
+  milestone label: '', ordinal:  Integer.parseInt(env.BUILD_ID)
+}
+*/
+
+stage("Matrix builds") {
+    parallel(tasks)
+}

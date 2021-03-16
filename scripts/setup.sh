@@ -42,7 +42,9 @@ as_user(){
 case "$ID" in
     rhel*|centos*)
         # Enable EPEL (required for Pip)
-        as_sudo 'yum -y install epel-release'
+        EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
+        EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
+        as_sudo "yum -y install ${EPEL_URL}"
 
         # Install pip
         if ! which ${PIP} >/dev/null 2>&1; then
@@ -254,9 +256,11 @@ ansible-galaxy --version >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
     echo "Updating Ansible Galaxy roles..."
     if [ $PROXY_USE -gt 0 ]; then
-        . ${SCRIPT_DIR}/deepops/proxy.sh && ansible-galaxy install --force -r roles/requirements.yml >/dev/null
+        . ${SCRIPT_DIR}/deepops/proxy.sh && ansible-galaxy collection install --force -r roles/requirements.yml >/dev/null
+        . ${SCRIPT_DIR}/deepops/proxy.sh && ansible-galaxy role install --force -r roles/requirements.yml >/dev/null
     else
-        ansible-galaxy install --force -r roles/requirements.yml >/dev/null
+        ansible-galaxy collection install --force -r roles/requirements.yml >/dev/null
+        ansible-galaxy role install --force -r roles/requirements.yml >/dev/null
     fi
 
 

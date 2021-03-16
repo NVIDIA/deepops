@@ -4,3 +4,6 @@
 [submodule "packer-maas"]
 	path = submodules/packer-maas
 	url = https://github.com/DeepOps/packer-maas.git
+[submodule "charts"]
+	path = submodules/charts
+	url = https://github.com/helm/charts.git

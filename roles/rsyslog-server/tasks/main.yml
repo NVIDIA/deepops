@@ -1,0 +1,15 @@
+---
+- name: ensure rsyslog is installed
+  package:
+    name: rsyslog
+    state: present
+
+- name: configure syslog listener
+  template:
+    src: "01-deepops-listen.conf"
+    dest: "/etc/rsyslog.d/01-deepops-listen.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  notify:
+  - reload rsyslog

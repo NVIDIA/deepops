@@ -2,10 +2,11 @@
 # 'cuda' is the generic package and will pull the latest version
 cuda_version: "cuda-toolkit-11-0"
 
-# DGX-specific versions
-cuda_dgx_1_version: "cuda-toolkit-10-1"
-cuda_dgx_2_version: "cuda-toolkit-10-1"
-cuda_dgx_a100_version: "cuda-toolkit-11-0"
+# DGX-specific vars may be used to target specific models,
+# because available versions for DGX may differ from the generic repo
+cuda_dgx_1_version: "{{ cuda_version }}"
+cuda_dgx_2_version: "{{ cuda_version }}"
+cuda_dgx_a100_version: "{{ cuda_version }}"
 
 # To install a specific CUDA package on DGX, define cuda_dgx_override.
 # We override DGX version separately because DGX OS may release at a different
@@ -17,6 +18,7 @@ cuda_dgx_a100_version: "cuda-toolkit-11-0"
 cuda_toolkit_add_profile_script: yes
 
 # RedHat family
+epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
 nvidia_driver_rhel_cuda_repo_baseurl: "https://developer.download.nvidia.com/compute/cuda/repos/{{ _rhel_repo_dir }}/"
 nvidia_driver_rhel_cuda_repo_gpgkey: "https://developer.download.nvidia.com/compute/cuda/repos/{{ _rhel_repo_dir }}/7fa2af80.pub"
 

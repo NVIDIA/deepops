@@ -5,6 +5,7 @@
   become: yes
 
   vars:
+    deepops_mig_devices: "all"
     nv_services:
       - nvsm
       - nvidia-persistenced
@@ -41,12 +42,23 @@
       tags: enable, disable, never
 
     # Manage MIG
-    - name: enable MIG mode
+    - name: enable MIG mode (all devices)
       command: nvidia-smi -mig 1
       tags: enable, never
-    - name: disable MIG mode
+      when: deepops_mig_devices | default("") == "all"
+    - name: enable MIG mode (per device)
+      command: nvidia-smi -mig 1 -i "{{ deepops_mig_devices }}"
+      tags: enable, never
+      when: deepops_mig_devices | default("") != "" and  deepops_mig_devices | default("") != "all"
+
+    - name: disable MIG mode (all devices)
       command: nvidia-smi -mig 0
       tags: disable, never
+      when: deepops_mig_devices | default("") == "all"
+    - name: disable MIG mode (per device)
+      command: nvidia-smi -mig 0 -i "{{ deepops_mig_devices }}"
+      tags: disable, never
+      when: deepops_mig_devices | default("") != "" and  deepops_mig_devices | default("") != "all"
 
     # Post-tasks
     - name: wait for MIG stuff to settle down and nvidia-persistenced to start again

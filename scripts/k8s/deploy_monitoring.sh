@@ -24,6 +24,9 @@ HELM_CHARTS_REPO_PROMETHEUS="${HELM_CHARTS_REPO_PROMETHEUS:-https://prometheus-c
 HELM_PROMETHEUS_CHART_VERSION="${HELM_PROMETHEUS_CHART_VERSION:-10.0.2}"
 ingress_name="ingress-nginx"
 
+PROMETHEUS_YAML_CONFIG="${PROMETHEUS_YAML_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/monitoring.yml}"
+PROMETHEUS_YAML_NO_PERSIST_CONFIG="${PROMETHEUS_YAML_NO_PERSIST_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/monitoring-no-persist.yml}"
+
 function help_me() {
     echo "This script installs the DCGM exporter, Prometheus, Grafana, and configures a GPU Grafana dashboard."
     echo "Default credentials are username: 'admin', password: 'deepops'."
@@ -32,11 +35,12 @@ function help_me() {
     echo "-h      This message."
     echo "-p      Print monitoring URLs."
     echo "-d      Delete monitoring namespace and crds. Note, this may delete PVs storing prometheus metrics."
+    echo "-x      Disable persistent data, this deploys Prometheus with no PV backing resulting in a loss of data across reboots."
     echo "delete  Legacy positional argument for delete. Same as -d flag."
 }
 
 function get_opts() {
-    while getopts "hdp" option; do
+    while getopts "hdpx" option; do
         case $option in
             d)
                 delete_monitoring
@@ -49,6 +53,10 @@ function get_opts() {
             p)
                 print_monitoring
                 exit 0
+                ;;
+            x)
+		PROMETHEUS_YAML_CONFIG="${PROMETHEUS_YAML_NO_PERSIST_CONFIG}"
+		PROMETHEUS_NO_PERSIST="true"
                 ;;
             * )
                 # Leave this here to preserve legacy positional args behavior
@@ -127,7 +135,7 @@ function setup_prom_monitoring() {
             prometheus-community/kube-prometheus-stack \
             --version "${HELM_PROMETHEUS_CHART_VERSION}" \
             --namespace monitoring \
-            --values ${DEEPOPS_CONFIG_DIR}/helm/monitoring.yml \
+            --values "${PROMETHEUS_YAML_CONFIG}" \
             --set alertmanager.ingress.hosts[0]="alertmanager-${ingress_ip_string}" \
             --set prometheus.ingress.hosts[0]="prometheus-${ingress_ip_string}" \
             --set grafana.ingress.hosts[0]="grafana-${ingress_ip_string}" \
@@ -195,16 +203,39 @@ function print_monitoring() {
     echo "Alertmanager: ${alertmanager_url}"
 }
 
+
+function install_dependencies() {
+    # kubect/K8s
+    kubectl version
+    if [ $? -ne 0 ] ; then
+        echo "Unable to talk to Kubernetes API"
+        exit 1
+    fi
+
+    # Install/initialize Helm if needed
+    ./scripts/k8s/install_helm.sh
+    # StorageClasse (for volumes and MySQL DB)
+    kubectl get storageclass 2>&1 | grep "(default)" >/dev/null 2>&1
+    if [ $? -ne 0 ] ; then
+        echo "No storageclass found"
+	echo "This is required to persist Prometheus data"
+	echo ""
+	if [ "${PROMETHEUS_NO_PERSIST}" ]; then
+	    echo "WARNING: Persistence has been disabled, rebooting or migrating the Prometheus Pod will result in loss of all data"
+	    sleep 5 # Sleep to give the user time to see a warning
+	else
+            echo "To continue without persistent storage, run '${0} -x'"
+            echo "To setup the nfs-client-provisioner (preferred), run: ansible-playbook playbooks/k8s-cluster/nfs-client-provisioner.yml"
+            echo "To provision Ceph storage, run: ./scripts/k8s/deploy_rook.sh"
+            exit 1
+	fi
+    fi
+}
+
+
 get_opts ${@}
 
-kubectl version
-if [ $? -ne 0 ] ; then
-    echo "Unable to talk to Kubernetes API"
-    exit 1
-fi
-
-# Install/initialize Helm if needed
-./scripts/k8s/install_helm.sh
+install_dependencies
 
 setup_prom_monitoring
 setup_gpu_monitoring

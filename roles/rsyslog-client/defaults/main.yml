@@ -1,0 +1,12 @@
+---
+# The destination host for TCP forwarding of rsyslog messages.
+#
+# Note that this isn't defined by default in this role, and must be defined for
+# forwarding to take place.
+#
+# The DeepOps configuration for Slurm or Kubernetes may define this at the
+# playbook level.
+#
+# rsyslog_client_tcp_host: "10.0.0.1"
+
+rsyslog_client_tcp_port: "514"

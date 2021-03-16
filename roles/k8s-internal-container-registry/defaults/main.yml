@@ -9,7 +9,7 @@ container_registry_installed_name: "docker-registry"
 container_registry_values_template: "values.yaml"
 container_registry_values_path: "/tmp/container-registry.yaml"
 
-container_registry_namespace: "default"
+container_registry_namespace: "deepops-docker"
 container_registry_version: 1.9.4
 container_registry_hostname: registry.local
 container_registry_ingress_enabled: false

@@ -87,6 +87,8 @@ deepops_set_hostname: true
 #    path: /export/shared
 #    options: async,vers=3
 
+# Extra Packages for Enterprise Linux (RHEL/CentOS)
+epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
 
 ################################################################################
 # USERS                                                                        #
@@ -109,6 +111,13 @@ users:
 # NVIDIA GPU configuration
 # Playbook: nvidia-cuda
 cuda_version: cuda-toolkit-11-0
+
+# DGX-specific vars may be used to target specific models,
+# because available versions for DGX may differ from the generic repo
+#cuda_dgx_1_version: "{{ cuda_version }}"
+#cuda_dgx_2_version: "{{ cuda_version }}"
+#cuda_dgx_a100_version: "{{ cuda_version }}"
+
 # Playbook: nvidia-set-gpu-clocks
 # Resets the Gpu clocks to the default values. (see the `--reset-gpu-clocks` flag in nvidia-smi for more)
 gpu_clock_reset: no
@@ -271,7 +280,7 @@ deepops_disable_cloud_init: true
 ################################################################################
 # Container registry                                                           #
 ################################################################################
-standalone_container_registry_cache_enable: true 
+standalone_container_registry_cache_enable: true
 standalone_container_registry_port: "5000"
 
 # To configure some set of hosts as insecure registries, list them here.

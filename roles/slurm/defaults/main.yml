@@ -1,9 +1,11 @@
+epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+
 slurm_build_dir: /opt/deepops/build/slurm
 hwloc_build_dir: /opt/deepops/build/hwloc
 pmix_build_dir: /opt/deepops/build/pmix
 
 slurm_workflow_build: yes
-slurm_version: 20.02.4
+slurm_version: 20.11.3
 slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
 slurm_build_make_clean: no
 slurm_build_dir_cleanup: no

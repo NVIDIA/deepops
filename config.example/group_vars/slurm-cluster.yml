@@ -3,7 +3,7 @@
 ################################################################################
 # Slurm job scheduler configuration
 # Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
-slurm_version: 20.02.4
+slurm_version: 20.11.3
 slurm_install_prefix: /usr/local
 pmix_install_prefix: /opt/deepops/pmix
 hwloc_install_prefix: /opt/deepops/hwloc
@@ -40,6 +40,7 @@ slurm_ha_state_save_location: "/sw/slurm"
 # Optional installs                                                            #
 ################################################################################
 slurm_configure_etc_hosts: yes
+dns_mode: none
 slurm_cluster_install_cuda: yes
 slurm_cluster_install_nvidia_driver: yes
 slurm_cluster_install_singularity: no
@@ -108,7 +109,16 @@ sm_install_host: "slurm-master[0]"
 # NVIDIA HPC SDK                                                               #
 ################################################################################
 slurm_install_hpcsdk: true
-hpcsdk_version: "2020_207"
+
+# Select the version of HPC SDK to download
+hpcsdk_major_version: "21"
+hpcsdk_minor_version: "2"
+hpcsdk_file_cuda: "11.2"
+hpcsdk_arch: "x86_64"
+
+# WAR for download URL on 21.2
+# See: https://github.com/NVIDIA/deepops/issues/896
+hpcsdk_download_url: "https://developer.download.nvidia.com/hpc-sdk/21.2t/nvhpc_2021_212_Linux_x86_64_cuda_11.2.tar.gz"
 
 # In a Slurm cluster, default to setting up HPC SDK as modules rather than in
 # the default user environment
@@ -175,8 +185,8 @@ slurm_health_check_program: "/usr/sbin/nhc"
 # Container registry                                                           #
 ################################################################################
 slurm_enable_container_registry: true
-docker_insecure_registries: "{{ groups['slurm-master'] | map('regex_replace', '(.*)', '\\1:5000') | list + ['registry.local:31500'] }}"
-docker_registry_mirrors: "{{ groups['slurm-master'] | map('regex_replace', '(.*)', 'http://\\1:5000') | list }}"
+docker_insecure_registries: "{{ groups['slurm-master'] | map('regex_replace', '^(.*)$', '\\1:5000') | list + ['registry.local:31500'] }}"
+docker_registry_mirrors: "{{ groups['slurm-master'] | map('regex_replace', '^(.*)$', 'http://\\1:5000') | list }}"
 
 ################################################################################
 # Monitoring stack                                                             #
@@ -186,3 +196,12 @@ slurm_enable_monitoring: true
 # Inventory host groups where cluster monitoring services will be installed
 # (Prometheus, Grafana, etc)
 slurm_monitoring_group: "slurm-master"
+
+################################################################################
+# Logging with rsyslog                                                         #
+################################################################################
+slurm_enable_rsyslog_server: true
+slurm_enable_rsyslog_client: true
+rsyslog_server_hostname: "{{ groups['slurm-master'][0] }}"
+rsyslog_client_tcp_host: "{{ rsyslog_server_hostname }}"
+rsyslog_client_group: "slurm-cluster"

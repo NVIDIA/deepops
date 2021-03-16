@@ -6,8 +6,15 @@ set -ex
 # Ensure working directory is root
 cd "${ROOT_DIR}" || exit 1
 
+# Deploy container registry (optional)
+ansible-playbook \
+        -b -i "virtual/config/inventory" \
+        -e "@virtual/vars_files/virt_k8s.yml" \
+        ${ansible_extra_args} \
+        "${ROOT_DIR}/playbooks/k8s-cluster/container-registry.yml"
+
 # Wait for Docker registry to be online
-kubectl wait --for=condition=ready --timeout=600s pod -l app=docker-registry
+kubectl wait --for=condition=ready --timeout=600s pod -n deepops-docker -l app=docker-registry
 
 # Upload script for pushing image to registry
 scp  \

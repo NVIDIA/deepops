@@ -4,8 +4,6 @@
 
 This repository contains a set of scripts to validate the performance of DGX A100 clusters. The test will run a variety of multi-node workloads (currently only HPL, NCCL is next).  The tests can also be run on generic GPU clusters, but interpretation of the results is left to the user.
 
-### HPL Overview
-
 The HPL burnin test will repeatedly run HPL on different node counts to verify that each node, and each group of nodes, is providing the expected performance.  If a job runs slowly, it is an indicator that there is an issue with the node or network.  All nodes should perform equally.  
 
 If the expected performance is seen, the user can be confident that the nodes are working correctly.

@@ -48,7 +48,7 @@ case "$ID" in
     if ! which vagrant >/dev/null 2>&1; then
       # install vagrant (frozen at 2.2.3 to avoid various issues)
       pushd "$(mktemp -d)"
-      wget https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_x86_64.rpm -O vagrant.rpm
+      wget https://releases.hashicorp.com/vagrant/2.2.14/vagrant_2.2.14_x86_64.rpm -O vagrant.rpm
       #sudo rpm -i vagrant.rpm
       sudo yum -y localinstall vagrant.rpm
       popd
@@ -100,7 +100,7 @@ case "$ID" in
     if ! which vagrant >/dev/null 2>&1; then
       # install vagrant (frozen at 2.2.3 to avoid various issues)
       pushd "$(mktemp -d)"
-      wget https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_x86_64.deb -O vagrant.deb
+      wget https://releases.hashicorp.com/vagrant/2.2.14/vagrant_2.2.14_x86_64.deb -O vagrant.deb
       sudo dpkg -i vagrant.deb
       popd
   
@@ -122,8 +122,8 @@ esac
 #####################################
 # Set up Vagrantfile and start up the configuration in Vagrant
 if [ ${DEEPOPS_FULL_INSTALL} ]; then
-  export CENTOS_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos-full}"
-  export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu-full}"
+  export CENTOS_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos${DEEPOPS_OS_VERSION}-full}"
+  export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu${DEPOPS_OS_VERSION}-full}"
 else
   export CENTOS_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos}"
   export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu}"

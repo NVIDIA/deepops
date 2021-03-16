@@ -10,5 +10,7 @@
     - "{{ groups['slurm-node'] }}"
   environment:
     PATH: '{{ slurm_install_prefix }}/bin:{{ ansible_env.PATH }}'
+  run_once: true
   tags:
+    - never
     - undrain

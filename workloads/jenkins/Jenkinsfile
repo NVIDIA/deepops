@@ -61,9 +61,9 @@ pipeline {
              bash -x ./workloads/jenkins/scripts/test-local-registry.sh
           '''
 
-          echo "Test Rook+Ceph installation"
+          echo "Verify rsyslog forwarding is working for the k8s cluster"
           sh '''
-            timeout 2200 bash -x ./workloads/jenkins/scripts/test-ceph.sh
+             bash -x ./workloads/jenkins/scripts/test-rsyslog-k8s.sh
           '''
 
           echo "Test Monitoring installation"
@@ -94,6 +94,21 @@ pipeline {
           echo "Test MPI"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-mpi-job.sh
+          '''
+
+          echo "Test Enroot"
+          sh '''
+            timeout 120 bash -x ./workloads/jenkins/scripts/test-slurm-enroot-job.sh
+          '''
+
+          echo "Verify rsyslog forwarding is working for the slurm cluster"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/test-rsyslog-slurm.sh
+          '''
+
+          echo "Test GPU job"
+          sh '''
+            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
           '''
         }
       }
