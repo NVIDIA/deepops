@@ -8,6 +8,7 @@ ANSIBLE_OK="2.7.8"                              # Oldest allowed Ansible version
 CONFIG_DIR=${CONFIG_DIR:-./config}              # Default configuration directory location
 DEEPOPS_TAG="${1:-master}"                      # DeepOps branch to setup
 JINJA2_VERSION="${JINJA2_VERSION:-2.11.1}"      # Jinja2 required version
+PIP="${PIP:-pip3}"                              # Pip binary to use
 PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"    # Python3 path
 VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environment
 
@@ -22,7 +23,6 @@ DEPS_DEB=(git python3-virtualenv sshpass wget)
 DEPS_RPM=(git python3-virtualenv sshpass wget)
 EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
 EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
-PIP="${PIP:-pip3}"
 PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh 2>/dev/null | grep -v ^$ | wc -l`
 
 # No interactive prompts from Apt during this process
