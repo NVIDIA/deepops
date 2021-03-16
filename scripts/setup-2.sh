@@ -62,7 +62,7 @@ case "$ID" in
         ;;
     ubuntu*)
         as_sudo "apt-get -q update"
-        as_sudo "apt -yq install ${DEPS_RPM[@]}"
+        as_sudo "apt -yq install ${DEPS_DEB[@]}"
         ;;
     *)
         echo "Unsupported Operating System $ID_LIKE"
