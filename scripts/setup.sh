@@ -6,6 +6,8 @@
 # DeepOps branch to setup
 DEEPOPS_TAG="${1:-master}"
 JENKINS="${JENKINS:-}" # Used to signal we are in a Jenkins testing environment and need virtualenv
+VENV="${VENV:-}"       # Used to specify installing pip packages into a virtual environment
+VENV_DIR="${VENV_DIR:-/opt/deepops/env}"       # Used to specify installing pip packages into a virtual environment
 
 . /etc/os-release
 
@@ -60,16 +62,18 @@ case "$ID" in
         ${PIP} --version
 
         # Use virtualenv vs system pip when we're running under Jenkins
-        if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
+        if (! test -z "${VIRT_DIR}"  && ! test -z "${JENKINS}") || test -n "${VENV}" ; then
             # Install python3 virtualenv
             type virtualenv >/dev/null 2>&1
             if [ $? -ne 0 ] ; then
                 as_sudo 'yum -y install python3-virtualenv' >/dev/null
             fi
             # Create virtual environment
-            virtualenv env
+            sudo mkdir -p "${VENV_DIR}"
+            sudo chown -R $(id -u):$(id -g) "${VENV_DIR}"
+            virtualenv "${VENV_DIR}"
             # Use virtual environment
-            . env/bin/activate
+            . "${VENV_DIR}/bin/activate"
             # Upgrade jinja2
             as_user "${PIP} install --upgrade Jinja2==${JINJA2_VERSION}"
             # Install ansible
@@ -142,8 +146,8 @@ case "$ID" in
         sshpass -V | head -1
         ;;
     ubuntu*)
-	# No interactive prompts from apt during this process
-	export DEBIAN_FRONTEND=noninteractive
+        # No interactive prompts from apt during this process
+        export DEBIAN_FRONTEND=noninteractive
         # Update apt cache
         echo "Updating apt cache..."
         as_sudo 'apt-get update' >/dev/null
@@ -174,16 +178,18 @@ case "$ID" in
         fi
 
         # Use virtualenv vs system pip when we're running under Jenkins
-        if ! [ -z "${VIRT_DIR}" ] && ! [ -z "${JENKINS}" ]; then
+        if (! test -z "${VIRT_DIR}"  && ! test -z "${JENKINS}") || test -n "${VENV}" ; then
             # Install python3 python3-virtualenv
             type virtualenv >/dev/null 2>&1
             if [ $? -ne 0 ] ; then
                 as_sudo 'apt-get -y install virtualenv' >/dev/null
             fi
             # Create virtual environment
-            virtualenv env
+            sudo mkdir -p "${VENV_DIR}"
+            sudo chown -R $(id -u):$(id -g) "${VENV_DIR}"
+            virtualenv "${VENV_DIR}"
             # Use virtual environment
-            . env/bin/activate
+            . "${VENV_DIR}/bin/activate"
             # Install Ansible
             as_user "${PIP} install ansible==${ANSIBLE_VERSION}"
             # Install netaddr
