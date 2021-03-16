@@ -58,7 +58,7 @@ as_user(){
 # Install software dependencies
 case "$ID" in
     rhel*|centos*)
-        as_sudo "yum -y -q install ${EPEL_URL} | grep -v 'Nothing to do'"       # Enable EPEL (required for sshpass package)
+        as_sudo "yum -y -q install ${EPEL_URL} |& grep -v 'Nothing to do'"       # Enable EPEL (required for sshpass package)
         case "$EPEL_VERSION" in
             7)
                 as_sudo "yum -y -q install ${DEPS_EL7[@]}"
