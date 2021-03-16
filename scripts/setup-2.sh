@@ -3,6 +3,7 @@
 # Can be run standalone with: curl -sL git.io/deepops | bash
 # or: curl -sL git.io/deepops | bash -s -- 19.07
 
+CONFIG_DIR=${CONFIG_DIR:-./config}              # Default configuration directory location
 DEEPOPS_TAG="${1:-master}"                      # DeepOps branch to setup
 VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environment
 ANSIBLE_VERSION="2.9.5"                         # Ansible version to install
@@ -71,25 +72,33 @@ case "$ID" in
 esac
 
 # Create virtual environment and install python dependencies
-sudo mkdir -p "${VENV_DIR}"
-sudo chown -R $(id -u):$(id -g) "${VENV_DIR}"
-deactivate nondestructive &> /dev/null
-virtualenv --python=python3 -q "${VENV_DIR}"
-. "${VENV_DIR}/bin/activate"
-as_user "${PIP} install -q --upgrade \
-    ansible==${ANSIBLE_VERSION} \
-    Jinja2==${JINJA2_VERSION} \
-    netaddr \
-    ruamel.yaml \
-    PyMySQL"
+if command -v virtualenv &> /dev/null ; then
+    sudo mkdir -p "${VENV_DIR}"
+    sudo chown -R $(id -u):$(id -g) "${VENV_DIR}"
+    deactivate nondestructive &> /dev/null
+    virtualenv --python=python3 -q "${VENV_DIR}"
+    . "${VENV_DIR}/bin/activate"
+    as_user "${PIP} install -q --upgrade \
+        ansible==${ANSIBLE_VERSION} \
+        Jinja2==${JINJA2_VERSION} \
+        netaddr \
+        ruamel.yaml \
+        PyMySQL"
+else
+    echo "ERROR: Unable to create Python virtual environment, 'virtualenv' command not found"
+fi
 
 # Clone DeepOps git repo if running standalone
-if ! grep -i deepops README.md >/dev/null 2>&1 ; then
-    cd "${SCRIPT_DIR}"
-    if ! test -d deepops ; then
-        as_user git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
+if command -v git &> /dev/null ; then
+    if ! grep -i deepops README.md >/dev/null 2>&1 ; then
+        cd "${SCRIPT_DIR}"
+        if ! test -d deepops ; then
+            as_user git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
+        fi
+        cd deepops
     fi
-    cd deepops
+else
+    echo "ERROR: Unable to check out DeepOps git repo, 'git' command not found"
 fi
 
 # Install Ansible Galaxy roles
@@ -109,14 +118,16 @@ else
 fi
 
 # Copy default configuration
-CONFIG_DIR=${CONFIG_DIR:-./config}
-if [ ! -d "${CONFIG_DIR}" ] ; then
-    cp -rfp ./config.example "${CONFIG_DIR}"
-    echo "Copied default configuration to ${CONFIG_DIR}"
-else
-    echo "Configuration directory '${CONFIG_DIR}' exists, not overwriting"
+if grep -i deepops README.md >/dev/null 2>&1 ; then
+    if [ ! -d "${CONFIG_DIR}" ] ; then
+        cp -rfp ./config.example "${CONFIG_DIR}"
+        echo "Copied default configuration to ${CONFIG_DIR}"
+    else
+        echo "Configuration directory '${CONFIG_DIR}' exists, not overwriting"
+    fi
 fi
 
+echo
 echo "*** Setup complete ***"
 echo "To use Ansible, run: source ${VENV_DIR}/bin/activate"
 echo
