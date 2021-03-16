@@ -61,7 +61,7 @@ case "$ID" in
         as_sudo "yum -yq install ${DEPS_RPM[@]}"
         ;;
     ubuntu*)
-        as_sudo 'apt-get -q update'
+        as_sudo "apt-get -q update"
         as_sudo "apt -yq install ${DEPS_RPM[@]}"
         ;;
     *)
