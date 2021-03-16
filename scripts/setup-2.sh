@@ -3,12 +3,13 @@
 # Can be run standalone with: curl -sL git.io/deepops | bash
 # or: curl -sL git.io/deepops | bash -s -- 19.07
 
-CONFIG_DIR=${CONFIG_DIR:-./config}              # Default configuration directory location
-DEEPOPS_TAG="${1:-master}"                      # DeepOps branch to setup
-VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environment
 ANSIBLE_VERSION="2.9.5"                         # Ansible version to install
 ANSIBLE_OK="2.7.8"                              # Oldest allowed Ansible version
+CONFIG_DIR=${CONFIG_DIR:-./config}              # Default configuration directory location
+DEEPOPS_TAG="${1:-master}"                      # DeepOps branch to setup
 JINJA2_VERSION="${JINJA2_VERSION:-2.11.1}"      # Jinja2 required version
+PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"    # Python3 path
+VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environment
 
 ###
 
@@ -74,7 +75,7 @@ if command -v virtualenv &> /dev/null ; then
     sudo mkdir -p "${VENV_DIR}"
     sudo chown -R $(id -u):$(id -g) "${VENV_DIR}"
     deactivate nondestructive &> /dev/null
-    virtualenv --python=python3 -q "${VENV_DIR}"
+    virtualenv -q --python="${PYTHON_BIN}" "${VENV_DIR}"
     . "${VENV_DIR}/bin/activate"
     as_user "${PIP} install -q --upgrade \
         ansible==${ANSIBLE_VERSION} \
