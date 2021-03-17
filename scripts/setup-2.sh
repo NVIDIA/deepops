@@ -23,7 +23,6 @@ VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environ
 . /etc/os-release
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
 
 DEPS_DEB=(git virtualenv python3-virtualenv sshpass wget)
 DEPS_EL7=(git libselinux-python3 python-virtualenv python3-virtualenv sshpass wget)
@@ -31,6 +30,7 @@ DEPS_EL8=(git python3-libselinux python3-virtualenv sshpass wget)
 EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
 EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
 PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh 2>/dev/null | grep -v ^$ | wc -l`
+INIT=
 
 # Disable interactive prompts from Apt
 export DEBIAN_FRONTEND=noninteractive
@@ -106,11 +106,11 @@ fi
 # Clone DeepOps git repo if running standalone
 if ! grep -i deepops README.md >/dev/null 2>&1 ; then
     if command -v git &> /dev/null ; then
-        cd "${SCRIPT_DIR}"
         if ! test -d deepops ; then
             as_user git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
         fi
         cd deepops
+        INIT=1
     else
         echo "ERROR: Unable to check out DeepOps git repo, 'git' command not found"
         exit
@@ -147,4 +147,11 @@ fi
 if [ -f "${VENV_DIR}/bin/activate" ] ; then
     . "${VENV_DIR}/bin/activate"
     ansible localhost -m lineinfile -a "path=$HOME/.bashrc create=yes mode=0644 backup=yes line='source ${VENV_DIR}/bin/activate'"
+fi
+
+if [ $INIT -eq 1 ] ; then
+    echo
+    echo "*** Setup complete ***"
+    echo "To use Ansible, run: source ${VENV_DIR}/bin/activate"
+    echo
 fi
