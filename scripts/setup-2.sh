@@ -104,7 +104,7 @@ else
 fi
 
 # Clone DeepOps git repo if running standalone
-if ! grep -i deepops README.md >/dev/null 2>&1 ; then
+if ! (cd "${SCRIPT_DIR}/.." && grep -i deepops README.md >/dev/null 2>&1 ) ; then
     if command -v git &> /dev/null ; then
         if ! test -d deepops ; then
             as_user git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
