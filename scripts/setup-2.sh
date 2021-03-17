@@ -26,8 +26,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd "${SCRIPT_DIR}/.." || echo "Could not cd to repository root"
 
 DEPS_DEB=(git virtualenv python3-virtualenv sshpass wget)
-DEPS_EL7=(git python-virtualenv python3-virtualenv sshpass wget)
-DEPS_EL8=(git python3-virtualenv sshpass wget)
+DEPS_EL7=(git libselinux-python3 python-virtualenv python3-virtualenv sshpass wget)
+DEPS_EL8=(git python3-libselinux python3-virtualenv sshpass wget)
 EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
 EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
 PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh 2>/dev/null | grep -v ^$ | wc -l`
@@ -97,7 +97,8 @@ if command -v virtualenv &> /dev/null ; then
         Jinja2==${JINJA2_VERSION} \
         netaddr \
         ruamel.yaml \
-        PyMySQL"
+        PyMySQL \
+        selinux"
 else
     echo "ERROR: Unable to create Python virtual environment, 'virtualenv' command not found"
 fi
@@ -140,6 +141,12 @@ if grep -i deepops README.md >/dev/null 2>&1 ; then
     else
         echo "Configuration directory '${CONFIG_DIR}' exists, not overwriting"
     fi
+fi
+
+# Add Ansible to user's PATH
+if [ -f "${VENV_DIR}/bin/activate" ] ; then
+    . "${VENV_DIR}/bin/activate"
+    ansible localhost -m lineinfile -a "path=~/.bashrc line='source /opt/deepops/env/bin/activate'"
 fi
 
 echo
