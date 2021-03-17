@@ -1,5 +1,5 @@
 #!/bin/bash 
-#Install dependencies for the HPL Burn-In Test.  It is assumed that Slurm Cluster Manger is configured with PMIx and hwloc. This script specifically installs the CUDA Toolkit by its .run installer, and UCX and OpenMPI via the HPC-X Software Toolkit. 
+#Install dependencies for the HPL Burn-In Test  It is assumed that Slurm Cluster Manger is configured with PMIx and hwloc. This script specifically installs the CUDA Toolkit by its .run installer, and UCX and OpenMPI via the HPC-X Software Toolkit. 
 
 
 #Usage instructions for build dependencies script
@@ -56,10 +56,11 @@ fi
 BUILD_HPCX=${buildhpcx:-1}
 export BUILD_HPCX
 
-ofed_major=${ofed_major:-5.0}
+ofed_major=${ofed_major:-5.1}
 echo "HPC-X for Mellanox OFED $ofed_major will be downloaded from"
 
 case ${ofed_major} in
+   "5.1") HPCX_URL="http://www.mellanox.com/downloads/hpc/hpc-x/v2.7/hpcx-v2.7.0-gcc-MLNX_OFED_LINUX-5.1-0.6.6.0-ubuntu20.04-x86_64.tbz"; echo $HPCX_URL ;;
    "5.0") HPCX_URL="http://www.mellanox.com/downloads/hpc/hpc-x/v2.7/hpcx-v2.7.0-gcc-MLNX_OFED_LINUX-5.0-1.0.0.0-ubuntu18.04-x86_64.tbz"; echo $HPCX_URL ;;
    "4.7") HPCX_URL="http://www.mellanox.com/downloads/hpc/hpc-x/v2.7/hpcx-v2.7.0-gcc-MLNX_OFED_LINUX-4.7-1.0.0.1-ubuntu18.04-x86_64.tbz"; echo $HPCX_URL ;;
    *) echo "Unable to find a matching MOFED version for HPCX, exiting." & exit 1 ;;
@@ -80,7 +81,7 @@ mkdir -p $BUILDDIR
 #Variable definitions for CUDA and HPC-X Installs
 
 #CUDA Install Variables
-CUDA_VERSION=11.0.2
+CUDA_VERSION=11.1.1
 CUDA_HOME=${APPSDIR}/cuda/${CUDA_VERSION}
 mkdir -p ${CUDA_HOME}
 #echo $CUDA_HOME
@@ -121,10 +122,11 @@ if [ $BUILD_CUDA == 1 ]; then
     fi
 
    cd ${BUILDDIR}
-   CUDAPATH=http://developer.download.nvidia.com/compute/cuda/11.0.2/local_installers/cuda_11.0.2_450.51.05_linux.run
+   CUDAFN=cuda_11.1.1_455.32.00_linux.run
+   CUDAPATH=http://developer.download.nvidia.com/compute/cuda/${CUDA_VERSION}/local_installers/${CUDAFN}
    CUDAFN=$(basename ${CUDAPATH})
    rm -f ${CUDAFN}
-   wget http://developer.download.nvidia.com/compute/cuda/11.0.2/local_installers/${CUDAFN}
+   wget ${CUDAPATH}
 
    sh ${CUDAFN} --installpath=${CUDA_HOME} --silent --toolkit
 

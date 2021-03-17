@@ -1,16 +1,22 @@
-# HPL Burn In Test
+# DeepOps Burn-In Test
 
 ## Overview
 
-This repository contains scripts and configuration files to use the GPU optimized version of HPL as a burnin test for GPU-based clusters.  The burnin test will repeatedly run HPL on different node counts to verify that each node, and each group of nodes, is providing the expected performance.  If a job runs slowly, it is an indicator that there is an issue with the node or network.  All nodes should perform equally.  
+This repository contains a set of scripts to validate the performance of DGX A100 clusters. The test will run a variety of multi-node workloads (currently only HPL, NCCL is next).  The tests can also be run on generic GPU clusters, but interpretation of the results is left to the user.
 
-If the expected performance is seen, the user can be confident that the nodes are working correctly.  If a Top500 submission is desired, there are additional optimizations than can done to maximize performance.  Please work with an NVIDIA Solutions Architect (SA) to review the Burn In Test results so that additional performance may be obtained.
+The HPL burnin test will repeatedly run HPL on different node counts to verify that each node, and each group of nodes, is providing the expected performance.  If a job runs slowly, it is an indicator that there is an issue with the node or network.  All nodes should perform equally.  
 
-Currently, only clusters built with DGX-1V-16GB, DGX-1V-32GB, DGX-2, and DGXA100 are supported.  If you have an OEM GPU-based system, contact your NVIDIA SA for additional assistance.
+If the expected performance is seen, the user can be confident that the nodes are working correctly.
+
+
+### NCCL Overview
+(This test is still a work in progress)
+
+The NCCL test will use the NCCL all_reduce_perf test to validate fabric correctness and performance.  Testing has only been done on InfiniBand based fabrics. 
 
 ## Requirements
 
-- This repository does not include the HPL binaries.  Contact your NVIDIA Solutions Architect or other NVIDIA representative for access.
+- These tests are container based. A working Slurm environment with Pyxis and Enroot is currently required.  There is a codepath for Singularity, but it has been minimally tested.
 
 ## Getting started
 
@@ -21,20 +27,26 @@ git clone https://github.com/NVIDIA/deepops.git
 cd deepops/workloads/burn-in/
 
 ```
-> Note: All test scripts along with the HPL binary will be in this directory. It is referenced in code as `HPL_SCRIPTS_DIR`. The shared directory is referenced as `HPL_DIR`. These can both be changed by running `export HPL_DIR=<new_dir>; export HPL_SCRIPTS_DIR=<new_dir>`.
 
 ```
-./launch_experiment_slurm.sh --sys <SYSTEM> --count <NODES_PER_JOBS> 
+./launch_hpl_experiment.sh --sys <SYSTEM> --count <NODES_PER_JOBS> --container nvcr.io#nvidia/hpc-benchmarks:20.10-hpl --cruntime enroot
 
 or
 
-./launch_experiment_slurm.sh -s <SYSTEM> -c <NODES_PER_JOBS> 
+./launch_hpl_experiment.sh -s <SYSTEM> -c <NODES_PER_JOBS> --container nvcr.io#nvidia/hpc-benchmarks:20.10-hpl  --cruntime enroot
 ```
 
+Where:
+
+```
    -s|--sys <SYSTEM>
-        * Set to the system type on which to run.  Ex: dgx1v_16G, dgx1v_32G, dgx2, dgx2h, dgxa100, generic
-    -c|--count <Count>
+        * Set to the system type on which to run.  Ex: dgxa100_40G, dgxa100_80, generic
+   -c|--count <Count>
         * Set to the number of nodes to use per job
+   --container 
+        * Specify a continer URI or a local file (.sqsh for enroot, .sif for singularity)
+   --cruntime <runtime> 
+        * Specify the container runtime.  enroot is the only support runtime currently.
 
 
 The script will lookup all of the available batch nodes on the system and launch a series of jobs on each.  
@@ -44,24 +56,71 @@ NOTE: For the Burn In Test, select the number of jobs (--count ) as 1 to run sin
 All results are written to a directory under the results subdirectory.  The launch script writes provides the location of that directory.  For example:
 
 ```
-$ ./launch_experiment_slurm.sh -s dgx1v_16G -c 1
+$ ./launch_hpl_experiment.sh -s dgxa100_80G  -c 5 --container nvcr.io#nvidia/hpc-benchmarks:20.10-hpl  --cruntime enroot
 
- GPU HPL Burnin Test
---------------------
-
-NODELIST: prm-dgx-[03,05,09-20,25-26,28-36]
+Using contaner runtime enroot
 
 Experiment Variables:
-EXPDIR: results/2node_dgx1v_16G_20200608104253
-NITERS: 5
-CUDA_VER: 10.1
-PART: batch
-SET_HCA_AFF: 0
-MAXNODES: 1
-MPIOPTS: 
-TOTAL_NODES: 1
-GRESSTR: --gpus-per-node=8
-...
+HPL_DIR: /home/juser/deepops/workloads/burn-in
+HPL_SCRIPTS_DIR: /home/juser/deepops/workloads/burn-in
+EXPDIR: /home/juser/deepops/workloads/burn-in/results/1node_dgxa100_80G_20201215104946
+system: dgxa100_80G
+cruntime: enroot
+CONT: /home/juser/deepops/workloads/burn-in/nvidia+hpc-benchmarks+20.10-hpl.sqsh
+nodes_per_job: 1
+gpus_per_node: 8
+gpuclock: <Not Set>
+memclock: <Not Set>
+niters: 1
+partition: admin
+usehca: 0
+maxnodes: 5
+mpiopts: <Not Set>
+gresstr: <Not Set>
+total_nodes: 5
+hpldat: <Not Set>
+
+
+....... LOGGING INFORMATINON"
+
+====================
+Experiment completed
+====================
+
+Verifying HPL Burnin Results
+
+
+Issues Found:
+
+No Issues Found
+
+
+Summary:
+
+    Experiment Dir: /home/juser/deepops/workloads/burn-in/results/1node_dgxa100_80G_20201215104946
+        Total Jobs: 5
+         Slow Jobs: 0
+       Failed Jobs: 0
+      Unknown Jobs: 0
+  Did Not Complete: 0
+           HPL CFG: WR01L8R2
+                 N: 288000
+                NB: 288
+               P*Q: 4*2
+          Hostlist: node-001:1,node-002:1,node-003:1,node-004:1,node-005:1
+           MaxPerf: 109700.0 GF
+           MinPerf: 108000.0 GF
+     Percent Range: 1.55%
+
+
+Run Summary:
+Experiment Results Directory: /home/juser/deepops/workloads/burn-in/results/1node_dgxa100_80G_20201215104946
+Total Nodes: 5
+Nodes Per Job:: 1
+Verify Log: /home/juser/deepops/workloads/burn-in/results/1node_dgxa100_80G_20201215104946/verify_results.txt
+
+To rerun the verification: /home/juser/deepops/workloads/burn-in/verify_hpl_experiment.py /home/juser/deepops/workloads/burn-in/results/1node_dgxa100_80G_20201215104946
+
 ```
 
 All the variables shown can be modified, but for the default case running from DeepOps, this should not be necessary.
@@ -76,7 +135,7 @@ Experiments are verified when all jobs are complete.  See the file verify_result
  * Run an experiment where each node generates a result to identify any slow nodes.  If any slow nodes are found, fix them.
 
 ```
-./launch_slurm_experiment.py -c 1 -s dgx1v_16G --maxnodes <number of nodes to run single node burn-in>
+./launch_hpl_experiment.py -c 1 -s dgxa100_80GG --maxnodes <number of nodes to run single node burn-in> --container nvcr.io#nvidia/hpc-benchmarks:20.10-hpl  --cruntime enroot
 ```
 * Run multi-node jobs starting with two nodes, and increase them (four, eight, etc) until the size of the job to the next power of two would be greater than half the system.  At each node count, all runs should be completed successfully with similar performance.
 *Run two jobs at N/2 in size (N is the total number of nodes). 
@@ -84,6 +143,10 @@ Experiments are verified when all jobs are complete.  See the file verify_result
 
 
 ```
-./launch_experiment_slurm.sh -c <number of nodes> -s <system type>
+./launch_hpl_experiment.sh -c <number of nodes> -s <system type>
 
 ```
+
+## Using the test on generic systems
+
+Todo
