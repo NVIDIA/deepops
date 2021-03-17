@@ -30,7 +30,7 @@ DEPS_EL8=(git python3-libselinux python3-virtualenv sshpass wget)
 EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
 EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
 PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh 2>/dev/null | grep -v ^$ | wc -l`
-INIT=
+INIT=0
 
 # Disable interactive prompts from Apt
 export DEBIAN_FRONTEND=noninteractive
