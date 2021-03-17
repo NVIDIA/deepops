@@ -30,7 +30,6 @@ DEPS_EL8=(git python3-libselinux python3-virtualenv sshpass wget)
 EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
 EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
 PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh 2>/dev/null | grep -v ^$ | wc -l`
-INIT=0
 
 # Disable interactive prompts from Apt
 export DEBIAN_FRONTEND=noninteractive
@@ -110,7 +109,6 @@ if ! (cd "${SCRIPT_DIR}/.." && grep -i deepops README.md >/dev/null 2>&1 ) ; the
             as_user git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
         fi
         cd deepops
-        INIT=1
     else
         echo "ERROR: Unable to check out DeepOps git repo, 'git' command not found"
         exit
@@ -143,15 +141,13 @@ if grep -i deepops README.md >/dev/null 2>&1 ; then
     fi
 fi
 
-# Add Ansible virtual env to PATH
+# Add Ansible virtual env to PATH when using Bash
 if [ -f "${VENV_DIR}/bin/activate" ] ; then
     . "${VENV_DIR}/bin/activate"
     ansible localhost -m lineinfile -a "path=$HOME/.bashrc create=yes mode=0644 backup=yes line='source ${VENV_DIR}/bin/activate'"
 fi
 
-if [ $INIT -eq 1 ] ; then
-    echo
-    echo "*** Setup complete ***"
-    echo "To use Ansible, run: source ${VENV_DIR}/bin/activate"
-    echo
-fi
+echo
+echo "*** Setup complete ***"
+echo "To use Ansible, run: source ${VENV_DIR}/bin/activate"
+echo
