@@ -146,7 +146,7 @@ fi
 # Add Ansible virtual env to PATH
 if [ -f "${VENV_DIR}/bin/activate" ] ; then
     . "${VENV_DIR}/bin/activate"
-    ansible localhost -m lineinfile -a "path=~/.bashrc line='source /opt/deepops/env/bin/activate'"
+    ansible localhost -m lineinfile -a "path=$HOME/.bashrc create=yes mode=0755 backup=yes line='source ${VENV_DIR}/bin/activate'"
 fi
 
 echo
