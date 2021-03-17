@@ -1,19 +1,25 @@
 #!/usr/bin/env bash
 
+# DeepOps setup/bootstrap script
+#   This script installs required dependencies on a system so it can run Ansible
+#   and initializes the DeepOps directory
+#
 # Can be run standalone with: curl -sL git.io/deepops | bash
-# or: curl -sL git.io/deepops | bash -s -- 19.07
+#                         or: curl -sL git.io/deepops | bash -s -- 19.07
 
-ANSIBLE_VERSION="2.9.5"                         # Ansible version to install
-ANSIBLE_OK="2.7.8"                              # Oldest allowed Ansible version
-CONFIG_DIR=${CONFIG_DIR:-./config}              # Default configuration directory location
-DEEPOPS_TAG="${1:-master}"                      # DeepOps branch to setup
+# Configuration
+ANSIBLE_VERSION="${ANSIBLE_VERSION:-2.9.5}"     # Ansible version to install
+ANSIBLE_OK="${ANSIBLE_OK:-2.7.8}"               # Oldest allowed Ansible version
+CONFIG_DIR="${CONFIG_DIR:-./config}"            # Default configuration directory location
+DEEPOPS_TAG="${1:-master}"                      # DeepOps branch to set up
 JINJA2_VERSION="${JINJA2_VERSION:-2.11.1}"      # Jinja2 required version
 PIP="${PIP:-pip3}"                              # Pip binary to use
 PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"    # Python3 path
-VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environment
+VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environment to create
 
 ###
 
+# Set distro-specific variables
 . /etc/os-release
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -26,7 +32,7 @@ EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
 EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
 PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh 2>/dev/null | grep -v ^$ | wc -l`
 
-# No interactive prompts from Apt during this process
+# Disable interactive prompts from Apt
 export DEBIAN_FRONTEND=noninteractive
 
 # Exit if run as root
@@ -70,7 +76,7 @@ case "$ID" in
         ;;
     ubuntu*)
         as_sudo "apt-get -q update"
-        as_sudo "apt -yq install ${DEPS_DEB[@]}"
+        as_sudo "apt-get -yq install ${DEPS_DEB[@]}"
         ;;
     *)
         echo "Unsupported Operating System $ID_LIKE"
