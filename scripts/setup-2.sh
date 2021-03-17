@@ -146,10 +146,14 @@ fi
 # Add Ansible virtual env to PATH
 if [ -f "${VENV_DIR}/bin/activate" ] ; then
     . "${VENV_DIR}/bin/activate"
-    ansible localhost -m lineinfile -a "path=$HOME/.bashrc create=yes backup=yes line='source ${VENV_DIR}/bin/activate'"
+    ansible localhost -m lineinfile -a "path=$HOME/.bashrc create=yes mode=0644 backup=yes line='source ${VENV_DIR}/bin/activate'"
 fi
 
 echo
 echo "*** Setup complete ***"
 echo "To use Ansible, run: source ${VENV_DIR}/bin/activate"
 echo
+
+# Start new shell so Ansible binaries are in PATH
+PS1='.\$ '  # Required for CentOS
+bash
