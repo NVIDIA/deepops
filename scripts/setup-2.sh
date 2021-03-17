@@ -143,7 +143,7 @@ if grep -i deepops README.md >/dev/null 2>&1 ; then
     fi
 fi
 
-# Add Ansible to user's PATH
+# Add Ansible virtual env to PATH
 if [ -f "${VENV_DIR}/bin/activate" ] ; then
     . "${VENV_DIR}/bin/activate"
     ansible localhost -m lineinfile -a "path=~/.bashrc line='source /opt/deepops/env/bin/activate'"
