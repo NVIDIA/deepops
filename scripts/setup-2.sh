@@ -37,7 +37,7 @@ fi
 
 # Proxy wrapper
 as_sudo(){
-    if [ $PROXY_USE -gt 0 ]; then
+    if [ $PROXY_USE -gt 0 ] ; then
         cmd="sudo -H bash -c '. ${SCRIPT_DIR}/deepops/proxy.sh && $@'"
     else
         cmd="sudo bash -c '$@'"
@@ -47,7 +47,7 @@ as_sudo(){
 
 # Proxy wrapper
 as_user(){
-    if [ $PROXY_USE -gt 0 ]; then
+    if [ $PROXY_USE -gt 0 ] ; then
         cmd="bash -c '. ${SCRIPT_DIR}/deepops/proxy.sh && $@'"
     else
         cmd="bash -c '$@'"

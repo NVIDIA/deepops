@@ -27,7 +27,7 @@ if [ $(id -u) -eq 0 ] ; then
 fi
 
 as_sudo(){
-    if [ $PROXY_USE -gt 0 ]; then
+    if [ $PROXY_USE -gt 0 ] ; then
         cmd="sudo -H bash -c '. ${SCRIPT_DIR}/deepops/proxy.sh && $1'"
     else
         cmd="sudo bash -c '$1'"
@@ -36,7 +36,7 @@ as_sudo(){
 }
 
 as_user(){
-    if [ $PROXY_USE -gt 0 ]; then
+    if [ $PROXY_USE -gt 0 ] ; then
         cmd="bash -c '. ${SCRIPT_DIR}/deepops/proxy.sh && $1'"
     else
         cmd="bash -c '$1'"
@@ -53,7 +53,7 @@ case "$ID" in
         as_sudo "yum -y install ${EPEL_URL}"
 
         # Install pip
-        if ! which ${PIP} >/dev/null 2>&1; then
+        if ! which ${PIP} >/dev/null 2>&1 ; then
             echo "Installing python3 pip..."
             as_sudo 'yum -y install python36-pip' >/dev/null
         fi
@@ -87,7 +87,7 @@ case "$ID" in
         as_sudo "${PIP} install --upgrade Jinja2==${JINJA2_VERSION}"
 
         # Check Ansible version and install with pip
-        if ! which ansible >/dev/null 2>&1; then
+        if ! which ansible >/dev/null 2>&1 ; then
             as_sudo "${PIP} install ansible==${ANSIBLE_VERSION}" >/dev/null
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
@@ -128,14 +128,14 @@ case "$ID" in
         ipmitool -V
 
         # Install wget
-        if ! which wget >/dev/null 2>&1; then
+        if ! which wget >/dev/null 2>&1 ; then
             echo "Installing wget..."
             as_sudo 'yum -y install wget' >/dev/null
         fi
         wget --version | head -1
 
         # Install sshpass
-        if ! which sshpass >/dev/null 2>&1; then
+        if ! which sshpass >/dev/null 2>&1 ; then
             echo "Installing sshpass..."
             as_sudo 'yum -y install sshpass' >/dev/null
         fi
@@ -161,14 +161,14 @@ case "$ID" in
         fi
 
         # Install pip
-        if ! which ${PIP} >/dev/null 2>&1; then
+        if ! which ${PIP} >/dev/null 2>&1 ; then
             echo "Installing pip..."
             as_sudo 'apt-get -y install python3-pip' >/dev/null
         fi
         ${PIP} --version
 
         # Install setuptools
-        if ! dpkg -l python3-setuptools >/dev/null 2>&1; then
+        if ! dpkg -l python3-setuptools >/dev/null 2>&1 ; then
             echo "Installing setuptools..."
             as_sudo 'apt-get -y install python3-setuptools' >/dev/null
         fi
@@ -193,7 +193,7 @@ case "$ID" in
         fi
 
         # Check Ansible version and install with pip
-        if ! which ansible >/dev/null 2>&1; then
+        if ! which ansible >/dev/null 2>&1 ; then
             as_sudo "${PIP} install ansible==${ANSIBLE_VERSION}" >/dev/null
         else
             current_version=$(ansible --version | head -n1 | awk '{print $2}')
@@ -233,7 +233,7 @@ case "$ID" in
         ipmitool -V
 
         # Install wget
-        if ! which wget >/dev/null 2>&1; then
+        if ! which wget >/dev/null 2>&1 ; then
         echo "Installing wget..."
             as_sudo 'apt-get -y install wget' >/dev/null
         fi
@@ -248,7 +248,7 @@ esac
 if ! grep -i deepops README.md >/dev/null 2>&1 ; then
     cd "${SCRIPT_DIR}"
     if ! test -d deepops ; then
-        if [ $PROXY_USE -gt 0 ]; then
+        if [ $PROXY_USE -gt 0 ] ; then
             . ${SCRIPT_DIR}/deepops/proxy.sh && git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
         else
             git clone --branch ${DEEPOPS_TAG} https://github.com/NVIDIA/deepops.git
@@ -261,7 +261,7 @@ fi
 ansible-galaxy --version >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
     echo "Updating Ansible Galaxy roles..."
-    if [ $PROXY_USE -gt 0 ]; then
+    if [ $PROXY_USE -gt 0 ] ; then
         . ${SCRIPT_DIR}/deepops/proxy.sh && ansible-galaxy collection install --force -r roles/requirements.yml >/dev/null
         . ${SCRIPT_DIR}/deepops/proxy.sh && ansible-galaxy role install --force -r roles/requirements.yml >/dev/null
     else
@@ -277,7 +277,7 @@ fi
 # Update submodules
 git status >/dev/null 2>&1
 if [ $? -eq 0 ] ; then
-    if [ $PROXY_USE -gt 0 ]; then
+    if [ $PROXY_USE -gt 0 ] ; then
         . ${SCRIPT_DIR}/deepops/proxy.sh && git submodule update --init
     else
         git submodule update --init
