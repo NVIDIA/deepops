@@ -36,6 +36,8 @@ is_compute: no
 # Controls when a DOWN node will be returned to service.
 # See "man slurm.conf" for more details.
 slurm_return_to_service: 1
+slurm_reboot_program: "/bin/systemctl reboot"
+slurm_resume_timeout: 900
 
 # Sets: GresTypes=gpu
 # Sets: Gres=gpu:{{ gpu_topology|count }}
