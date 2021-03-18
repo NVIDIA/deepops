@@ -1,0 +1,30 @@
+---
+- name: Create networkdefinition
+  vars:
+    spec_yaml: |
+      ipam: |
+          {
+            "datastore": "kubernetes",
+            "kubernetes": { "kubeconfig": "/etc/cni/net.d/whereabouts.d/whereabouts.kubeconfig"
+             },
+            "log_file": "/tmp/whereabouts.log",
+            "log_level": "debug",
+            "type": "whereabouts",
+            "range": "{{ item.ip_addr }}"
+          }
+      vlan: {{ item.vlan_id | int }}
+      networkNamespace: "default"
+      spoofChk: "off"
+      resourceName: "{{ item.res_name }}"
+      linkState: "enable"
+
+  k8s:
+    state: present
+    definition:
+      apiVersion: "sriovnetwork.openshift.io/v1"
+      kind: SriovNetwork
+      metadata:
+        name: "{{ item.network_name }}"
+        namespace: network-operator
+      spec: "{{ spec_yaml | from_yaml }}"
+  run_once: true

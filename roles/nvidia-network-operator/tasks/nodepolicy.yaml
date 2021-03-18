@@ -1,0 +1,27 @@
+---
+### Create sriov node policy
+- name: Create node policy
+  vars:
+    spec_yaml: |
+      nodeselector: 
+        feature.node.kubernetes.io/network-sriov.capable: "true"
+      resourceName: "{{ item.res_name }}"
+      pirority: 98
+      mtu: {{ mtu |int }}
+      numVfs: {{ num_vf |int }}
+      vlan: {{ item.vlan_id |int }}
+      nicSelector:
+        vendor: "{{ vendor_id }}"
+        pfNames: ["{{ item.pf_name }}"]
+      deviceType: netdevice
+      isRdma: true
+  k8s:
+    state: present
+    definition:
+      apiVersion: "sriovnetwork.openshift.io/v1"
+      kind: SriovNetworkNodePolicy
+      metadata:
+        name: "{{ item.nodep_name }}"
+        namespace: network-operator
+      spec: "{{ spec_yaml | from_yaml }}"
+  run_once: true

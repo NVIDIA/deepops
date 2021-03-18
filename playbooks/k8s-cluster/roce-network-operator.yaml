@@ -1,0 +1,9 @@
+---
+# Playbook for installing Network Operator by Helm
+- hosts: kube-master
+  become: true
+  become_method: sudo
+  tasks:
+  - include_role:
+      name: nvidia-network-operator
+      tasks_from: k8smaster

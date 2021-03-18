@@ -1,0 +1,23 @@
+---
+# variables for VFs, VLANs, resource names and network names
+# pf_name is the physical interfaces SRIOV and RoCE will be enabled
+# res_name must match container's network resources in job file 
+# network_name must match worker's k8s network annotation
+#
+num_vf: 8
+vendor_id: "15b3"
+mtu: 9000
+
+sriov_resources:
+  - pf_name: "enp5s0"
+    vlan_id: 111
+    nodep_name: "penp5s0"
+    res_name: "sriov111"
+    network_name: "netsriov111"
+    ip_addr: "192.168.111.0/24"
+  - pf_name: "enp132s0"
+    vlan_id: 112
+    nodep_name: "penp132s0"
+    res_name: "sriov112"
+    network_name: "netsriov112"
+    ip_addr: "192.168.112.0/24"

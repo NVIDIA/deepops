@@ -1,0 +1,25 @@
+---
+# git clone; helm install; create node policy; create networkattachdefinition
+#
+
+- name: Git clone
+  ansible.builtin.git:
+    repo: 'https://github.com/Mellanox/network-operator.git'
+    dest: /tmp/network-operator
+
+- name: Deploy network-operator chart from local path
+  community.kubernetes.helm:
+    name: network-operator
+    chart_ref: /tmp/network-operator/deployment/network-operator/
+    release_namespace: network-operator
+    create_namespace: true
+    wait: true
+    values: "{{ lookup('file', role_path + '/files/values.yaml') | from_yaml }}"
+
+- name: Create Node Policy
+  include_tasks: nodepolicy.yaml
+  with_items: "{{ sriov_resources }}"
+
+- name: Create NetworkAttachmentDefinition
+  include_tasks: networkdefinition.yaml
+  with_items: "{{ sriov_resources }}"
