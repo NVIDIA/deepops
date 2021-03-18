@@ -52,15 +52,6 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
     [slurm-node]
     gpu01
 
-    [all]
-    gpu01     ansible_host=10.31.241.198
-
-    [slurm-master]
-    gpu01
-
-    [slurm-node]
-    gpu01
-
     [all:vars]
     # SSH User
     ansible_user=dgxuser
@@ -411,7 +402,8 @@ useful for multi-node jobs if running on more than one DGX system.
 Enroot with pyxis can be tested by running:
 ```
 login-session:$ srun --mpi=pmi2 --ntasks=2 --gpus-per-task=1 \
-  --container-image=deepops/nccl-tests-tf20.06-ubuntu18.04:latest all_reduce_perf -b 1M -e 4G -f 2 -g 1
+  --container-image=deepops/nccl-tests-tf20.06-ubuntu18.04:latest \
+  all_reduce_perf -b 1M -e 4G -f 2 -g 1
 ```
 The pyxis+enroot is invoked via option “ --container-image=deepops/nccl-tests-tf20.06-ubuntu18.04:latest”
 to run the “all_reduce_perf” nccl test. Refer to enroot and pyxis documentation
@@ -430,7 +422,8 @@ fi
 Then invoke as:
 ```
 login-session:$ srun --ntasks=2 --gpus-per-task=1 --no-container-remap-root \
-  --container-image=deepops/nccl-tests-tf20.06-ubuntu18.04:latest --container-workdir=${PWD} test-allreduce.sh
+  --container-image=deepops/nccl-tests-tf20.06-ubuntu18.04:latest --container-workdir=${PWD} \
+  test-allreduce.sh
 ```
 The reason for `[ "$SLURM_PROCID" -eq "0" ]` is that srun and mpirun are redundant,
 so you have to invoke either one or the other. That is “srun mpirun” will call
@@ -450,7 +443,7 @@ login-session:$ srun --mpi=pmi2 --ntasks=2 --gpus-per-task=1 \
 Similarly to invoke mpirun with singularity run script (same script as was used
 with enroot):
 ```
-login-session:$ srun --mpi=pmi2 --ntasks=2 --gpus-per-task=1 \
+login-session:$ srun --ntasks=2 --gpus-per-task=1 \
   singularity exec --nv docker://deepops/nccl-tests-tf20.06-ubuntu18.04:latest \
     ${PWD}/test_allreduce.sh
 ```
