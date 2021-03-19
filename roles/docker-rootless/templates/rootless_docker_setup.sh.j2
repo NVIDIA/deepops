@@ -49,6 +49,11 @@ fi
 curl -fsSL https://get.docker.com/rootless | \
   SKIP_IPTABLES=1 FORCE_ROOTLESS_INSTALL=1 DOCKER_BIN="{{ rootlessdocker_install_dir }}/bin" sh
 
+installsuccess=false
+if [ $? -eq 0 ] ; then
+  installsuccess=true
+fi
+
 if [ "$cleansubuid" = true ] ; then
   sed -i "/^${userid}:/d" /etc/subuid
 fi
@@ -57,7 +62,7 @@ if [ "$cleansubgid" = true ] ; then
   sed -i "/^${userid}:/d" /etc/subgid
 fi
 
-if [ $? -eq 0 ] ; then
+if [ "$installsuccess" = true ] ; then
   touch "{{ rootlessdocker_install_dir }}/config/install_success"
 else
   echo curl -fsSL https://get.docker.com/rootless \| \
