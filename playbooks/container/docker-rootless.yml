@@ -1,5 +1,16 @@
 ---
 - hosts: all
   become: yes
-  roles:
-    - name: docker-rootless
+  tasks:
+    - name: install nvidia-docker
+      include_role:
+        name: nvidia.nvidia_docker
+
+    - name: install lmod
+      include_role:
+        name: lmod
+
+    - name: install rootless docker
+      include_role:
+        name: docker-rootless
+
