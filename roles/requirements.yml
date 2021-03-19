@@ -4,6 +4,9 @@ collections:
 - name: ansible.posix
   version: 1.1.1
 
+- name: community.kubernetes
+  version: 1.2.0
+
 roles:
 
 - src: dev-sec.ssh-hardening
@@ -62,9 +65,4 @@ roles:
   version: 2.4.0
 
 - src: lecorguille.singularity
-  version: 1.2.0
-
-collections:
-
-- name: community.kubernetes
   version: 1.2.0
