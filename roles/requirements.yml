@@ -63,3 +63,8 @@ roles:
 
 - src: lecorguille.singularity
   version: 1.2.0
+
+collections:
+
+- name: community.kubernetes
+  version: 1.2.0
