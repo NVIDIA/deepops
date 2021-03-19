@@ -16,6 +16,12 @@ Specify "--gpus" option as needed.
 
 To stop/kill the rootless docker daemon call:
   $ stop_docker_rootless.sh
+
+Refer to help of the scripts.
+    $ start_docker_rootless.sh -h
+To run without verbose rootless docker messages run:
+    $ start_docker_rootless.sh --quiet
+
 ]])
 
 
