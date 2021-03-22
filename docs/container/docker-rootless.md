@@ -24,6 +24,19 @@ a different install location is desired. Run the playbook via ansible command:
 ansible-playbook -K --limit slurm-cluster playbooks/container/docker-rootless.yml
 ```
 
+For networking to properly work with rootless docker the `br_netfilter` kernel
+module should be loaded. Check via:
+```
+$ lsmod | grep br_netfilter
+```
+The `br_netfilter` kernel module is typically installed by default on various
+Linux platforms. If not loaded then load via:
+```
+$ sudo modprobe br_netfilter
+# to load by default on bootup
+$ sudo sh -c 'echo "br_netfilter" > /etc/modules-load.d/br_netfilter.conf'
+```
+
 ## Using Rootless Docker in Slurm
 
 The playbook installs an environment module for loading rootless docker via
