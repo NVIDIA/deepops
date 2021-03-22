@@ -5,6 +5,8 @@
     - name: install nvidia-docker
       include_role:
         name: nvidia.nvidia_docker
+      vars:
+        nvidia_docker_skip_docker_reload: true
 
     - name: install lmod
       include_role:
