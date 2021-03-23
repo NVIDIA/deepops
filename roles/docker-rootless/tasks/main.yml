@@ -71,3 +71,14 @@
   file:
     path: /tmp/rootless_docker_setup.sh
     state: absent
+
+- name: Add the br_netfilter module
+  modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Load br_netfilter module at boot
+  lineinfile:
+    path: /etc/modules
+    create: yes
+    line: "br_netfilter"
