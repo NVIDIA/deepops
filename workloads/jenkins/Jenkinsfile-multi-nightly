@@ -410,7 +410,7 @@ pipeline {
         }
       }
     }
-    stage('Cluster Up - CentOS') {
+    stage('Cluster Up - CentOS 8') {
       environment {
         DEEPOPS_VAGRANT_OS = 'centos'
         DEEPOPS_OS_VERSION = '8'
