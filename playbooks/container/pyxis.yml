@@ -21,8 +21,12 @@
         enroot_environ_config_files: "{{ enroot_environ_config_files_dgx }}"
       when: ansible_product_name is search("DGX")
 
+- hosts: slurm-node
+  become: yes
+  roles:
+    - name: nvidia.enroot
+
 - hosts: slurm-cluster
   become: yes
   roles:
-    - name: ansible-role-enroot
     - name: pyxis
