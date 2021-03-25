@@ -65,12 +65,7 @@ For instructions on setting up a Docker registry mirror, see the [doc on Docker 
 
 ## Configuring DeepOps
 
-To deploy the NGC-Ready playbook using alternative mirrors, you will need to configure the following items.
-
-1. Configure the nodes to use your mirrors for the Linux distribution package repositories
-1. Set the following DeepOps variables to configure other package repositories
-1. Set the following DeepOps variables to configure container image pulls
-1. Set the following DeepOps variables to configure HTTP downloads
+To deploy the NGC-Ready playbook offline, you will need to configure your servers and DeepOps to make use of your mirrors.
 
 
 ### Configure servers to use your mirrors for the Linux distribution package repositories
