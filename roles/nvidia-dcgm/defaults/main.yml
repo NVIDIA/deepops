@@ -1,14 +1,12 @@
 ---
-# DCGM is available through package repositories for DGX, but for other host
-# types you must download from the NVIDIA Developer portal at
-# https://developer.nvidia.com/dcgm
-# To install DCGM, please download the correct package type(s) and set the
-# following variables to a path where the file exists on the Ansible control
-# machine.
-#
-# dcgm_rpm_package: "/tmp/datacenter-gpu-manager.rpm"
-# dcgm_deb_package: "/tmp/datacenter-gpu-manager.deb"
+dcgm_pkg_name: "datacenter-gpu-manager"
 
-# Location where the packages will be copied on the nodes
-dcgm_rpm_dest_path: "/tmp/datacenter-gpu-manager.rpm"
-dcgm_deb_dest_path: "/tmp/datacenter-gpu-manager.deb"
+# RedHat family
+epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+nvidia_driver_rhel_cuda_repo_baseurl: "https://developer.download.nvidia.com/compute/cuda/repos/{{ _rhel_repo_dir }}/"
+nvidia_driver_rhel_cuda_repo_gpgkey: "https://developer.download.nvidia.com/compute/cuda/repos/{{ _rhel_repo_dir }}/7fa2af80.pub"
+
+# Ubuntu
+nvidia_driver_ubuntu_cuda_repo_gpgkey_url: "https://developer.download.nvidia.com/compute/cuda/repos/{{ _ubuntu_repo_dir }}/7fa2af80.pub"
+nvidia_driver_ubuntu_cuda_repo_gpgkey_id: "7fa2af80"
+nvidia_driver_ubuntu_cuda_repo_baseurl: "https://developer.download.nvidia.com/compute/cuda/repos/{{ _ubuntu_repo_dir }}"
