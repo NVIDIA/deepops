@@ -20,7 +20,7 @@ For instructions on mirroring these repositories, see the [doc on Apt mirrors](.
 
 The following files will need to be downloaded and made available in an HTTP mirror:
 
-* nvidia-docker wrapper (https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/nvidia-docker)
+* nvidia-docker wrapper (found [here](https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/nvidia-docker))
 * DCGM package (optional)
 
 For instructions on setting up an HTTP mirror, see the [doc on HTTP mirrors](./mirror-http-files.md).
@@ -48,8 +48,8 @@ For instructions on mirroring these repositories, see the [doc on RPM mirrors](.
 
 The following files will need to be downloaded and made available in an HTTP mirror:
 
-* EPEL package
-* nvidia-docker wrapper (https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/nvidia-docker)
+* EPEL package (found [here](https://fedoraproject.org/wiki/EPEL))
+* nvidia-docker wrapper (found [here](https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/nvidia-docker))
 * DCGM package (optional)
 
 For instructions on setting up an HTTP mirror, see the [doc on HTTP mirrors](./mirror-http-files.md).
