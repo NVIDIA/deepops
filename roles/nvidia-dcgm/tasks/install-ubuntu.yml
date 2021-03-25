@@ -21,5 +21,5 @@
 
 - name: Ubuntu | install package
   apt:
-    deb: "{{ dcgm_pkg_name }}"
+    name: "{{ dcgm_pkg_name }}"
     state: "present"
