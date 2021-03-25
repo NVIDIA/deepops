@@ -76,7 +76,42 @@ To deploy the NGC-Ready playbook using alternative mirrors, you will need to con
 ### Configure servers to use your mirrors for the Linux distribution package repositories
 
 DeepOps does not configure the location of your Linux distribution's package repositories (e.g., Ubuntu or CentOS repositories).
-Instead..
+Instead, you will need to configure your servers to use your offline package mirrors directly.
+
+On Ubuntu servers, you should edit the `/etc/apt/sources.list` file to replace references to the Ubuntu distribution servers with your own mirror.
+For example,
+
+```
+# Replace this...
+deb http://us.archive.ubuntu.com/ubuntu bionic main restricted
+
+# With this...
+deb http://<your-mirror-server>/ubuntu bionic main restricted
+```
+
+On Enterprise Linux servers, you should edit the appropriate repo files in `/etc/yum.repos.d` and replace references to the upstream distribution servers with your own mirror.
+For repositories that reference a `mirrorlist`, you should replace these with `baseurl` parameters.
+
+For example,
+
+```
+# Replace this...
+[base]
+name=CentOS-$releasever - Base
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
+#baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+# With this...
+[base]
+name=CentOS-$releasever - Base
+baseurl=http://<your-mirror-server>/centos/$releasever/os/$basearch/
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+```
+
+In all cases, you should edit the URLs appropriately to ensure they can download from the paths exported from your mirrors.
 
 
 ### Configure DeepOps to use your mirrors for non-distribution package repositories
