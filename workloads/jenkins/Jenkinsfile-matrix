@@ -197,6 +197,24 @@ for(int i = 0; i < axes.size(); i++) {
               '''
             }
           }
+          stage("cleanup-${DEEPOPS_DEPLOYMENT_PLATFORM}-${DEEPOPS_VAGRANT_OS}-${DEEPOPS_FULL_INSTALL}") {
+              echo "Reset repo and unmunge files"
+              sh '''
+                git reset --hard
+                rm -rf config
+              '''
+
+              echo "Munge files for testing"
+              sh '''
+                bash -x ./workloads/jenkins/scripts/munge-files.sh
+              '''
+
+              echo "Tear down any Vagrant that was not cleaned up"
+              sh '''
+                pwd
+                cd virtual && ./vagrant_shutdown.sh || true
+              '''
+          }
         }
         // TODO: There seems to be a bug here if tasks fail, they do not get cleaned up properly
         // XXX: Not sure if the cleanup should live inside or outside of the lock. Also, this doesn't seem to work.
