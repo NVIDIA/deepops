@@ -9,26 +9,58 @@ In order to deploy this configuration without Internet access, you will need to 
 
 ### Ubuntu
 
-Apt repositories (how to mirror):
+The following Apt repositories will need to be mirrored in the offline environment:
+
+* Ubuntu distribution repositories
+* Docker CE repository
+* nvidia-docker repositories
+
+For instructions on mirroring these repositories, see the [doc on Apt mirrors](./mirror-apt-repos.md).
 
 
-Container images (how to mirror):
+The following files will need to be downloaded and made available in an HTTP mirror:
+
+* nvidia-docker wrapper (https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/nvidia-docker)
+* DCGM package (optional)
+
+For instructions on setting up an HTTP mirror, see the [doc on HTTP mirrors](./mirror-http-files.md).
 
 
-HTTP downloads (how to mirror):
+Container images are only needed if you want to run the tests built into the playbook:
 
+* nvcr.io/nvidia/cuda:10.1-base-ubuntu18.04
+* nvcr.io/nvidia/pytorch:18.10-py3
+* nvcr.io/nvidia/tensorflow:18.10-py3
+
+For instructions on setting up a Docker registry mirror, see the [doc on Docker mirrors](./mirror-docker-images.md).
 
 
 ### Enterprise Linux
 
-RPM repositories (how to mirror):
+The following RPM repositories will need to be mirrored in the offline environment:
+
+* Enterprise Linux distribution repositories (RHEL or CentOS, depending on your distro)
+* Docker CE repository
+* nvidia-docker repositories
+
+For instructions on mirroring these repositories, see the [doc on RPM mirrors](./mirror-rpm-repos.md).
 
 
-Container images (how to mirror):
+The following files will need to be downloaded and made available in an HTTP mirror:
 
+* EPEL package
+* nvidia-docker wrapper (https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/nvidia-docker)
+* DCGM package (optional)
 
-HTTP downloads (how to mirror):
+For instructions on setting up an HTTP mirror, see the [doc on HTTP mirrors](./mirror-http-files.md).
 
+Container images (how to mirror) are only needed if you want to run the tests built into the playbook:
+
+* nvcr.io/nvidia/cuda:10.1-base-ubuntu18.04
+* nvcr.io/nvidia/pytorch:18.10-py3
+* nvcr.io/nvidia/tensorflow:18.10-py3
+
+For instructions on setting up a Docker registry mirror, see the [doc on Docker mirrors](./mirror-docker-images.md).
 
 
 ## Configuring DeepOps
@@ -40,3 +72,77 @@ To deploy the NGC-Ready playbook using alternative mirrors, you will need to con
 1. Set the following DeepOps variables to configure container image pulls
 1. Set the following DeepOps variables to configure HTTP downloads
 
+
+### Configure servers to use your mirrors for the Linux distribution package repositories
+
+DeepOps does not configure the location of your Linux distribution's package repositories (e.g., Ubuntu or CentOS repositories).
+Instead..
+
+
+### Configure DeepOps to use your mirrors for non-distribution package repositories
+
+The NGC-Ready playbook depends on the Docker CE and nvidia-docker package repositories.
+DeepOps sets up these repositories automatically during the installation.
+
+To configure alternate URLs for these repositories, set the following variables in your DeepOps configuration:
+
+```
+# Ubuntu
+docker_ubuntu_repo_base_url: "http://<your-package-mirror>/<your-path-to-docker-repo>"
+docker_ubuntu_repo_gpgkey: "http://<your-package-mirror>/<your-path-to-docker-gpgkey>"
+
+nvidia_docker_repo_base_url: "http://<your-package-mirror>/<your-path-to-nvidia-docker-base-dir>"
+nvidia_docker_repo_gpg_url: "http://<your-package-mirror>/<your-path-to-nvidia-docker-gpgkey>"
+
+# Enterprise Linux
+docker_rh_repo_base_url: "http://<your-package-mirror>/<your-path-to-docker-repo>"
+docker_rh_repo_gpgkey: "http://<your-package-mirror>/<your-path-to-docker-gpgkey>"
+
+nvidia_docker_repo_base_url: "http://<your-package-mirror>/<your-path-to-nvidia-docker-base-dir>"
+nvidia_docker_repo_gpg_url: "http://<your-package-mirror>/<your-path-to-nvidia-docker-gpgkey>"
+```
+
+
+### Configure DeepOps to use your mirrors for HTTP downloads
+
+In all cases, you will need to provide a URL to download the nvidia-docker wrapper:
+
+```
+nvidia_docker_wrapper_url: "http://<your-http-mirror>/<your-path>/nvidia-docker"
+```
+
+If installing on Enterprise Linux, you will need to provide a URL for the EPEL package.
+For example,
+
+```
+epel_package: "http://<your-http-mirror>/<your-path>/epel-release.rpm"
+```
+
+If installing NVIDIA DCGM, you will need to provide a local file path for your downloaded DCGM package.
+
+```
+# For Ubuntu
+dcgm_deb_package: "/path/to/datacenter-gpu-manager.deb"
+
+# For Enterprise Linux
+dcgm_rpm_package: "/path/to/datacenter-gpu-manager.rpm"
+```
+
+
+### Configure DeepOps to use your mirrors for container image pulls
+
+If running the container tests as part of the NGC-Ready playbook, set the following variables in your DeepOps configuration:
+
+```
+ngc_ready_cuda_container: "<your-container-registry>/nvidia/cuda:10.1-base-ubuntu18.04"
+ngc_ready_pytorch: "<your-container-registry>/nvidia/pytorch:18.10-py3"
+ngc_ready_tensorflow: "<your-container-registry>/nvidia/tensorflow:18.10-py3"
+``` 
+
+## Running the NGC-Ready playbook
+
+After setting these variables to point to your local mirrors, you should be able to run the NGC-Ready playbook:
+
+```
+ansible-playbook playbooks/ngc-ready-server.yml
+```
