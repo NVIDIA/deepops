@@ -6,12 +6,12 @@ GPU_CLOCK="1380,1275"
 
 ## Use this setting for the DGX A100 with additional MLNX Adapter
 ## This is default on the DGX A100 80GB nodes.
-# UCX_AFFINITY="mlx5_0:mlx5_1:mlx5_2:mlx5_3:mlx5_6:mlx5_7:mlx5_8:mlx5_9"
+UCX_AFFINITY="mlx5_0:mlx5_1:mlx5_2:mlx5_3:mlx5_6:mlx5_7:mlx5_8:mlx5_9"
 
 ## Use thius setting for the DGX A100 with standard MLNX Adapter configuration
 ## This is default on the DGX A100 40GB node, but may have been upgraded
 ## on a 40GB node.
-UCX_AFFINITY="mlx5_0:mlx5_1:mlx5_2:mlx5_3:mlx5_4:mlx5_5:mlx5_6:mlx5_7"
+#UCX_AFFINITY="mlx5_0:mlx5_1:mlx5_2:mlx5_3:mlx5_4:mlx5_5:mlx5_6:mlx5_7"
 
 export MONITOR_GPU=1
 export TEST_SYSTEM_PARAMS=1

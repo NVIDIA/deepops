@@ -62,6 +62,14 @@ if [ x"${EXPDIR}" == x"" ]; then
 	exit 1
 fi
 
+set -x
+env | grep HPL
+USEHPLAI=""
+if [ x"${HPLAI}" == x"1" ]; then
+	USEHPLAI="--xhpl-ai"
+fi
+
+
 echo "" 
 echo "=============================" 
 echo "HPL.dat File" 
@@ -109,17 +117,17 @@ case ${CRUNTIME} in
 	enroot)
 		CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
                      --container-image="${CONT}" --container-mounts="${MOUNT}" \
-		     /workspace/hpl.sh --config ${SYSCFGDIR}${SYSCFGVAR} --dat /datfiles/HPL.dat" ;;
+		     /workspace/hpl.sh --config ${SYSCFGDIR}${SYSCFGVAR} ${USEHPLAI}  --dat /datfiles/HPL.dat" ;;
 	singularity)
 		CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
 		     singularity run --nv -B "${MOUNT}" "${CONT}" \
-		     /workspace/hpl.sh --config ${SYSCFGDIR}${SYSCFGVAR} --dat /datfiles/HPL.dat" ;;
+		     /workspace/hpl.sh --config ${SYSCFGDIR}${SYSCFGVAR} ${USEHPLAI}  --dat /datfiles/HPL.dat" ;;
 	baremetal)
 		#CMD="mpirun -np $NPROCS -bind-to none -x LD_LIBRARY_PATH ${LOCAL_MPIOPTS} ${mpiopts} ${HPL_SCRIPTS_DIR}/hpl.sh" 
 		echo "baremetal not supported yet"
 		exit 1
 		CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
-		     ./hpl.sh --config ${SYSCFGVAR} --cpu-cores-per-task ${cpucorespertask}  --dat ./HPL.dat" 
+		     ./hpl.sh --config ${SYSCFGVAR} --cpu-cores-per-task ${cpucorespertask} ${USEHPLAI}  --dat ./HPL.dat" 
 		;;
 	*)
 		echo "ERROR: Runtime ${CRUNTIME} not supported.  Exiting"

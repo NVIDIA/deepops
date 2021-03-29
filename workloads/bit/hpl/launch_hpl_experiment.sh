@@ -29,6 +29,7 @@ export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}} # The shared directory whe
 niters=5
 partition="batch"
 usegres=1
+hplai=0
 maxnodes=9999
 grestype=""
 mpiopts=""
@@ -72,6 +73,8 @@ Other Options:
         * Set container to use
     --cruntime <container runtime>
 	* Specify container runtime.  Options are singularity, enroot, and bare (bare-metal)
+    --hplai 
+        * Run HPL-AI benchmark
     --nores
 	* Do not request specific nodes or try to control how jobs are placed on the system (better for experiments while in production)
     -w 
@@ -98,35 +101,12 @@ function find_hpl_dat_file() {
         local system=$1
         local gpus_per_node=$2
         local nnodes=$3
+	local hpiai=$4
 
-        if [ ${gpus_per_node} == 8 ]; then
-                case ${nnodes} in
-                        1) PxQ=4x2 ;;
-                        2) PxQ=4x4 ;;
-                        4) PxQ=8x4 ;;
-                        8) PxQ=8x8 ;;
-                        10) PxQ=10x8 ;;
-                        16) PxQ=16x8 ;;
-                        20) PxQ=20x8 ;;
-                        32) PxQ=16x16 ;;
-                        64) PxQ=32x16 ;;
-			128) PxQ=32x32 ;;
-                        *) echo "ERROR: There is no defined mapping for ${nnodes} nodes for system ${system}.  Exiting" 
-                esac
-        elif [ ${gpus_per_node} == 16 ]; then
-                case ${nnodes} in
-                        1) PxQ=4x4 ;;
-                        2) PxQ=8x4 ;;
-                        4) PxQ=8x8 ;;
-                *) echo "ERROR: There is no defined mapping for ${nnodes} nodes for system ${system}.  Exiting" 
-		   exit 1 ;;
-                esac
-	else 
-		echo "ERROR: Unable to map system configuration to create HPL.dat file.  Exiting"
-		exit 1
-        fi
-
-        HPLDATFN=${HPL_FILE_DIR}/HPL.dat_${PxQ}_${system}
+        HPLDATFN=${HPL_FILE_DIR}/HPL.dat_${nnodes}N_${system}
+	if [ x"$hplai" == x"1" ]; then
+		HPLDATFN=${HPLDATFN}_ai
+	fi
 	echo $HPLDATFN
 
 }
@@ -145,6 +125,7 @@ while [ $# -gt 0 ]; do
 		-w) includelist="$2"; shift 2 ;;
 		-x) excludelist="$2"; shift 2 ;;
 
+		--hplai) export HPLAI=1; shift 1 ;;
 		--nores) nores=1; shift 1 ;;
 	        --maxnodes) maxnodes="$2"; shift 2 ;;	
 		--mpiopts) mpiopts="$2"; shift 2 ;;
@@ -250,7 +231,8 @@ if [ x"${cruntime}" != x"" ]; then
 			# This expression below is probably not robust.
 			if [ ! -f ${container} ]; then
 				# Since the file doesn't exist, assume the CONTAINER is a URI
-				export CONT=$(echo ${container} | rev | sed 's/\//#/g' | sed 's/#/\//' | rev)
+				#export CONT=$(echo ${container} | rev | sed 's/\//#/g' | sed 's/#/\//' | rev)
+				export CONT=$(echo ${container} | sed 's/\//#/')
 			else
 				export CONT=${container}
 			fi
@@ -273,7 +255,7 @@ export CRUNTIME=${cruntime}
 
 ### Find the right HPL.dat file
 if [ x"${hpldat}" == x"" ]; then
-	HPLDATFN=${HPL_DIR}/hplfiles/$(find_hpl_dat_file ${system} ${gpus_per_node} ${nodes_per_job})
+	HPLDATFN=${HPL_DIR}/hplfiles/$(find_hpl_dat_file ${system} ${gpus_per_node} ${nodes_per_job} ${hplai})
 else
 	echo ""
 	echo "An HPL.dat file has been manually specified."
@@ -354,7 +336,7 @@ echo ""
 ### Report all variables
 echo ""
 echo "Experiment Variables:"
-for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system cruntime CONT nodes_per_job gpus_per_node niters partition slurmopts maxnodes mpiopts gresstr total_nodes hpldat; do
+for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system cruntime CONT nodes_per_job gpus_per_node niters partition slurmopts maxnodes mpiopts gresstr total_nodes hpldat HPLAI; do
 	echo -n "${V}: "
         if [ x"${!V}" != x"" ]; then	
         	echo "${!V}"
@@ -419,7 +401,7 @@ for N in $(seq ${niters}); do
 		# Submit the job in the workdir
 		pushd ${WORKDIR} > /dev/null 2>&1
 
-		CMD="sbatch -J sa:bit:burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} ${slurmopts} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFG,SYSCFGVAR,GPUMEM,CRUNTIME,EXPDIR ${HPL_DIR}/submit_hpl.sh"
+		CMD="sbatch -J sa:bit:burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} ${slurmopts} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFG,SYSCFGVAR,GPUMEM,CRUNTIME,HPLAI,EXPDIR ${HPL_DIR}/submit_hpl.sh"
                  
 		if [ ${verbose} -eq 1 ]; then
 		        echo "Submitting:  $CMD"
