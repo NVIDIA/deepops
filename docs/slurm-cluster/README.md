@@ -62,7 +62,7 @@ Instructions for deploying a GPU cluster with Slurm
 
   ```sh
   # NOTE: This will use Pyxis to download a container and verify GPU functionality across all compute nodes 
-  ansible-playbook -l slurm-cluster playbooks/slurm-validation.yml -e '{num_gpus: 1}'
+  ansible-playbook -l slurm-cluster playbooks/slurm-cluster/slurm-validation.yml -e '{num_gpus: 1}'
   ```
 ## Using Slurm
 
