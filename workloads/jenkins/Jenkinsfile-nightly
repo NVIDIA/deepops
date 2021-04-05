@@ -83,9 +83,7 @@ pipeline {
 
           echo "Start new virtual environment pre-GPU Operator checks"
           sh '''
-            cd virtual
-            bash -x ./vagrant_shutdown.sh
-            bash -x ./vagrant_startup.sh
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
           '''
 
           echo "Cluster Up - MGMT Nodes"
@@ -108,9 +106,7 @@ pipeline {
 
           echo "Start new virtual environment pre-Slurm checks"
           sh '''
-            cd virtual
-            bash -x ./vagrant_shutdown.sh
-            bash -x ./vagrant_startup.sh
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
           '''
 
           echo "Set up Slurm"
@@ -226,9 +222,7 @@ pipeline {
 
           echo "Start new virtual environment pre-Slurm checks"
           sh '''
-            cd virtual
-            bash -x ./vagrant_shutdown.sh
-            bash -x ./vagrant_startup.sh
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
           '''
 
           echo "Set up Slurm"
@@ -335,9 +329,7 @@ pipeline {
 
           echo "Start new virtual environment pre-GPU Operator checks"
           sh '''
-            cd virtual
-            bash -x ./vagrant_shutdown.sh
-            bash -x ./vagrant_startup.sh
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
           '''
 
           echo "Cluster Up - MGMT Nodes"
@@ -359,9 +351,7 @@ pipeline {
 
           echo "Start new virtual environment pre-Slurm checks"
           sh '''
-            cd virtual
-            bash -x ./vagrant_shutdown.sh
-            bash -x ./vagrant_startup.sh
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
           '''
 
           echo "Set up Slurm"
@@ -468,9 +458,7 @@ pipeline {
 
           echo "Start new virtual environment pre-Slurm checks"
           sh '''
-            cd virtual
-            bash -x ./vagrant_shutdown.sh
-            bash -x ./vagrant_startup.sh
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
           '''
 
           echo "Set up Slurm"
