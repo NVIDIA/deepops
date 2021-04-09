@@ -62,8 +62,6 @@ if [ x"${EXPDIR}" == x"" ]; then
 	exit 1
 fi
 
-set -x
-env | grep HPL
 USEHPLAI=""
 if [ x"${HPLAI}" == x"1" ]; then
 	USEHPLAI="--xhpl-ai"
@@ -80,8 +78,8 @@ echo "============================="
 echo "" 
 
 #### Set Node information
-NV_MEMCLOCK=$(grep -w GPU_CLOCK ${SYSCFGVAR} | cut -f2 -d= | cut -f1 -d, | sed 's/"//g')
-NV_GPUCLOCK=$(grep -w GPU_CLOCK ${SYSCFGVAR} | cut -f2 -d= | cut -f2 -d, | sed 's/"//g')
+NV_MEMCLOCK=$(source ${SYSCFGVAR} ; echo ${GPU_CLOCK} | cut -f2 -d= | cut -f1 -d, | sed 's/"//g')
+NV_GPUCLOCK=$(source ${SYSCFGVAR} ; echo ${GPU_CLOCK} | cut -f2 -d= | cut -f2 -d, | sed 's/"//g')
 
 echo "NV_MEMCLOCK: ${NV_MEMCLOCK}"
 echo "NV_GPUCLOCK: ${NV_GPUCLOCK}"

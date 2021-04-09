@@ -61,7 +61,7 @@ Other Options:
         * Set the Slurm partition to use.  Default is ${partition}."
     -a|--account <Slurm Account>
         * Set the Slurm accoutn to use.  Default is None."
-    --maxnodes <Number_of_nodes>
+    -m|--maxnodes <Number_of_nodes>
         * Set the maximum number of nodes to use per experiment.  This is used for testing.  Default is all of them."
     --mpiopts <Options>
         * Sets string with additional OpenMPI options to pass to mpirun.  Default is none.
@@ -101,7 +101,7 @@ function find_hpl_dat_file() {
         local system=$1
         local gpus_per_node=$2
         local nnodes=$3
-	local hpiai=$4
+	local hplai=$4
 
         HPLDATFN=${HPL_FILE_DIR}/HPL.dat_${nnodes}N_${system}
 	if [ x"$hplai" == x"1" ]; then
@@ -125,9 +125,9 @@ while [ $# -gt 0 ]; do
 		-w) includelist="$2"; shift 2 ;;
 		-x) excludelist="$2"; shift 2 ;;
 
-		--hplai) export HPLAI=1; shift 1 ;;
+		--hplai) hplai=1; shift 1 ;;
 		--nores) nores=1; shift 1 ;;
-	        --maxnodes) maxnodes="$2"; shift 2 ;;	
+	        -m|--maxnodes) maxnodes="$2"; shift 2 ;;	
 		--mpiopts) mpiopts="$2"; shift 2 ;;
 		--usegres) usegres="$2"; shift 2 ;;
 		--grestype) grestype="$2"; shift 2 ;;
@@ -198,6 +198,9 @@ if [ x"${usegres}" == x"1" ]; then
 	fi
 	gresstr="--gpus-per-node=${gresstr}${gpus_per_node}"
 fi
+
+# Setup the HPLAI export variable
+export HPLAI=${hplai}
 
 if [ x"${cruntime}" != x"" ]; then
 	# Validate runtime is correct
@@ -282,6 +285,9 @@ export GPUS_PER_NODE=${gpus_per_node}
 
 # Set a name for the experiment
 export EXPNAME=${nodes_per_job}node_${system}_$(date +%Y%m%d%H%M%S)
+if [ x"${hplai}" == x"1" ]; then
+	export EXPNAME=${EXPNAME}_ai
+fi
 export EXPDIR=$(pwd)/results/${EXPNAME}
 
 if [ -d $EXPDIR ]; then
@@ -336,7 +342,7 @@ echo ""
 ### Report all variables
 echo ""
 echo "Experiment Variables:"
-for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system cruntime CONT nodes_per_job gpus_per_node niters partition slurmopts maxnodes mpiopts gresstr total_nodes hpldat HPLAI; do
+for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system cruntime CONT nodes_per_job gpus_per_node niters partition slurmopts maxnodes mpiopts gresstr total_nodes hpldat hplai; do
 	echo -n "${V}: "
         if [ x"${!V}" != x"" ]; then	
         	echo "${!V}"

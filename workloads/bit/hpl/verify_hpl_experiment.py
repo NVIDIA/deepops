@@ -127,8 +127,11 @@ for fn in glob.glob(expdir + "/*.out", recursive=False):
                         time[fn]=float(l.split()[5+off])
                         if time[fn] < besttime:
                                 besttime=time[fn]
-
-                        gflops[fn]=float(l.split()[6+off])
+               
+                        if (l.split()[0] == "HPL_AI"): 
+                            gflops[fn]=float(l.split()[10])
+                        else:
+                            gflops[fn]=float(l.split()[6])
                         if gflops[fn] < minperf:
                                 minperf=gflops[fn]
                         if gflops[fn] > maxperf:
