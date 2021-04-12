@@ -1,46 +1,59 @@
-# DeepOps Burn-In Test
+# DeepOps Burn-In Test (BIT)
 
 ## Overview
 
-This repository contains a set of scripts to validate the performance of DGX A100 clusters. The test will run a variety of multi-node workloads (currently only HPL, NCCL is next).  The tests can also be run on generic GPU clusters, but interpretation of the results is left to the user.
+This repository contains a set of scripts and configuration to burnin and validate the performance of DGX A100 clusters. The test will run a variety of containerized multi-node workloads (currently only HPL, NCCL is next).  The tests can also be run on generic GPU clusters, but specific configuration and interpretation of the results is left to the user.
 
-The HPL burnin test will repeatedly run HPL on different node counts to verify that each node, and each group of nodes, is providing the expected performance.  If a job runs slowly, it is an indicator that there is an issue with the node or network.  All nodes should perform equally.  
+The test are designed to be repeatedly run with different nodes and confirm that performance is consistent at each node count.  When tests run slowly or incorrectly, the nodes affected are reported.  Through continued system stress subtle and no-so-subtle hardware and system issues can be detected.  
 
 If the expected performance is seen, the user can be confident that the nodes are working correctly.
 
-
-### NCCL Overview
-(This test is still a work in progress)
-
-The NCCL test will use the NCCL all_reduce_perf test to validate fabric correctness and performance.  Testing has only been done on InfiniBand based fabrics. 
+## Differences between Burn-in and Validation
+A validation test is to determine if the systems are performing as expected.  A burn-in test is 
+repeated runs of the validation test to ensure systems continue to perform as expected over a 
+period of time.  The tests described below are for system validation.  For a burn-in test, run 
+validation tests back-to-back for an extended period of time.
 
 ## Requirements
 
-- These tests are container based. A working Slurm environment with Pyxis and Enroot is currently required.  There is a codepath for Singularity, but it has been minimally tested.
+- It is assumed that these tests are run under a DeepOps configured cluster with Slurm, Enroot, and Pyxis.
+- A shared filesystem across all the compute nodes.
+
+Note: Singularity should also work, but that code path has been minimally tested.
+
+# High Performance Linpack (HPL)
 
 ## Getting started
 
-Copy the DeepOps repo to the user's home directory of the slurm cluster to be tested or clone it from github.com.. It is assumed that this directory is on a shared filed system. Place the hpl binary in the bit directory (`deepops/workloads/bit`) and run launch_experiment_slurm.sh.
+Either copy, or just reclone, the DeepOps repository to a directory on a shared filesystem owned by the user (non-root) under which the tests will be run.
 
-```sh
+```
 git clone https://github.com/NVIDIA/deepops.git
-cd deepops/workloads/bit/
-
+cd deepops/workloads/bit/hpl
 ```
 
 ## Setup Authentication to Access HPL container
 
-To access the HPL container from nvcr.io it is necessary to setup authentication keys.  Please go to nvcr.io and follow the instructions there to create a key (if you have not already done so).
+The NGC HPC Benchmarks container is used to run HPL.  
 
-###  To allow Enroot to access nvcr.io
+https://ngc.nvidia.com/catalog/containers/nvidia:hpc-benchmarks
+
+While the container is freely available, it is necessary to create an account on NGC to access the 
+container.  After logging into NGC, you need to create an API key to pull containers. 
+
+https://ngc.nvidia.com/setup
+
+Follow the instructions there to create an API key.
+
+###  To allow Enroot to access nvcr.io via the API key.
 
 If not already created, create the file ~/.config/enroot/.credentials.  Add the following entries to that file:
 
 ```
-machine nvcr.io login $oauthtoken password <NVCR.IO KEY>
-machine authn.nvidia.com login $oauthtoken password <NVCR.IO KEY>
+machine nvcr.io login $oauthtoken password <NVCR.IO API KEY>
+machine authn.nvidia.com login $oauthtoken password <NVCR.IO API KEY>
 ```
-Replace <NVCR.IO KEY> above with the your nvcr.io key.
+Replace <NVCR.IO API KEY> above with the your nvcr.io api key for your NGC account.
 
 ### Setup Authentication for Docker/Singularity to nvcr.io
 
@@ -93,12 +106,11 @@ $ ./launch_hpl_experiment.sh -s dgxa100_80G  -c 1 -i 5  --cruntime enroot
 Using contaner runtime enroot
 
 Experiment Variables:
-HPL_DIR: /home/juser/deepops/workloads/bit
-HPL_SCRIPTS_DIR: /home/juser/deepops/workloads/bit
-EXPDIR: /home/juser/deepops/workloads/bit/results/1node_dgxa100_80G_20201215104946
-system: dgxa100_80G
+HPL_DIR: /home/juser/deepops/workloads/bit/hpl
+HPL_SCRIPTS_DIR: /home/juser/deepops/workloads/bit/hpl/
+HPL EXPDIR: /home/juser/deepops/workloads/bit/hpl/results/1node_dgxa100_80G_20201215104946 system: dgxa100_80G
 cruntime: enroot
-CONT: /home/juser/deepops/workloads/bit/nvidia+hpc-benchmarks+20.10-hpl.sqsh
+CONT: /home/juser/deepops/workloads/bit/hpl/nvidia+hpc-benchmarks+20.10-hpl.sqsh
 nodes_per_job: 1
 gpus_per_node: 8
 niters: 1
@@ -126,7 +138,7 @@ No Issues Found
 
 Summary:
 
-    Experiment Dir: /home/juser/deepops/workloads/bit/results/1node_dgxa100_80G_20201215104946
+    Experiment Dir: /home/juser/deepops/workloads/bit/hpl/results/1node_dgxa100_80G_20201215104946
         Total Jobs: 5
          Slow Jobs: 0
        Failed Jobs: 0
@@ -143,12 +155,12 @@ Summary:
 
 
 Run Summary:
-Experiment Results Directory: /home/juser/deepops/workloads/bit/results/1node_dgxa100_80G_20201215104946
+Experiment Results Directory: /home/juser/deepops/workloads/bit/hpl/results/1node_dgxa100_80G_20201215104946
 Total Nodes: 5
 Nodes Per Job:: 1
-Verify Log: /home/juser/deepops/workloads/bit/results/1node_dgxa100_80G_20201215104946/verify_results.txt
+Verify Log: /home/juser/deepops/workloads/bit/hpl/results/1node_dgxa100_80G_20201215104946/verify_results.txt
 
-To rerun the verification: /home/juser/deepops/workloads/bit/verify_hpl_experiment.py /home/juser/deepops/workloads/bit/results/1node_dgxa100_80G_20201215104946
+To rerun the verification: /home/juser/deepops/workloads/bit/hpl/verify_hpl_experiment.py /home/juser/deepops/workloads/bit/results/1node_dgxa100_80G_20201215104946
 
 ```
 
@@ -164,7 +176,7 @@ Experiments are verified when all jobs are complete.  See the file verify_result
  * Run an experiment where each node generates a result to identify any slow nodes.  If any slow nodes are found, fix them.
 
 ```
-./launch_hpl_experiment.py -c 1 -s dgxa100_80GG --maxnodes <number of nodes to run single node>  --cruntime enroot
+./launch_hpl_experiment.py -c 1 -s dgxa100_80GG --maxnodes <maximum number of nodes to use>  --cruntime enroot
 ```
 * Run multi-node jobs starting with two nodes, and increase them (four, eight, etc) until the size of the job to the next power of two would be greater than half the system.  At each node count, all runs should be completed successfully with similar performance.
 *Run two jobs at N/2 in size (N is the total number of nodes). 
@@ -172,7 +184,7 @@ Experiments are verified when all jobs are complete.  See the file verify_result
 
 
 ```
-./launch_hpl_experiment.sh -c <number of nodes> -s <system type>
+./launch_hpl_experiment.sh -c <number of nodes> -s <system type> --cruntime enroot
 
 ```
 
