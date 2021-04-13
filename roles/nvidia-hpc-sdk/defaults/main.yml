@@ -16,7 +16,7 @@
 
 # Version strings used to construct download URL
 hpcsdk_major_version: "21"
-hpcsdk_minor_version: "2"
+hpcsdk_minor_version: "3"
 hpcsdk_file_cuda: "11.2"
 hpcsdk_arch: "x86_64"
 
