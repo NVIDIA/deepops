@@ -121,3 +121,7 @@
 # Check for Lustre errors
 
  * || check_cmd_output -m '!/LNetError/' '/bin/journalctl -b'
+
+# Check for XID errors
+
+ * || check_xid_errors

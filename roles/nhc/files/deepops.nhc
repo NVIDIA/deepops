@@ -85,3 +85,13 @@ check_num_nvme_devs() {
 	fi
 	return 0
 }
+
+check_xid_errors() {
+	excluded_xid='94'
+	xid_list=$(journalctl -b 0  --since "1 hour ago" --no-pager 2> /dev/null | grep "NVRM: Xid" | sed 's/^.*\] \(.*\)/\1/' | awk '{print $9}' | sed 's/,//' | sort -n | uniq | grep -v -E "${excluded_xid}" | paste -s -d,)
+	if [ x"$xid_list" != x"" ]; then
+		echo "Found XID errors: $xid_list"
+		return 1
+	fi
+	return 0
+}
