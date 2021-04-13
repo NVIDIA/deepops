@@ -112,13 +112,9 @@ slurm_install_hpcsdk: true
 
 # Select the version of HPC SDK to download
 hpcsdk_major_version: "21"
-hpcsdk_minor_version: "2"
+hpcsdk_minor_version: "3"
 hpcsdk_file_cuda: "11.2"
 hpcsdk_arch: "x86_64"
-
-# WAR for download URL on 21.2
-# See: https://github.com/NVIDIA/deepops/issues/896
-hpcsdk_download_url: "https://developer.download.nvidia.com/hpc-sdk/21.2t/nvhpc_2021_212_Linux_x86_64_cuda_11.2.tar.gz"
 
 # In a Slurm cluster, default to setting up HPC SDK as modules rather than in
 # the default user environment
