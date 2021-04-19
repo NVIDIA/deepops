@@ -124,6 +124,9 @@ gpu_clock_reset: no
 # Specifies <minGpuClock,maxGpuClock> clocks as a pair (e.g. 1500,1500) that defines the range of desired locked GPU clock speed in MHz. Setting this will supercede application clocks and take effect regardless if an app is running. Input can also be a singular desired clock value. (see the `--lock-gpu-clocks` flag in nvidia-smi for more)
 gpu_clock_lock: "1507,1507"
 
+# Debugging var: force install NVIDIA driver even if GPU not detected
+nvidia_driver_force_install: false
+
 
 ################################################################################
 # CONTAINER RUNTIME                                                            #
