@@ -20,6 +20,6 @@
   become: true
   become_method: sudo
   vars_files:
-    - ../config/group_vars/netapp-trident.yml
+    - ../../config/group_vars/netapp-trident.yml
   roles:
     - role: netapp-trident

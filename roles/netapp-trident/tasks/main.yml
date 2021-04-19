@@ -7,153 +7,23 @@
     dest: /root
     remote_src: yes
 
-- name: Create Trident namespace (ubuntu)
-  k8s:
+- name: Copy namespace config file to control node
+  template:
+    src: namespace.j2
+    dest: /root/trident-installer/namespace.yaml
+  run_once: true
+
+- name: Create Trident namespace
+  kube:
     state: present
-    kind: Namespace
+    resource: Namespace
     name: trident
-    wait: yes
+    filename: /root/trident-installer/namespace.yaml
   run_once: true
-  environment:
-    PYTHONHOME: '{{ deepops_venv }}'
-  when: ansible_distribution == 'Ubuntu'
 
-- name: Create Trident namespace (Red Hat / CentOS)
-  k8s:
-    state: present
-    kind: Namespace
-    name: trident
-    wait: yes
+- name: Install Trident using Helm
+  command: /usr/local/bin/helm -n trident install trident /root/trident-installer/helm/trident-operator-{{ trident_version }}.tgz
   run_once: true
-  when: ansible_os_family == 'RedHat'
-
-- name: Create TridentProvisioner CRD (K8s version >= 1.16) (Ubuntu)
-  k8s:
-    state: present
-    src: /root/trident-installer/deploy/crds/trident.netapp.io_tridentprovisioners_crd_post1.16.yaml
-    wait: yes
-  run_once: true
-  environment:
-    PYTHONHOME: '{{ deepops_venv }}'
-  when: k8s_version >= 1.16 and ansible_distribution == 'Ubuntu'
-
-- name: Create TridentProvisioner CRD (K8s version >= 1.16) (Red Hat / CentOS)
-  k8s:
-    state: present
-    src: /root/trident-installer/deploy/crds/trident.netapp.io_tridentprovisioners_crd_post1.16.yaml
-    wait: yes
-  run_once: true
-  when: k8s_version >= 1.16 and ansible_os_family == 'RedHat'
-
-- name: Create TridentProvisioner CRD (K8s version < 1.16) (Ubuntu)
-  k8s:
-    state: present
-    src: /root/trident-installer/deploy/crds/trident.netapp.io_tridentprovisioners_crd_pre1.16.yaml
-    wait: yes
-  run_once: true
-  environment:
-    PYTHONHOME: '{{ deepops_venv }}'
-  when: k8s_version < 1.16 and ansible_distribution == 'Ubuntu'
-
-- name: Create TridentProvisioner CRD (K8s version < 1.16) (Red Hat / CentOS)
-  k8s:
-    state: present
-    src: /root/trident-installer/deploy/crds/trident.netapp.io_tridentprovisioners_crd_pre1.16.yaml
-    wait: yes
-  run_once: true
-  when: k8s_version < 1.16 and ansible_os_family == 'RedHat'
-
-- name: Deploy Trident operator resources (Ubuntu)
-  k8s:
-    state: present
-    src: /root/trident-installer/deploy/bundle.yaml
-    wait: yes
-  run_once: true
-  environment:
-    PYTHONHOME: '{{ deepops_venv }}'
-  when: ansible_distribution == 'Ubuntu'
-
-- name: Deploy Trident operator resources (Red Hat / CentOS)
-  k8s:
-    state: present
-    src: /root/trident-installer/deploy/bundle.yaml
-    wait: yes
-  run_once: true
-  when: ansible_os_family == 'RedHat'
-
-- name: Create TridentProvisioner CR (Ubuntu)
-  k8s:
-    state: present
-    src: /root/trident-installer/deploy/crds/tridentprovisioner_cr.yaml
-    wait: yes
-  run_once: true
-  environment:
-    PYTHONHOME: '{{ deepops_venv }}'
-  when: ansible_distribution == 'Ubuntu'
-
-- name: Create TridentProvisioner CR (Red Hat / CentOS)
-  k8s:
-    state: present
-    src: /root/trident-installer/deploy/crds/tridentprovisioner_cr.yaml
-    wait: yes
-  run_once: true
-  when: ansible_os_family == 'RedHat'
-
-- name: Wait until trident-csi Deployment exists (Ubuntu)
-  k8s_info:
-    kind: Deployment
-    namespace: trident
-    name: trident-csi
-  register: deployment_trident_csi
-  until: deployment_trident_csi.resources | length == 1
-  retries: 24
-  delay: 5
-  run_once: true
-  environment:
-    PYTHONHOME: '{{ deepops_venv }}'
-  when: ansible_distribution == 'Ubuntu'
-
-- name: Wait until trident-csi Deployment exists (Red Hat / CentOS)
-  k8s_info:
-    kind: Deployment
-    namespace: trident
-    name: trident-csi
-  register: deployment_trident_csi
-  until: deployment_trident_csi.resources | length == 1
-  retries: 24
-  delay: 5
-  run_once: true
-  when: ansible_os_family == 'RedHat'
-
-- name: Pause for 10 seconds
-  pause:
-    seconds: 10
-
-- name: Wait until trident-csi Deployment is ready (Ubuntu)
-  k8s_info:
-    kind: Deployment
-    namespace: trident
-    name: trident-csi
-  register: deployment_trident_csi
-  until: deployment_trident_csi.resources[0].status.availableReplicas == 1
-  retries: 24
-  delay: 5
-  run_once: true
-  environment:
-    PYTHONHOME: '{{ deepops_venv }}'
-  when: ansible_distribution == 'Ubuntu'
-
-- name: Wait until trident-csi Deployment is ready (Red Hat / CentOS)
-  k8s_info:
-    kind: Deployment
-    namespace: trident
-    name: trident-csi
-  register: deployment_trident_csi
-  until: deployment_trident_csi.resources[0].status.availableReplicas == 1
-  retries: 24
-  delay: 5
-  run_once: true
-  when: ansible_os_family == 'RedHat'
 
 - name: Copy backend config file(s) to control node
   template:
@@ -166,26 +36,30 @@
 - name: Create Trident backend(s)
   command: /root/trident-installer/tridentctl -n trident create backend -f /root/trident-installer/backend-{{ item.backendName }}.json
   with_items: "{{ backends_to_create }}"
+  retries: 10
+  delay: 30
+  register: result
+  until: result.rc == 0
   when: create_backends == true
   run_once: true
 
-- name: Create NetApp StorageClass(es) (Ubuntu)
-  k8s:
-    state: present
-    definition: "{{ item }}"
+- name: Copy StorageClass config file(s) to control node
+  copy:
+    content: "{{ item }}"
+    dest: /root/trident-installer/sc-{{ item.metadata.name }}.yaml
   with_items: "{{ storageClasses_to_create }}"
+  when: create_StorageClasses == true
   run_once: true
-  environment:
-    PYTHONHOME: '{{ deepops_venv }}'
-  when: create_StorageClasses == true and ansible_distribution == 'Ubuntu'
 
-- name: Create NetApp StorageClass(es) (Red Hat / CentOS)
-  k8s:
+- name: Create StorageClasses
+  kube:
     state: present
-    definition: "{{ item }}"
+    resource: StorageClass
+    name: "{{ item.metadata.name }}"
+    filename: /root/trident-installer/sc-{{ item.metadata.name }}.yaml
   with_items: "{{ storageClasses_to_create }}"
+  when: create_StorageClasses == true
   run_once: true
-  when: create_StorageClasses == true and ansible_os_family == 'RedHat'
 
 - name: Fetch tridentctl from control node
   fetch:
