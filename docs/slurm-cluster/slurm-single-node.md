@@ -76,6 +76,9 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
     gpu01     ansible_host=10.31.241.198
     gpu02     ansible_host=10.31.241.199
 
+    [slurm-master]
+    gpu01
+
     [slurm-node]
     gpu01
     gpu02
@@ -90,18 +93,22 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
     this is needed when a compute node also functions as a login node.
     Additionally, set the singularity install option (which is no by default).
     Singularity can be used to run containers and it will be used to set up
-    rootless options as well. Do not set up a default NFS with single node.
+    rootless options as well. Do not set a default NFS with single node
     deployment.
     ```
     $ vi config/group_vars/slurm-cluster.yml
     slurm_enable_nfs_server: false
     slurm_enable_nfs_client_nodes: false
     slurm_cluster_install_singularity: yes
+
+    slurm_login_on_compute: true
+
     slurm_allow_ssh_user:
     - "user1"
     - "user2"
     - "user3”
     ```
+
     Note: After deployment new users have to be manually added to “/etc/localusers”
     and “/etc/slurm/localusers.backup” on the node that functions as a login node.
 
@@ -122,7 +129,7 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
 5. Install Slurm.
 
     Once the above steps are complete, then Slurm can be deployed. When
-    deploying on a single node set connection to local. Also, specify “--forks=1”
+    deploying on a single node set connection to local. Also, specify “`--forks=1`”
     so that Ansible does not perform potentially conflicting operations required
     for a login node and a compute node. Since one of the compute nodes also
     serves as a login node this will insure that installation steps are serial.
@@ -137,25 +144,24 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
     # NOTE: If SSH user is different than current user, add: `-u ubuntu`
     $ ansible-playbook -K --forks=1 -l slurm-cluster playbooks/slurm-cluster.yml
     ```
-6. Post install Slurm configurations when a compute node is also a login node.
 
-    This part is necessary to restrict GPUs in regular ssh sessions on a login
-    node. Since the login node also functions as a compute node, we want to
-    avoid having users run a compute task on the GPUs without a Slurm job. These
-    post install settings can be set up via special Ansible playbook.
-    ```
-    $ ansible-playbook -K  --forks=1 --connection=local --limit slurm-cluster playbooks/slurm-cluster/login-compute-setup.yml
-    ```
-    The above playbook will restrict GPUs in ssh sessions by running the following command:
+    When var `slurm_login_on_compute` is set to true, the above playbook will
+    restrict GPUs in ssh sessions by running the following command:
     ```
     $ sudo systemctl set-property sshd.service DeviceAllow="/dev/nvidiactl"
     ```
-    Also install rootless docker via playbook:
+    Refer to `login-compute-setup.yml` role under "roles/slurm/tasks". This
+    part is necessary to restrict GPUs in regular ssh sessions on a login
+    node. Since the login node also functions as a compute node, we want to
+    avoid having users run a compute task on the GPUs without a Slurm job.
+
+    If you desire to use docker within slurm then also install rootless docker
+    via playbook:
     ```
     $ ansible-playbook -K  --forks=1 --connection=local --limit slurm-cluster playbooks/container/docker-rootless.yml
     ```
 
-7. Post install information.
+6. Post install information.
 
     The admin users can access the GPUs that are restricted from regular ssh
     login sessions. This could be useful in situations when maybe some GPU
@@ -199,7 +205,6 @@ If the monitoring is not working please check the running services:
 ```
 $ systemctl list-units --state failed
 ```
-
 
 ## Logins and Running Jobs
 
