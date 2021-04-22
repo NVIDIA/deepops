@@ -23,6 +23,7 @@ slurm_user_uid: 22078
 slurm_user_home: /local/slurm
 
 slurm_allow_ssh_user: []
+slurm_login_on_compute: false
 
 slurm_db_username: slurm
 slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault

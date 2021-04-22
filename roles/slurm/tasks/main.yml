@@ -18,6 +18,9 @@
 - include: misc-node.yml
   when: (not is_compute) and (not is_controller)
 
+- include: login-compute-setup.yml
+  when: slurm_login_on_compute and is_controller
+
 - include: shmfix.yml
   when: is_compute and slurm_fix_shm
 
