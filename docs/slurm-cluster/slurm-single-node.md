@@ -65,7 +65,7 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
     $ ssh-keygen -t rsa
     ... accept defaults ...
     $ cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-    $ chmod 600 ./.ssh/authorized_keys
+    $ chmod 600 ~/.ssh/authorized_keys
     ```
 
     Technicaly it is possible to setup a multinode Slurm with one of the compute
@@ -94,7 +94,6 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
     deployment.
     ```
     $ vi config/group_vars/slurm-cluster.yml
-    slurm_install_rootless_docker: true
     slurm_enable_nfs_server: false
     slurm_enable_nfs_client_nodes: false
     slurm_cluster_install_singularity: yes

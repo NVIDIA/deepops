@@ -1,7 +1,7 @@
 ---
 
 - name: Hide GPUs for regular user logins via sshd.service.
-  ansible.builtin.shell: |
+  shell: |
     deviceprop=$(systemctl show sshd.service -p DeviceAllow | grep -i nvidiactl)
 
     if [ -z "$deviceprop" ] ; then
@@ -12,10 +12,6 @@
   when: ansible_distribution == "Ubuntu" and is_controller
   tags:
     - config
-
-# - name: Force systemd to reread configs.
-#   ansible.builtin.systemd:
-#     daemon_reload: yes
 
 - name: Patch lastuserjob epilog.
   blockinfile:
@@ -29,5 +25,6 @@
     insertafter: "^set -ex"
     marker: "# {mark} ANSIBLE MANAGED BLOCK (ansible-role-slurm)"
   when: is_controller
+  notify: restart slurmctld
   tags:
     - config
