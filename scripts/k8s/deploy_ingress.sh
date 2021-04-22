@@ -29,7 +29,7 @@ if ! kubectl version ; then
 fi
 
 # If MetalLB is installed, use LoadBalancer, otherwise use NodePort (unless the user specifies a config)
-if ! helm status metallb >/dev/null 2>&1; then
+if ! helm status metallb -n deepops-loadbalancer >/dev/null 2>&1; then
 	HELM_INGRESS_CONFIG="${HELM_INGRESS_CONFIG:-${ROOT_DIR}/workloads/examples/k8s/ingress-nodeport.yml}"
 else
 	HELM_INGRESS_CONFIG="${HELM_INGRESS_CONFIG:-${ROOT_DIR}/workloads/examples/k8s/ingress-loadbalancer.yml}"
