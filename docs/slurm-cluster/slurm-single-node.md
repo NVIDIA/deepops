@@ -6,16 +6,14 @@ outline the steps to deviate from the general setup to enable single node
 DeepOps Slurm setup. The machine on which Slurm is being deployed should be
 up to date in a stable state with GPU drivers already installed and functional.
 The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
-(version 7 and 8 with version 8 being hihgly preferred over 7).
+(version 7 and 8 albeit version 8 is preferred).
 
 ## Deployment Procedure
 
 1. Clone the DeepOps repo.
     ```bash
     $ git clone https://github.com/NVIDIA/deepops.git
-
     $ cd deepops
-
     $ git checkout tags/<TAG>
     ```
 
@@ -32,12 +30,12 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
     directory will be made to “config” directory. When one of the compute nodes
     also functions as a login node a few special configurations have to be set.
 
-    a. Configuring inventory “`config/inventory`”.
+    a. Configuring inventory `"config/inventory"`.
 
     General configuration details can be found in the [configuration doc](../deepops/configuration.md).
     Let a host be named “gpu01” (example DGX-1 with 8 GPUs) with an ssh
     reachable ip address of “10.31.241.198”. If the deployment will be run
-    locally on machine “gpu01” then ssh settings are opptional. If the machine
+    locally on machine “gpu01” then ssh settings are optional. If the machine
     has a different hostname (i.e. not gpu01), then use the desired host name.
     Running the deployment will change the hostname to what is set in the
     inventory file. A single node config would look as follows:
@@ -84,7 +82,7 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
     gpu02
     ```
 
-    b. Configuring “`config/group_vars/slurm-cluster.yml`”
+    b. Configuring `"config/group_vars/slurm-cluster.yml"`
 
     Typically users cannot ssh as local users directly to compute nodes in a
     Slurm cluster without a Slurm reservation. However, since in this
@@ -109,6 +107,9 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
     - "user3”
     ```
 
+    The `slurm_login_on_compute` setting is to enable special settings on a
+    compute node in order that it can function as a login node as well.
+
     Note: After deployment new users have to be manually added to “/etc/localusers”
     and “/etc/slurm/localusers.backup” on the node that functions as a login node.
 
@@ -116,7 +117,7 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
 
     Check that ansible can run successfully and reach hosts. Run the hostname
     utility on “all” the nodes. The “all” refers to the section in the
-    “`config/inventory`” file.
+    `"config/inventory"` file.
     ```
     $ ansible all --connection=local -m raw -a "hostname"
     ```
@@ -128,16 +129,15 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
 
 5. Install Slurm.
 
-    Once the above steps are complete, then Slurm can be deployed. When
-    deploying on a single node set connection to local. Also, specify “`--forks=1`”
-    so that Ansible does not perform potentially conflicting operations required
-    for a login node and a compute node. Since one of the compute nodes also
-    serves as a login node this will insure that installation steps are serial.
+    When deploying on a single node set connection to local. Specify `"--forks=1"`
+    so that Ansible does not perform potentially conflicting operations
+    required for a slurm-master and slurm-node in parallel on the same node.
+    The `"--forks=1"` option will insure that the installation steps are serial.
     ```
     $ ansible-playbook -K --forks=1 --connection=local -l slurm-cluster playbooks/slurm-cluster.yml
     ```
     For non-local installs do not set connection to local. The forks option is
-    still required when one of the compute nodes also functions as a login node.
+    still required.
     ```
     # NOTE: If SSH requires a password, add: `-k`
     # NOTE: If sudo on remote machine requires a password, add: `-K`
@@ -145,18 +145,18 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
     $ ansible-playbook -K --forks=1 -l slurm-cluster playbooks/slurm-cluster.yml
     ```
 
-    When var `slurm_login_on_compute` is set to true, the above playbook will
-    restrict GPUs in ssh sessions by running the following command:
+    Setting `slurm_login_on_compute` to true, the slurm-cluster playbook will
+    restrict GPUs in ssh sessions on the slurm-master by running the following
+    command:
     ```
     $ sudo systemctl set-property sshd.service DeviceAllow="/dev/nvidiactl"
     ```
-    Refer to `login-compute-setup.yml` role under "roles/slurm/tasks". This
-    part is necessary to restrict GPUs in regular ssh sessions on a login
-    node. Since the login node also functions as a compute node, we want to
+    Refer to `login-compute-setup.yml` role under `"roles/slurm/tasks"`. The
+    reasoning for hiding GPUs in regular ssh sessions is that we want to
     avoid having users run a compute task on the GPUs without a Slurm job.
 
     If you desire to use docker within slurm then also install rootless docker
-    via playbook:
+    after slurm deployment via playbook:
     ```
     $ ansible-playbook -K  --forks=1 --connection=local --limit slurm-cluster playbooks/container/docker-rootless.yml
     ```
@@ -164,9 +164,9 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
 6. Post install information.
 
     The admin users can access the GPUs that are restricted from regular ssh
-    login sessions. This could be useful in situations when maybe some GPU
-    settings need to be changed via nvidia-smi. Let “dgxuser” be an admin user,
-    they would access GPUs via command:
+    login sessions. This could be useful in situations when maybe GPU firmware
+    needs to be updated. Let “dgxuser” be an admin user, they would access GPUs
+    via command:
     ```
     login-session:$ nvidia-smi -L
     No devices found.
@@ -187,7 +187,7 @@ Refer to DeepOps documentation regarding how monitoring is configured and
 deployed on the Slurm cluster: [docs/slurm-cluster/slurm-monitor.md](./slurm-monitor.md)
 
 The grafana dashboard will be available at the ip address of the manager node
-on port 3000. Either opent he url at the manager node's ip address or tunnel.
+on port 3000. Either open the url at the manager node's ip address or tunnel.
 Example:
 <http://10.31.241.198:3000>
 ```
@@ -236,8 +236,9 @@ Last login: Tue Dec  1 00:01:32 2020 from 172.20.176.144
 ```
 
 ### Allocating GPUs
-One suggestion is to add the following snippet or something similar to it to
-one's `.bashrc`.
+
+One suggestion is to add the following snippet or something similar to one's
+`.bashrc`.
 ```
 if [ ! -z "${SLURM_JOB_ID+x}" ]; then
     export PS1="slurm-${PS1}"
@@ -293,17 +294,17 @@ attach to the tmux session in the adopted ssh session.
 
 ### Running Containers
 
-DeepOps enables running containers with several containerization alternatives:
+DeepOps enables running containers with several containerization platforms:
 docker, singularity, and enroot with pyxis.
 
 #### Rootless Docker
 
-Docker remains an industry standard for containerization. Docker is very easy to
-work with when building and extending containers. NGC and many other data
-science software stacks are distributed as docker containers. Fortunately, it is
-straightforward to incorporate rootless docker with Slurm. The reason for using
-rootless docker is that we want to avoid granting elevated privileges to users
-unnecessarily.
+Docker is currently the de facto standard for containerization. Docker is very
+easy to work with when building and extending containers. NGC and many other
+data science software stacks are distributed as docker containers. Fortunately,
+it is straightforward to incorporate rootless docker with Slurm. The reason for
+using rootless docker is that we want to avoid granting elevated privileges to
+users unnecessarily.
 
 DeepOps sets up rootless docker as a module package. Environment modules are a
 popular way to setup cluster wide software for sharing. On a side note DeepOps
@@ -382,14 +383,15 @@ compute-session:$ docker run --gpus=all --rm -it -v /etc/slurm:/slurm --workdir=
   deepops/nccl-tests-tf20.06-ubuntu18.04:latest bash -c 'cat /slurm/slurmdbd.conf'
 cat: /slurm/slurmdbd.conf: Permission denied
 ```
-Rootless docker supports building containers and majority of docker features.
-There are a few limitations. These limitations can make it challenging to run
+Rootless docker supports building containers and many standard docker features
+with a few limitations. These limitations can make it challenging to run
 multi node Slurm jobs, therefore for multi node jobs on Slurm the recommended
 approach is via enroot or singularity.
 
 A user can explicitly stop the rootless docker daemon with “stop_rootless_docker.sh”
-script, or just exit the Slurm session. Upon a slurm session exit processes in
-the session are killed therefore the user’s rootless docker process will end.
+script, or just exit the Slurm session. Upon exit from a slurm session the
+processes in the session are killed therefore the user’s rootless docker
+process will end.
 ```
 compute-session:$ stop_rootless_docker.sh 
 compute-session:$ exit
