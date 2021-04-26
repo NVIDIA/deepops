@@ -1,4 +1,4 @@
-# Template Node Health Check for DGX A100
+# Example Node Health Check for DGX A100
 #
 # Note that you should probably edit this file to be more suitable for your
 # deployment! In particular, this configuration:
@@ -6,13 +6,14 @@
 #   - Assumes all IB interfaces are configured for HDR IB
 #   - Assumes you have RAID configured and mounted
 #   - Assumes a 2 TB memory config
-#   - Assumes you are running DCGM
+#   - Assumes you are running Slurm, DCGM, etc
 #   - Assumes Ethernet interface names from Ubuntu DGX OS
 
 # CPU and memory
 
  * || check_hw_cpuinfo 2 128 256
  * || check_hw_physmem 2064135MB 2064135MB 5%
+ * || check_num_numa_nodes 8
 
 # Ethernet: 10GbE RJ45
 
@@ -22,22 +23,55 @@
 
  * || check_hw_eth enp97s0f1
 
-# IB devices
-# Assumes all IB devices are configured at HDR, you may need to adjust this
-# based on your local configuration
+# Compute HCAs
 
  * || check_hw_ib 200 mlx5_0:1
  * || check_hw_ib 200 mlx5_1:1
  * || check_hw_ib 200 mlx5_2:1
  * || check_hw_ib 200 mlx5_3:1
- * || check_hw_ib 200 mlx5_4:1
  * || check_hw_ib 200 mlx5_5:1
  * || check_hw_ib 200 mlx5_6:1
  * || check_hw_ib 200 mlx5_7:1
  * || check_hw_ib 200 mlx5_8:1
  * || check_hw_ib 200 mlx5_9:1
- * || check_hw_ib 200 mlx5_10:1
  * || check_hw_ib 200 mlx5_11:1
+
+# Storage HCAs
+
+ * || check_hw_ib 200 mlx5_4:1
+ * || check_hw_ib 200 mlx5_10:1
+
+# IPoIB online
+
+ * || check_ipoib_up ibp204s0
+ * || check_ipoib_up ibp148s0
+ * || check_ipoib_up ibp12s0
+ * || check_ipoib_up ibp75s0
+ * || check_ipoib_up ibp186s0
+ * || check_ipoib_up ibp97s0f1
+ * || check_ipoib_up ibp84s0
+ * || check_ipoib_up ibp225s0f1
+ * || check_ipoib_up ibp141s0
+ * || check_ipoib_up ibp18s0
+
+# IB link bit error rate
+
+ * || check_ib_link_ber mlx5_0
+ * || check_ib_link_ber mlx5_1
+ * || check_ib_link_ber mlx5_2
+ * || check_ib_link_ber mlx5_3
+ * || check_ib_link_ber mlx5_4
+ * || check_ib_link_ber mlx5_5
+ * || check_ib_link_ber mlx5_6
+ * || check_ib_link_ber mlx5_7
+ * || check_ib_link_ber mlx5_8
+ * || check_ib_link_ber mlx5_9
+ * || check_ib_link_ber mlx5_10
+ * || check_ib_link_ber mlx5_11
+
+# NVME devices
+
+ * || check_num_nvme_devices 10
 
 # Local filesystems
 
@@ -67,16 +101,27 @@
 
  * || check_ps_service -u root sshd
  * || check_ps_service -d rsyslogd rsyslog
+ * || check_ps_service -d chronyd chrony
  * || check_ps_service -u root slurmd
  * || check_ps_service -u munge -d munged munge
  * || check_ps_service -u nvidia-persistenced nvidia-persistenced
  * || check_ps_service -u root -d nv-fabricmanager nvidia-fabricmanager
  * || check_ps_service -d nv-hostengine dcgm
+ * || check_ps_service -d rdma-ndd rdma-ndd
 
 # Kernel module checks - Only check modules not covered via other tests
 
  * || check_cmd_output -t 2 -r 0 -m "/nv_peer_mem/" "/sbin/lsmod"
+ * || check_cmd_output -t 2 -r 0 -m "/gdrdrv/" "/sbin/lsmod"
 
 # Load average check - Check for ridiculously high load
 
  * || check_ps_loadavg 300
+
+# Check for Lustre errors
+
+ * || check_cmd_output -m '!/LNetError/' '/bin/journalctl -b'
+
+# Check for XID errors
+
+ * || check_xid_errors
