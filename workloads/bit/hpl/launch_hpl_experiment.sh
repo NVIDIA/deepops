@@ -59,7 +59,7 @@ Other Options:
         * Set to the number of iterations per experiment.  Default is ${niters}."
     -p|--part <Slurm Partition>
         * Set the Slurm partition to use.  Default is ${partition}."
-    -a|--account <Slurm Account>
+    -a|-A|--account <Slurm Account>
         * Set the Slurm accoutn to use.  Default is None."
     -m|--maxnodes <Number_of_nodes>
         * Set the maximum number of nodes to use per experiment.  This is used for testing.  Default is all of them."
@@ -97,187 +97,184 @@ exit
 
 function find_hpl_dat_file() {
 
+    local system=$1
+    local gpus_per_node=$2
+    local nnodes=$3
+    locxal hplai=$4
 
-        local system=$1
-        local gpus_per_node=$2
-        local nnodes=$3
-	local hplai=$4
-
-        HPLDATFN=${HPL_FILE_DIR}/HPL.dat_${nnodes}N_${system}
-	if [ x"$hplai" == x"1" ]; then
-		HPLDATFN=${HPLDATFN}_ai
-	fi
-	echo $HPLDATFN
+    HPLDATFN=${HPL_FILE_DIR}/HPL.dat_${nnodes}N_${system}
+    if [ x"$hplai" == x"1" ]; then
+        HPLDATFN=${HPLDATFN}_ai
+    fi
+    echo $HPLDATFN
 
 }
 
 while [ $# -gt 0 ]; do
-	case "$1" in
-		-h|--help) print_usage ; exit 0 ;;
-		-s|--sys) system="$2"; shift 2 ;;
-		-c|--count) nodes_per_job="$2"; shift 2 ;;
-		-i|--iters) niters="$2"; shift 2 ;;
-		-p|--part) partition="$2"; shift 2 ;;
-		-a|--account) account="-A $2"; shift 2 ;;
-		-t|--walltime) walltime="$2"; shift 2 ;;
-		-r|--random) ORDER_CMD=shuf; shift 1;;
-		-v|--verbose) verbose=1; shift 1 ;;
-		-w) includelist="$2"; shift 2 ;;
-		-x) excludelist="$2"; shift 2 ;;
+    case "$1" in
+        -h|--help) print_usage ; exit 0 ;;
+        -s|--sys) system="$2"; shift 2 ;;
+        -c|--count) nodes_per_job="$2"; shift 2 ;;
+        -i|--iters) niters="$2"; shift 2 ;;
+        -p|--part) partition="$2"; shift 2 ;;
+        -a|-A|--account) account="-A $2"; shift 2 ;;
+        -t|--walltime) walltime="$2"; shift 2 ;;
+        -r|--random) ORDER_CMD=shuf; shift 1;;
+        -v|--verbose) verbose=1; shift 1 ;;
+        -w) includelist="$2"; shift 2 ;;
+        -x) excludelist="$2"; shift 2 ;;
 
-		--hplai) hplai=1; shift 1 ;;
-		--nores) nores=1; shift 1 ;;
-	        -m|--maxnodes) maxnodes="$2"; shift 2 ;;	
-		--mpiopts) mpiopts="$2"; shift 2 ;;
-		--usegres) usegres="$2"; shift 2 ;;
-		--grestype) grestype="$2"; shift 2 ;;
-		--hpldat) hpldat="$2"; shift 2 ;;
-		--cruntime) cruntime="$2"; shift 2 ;;
-		--container) container="$2"; shift 2 ;;
-		--slurmopts) slurmopts="$2"; shift 2 ;;
-		*) echo "Option <$1> Not understood" ; exit 1 ;;
+        --hplai) hplai=1; shift 1 ;;
+        --nores) nores=1; shift 1 ;;
+        -m|--maxnodes) maxnodes="$2"; shift 2 ;;	
+        --mpiopts) mpiopts="$2"; shift 2 ;;
+        --usegres) usegres="$2"; shift 2 ;;
+        --grestype) grestype="$2"; shift 2 ;;
+        --hpldat) hpldat="$2"; shift 2 ;;
+        --cruntime) cruntime="$2"; shift 2 ;;
+        --container) container="$2"; shift 2 ;;
+        --slurmopts) slurmopts="$2"; shift 2 ;;
+        *) echo "Option <$1> Not understood" ; exit 1 ;;
 
         esac
 done
 
 if [ x"${system}" == x"" ]; then
-	echo "ERROR: System must be set."
-	print_usage
+    echo "ERROR: System must be set."
+    print_usage
 fi
 
 if [ x"${nodes_per_job}" == x"" ]; then
-	echo "ERROR: Number of nodes per job (-c) must be set."
-	print_usage
+    echo "ERROR: Number of nodes per job (-c) must be set."
+    print_usage
 fi
 
 if [ x"${system}" == x"dgx1v_16G" ]; then
-	export gpus_per_node=8
-	export SYSCFG=syscfg-dgx1v.sh
-	export GPUMEM=16
+    export gpus_per_node=8
+    export SYSCFG=syscfg-dgx1v.sh
+    export GPUMEM=16
 elif [ x"${system}" == x"dgx1v_32G" ]; then
-	export gpus_per_node=8
-	export SYSCFG=syscfg-dgx1v.sh
-	export GPUMEM=32
+    export gpus_per_node=8
+    export SYSCFG=syscfg-dgx1v.sh
+    export GPUMEM=32
 elif [ x"${system}" == x"dgx2" ]; then
-	export gpus_per_node=16
-	export SYSCFG=syscfg-dgx2.sh
+    export gpus_per_node=16
+    export SYSCFG=syscfg-dgx2.sh
 elif [ x"${system}" == x"dgxa100_40G" ]; then
-	export gpus_per_node=8
-	export SYSCFG=syscfg-dgxa100-40gb.sh
-	export GPUMEM=40
+    export gpus_per_node=8
+    export SYSCFG=syscfg-dgxa100-40gb.sh
+    export GPUMEM=40
 elif [ x"${system}" == x"dgxa100_80G" ]; then
-	export gpus_per_node=8
-	export SYSCFG=syscfg-dgxa100-80gb.sh
-	export GPUMEM=80
+    export gpus_per_node=8
+    export SYSCFG=syscfg-dgxa100-80gb.sh
+    export GPUMEM=80
 else
-	echo "GENERIC SYSTEMS are not supported yet"
-	if [ ! -f ${system} ]; then
-		echo "ERROR: For a generic system, a syscfg file must be specified (${system})"
-		exit 1
-	fi
+    echo "GENERIC SYSTEMS are not supported yet"
+    if [ ! -f ${system} ]; then
+        echo "ERROR: For a generic system, a syscfg file must be specified (${system})"
+        exit 1
+    fi
 
-	export SYSCFG=${system}
-	export gpus_per_node=$(cat ${system} | GPU_AFFINITY | cut -f2 -d= | awk -F: '{print NF}' )
-	echo "HERE: $SYSCFG gpus=$gpus_per_node"
+    export SYSCFG=${system}
+    export gpus_per_node=$(cat ${system} | GPU_AFFINITY | cut -f2 -d= | awk -F: '{print NF}' )
+    echo "HERE: $SYSCFG gpus=$gpus_per_node"
 fi
 
 case ${SYSCFG} in
-        *.sh)
-	if [ ! -f ${SYSCFG} ]; then
-		echo "ERROR: SYSCFG file ${SYSCFG} not found.  Exiting."
-		exit 1
-	fi
-	;;
+    *.sh)
+    if [ ! -f ${SYSCFG} ]; then
+        echo "ERROR: SYSCFG file ${SYSCFG} not found.  Exiting."
+        exit 1
+    fi
+    ;;
 esac
 	   
 if [ x"${usegres}" == x"1" ]; then
-	if [ x"${grestype}" != x"" ]; then
-		gresstr="${grestype}:"
-	else
-		gresstr=""
-	fi
-	gresstr="--gpus-per-node=${gresstr}${gpus_per_node}"
+    if [ x"${grestype}" != x"" ]; then
+        gresstr="${grestype}:"
+    else
+        gresstr=""
+    fi
+    gresstr="--gpus-per-node=${gresstr}${gpus_per_node}"
 fi
 
 # Setup the HPLAI export variable
 export HPLAI=${hplai}
 
 if [ x"${cruntime}" != x"" ]; then
-	# Validate runtime is correct
-	case "${cruntime}" in
-		singularity)
-			echo "INFO: Using singularity runtime"
-			# Pull container if needed and convert to singluarity
-			if [ x"$(which singularity)" == x"" ]; then
-				echo "ERROR: Singlularity not found, check your path"
-				exit 1
-			fi
-			siffn=$(pwd)/"$(basename ${container}).sif"
-			if [ -f ${siffn} ]; then
-				echo "INFO: ${siffn} found, not pulling"
-			else
-				#singularity build hpc-benchmarks:20.10-hpl.sif docker://nvcr.io/nvidia/hpc-benchmarks:20.10-hpl
-			  	echo singularity build ${siffn} docker://${container}
-			  	srun -N 1 -p ${partition}  singularity build ${siffn} docker://${container}
-				if [ $? -ne 0 ]; then
-					echo ""
-					echo "ERROR: Unable tou build singularity container from ${container}, Exiting"
-					echo ""
-					exit 1
-				fi
-			fi
-			export CONT=${siffn}
-			;;
-		enroot)
-			echo "INFO: Using enroot runtime"
-			# Need to convert the container and change all the slashes except the last one to #
-			# This expression below is probably not robust.
-			if [ ! -f ${container} ]; then
-				# Since the file doesn't exist, assume the CONTAINER is a URI
-				#export CONT=$(echo ${container} | rev | sed 's/\//#/g' | sed 's/#/\//' | rev)
-				export CONT=$(echo ${container} | sed 's/\//#/')
-			else
-				export CONT=${container}
-			fi
-			;;
-		bare)
-			echo "INFO: Using bare-metal runtime"
-			echo "ERROR: Baremetal not supported yet"
-			export CONT=""
-			exit 2
-			;;
-		*) echo "ERROR: Runtime ${cruntime} is not supported, exiting"
-		   exit 1 ;;
-	esac
+    # Validate runtime is correct
+    case "${cruntime}" in
+        singularity)
+            echo "INFO: Using singularity runtime"
+            # Pull container if needed and convert to singluarity
+            if [ x"$(which singularity)" == x"" ]; then
+                echo "ERROR: Singlularity not found, check your path"
+                exit 1
+            fi
+            siffn=$(pwd)/"$(basename ${container}).sif"
+            if [ -f ${siffn} ]; then
+                echo "INFO: ${siffn} found, not pulling"
+            else
+                #singularity build hpc-benchmarks:20.10-hpl.sif docker://nvcr.io/nvidia/hpc-benchmarks:20.10-hpl
+                echo singularity build ${siffn} docker://${container}
+                srun -N 1 -p ${partition}  singularity build ${siffn} docker://${container}
+                if [ $? -ne 0 ]; then
+                    echo ""
+                    echo "ERROR: Unable tou build singularity container from ${container}, Exiting"
+                    echo ""
+                    exit 1
+                fi
+            fi
+            export CONT=${siffn}
+        ;;
+        enroot)
+            echo "INFO: Using enroot runtime"
+            # Need to convert the container and change all the slashes except the last one to #
+            # This expression below is probably not robust.
+            if [ ! -f ${container} ]; then
+                # Since the file doesn't exist, assume the CONTAINER is a URI
+                export CONT=$(echo ${container} | sed 's/\//#/')
+            else
+                export CONT=${PWD}/${container}
+            fi
+        ;;
+        bare)
+            echo "INFO: Using bare-metal runtime"
+            echo "ERROR: Baremetal not supported yet"
+            export CONT=""
+            exit 2 ;;
+        *) echo "ERROR: Runtime ${cruntime} is not supported, exiting"
+            exit 1 ;;
+        esac
 else
-	echo "ERROR: Container runtime (--cruntime) must be set"
-	exit 1
+    echo "ERROR: Container runtime (--cruntime) must be set"
+    exit 1
 fi
 
 export CRUNTIME=${cruntime}
 
 ### Find the right HPL.dat file
 if [ x"${hpldat}" == x"" ]; then
-	HPLDATFN=${HPL_DIR}/hplfiles/$(find_hpl_dat_file ${system} ${gpus_per_node} ${nodes_per_job} ${hplai})
+    HPLDATFN=${HPL_DIR}/hplfiles/$(find_hpl_dat_file ${system} ${gpus_per_node} ${nodes_per_job} ${hplai})
 else
-	echo ""
-	echo "An HPL.dat file has been manually specified."
-	if [ ! -f ${hpldat} ]; then
-		echo "ERROR: HPL.dat file specified, but not found.  ${hpldat}"
-		exit 1
-	fi
+    echo ""
+    echo "An HPL.dat file has been manually specified."
+    if [ ! -f ${hpldat} ]; then
+        echo "ERROR: HPL.dat file specified, but not found.  ${hpldat}"
+        exit 1
+    fi
 	# Line 10 is Number of PQ pairs, line 11 is P, line 12 is Q
-	NPQ=$(cat ${hpldat} | tail -n +10 | head -1 | awk '{print $1}')
-	P=$(cat ${hpldat} | tail -n +11 | head -1 | awk '{print $1}')
-	Q=$(cat ${hpldat} | tail -n +12 | head -1 | awk '{print $1}')
-	if [ ${NPQ} -ne 1 ]; then
-		echo "WARNING: Node allocation is only going to match the first P*Q pair"
-	fi
+    NPQ=$(cat ${hpldat} | tail -n +10 | head -1 | awk '{print $1}')
+    P=$(cat ${hpldat} | tail -n +11 | head -1 | awk '{print $1}')
+    Q=$(cat ${hpldat} | tail -n +12 | head -1 | awk '{print $1}')
+    if [ ${NPQ} -ne 1 ]; then
+	echo "WARNING: Node allocation is only going to match the first P*Q pair"
+    fi
 
-	nodes_per_job=$(( P * Q / gpus_per_node ))
-	echo "Overriding nodes_per_job, using nodes_per_job=${nodes_per_job} to match settings in ${hpldat}"
-	echo ""
-	export HPLDATFN=${hpldat}
+    nodes_per_job=$(( P * Q / gpus_per_node ))
+    echo "Overriding nodes_per_job, using nodes_per_job=${nodes_per_job} to match settings in ${hpldat}"
+    echo ""
+    export HPLDATFN=${hpldat}
 fi
 
 export SYSTEM=${system}
@@ -286,13 +283,13 @@ export GPUS_PER_NODE=${gpus_per_node}
 # Set a name for the experiment
 export EXPNAME=${nodes_per_job}node_${system}_$(date +%Y%m%d%H%M%S)
 if [ x"${hplai}" == x"1" ]; then
-	export EXPNAME=${EXPNAME}_ai
+    export EXPNAME=${EXPNAME}_ai
 fi
 export EXPDIR=$(pwd)/results/${EXPNAME}
 
 if [ -d $EXPDIR ]; then
-	echo "ERROR: Directory already exists: $EXPDIR"
-	exit 1
+    echo "ERROR: Directory already exists: $EXPDIR"
+    exit 1
 fi
 mkdir -p $EXPDIR
 
@@ -305,22 +302,22 @@ scontrol show hostname ${NODELIST} > $MACHINEFILE
 
 # If there is an include list, process that
 if [ x"${includelist}" != x"" ]; then
-    	echo "Include List: ${includelist}"
-	export INCLUDELIST=/tmp/mfile.include.$$
-	scontrol show hostname ${includelist} > $INCLUDELIST
-	cat ${MACHINEFILE} ${INCLUDELIST} | sort | uniq -c | awk '{if ($1>1) print $2}' > ${MACHINEFILE}.t2
-	mv ${MACHINEFILE}.t2 ${MACHINEFILE}
-	rm ${INCLUDELIST}
+    echo "Include List: ${includelist}"
+    export INCLUDELIST=/tmp/mfile.include.$$
+    scontrol show hostname ${includelist} > $INCLUDELIST
+    cat ${MACHINEFILE} ${INCLUDELIST} | sort | uniq -c | awk '{if ($1>1) print $2}' > ${MACHINEFILE}.t2
+    mv ${MACHINEFILE}.t2 ${MACHINEFILE}
+    rm ${INCLUDELIST}
 fi
 
 # If there is an exclude list, process that
 if [ x"${excludelist}" != x"" ]; then
-	echo "Exclude List: ${excludelist}"
-	export EXCLUDELIST=/tmp/mfile.exclude.$$
-	scontrol show hostname ${excludelist} > $EXCLUDELIST
-	cat ${MACHINEFILE} ${MACHINEFILE} ${EXCLUDELIST} | sort | uniq -c | awk '{if ($1==2) print $2}' > ${MACHINEFILE}.t2
-	mv ${MACHINFILE}.t2 ${MACHINEFILE}
-	rm ${EXCLUDELIST}
+    echo "Exclude List: ${excludelist}"
+    export EXCLUDELIST=/tmp/mfile.exclude.$$
+    scontrol show hostname ${excludelist} > $EXCLUDELIST
+    cat ${MACHINEFILE} ${MACHINEFILE} ${EXCLUDELIST} | sort | uniq -c | awk '{if ($1==2) print $2}' > ${MACHINEFILE}.t2
+    mv ${MACHINFILE}.t2 ${MACHINEFILE}
+    rm ${EXCLUDELIST}
 fi
 
 # Trim the nodelist down to the maxnode setting
@@ -330,9 +327,15 @@ mv ${MACHINEFILE}.t2 ${MACHINEFILE}
 export total_nodes=$(cat $MACHINEFILE | wc -l)
 
 if [ $total_nodes -eq 0 ]; then
-	echo "ERROR: Unable to find any idle nodes in partition=${partition}.  Exiting."
-	echo ""
-	exit 1
+    echo "ERROR: Unable to find any idle nodes in partition=${partition}.  Exiting."
+    echo ""
+    exit 1
+fi
+
+if [ $total_nodes -lt $nodes_per_job ]; then
+    echo "ERROR: Not enough nodes idle ($total_nodes) for a single job ($nodes_per_job).  Exiting."
+    echo ""
+    exit 1
 fi
 
 echo  ""
@@ -343,12 +346,12 @@ echo ""
 echo ""
 echo "Experiment Variables:"
 for V in HPL_DIR HPL_SCRIPTS_DIR EXPDIR system cruntime CONT nodes_per_job gpus_per_node niters partition slurmopts maxnodes mpiopts gresstr total_nodes hpldat hplai; do
-	echo -n "${V}: "
-        if [ x"${!V}" != x"" ]; then	
-        	echo "${!V}"
-	else
-		echo "<Not Set>"
-	fi
+    echo -n "${V}: "
+    if [ x"${!V}" != x"" ]; then	
+        echo "${!V}"
+    else
+        echo "<Not Set>"
+    fi
 done
 echo ""
 
@@ -358,87 +361,87 @@ jobid_list=()
 HFILE=/tmp/hfile.$$
 
 for N in $(seq ${niters}); do
-	P=1
-	INST=1
+    P=1
+    INST=1
 
-	if [ ${nores} != 1 ]; then
-                echo "Working Nodelist: $(scontrol show hostlist $(cat $MACHINEFILE | tr '\n' ','))"
-      	        cat ${MACHINEFILE} | ${ORDER_CMD} > $HFILE
-	fi
+    if [ ${nores} != 1 ]; then
+        echo "Working Nodelist: $(scontrol show hostlist $(cat $MACHINEFILE | tr '\n' ','))"
+        cat ${MACHINEFILE} | ${ORDER_CMD} > $HFILE
+    fi
 
-	while [ $(( P + nodes_per_job - 1 ))  -le ${total_nodes} ]; do
-		# Create hostlist per iter
-		if [ ${nores} == 1 ]; then
-			HLIST=""
-			DEPENDENCY="--dependency=singleton"
+    while [ $(( P + nodes_per_job - 1 ))  -le ${total_nodes} ]; do
+        # Create hostlist per iter
+        if [ ${nores} == 1 ]; then
+            HLIST=""
+            DEPENDENCY="--dependency=singleton"
 
-                        if [ x"${includelist}" != x"" ]; then
-				echo "Include lists are not supported with --nores"
-			        ### You cannot provide an include list, you can only include the full list to use, not a range. 
-			        ### So the includelist is not supported in this mode
-                       		#  DEPENDENCY="$DEPENDENCY -w ${includelist}" 
-	                fi
+            if [ x"${includelist}" != x"" ]; then
+                echo "Include lists are not supported with --nores"
+                ### You cannot provide an include list, you can only include the full list to use, not a range. 
+                ### So the includelist is not supported in this mode
+                ###  DEPENDENCY="$DEPENDENCY -w ${includelist}" 
+            fi
 
-                        if [ x"${excludelist}" != x"" ]; then
-				DEPENDENCY="$DEPENDENCY -x ${excludelist}" 
-	                fi
-		else
-    		        HLIST="-w $(scontrol show hostlist $(tail -n +$P ${HFILE} | head -${nodes_per_job} | sort | paste -d, -s))"
-			DEPENDENCY=""
-		fi
-
-		# create a workdir for each job
-		WORKDIR=${EXPDIR}/tmp/tmp.$$.$(date +%s)
-		mkdir -p ${WORKDIR}
-		if [ $? -ne 0 ]; then
-                       echo "ERROR: Unable to create working directory $WORKDIR.  Exiting"
-                       exit 1
-		fi
-
-		# Copy working files to unique directory
-		cp ${HPLDATFN} ${WORKDIR}/HPL.dat
-		if [ -f ${SYSCFG} ]; then
-                        cp ${SYSCFG} ${WORKDIR}/syscfg.sh
-			export SYSCFGVAR=syscfg.sh
-		else
-			export SYSCFGVAR=${SYSCFG}
-                fi
-
-		# Submit the job in the workdir
-		pushd ${WORKDIR} > /dev/null 2>&1
-
-		CMD="sbatch -J sa:bit:burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} ${slurmopts} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFG,SYSCFGVAR,GPUMEM,CRUNTIME,HPLAI,EXPDIR ${HPL_DIR}/submit_hpl.sh"
-                 
-		if [ ${verbose} -eq 1 ]; then
-		        echo "Submitting:  $CMD"
-		fi
-  		jobid=$($CMD) 
-		if [ $? -ne 0 ]; then
-			echo "ERROR: Unable to submit job.  Err=$?"
-			# Cleanup experiment
-			#exit $? 
-		fi
-
-                popd > /dev/null 2>&1
-
-		jobid_list+=($jobid)
-
-		P=$(( $P + $nodes_per_job ))
-		INST=$(( $INST + 1 ))
-	done
-	if [ $(( P - 1 )) -lt ${total_nodes} ]; then
-	        # Print out the extra nodes not used
-	        HLIST=$(scontrol show hostlist $(tail -n +$P ${HFILE} | sort | paste -d, -s))
-	        echo ""
-	        echo "Unused nodes for this iteration: ${HLIST}"
+            if [ x"${excludelist}" != x"" ]; then
+                DEPENDENCY="$DEPENDENCY -x ${excludelist}" 
+            fi
+        else
+            HLIST="-w $(scontrol show hostlist $(tail -n +$P ${HFILE} | head -${nodes_per_job} | sort | paste -d, -s))"
+            DEPENDENCY=""
         fi
-	echo ""
+
+        # create a workdir for each job
+        WORKDIR=${EXPDIR}/tmp/tmp.$$.$(date +%s)
+        mkdir -p ${WORKDIR}
+        if [ $? -ne 0 ]; then
+            echo "ERROR: Unable to create working directory $WORKDIR.  Exiting"
+            exit 1
+        fi
+
+        # Copy working files to unique directory
+        cp ${HPLDATFN} ${WORKDIR}/HPL.dat
+        if [ -f ${SYSCFG} ]; then
+            cp ${SYSCFG} ${WORKDIR}/syscfg.sh
+            export SYSCFGVAR=syscfg.sh
+        else
+            export SYSCFGVAR=${SYSCFG}
+        fi
+
+        # Submit the job in the workdir
+        pushd ${WORKDIR} > /dev/null 2>&1
+
+        CMD="sbatch -J sa-bit:burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} ${slurmopts} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFG,SYSCFGVAR,GPUMEM,CRUNTIME,HPLAI,EXPDIR ${HPL_DIR}/submit_hpl.sh"
+                 
+        if [ ${verbose} -eq 1 ]; then
+            echo "Submitting:  $CMD"
+        fi
+            jobid=$($CMD) 
+            if [ $? -ne 0 ]; then
+                echo "ERROR: Unable to submit job.  Err=$?"
+                # Cleanup experiment
+                #exit $? 
+            fi
+
+            popd > /dev/null 2>&1
+
+            jobid_list+=($jobid)
+
+            P=$(( $P + $nodes_per_job ))
+            INST=$(( $INST + 1 ))
+     done
+    if [ $(( P - 1 )) -lt ${total_nodes} ]; then
+        # Print out the extra nodes not used
+        HLIST=$(scontrol show hostlist $(tail -n +$P ${HFILE} | sort | paste -d, -s))
+        echo ""
+        echo "Unused nodes for this iteration: ${HLIST}"
+    fi
+    echo ""
 done
 
 wait
 
-rm ${HFILE}
-rm ${MACHINEFILE}
+rm -f ${HFILE}
+rm -f ${MACHINEFILE}
 
 # Now watch and wait on the experimet
 # Group jobs into running, waiting
@@ -455,22 +458,22 @@ echo "Experiment Directory: ${EXPDIR}"
 echo ""
 
 while [ ${jobs_tbd} != 0 ]; do
-	if [ $(( p % display_row )) == 0 ]; then
-		echo ""
-		echo "             Date                   TotalJobs RunningJobs  WaitingJobs FinishingJobs"
-		echo "------------------------------------------------------------------------------------"
-        fi
-	squeue -a | grep -E $(echo ${jobid_list[@]} | tr ' ' '|') > $SQUEUEFN
-        jobs_tbd=$(cat $SQUEUEFN | wc -l)
-	c_running=$(cat $SQUEUEFN | grep " R " | wc -l)
-	c_waiting=$(cat $SQUEUEFN | grep " PD " | wc -l)
-        c_finishing=$(cat $SQUEUEFN | grep " CG " | wc -l)
-	echo -n "$(date)::"
-	echo ${total_jobs} ${c_running} ${c_waiting} ${c_finishing} | awk '{printf("%12d %12d %12d %12d\n",$1,$2,$3,$4);}'
-	if [ ${jobs_tbd} != 0 ]; then
-		sleep 10
-	fi
-	p=$(( p + 1 ))
+    if [ $(( p % display_row )) == 0 ]; then
+        echo ""
+        echo "             Date                   TotalJobs RunningJobs  WaitingJobs FinishingJobs"
+        echo "------------------------------------------------------------------------------------"
+    fi
+    squeue -a | grep -E $(echo ${jobid_list[@]} | tr ' ' '|') > $SQUEUEFN
+    jobs_tbd=$(cat $SQUEUEFN | wc -l)
+    c_running=$(cat $SQUEUEFN | grep " R " | wc -l)
+    c_waiting=$(cat $SQUEUEFN | grep " PD " | wc -l)
+    c_finishing=$(cat $SQUEUEFN | grep " CG " | wc -l)
+    echo -n "$(date)::"
+    echo ${total_jobs} ${c_running} ${c_waiting} ${c_finishing} | awk '{printf("%12d %12d %12d %12d\n",$1,$2,$3,$4);}'
+    if [ ${jobs_tbd} != 0 ]; then
+        sleep 10
+    fi
+    p=$(( p + 1 ))
 done
 
 echo ""

@@ -22,49 +22,49 @@ echo "NUMACTL:"
 numactl --show
 
 if [ ${SLURM_JOB_ID} ]; then
-	JOBID=${SLURM_JOB_ID}
-	NNODES=${SLURM_NNODES}
-	NPROCS=${SLURM_NPROCS}
+    JOBID=${SLURM_JOB_ID}
+    NNODES=${SLURM_NNODES}
+    NPROCS=${SLURM_NPROCS}
 else
-	JOBID=$(uname -n).$(date +%Y%m%d%H%M%S)
-	if [ x"$MACHINE_FILE" == x"" ]; then
-		echo "ERROR: Not running under a recognized workload management system.  Unable to find MACHINE_FILE.  Exiting"
-	fi
-	NNODES=$(cat $MACHINE_FILE | wc -l)
-	NPROCS=0
-	echo "Generic system support is not enabled yet".
-	exit
+    JOBID=$(uname -n).$(date +%Y%m%d%H%M%S)
+    if [ x"$MACHINE_FILE" == x"" ]; then
+        echo "ERROR: Not running under a recognized workload management system.  Unable to find MACHINE_FILE.  Exiting"
+    fi
+    NNODES=$(cat $MACHINE_FILE | wc -l)
+    NPROCS=0
+    echo "Generic system support is not enabled yet".
+    exit
 fi
 
 if [ x"${CONT}" = x"" ]; then
-	echo "ERROR: container is not defined at CONT."
-	exit 1
+    echo "ERROR: container is not defined at CONT."
+    exit 1
 fi
 
 if [ x"${SYSCFGVAR}" == x"" ]; then
-	echo "ERROR: SYSCFGVAR must be defined. Exiting."
-	exit 1
+    echo "ERROR: SYSCFGVAR must be defined. Exiting."
+    exit 1
 fi
 
 if [ x"${GPUMEM}" == x"" ]; then
-	echo "ERROR: GPUMEM not set. Exiting"
-	exit
+    echo "ERROR: GPUMEM not set. Exiting"
+    exit
 fi
 
 if [ x"${CRUNTIME}" == x"" ]; then
-	echo "ERROR: CRUNTIME not set. Exiting"
-	exit
+    echo "ERROR: CRUNTIME not set. Exiting"
+    exit
 fi
 
 # EXPDIR should already be created with the correct files
 if [ x"${EXPDIR}" == x"" ]; then
-	echo "ERROR: EXPDIR is not defined.  Exiting."
-	exit 1
+    echo "ERROR: EXPDIR is not defined.  Exiting."
+    exit 1
 fi
 
 USEHPLAI=""
 if [ x"${HPLAI}" == x"1" ]; then
-	USEHPLAI="--xhpl-ai"
+    USEHPLAI="--xhpl-ai"
 fi
 
 
@@ -93,9 +93,9 @@ echo ""
 
 ## Run HPL
 if [ -f $SYSCFGVAR ]; then
-	if [ x"${CRUNTIME}" != x"baremetal" ]; then
-	        SYSCFGDIR="/datfiles/"
-	fi
+    if [ x"${CRUNTIME}" != x"baremetal" ]; then
+        SYSCFGDIR="/datfiles/"
+    fi
 fi
 
 
@@ -106,31 +106,32 @@ MOUNT=$(pwd):/datfiles
 
 # nvidia-smi must be setup for setting clocks
 
-SUDOCLOCKS=sudo 
+SUDOCLOCKS=${SUDOCLOCKS:-"sudo"}
 srun -N ${NNODES} -n${NNODES} ${SUDOCLOCKS} nvidia-smi -lgc ${NV_GPUCLOCK}
 
 # Now run the container
 
 case ${CRUNTIME} in
-	enroot)
-		CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
-                     --container-image="${CONT}" --container-mounts="${MOUNT}" \
-		     /workspace/hpl.sh --config ${SYSCFGDIR}${SYSCFGVAR} ${USEHPLAI}  --dat /datfiles/HPL.dat" ;;
-	singularity)
-		CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
-		     singularity run --nv -B "${MOUNT}" "${CONT}" \
-		     /workspace/hpl.sh --config ${SYSCFGDIR}${SYSCFGVAR} ${USEHPLAI}  --dat /datfiles/HPL.dat" ;;
-	baremetal)
-		#CMD="mpirun -np $NPROCS -bind-to none -x LD_LIBRARY_PATH ${LOCAL_MPIOPTS} ${mpiopts} ${HPL_SCRIPTS_DIR}/hpl.sh" 
-		echo "baremetal not supported yet"
-		exit 1
-		CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
-		     ./hpl.sh --config ${SYSCFGVAR} --cpu-cores-per-task ${cpucorespertask} ${USEHPLAI}  --dat ./HPL.dat" 
-		;;
-	*)
-		echo "ERROR: Runtime ${CRUNTIME} not supported.  Exiting"
-		exit 1
-		;;
+    enroot)
+        CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
+                 --container-image="${CONT}" --container-mounts="${MOUNT}" \
+                /workspace/hpl.sh --config ${SYSCFGDIR}${SYSCFGVAR} ${USEHPLAI}  --dat /datfiles/HPL.dat"
+        ;;
+    singularity)
+        MD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
+                singularity run --nv -B "${MOUNT}" "${CONT}" \
+                /workspace/hpl.sh --config ${SYSCFGDIR}${SYSCFGVAR} ${USEHPLAI}  --dat /datfiles/HPL.dat"
+        ;;
+    baremetal)
+	echo "baremetal not supported yet"
+	exit 1
+	CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
+	     ./hpl.sh --config ${SYSCFGVAR} --cpu-cores-per-task ${cpucorespertask} ${USEHPLAI}  --dat ./HPL.dat" 
+	;;
+    *)
+	echo "ERROR: Runtime ${CRUNTIME} not supported.  Exiting"
+	exit 1
+	;;
 esac
 
 echo $CMD

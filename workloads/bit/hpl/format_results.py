@@ -82,7 +82,7 @@ for fn in os.listdir(expdir):
 
 ## Now all the data have been read, lets print it out
 print("")
-print("Comma Separated Results for Experiement: "+expdir)
+print("Comma Separated Results for Experiment: "+expdir)
 print("")
 
 ## Print headers
