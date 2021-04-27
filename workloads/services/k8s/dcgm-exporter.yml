@@ -23,7 +23,7 @@ spec:
       nodeSelector:
         hardware-type: NVIDIAGPU
       containers:
-      - image: "nvcr.io/nvidia/k8s/dcgm-exporter:2.0.13-2.1.2-ubuntu20.04"
+      - image: "nvcr.io/nvidia/k8s/dcgm-exporter:2.1.8-2.4.0-rc.2-ubuntu20.04"
         name: nvidia-dcgm-exporter
         env:
         - name: "DCGM_EXPORTER_LISTEN"
