@@ -36,7 +36,7 @@ if [ "${METALLB_CONTROLLER_REPO}" ]; then
 fi
 
 # Set up the MetalLB load balancer
-if ! helm status metallb >/dev/null 2>&1; then
+if ! helm status metallb -n deepops-loadbalancer >/dev/null 2>&1; then
 	kubectl create namespace deepops-loadbalancer
 	helm install --wait metallb bitnami/metallb "${helm_install_args[@]}" --version ${HELM_METALLB_CHART_VERSION} --namespace deepops-loadbalancer
 fi
