@@ -2,7 +2,7 @@
 - name: RedHat | add epel repo
   become: yes
   yum:
-    name: 
+    name:
       - "{{ epel_package }}"
     state: latest
   environment: "{{proxy_env if proxy_env is defined else {}}}"

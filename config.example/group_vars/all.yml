@@ -130,7 +130,7 @@ gpu_clock_lock: "1507,1507"
 ################################################################################
 # Docker configuration
 # Playbook: docker, nvidia-docker, k8s-cluster
-# 
+#
 # For supported Docker versions, see: kubespray/roles/container-engine/docker/vars/*
 docker_install: yes
 docker_version: '19.03'
@@ -243,7 +243,7 @@ maas_kvm: false
 ################################################################################
 # NVIDIA Datacenter GPU Manager                                                #
 ################################################################################
-install_dcgm: true 
+install_dcgm: true
 
 ################################################################################
 # Misc.                                                                        #
