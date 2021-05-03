@@ -19,6 +19,6 @@
 - name: Start the DCGM service
   systemd:
     daemon_reload: yes
-    name: "dcgm"
+    name: "nvidia-dcgm"
     state: "started"
     enabled: true

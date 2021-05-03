@@ -1,18 +1,25 @@
 ---
-- name: ensure package var is defined
-  fail:
-    msg: "dcgm_deb_package must be defined with file path to package"
-  when: dcgm_deb_package is not defined
-
-- name: copy deb to nodes
+- name: Ubuntu | add pin file
   copy:
-    src: "{{ dcgm_deb_package }}"
-    dest: "{{ dcgm_deb_dest_path }}"
+    src: "cuda-ubuntu.pin"
+    dest: "/etc/apt/preferences.d/cuda-repository-pin-600"
     owner: "root"
     group: "root"
     mode: "0644"
 
-- name: install package
+- name: Ubuntu | add key
+  apt_key:
+    url: "{{ nvidia_driver_ubuntu_cuda_repo_gpgkey_url }}"
+    id: "{{ nvidia_driver_ubuntu_cuda_repo_gpgkey_id }}"
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
+- name: Ubuntu | add CUDA repo
+  apt_repository:
+    repo: "deb {{ nvidia_driver_ubuntu_cuda_repo_baseurl }} /"
+    update_cache: yes
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
+- name: Ubuntu | install package
   apt:
-    deb: "{{ dcgm_deb_dest_path }}"
+    name: "{{ dcgm_pkg_name }}"
     state: "present"

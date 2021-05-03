@@ -1,18 +1,21 @@
 ---
-- name: ensure package var is defined
-  fail:
-    msg: "dcgm_rpm_package must be defined with file path to package"
-  when: dcgm_rpm_package is not defined
-
-- name: copy rpm to nodes
-  copy:
-    src: "{{ dcgm_rpm_package }}"
-    dest: "{{ dcgm_rpm_dest_path }}"
-    owner: "root"
-    group: "root"
-    mode: "0644"
-
-- name: install package
+- name: RedHat | add epel repo
+  become: yes
   yum:
-    name: "{{ dcgm_rpm_dest_path }}"
+    name:
+      - "{{ epel_package }}"
+    state: latest
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
+- name: RedHat | add CUDA repo
+  yum_repository:
+    name: cuda
+    description: NVIDIA CUDA YUM Repo
+    baseurl: "{{ nvidia_driver_rhel_cuda_repo_baseurl }}"
+    gpgkey: "{{ nvidia_driver_rhel_cuda_repo_gpgkey }}"
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
+- name: RedHat | install package
+  package:
+    name: "{{ dcgm_pkg_name }}"
     state: "present"
