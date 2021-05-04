@@ -22,7 +22,7 @@
   run_once: true
 
 - name: Install Trident using Helm
-  command: '/usr/local/bin/helm -n trident install trident {{ deepops_dir }}/trident-installer/helm/trident-operator-{{ trident_version }}.tgz'
+  command: '/usr/local/bin/helm -n {{ trident_namespace }} install trident {{ deepops_dir }}/trident-installer/helm/trident-operator-{{ trident_version }}.tgz'
   run_once: true
 
 - name: Copy backend config file(s) to control node
@@ -34,7 +34,7 @@
   run_once: true
 
 - name: Create Trident backend(s)
-  command: '{{ deepops_dir }}/trident-installer/tridentctl -n trident create backend -f {{ deepops_dir }}/trident-installer/backend-{{ item.backendName }}.json'
+  command: '{{ deepops_dir }}/trident-installer/tridentctl -n {{ trident_namespace }} create backend -f {{ deepops_dir }}/trident-installer/backend-{{ item.backendName }}.json'
   with_items: '{{ backends_to_create }}'
   retries: 10
   delay: 30
