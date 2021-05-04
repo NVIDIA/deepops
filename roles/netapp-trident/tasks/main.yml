@@ -4,13 +4,13 @@
 - name: Download and extract Trident installer
   unarchive:
     src: '{{ trident_installer_url }}'
-    dest: /root
+    dest: '{{ deepops_dir }}'
     remote_src: yes
 
 - name: Copy namespace config file to control node
   template:
     src: namespace.j2
-    dest: /root/trident-installer/namespace.yaml
+    dest: '{{ deepops_dir }}/trident-installer/namespace.yaml'
   run_once: true
 
 - name: Create Trident namespace
@@ -18,24 +18,24 @@
     state: present
     resource: Namespace
     name: trident
-    filename: /root/trident-installer/namespace.yaml
+    filename: '{{ deepops_dir }}/trident-installer/namespace.yaml'
   run_once: true
 
 - name: Install Trident using Helm
-  command: /usr/local/bin/helm -n trident install trident /root/trident-installer/helm/trident-operator-{{ trident_version }}.tgz
+  command: '/usr/local/bin/helm -n trident install trident {{ deepops_dir }}/trident-installer/helm/trident-operator-{{ trident_version }}.tgz'
   run_once: true
 
 - name: Copy backend config file(s) to control node
   template:
     src: backend.j2
-    dest: /root/trident-installer/backend-{{ item.backendName }}.json
-  with_items: "{{ backends_to_create }}"
+    dest: '{{ deepops_dir }}/trident-installer/backend-{{ item.backendName }}.json'
+  with_items: '{{ backends_to_create }}'
   when: create_backends == true
   run_once: true
 
 - name: Create Trident backend(s)
-  command: /root/trident-installer/tridentctl -n trident create backend -f /root/trident-installer/backend-{{ item.backendName }}.json
-  with_items: "{{ backends_to_create }}"
+  command: '{{ deepops_dir }}/trident-installer/tridentctl -n trident create backend -f {{ deepops_dir }}/trident-installer/backend-{{ item.backendName }}.json'
+  with_items: '{{ backends_to_create }}'
   retries: 10
   delay: 30
   register: result
@@ -45,8 +45,8 @@
 
 - name: Copy StorageClass config file(s) to control node
   copy:
-    content: "{{ item }}"
-    dest: /root/trident-installer/sc-{{ item.metadata.name }}.yaml
+    content: '{{ item }}'
+    dest: '{{ deepops_dir }}/trident-installer/sc-{{ item.metadata.name }}.yaml'
   with_items: "{{ storageClasses_to_create }}"
   when: create_StorageClasses == true
   run_once: true
@@ -56,15 +56,15 @@
     state: present
     resource: StorageClass
     name: "{{ item.metadata.name }}"
-    filename: /root/trident-installer/sc-{{ item.metadata.name }}.yaml
-  with_items: "{{ storageClasses_to_create }}"
+    filename: '{{ deepops_dir }}/trident-installer/sc-{{ item.metadata.name }}.yaml'
+  with_items: '{{ storageClasses_to_create }}'
   when: create_StorageClasses == true
   run_once: true
 
 - name: Fetch tridentctl from control node
   fetch:
-    src: /root/trident-installer/tridentctl
-    dest: "{{ tridentctl_copy_to_directory }}"
+    src: '{{ deepops_dir }}/trident-installer/tridentctl'
+    dest: '{{ tridentctl_copy_to_directory }}'
     flat: yes
   when: copy_tridentctl_to_localhost == true
   run_once: true
