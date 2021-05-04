@@ -37,6 +37,12 @@ slurm_ha_state_save_location: "/sw/slurm"
 #slurm_dbd_conf_template: "/path/to/slurmdbd.conf"
 
 ################################################################################
+# Login on compute
+################################################################################
+slurm_allow_ssh_user: []
+slurm_login_on_compute: false
+
+################################################################################
 # Optional installs                                                            #
 ################################################################################
 slurm_configure_etc_hosts: yes

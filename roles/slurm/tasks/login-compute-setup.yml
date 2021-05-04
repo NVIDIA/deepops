@@ -1,0 +1,32 @@
+---
+
+- name: Hide GPUs for regular user logins via sshd.service.
+  shell: |
+    deviceprop=$(systemctl show sshd.service -p DeviceAllow | grep -i nvidiactl)
+
+    if [ -z "$deviceprop" ] ; then
+      systemctl set-property sshd.service DeviceAllow="/dev/nvidiactl"
+    fi
+  args:
+    creates: "{{ '/etc/systemd/system.control/sshd.service.d/50-DeviceAllow.conf' \
+                 if ansible_os_family == 'RedHat' else \
+                 '/etc/systemd/system.control/ssh.service.d/50-DeviceAllow.conf' }}"
+  when: is_controller
+  tags:
+    - config
+
+- name: Patch lastuserjob epilog.
+  blockinfile:
+    path: /etc/slurm/epilog.d/40-lastuserjob-processes
+    block: |
+
+      if grep -q -w "$SLURM_JOB_USER" /etc/slurm/localusers.backup ; then
+          exit 0  # don't revoke access for these users
+      fi
+
+    insertafter: "^set -ex"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK (ansible-role-slurm)"
+  when: is_controller
+  notify: restart slurmctld
+  tags:
+    - config
