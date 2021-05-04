@@ -145,6 +145,18 @@ The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL
     $ ansible-playbook -K --forks=1 -l slurm-cluster playbooks/slurm-cluster.yml
     ```
 
+    During Slurm playbook reboot is usually done twice:
+
+      * Once after installing the NVIDIA driver, because the driver sometimes
+        requires a reboot to load correctly.
+      * Once after setting some grub options used for Slurm compute nodes to
+        configure cgroups correctly, because of modification to the kernel
+        command line.
+
+    The above reboot sequence cannot be automated when the compute and login
+    node are on the same system. The recommended approach is to reboot manually
+    when prompted and then run Ansible again.
+
     Setting `slurm_login_on_compute` to true, the slurm-cluster playbook will
     restrict GPUs in ssh sessions on the slurm-master by running the following
     command:
