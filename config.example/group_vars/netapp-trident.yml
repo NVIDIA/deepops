@@ -6,7 +6,7 @@ trident_version: "21.01.2"
 trident_installer_url: "https://github.com/NetApp/trident/releases/download/v{{ trident_version }}/trident-installer-{{ trident_version }}.tar.gz"
 
 # Namespace to install Trident in
-trident_namespace: trident
+trident_namespace: deepops-trident
 
 # Denotes whether or not to create new backends after deploying trident
 # For more info, refer to: https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/operator-install.html#creating-a-trident-backend
