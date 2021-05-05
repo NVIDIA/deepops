@@ -11,20 +11,16 @@ ood_master_sw_deps:
   - liblz4-tool
   - unzip
   - websockify
-  - websockify-common
 
 ood_client_sw_deps:
   - liblz4-tool
   - unzip
   - nmap
   - websockify
-  - websockify-common
   - xfce4
   - xfce4-terminal
   - xfce4-goodies
-  - gtk3-engines-xfce
   - jupyter-notebook
   - dbus-x11
   - firefox
-  - cuda-nvvp-10-1
   - nvidia-visual-profiler

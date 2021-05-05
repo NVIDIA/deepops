@@ -4,6 +4,9 @@ collections:
 - name: ansible.posix
   version: 1.1.1
 
+- name: community.general
+  version: 3.0.0
+
 roles:
 
 - src: dev-sec.ssh-hardening
@@ -56,7 +59,7 @@ roles:
   version: 'c9022153036dfdde4e2b313aecde4a46cd6f6687'
 
 - src: https://github.com/OSC/ood-ansible.git
-  version: 'a56783750d5e61f0d099a2b294d9f050d194f293'
+  version: 'v1.8.1'
 
 - src: gantsign.golang
   version: 2.4.0
