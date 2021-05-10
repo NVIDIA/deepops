@@ -45,3 +45,12 @@ In addition, update version numbers not caught by the regex, if required:
 Update version numbers for Ansible Galaxy roles in: `roles/requirements.yml`
 
 ## Finalizing a release
+
+Push changes to the release branch
+
+Create a draft PR against the master branch from the release branch
+
+Once ready to create the release, draft a new release on GitHub with the proper
+tag and targeting the newly created release branch
+
+Merge the release PR with the master branch to update versions in the master branch
