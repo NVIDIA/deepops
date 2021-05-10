@@ -110,7 +110,7 @@ users:
 ################################################################################
 # NVIDIA GPU configuration
 # Playbook: nvidia-cuda
-cuda_version: cuda-toolkit-11-0
+cuda_version: cuda-toolkit-11-3
 
 # DGX-specific vars may be used to target specific models,
 # because available versions for DGX may differ from the generic repo
@@ -136,7 +136,7 @@ nvidia_driver_force_install: false
 #
 # For supported Docker versions, see: kubespray/roles/container-engine/docker/vars/*
 docker_install: yes
-docker_version: '19.03'
+docker_version: '20.10'
 docker_dns_servers_strict: no
 docker_storage_options: -s overlay2
 #docker_options: "--bip=192.168.99.1/24"
@@ -184,7 +184,7 @@ enroot_environ_config_files_dgx:
 # Singularity configuration
 # Playbook: singularity, slurm-cluster
 # Singularity target version
-singularity_version: "3.5.3"
+singularity_version: "3.7.3"
 singularity_conf_path: "/etc/singularity/singularity.conf"
 bind_paths: []
   # example:

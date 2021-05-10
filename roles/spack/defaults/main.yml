@@ -1,7 +1,7 @@
 ---
 spack_repo: "https://github.com/spack/spack.git"
 spack_install_dir: "/sw/spack"
-spack_version: "v0.15.3"
+spack_version: "v0.16.1"
 spack_user: "root"
 spack_group: "root"
 
