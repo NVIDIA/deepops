@@ -50,7 +50,7 @@ python3 triton.py
 
 ## Quickstart
 
-1. Deploy Kuberenetes following [the DeepOps Kubernetes deployment guide](../../../../docs/kubernetes-cluster.md)
+1. Deploy Kubernetes following [the DeepOps Kubernetes deployment guide](../../../../docs/kubernetes-cluster.md)
 
 2. Deploy Kubeflow following [the DeepOps Kubeflow deployment guide](../../../../docs/kubeflow.md)
 
@@ -75,7 +75,7 @@ python3 triton.py
 curl <management IP>:30800/v2/models/densenet_onnx/versions/
 ```
 
-Successfull outpu will look like:
+Successful output will look like:
 ```sh
 {"name":"densenet_onnx","versions":["1"],"platform":"onnxruntime_onnx","inputs":[{"name":"data_0","datatype":"FP32","shape":[3,224,224]}],"outputs":[{"name":"fc6_1","datatype":"FP32","shape":[1000]}]}
 
