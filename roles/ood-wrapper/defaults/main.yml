@@ -1,6 +1,7 @@
 ---
-ood_source_version: "v1.7.6"
+ood_source_version: "v1.8.20"
 ood_config_dir: /etc/ood/config
+ood_base_dir: /opt/ood
 
 # Cluster configuration
 ood_cluster_config_dir: '{{ ood_config_dir }}/clusters.d'
