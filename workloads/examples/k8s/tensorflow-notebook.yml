@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: tensorflow-notebook-container
-          image:  nvcr.io/nvidia/tensorflow:20.12-tf1-py3
+          image:  nvcr.io/nvidia/tensorflow:21.03-tf1-py3
           command: ["/bin/sh"]
           args: ["-c", "jupyter lab  --notebook-dir=/workspace --ip=0.0.0.0 --no-browser --allow-root --port=8888 --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.allow_origin='*' --NotebookApp.base_url=${NB_PREFIX}"]
           resources:

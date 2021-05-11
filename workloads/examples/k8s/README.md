@@ -17,7 +17,7 @@ This directory contains several yaml files that can be used to deploy various ve
 To launch an interactive TensorFlow notebook run the below command and then access Jupyter from the IP of the machine you ran the command on at http://${local_ip}:30008
 
 ```sh
-docker run --rm -it -p 30008:8888  nvcr.io/nvidia/tensorflow:20.12-tf1-py3  jupyter lab  --notebook-dir=/workspace --ip=0.0.0.0 --no-browser --allow-root --port=8888 --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.allow_origin='*' --NotebookApp.base_url=${NB_PREFIX}
+docker run --rm -it --gpus all -p 30008:8888  nvcr.io/nvidia/tensorflow:21.03-tf1-py3  jupyter lab  --notebook-dir=/workspace --ip=0.0.0.0 --no-browser --allow-root --port=8888 --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.allow_origin='*' --NotebookApp.base_url=${NB_PREFIX}
 ```
 > Note: Most NGC containers contain Jupyter, to run another container such as PyTorch swap out `nvidia/tensorflow:20.12-tf1-py3` for another Docker image (`nvcr.io/nvidia/pytorch:20.12-py3`). Most NGC containers provide example notebooks in `/workspace/nvidia-examples`.
 
@@ -26,7 +26,7 @@ docker run --rm -it -p 30008:8888  nvcr.io/nvidia/tensorflow:20.12-tf1-py3  jupy
 Verify Docker is running with GPU support by running the below command. This will execute a ResNet training job on synthetic data.
 
 ```sh
-docker run --rm -it  nvcr.io/nvidia/tensorflow:20.12-tf1-py3 python /workspace/nvidia-examples/cnn/resnet.py --layers=50 --batch_size=512
+docker run --rm -it --gpus all nvcr.io/nvidia/tensorflow:21.03-tf1-py3 python /workspace/nvidia-examples/cnn/resnet.py --layers=50 --batch_size=64
 ```
 
 Expected output, performance will vary:
@@ -88,13 +88,13 @@ kubectl delete -f tensorflow-job.yml
 The same ResNet workload can be run with a single `kubectl` command:
 
 ```sh
- kubectl run --rm -it --image=nvcr.io/nvidia/tensorflow:20.12-tf1-py3 --limits="nvidia.com/gpu=1" tensorflow-pod -- python /workspace/nvidia-examples/cnn/resnet.py --layers=50 --batch_size=512
+ kubectl run --rm -it --image=nvcr.io/nvidia/tensorflow:21.03-tf1-py3 --limits="nvidia.com/gpu=1" tensorflow-pod -- python /workspace/nvidia-examples/cnn/resnet.py --layers=50 --batch_size=64
 ```
 
 Alternatively, a bash prompt can be reached by not specifying a command.
 
 ```sh
- kubectl run --rm -it --image=nvcr.io/nvidia/tensorflow:20.12-tf1-py3 --limits="nvidia.com/gpu=1" tensorflow-pod
+ kubectl run --rm -it --image=nvcr.io/nvidia/tensorflow:21.03-tf1-py3 --limits="nvidia.com/gpu=1" tensorflow-pod
 ```
 
 #### Run a Multinode deep learning workload - Kubernetes

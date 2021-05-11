@@ -10,7 +10,7 @@ spec:
       template:
         spec:
           containers:
-          - image: "nvcr.io/nvidia/tensorflow:20.12-tf1-py3"
+          - image: "nvcr.io/nvidia/tensorflow:21.03-tf1-py3"
             name: tensorflow-mpi-job-container
             command:
             - mpirun
@@ -45,7 +45,7 @@ spec:
       template:
         spec:
           containers:
-          - image: "nvcr.io/nvidia/tensorflow:20.12-tf1-py3"
+          - image: "nvcr.io/nvidia/tensorflow:21.03-tf1-py3"
             name: tensorflow-mpi-job-container
             resources:
               limits:
