@@ -55,19 +55,17 @@ machine authn.nvidia.com login $oauthtoken password <NVCR.IO API KEY>
 ```
 Replace <NVCR.IO API KEY> above with the your nvcr.io api key for your NGC account.
 
-### Setup Authentication for Docker/Singularity to nvcr.io
+### Setup Authentication for Singularity nvcr.io
 
-Use the standard docker authentication process to authenticate to nvcr.io
-
-```
-docker login $oauthtoken
-```
-
-Use your nvcr.io key as the password. Next, pull the container and create a local image.
+For Singularity, authentication to a docker registry is done through environment variables. 
 
 ```
-docker pull nvcr.io/nvidia/hpc-benchmarks:20.10-hpl > hpc-benchmarks.20.10-hpl.tgz
+export SINGULARITY_DOCKER_USERNAME='$oauthtoken'
+export SINGULARITY_DOCKER_PASSWORD=<NGC_API_KEY>
 ```
+
+Set these variables in the appropriate system config file (ex: syscfg-dgxa100-80gb.sh)
+
 
 ## Basic Launch Command
 
@@ -92,7 +90,7 @@ Where:
         * Specify the container runtime.  enroot is the only support runtime currently.
    -h|--help
         * Provide a full list of options
-
+```
 
 The script will lookup all of the available batch nodes on the system and launch a series of jobs on each.  More options exist to use BIT on non-standard systems.  Use the --help option for a full list of options.
 

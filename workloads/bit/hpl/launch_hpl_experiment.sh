@@ -215,12 +215,13 @@ if [ x"${cruntime}" != x"" ]; then
             if [ -f ${siffn} ]; then
                 echo "INFO: ${siffn} found, not pulling"
             else
-                #singularity build hpc-benchmarks:20.10-hpl.sif docker://nvcr.io/nvidia/hpc-benchmarks:20.10-hpl
-                echo singularity build ${siffn} docker://${container}
-                srun -N 1 -p ${partition}  singularity build ${siffn} docker://${container}
+                echo ""
+                echo Building singluarity container on a compute node:  singularity build ${siffn} docker://${container}
+                echo ""
+                /bin/bash -c source ${SYSCFG} && srun -N 1 ${account} -p ${partition} singularity build ${siffn} docker://${container}
                 if [ $? -ne 0 ]; then
                     echo ""
-                    echo "ERROR: Unable tou build singularity container from ${container}, Exiting"
+                    echo "ERROR: Unable to build singularity container from ${container}, Exiting."
                     echo ""
                     exit 1
                 fi
