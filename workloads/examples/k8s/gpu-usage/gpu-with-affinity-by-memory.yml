@@ -1,5 +1,5 @@
 # This yaml file will launch a container with any NVIDIA Ampere GPU that has more than 16 GB of GPU memory
-# Specifying the nvidia.com/gpu.family and the nvidia.com/gpu.memory amount along 
+# Specifying the nvidia.com/gpu.family and the nvidia.com/gpu.memory amount 
 #    restricts the type of GPU this container will run on
 #
 # Specifying both an affinity and resource type allows for some flexibility in the GPU this workload will execute on
@@ -21,7 +21,7 @@ spec:
           - key: nvidia.com/gpu.memory
             operator: Gt
             values:
-            - 16384
+            - "16384"
   containers:
     - name: gpu-pod
       image:  nvcr.io/nvidia/k8s/cuda-sample:nbody
