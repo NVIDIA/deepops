@@ -37,7 +37,7 @@ dashboard_metrics_scrape_tagr: "v1.0.4"
 dashboard_metrics_scraper_repo: "kubernetesui/metrics-scraper"
 
 # kubespray v2.13.1 deploys helm v3.1.2
-helm_version: "v3.4.1"
+helm_version: "v3.5.3"
 
 # Ensure hosts file generation only runs across k8s cluster
 hosts_add_ansible_managed_hosts_groups: ["k8s-cluster"]
