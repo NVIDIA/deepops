@@ -17,6 +17,22 @@
     group: root
     mode: 0644
 
+- name: create dcgm-exporter config dir
+  file:
+    path: "{{ nvidia_dcgm_container_config_dir }}"
+    state: directory
+  when: has_gpus
+
+- name: copy metrics file
+  copy:
+    src: "{{ nvidia_dcgm_container_custom_metrics_file }}"
+    dest: "{{ nvidia_dcgm_container_config_dir }}/{{ nvidia_dcgm_container_custom_metrics_file }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when: has_gpus
+  notify: restart dcgm
+
 - name: install systemd unit file
   template:
     src: templates/docker.dcgm-exporter.service.j2
