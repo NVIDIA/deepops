@@ -15,13 +15,6 @@
 #  
 #
 
-### TODO:
-### - Add a loop at the end that tracks the jobs
-###   <TIME> TotalJobs:<TOTALJOBS> RunningJobs:<RunningJobs> CompletedJobs:<CompJobs> QueuedJobs:<Queued>
-###
-###    When all the jobs are down, run the verify script, put the results in the results directory
-### - Set the full expdir from this script
-
 export HPL_DIR=${HPL_DIR:-$(cd $(dirname $0) && pwd)} # The shared directory where scripts, data, and results are stored
 export HPL_SCRIPTS_DIR=${HPL_SCRIPTS_DIR:-${HPL_DIR}} # The shared directory where these scripts are stored
 
@@ -37,7 +30,7 @@ walltime=1:00:00
 verbose=0
 nores=0
 cruntime=singularity
-container="nvcr.io/nvidia/hpc-benchmarks:20.10-hpl"
+container="nvcr.io/nvidia/hpc-benchmarks:21.4-hpl"
 ORDER_CMD="cat"
 slurmopts=""
 
@@ -211,22 +204,12 @@ if [ x"${cruntime}" != x"" ]; then
                 echo "ERROR: Singlularity not found, check your path"
                 exit 1
             fi
-            siffn=$(pwd)/"$(basename ${container}).sif"
-            if [ -f ${siffn} ]; then
-                echo "INFO: ${siffn} found, not pulling"
+            if [ ! -f ${container} ]; then
+                # Since the file doesn't exist, assume the CONTAINER is a URI
+                export CONT=docker://${container} 
             else
-                echo ""
-                echo Building singluarity container on a compute node:  singularity build ${siffn} docker://${container}
-                echo ""
-                /bin/bash -c source ${SYSCFG} && srun -N 1 ${account} -p ${partition} singularity build ${siffn} docker://${container}
-                if [ $? -ne 0 ]; then
-                    echo ""
-                    echo "ERROR: Unable to build singularity container from ${container}, Exiting."
-                    echo ""
-                    exit 1
-                fi
+                export CONT=${PWD}/${container}
             fi
-            export CONT=${siffn}
         ;;
         enroot)
             echo "INFO: Using enroot runtime"
@@ -411,7 +394,12 @@ for N in $(seq ${niters}); do
         # Submit the job in the workdir
         pushd ${WORKDIR} > /dev/null 2>&1
 
-        CMD="sbatch -J sa-bit:burnin-case-${INST} -N ${nodes_per_job} --time=${walltime} ${account} -p ${partition} ${slurmopts} --ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive -o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} --export ALL,CONT,SYSCFG,SYSCFGVAR,GPUMEM,CRUNTIME,HPLAI,EXPDIR ${HPL_DIR}/submit_hpl.sh"
+        CMD="sbatch -J sa-bit:burnin-case-${INST} -N ${nodes_per_job} "
+        CMD+="--time=${walltime} ${account} -p ${partition} ${slurmopts} "
+        CMD+="--ntasks-per-node=${gpus_per_node} ${gresstr} --parsable --exclusive "
+        CMD+="-o ${EXPDIR}/${EXPNAME}-%j.out ${HLIST} ${DEPENDENCY} "
+        CMD+="--export ALL,CONT,SYSCFG,SYSCFGVAR,GPUMEM,CRUNTIME,HPLAI,EXPDIR "
+        CMD+="${HPL_DIR}/submit_hpl.sh"
                  
         if [ ${verbose} -eq 1 ]; then
             echo "Submitting:  $CMD"

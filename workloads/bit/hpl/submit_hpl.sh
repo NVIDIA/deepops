@@ -118,7 +118,7 @@ case ${CRUNTIME} in
                 /workspace/hpl.sh --config ${SYSCFGDIR}${SYSCFGVAR} ${USEHPLAI}  --dat /datfiles/HPL.dat"
         ;;
     singularity)
-        MD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
+        CMD="srun --mpi=pmi2 -N ${NNODES} --ntasks-per-node=${GPUS_PER_NODE} \
                 singularity run --nv -B "${MOUNT}" "${CONT}" \
                 /workspace/hpl.sh --config ${SYSCFGDIR}${SYSCFGVAR} ${USEHPLAI}  --dat /datfiles/HPL.dat"
         ;;
