@@ -1,0 +1,18 @@
+# This yaml file will launch a container onto any node that has a nvidia.com/gpu resource
+# This container could potentially be deployed on a NVIDIA A100, V100, T4, or any other GPU type
+# If a node is configured with mig-strategy=single, this container could potentially run with a MIG device
+#
+# This deployment style is unpredictable in a heterogenous cluster and should not be used
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-pod
+spec:
+  containers:
+    - name: gpu-pod
+      image:  nvcr.io/nvidia/k8s/cuda-sample:nbody
+      command: ["/bin/sh"]
+      args: ["-c", "nvidia-smi"]
+      resources:
+        limits:
+          nvidia.com/gpu: 1

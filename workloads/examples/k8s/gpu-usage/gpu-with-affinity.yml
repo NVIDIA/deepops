@@ -1,0 +1,29 @@
+# This yaml file will launch a container with a 40GB or 80 GB NVIDIA Ampere GPU
+# Specifying the nvidia.com/gpu.product label and the nvidia.com/gpu resource type 
+#    restricts the type of GPU this container will run on
+#
+# Specifying both an affinity and resource type supports clusters with multiple GPU types or MIG configurations
+# This allows for more flexibility than just using a NodeSelector, if a workload can run on multiple GPU types
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-pod
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: nvidia.com/gpu.product
+            operator: In
+            values:
+            - A100-SXM4-40GB
+            - A100-SXM4-80GB
+  containers:
+    - name: gpu-pod
+      image:  nvcr.io/nvidia/k8s/cuda-sample:nbody
+      command: ["/bin/sh"]
+      args: ["-c", "nvidia-smi"]
+      resources:
+        limits:
+          nvidia.com/gpu: 1
