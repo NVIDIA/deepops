@@ -1,33 +1,42 @@
 ---
+# vGPU support
+- block:
+  - name: Create namespace for GPU Operator resources
+    shell: kubectl create namespace {{ gpu_operator_namespace }} -o yaml --dry-run=client | kubectl apply -f -
+  - name: create local directory for gpu operator configuration
+    file:
+      path: "{{ gpu_operator_grid_config_dir }}"
+      state: directory
+      owner: "root"
+      group: "root"
+      mode: "0700"
+  - name: add gridd.conf config file from template
+    template:
+      src: "gridd.conf"
+      dest: "{{ gpu_operator_grid_config_dir }}/gridd.conf"
+      owner: "root"
+      group: "root"
+      mode: "0600"
+  - name: Create a docker gridd.conf license configmap
+    shell: kubectl create configmap licensing-config -n "{{ gpu_operator_namespace }}" --from-file="{{gpu_operator_grid_config_dir }}/gridd.conf" -o yaml --dry-run=client | kubectl apply -f -
+  - name: Create a docker secret for private GPU Operator containers
+    shell: kubectl create secret docker-registry registry-secret --docker-server='{{ gpu_operator_driver_registry }}' --docker-username='{{ gpu_operator_registry_username }}' --docker-password={{ gpu_operator_registry_password }} --docker-email={{ gpu_operator_registry_email }} -n {{ gpu_operator_namespace }} -o yaml --dry-run=client | kubectl apply -f -
+  - name: Set secret var for helm command line if specified
+    set_fact:
+      gpu_operator_registry_secret: --set driver.imagePullSecrets[0]="registry-secret"
+  when: vgpu_grid_license_server != ""
+
 # While we would prefer to use the Ansible helm module, it's broken! :-(
 # See https://github.com/ansible/ansible/pull/57897
 # Unfortunately this will not be fixed until Ansible 2.10 which is not yet released.
 # So for now we will run /usr/local/bin/helm commands directly...
-
 - name: install gpu-operator helm repo
   command: /usr/local/bin/helm repo add nvidia "{{ gpu_operator_helm_repo }}"
 
 - name: update helm repos
   command: /usr/local/bin/helm repo update
 
-# TODO: If this already exists we fail, so skip that for now with failed_when: false
-- name: Create namespace for GPU Operator resources
-  command: kubectl create namespace {{ gpu_operator_namespace }}
-  when: gpu_operator_create_secret
-  failed_when: false
-
-# TODO: If this already exists we fail, so skip that for now with failed_when: false
-- name: Create a docker secret for GPU Operator containers
-  command: kubectl create secret docker-registry {{ gpu_operator_registry_secret }} --docker-server="{{ gpu_operator_driver_registry }}" --docker-username={{ gpu_operator_registry_username }} --docker-password={{ gpu_operator_registry_password }} --docker-email={{ gpu_operator_registry_email }} -n {{ gpu_operator_namespace }}
-  when: gpu_operator_create_secret
-  failed_when: false
-
-- name: Set secret var for helm command line if specified
-  set_fact: 
-    gpu_operator_registry_secret: --set driver.imagePullSecrets[0]="{{ gpu_operator_registry_secret }}"
-  when: gpu_operator_registry_secret != ""
-
 # XXX: This currently installs into the default namespace, as per the GPU Operator docs
 # https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html
 - name: install nvidia gpu operator
-  command: /usr/local/bin/helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --set migStrategy="{{ k8s_gpu_mig_strategy }}" --set operator.defaultRuntime="{{ gpu_operator_default_runtime }}" --set driver.repository="{{ gpu_operator_driver_registry }}" --set driver.version="{{ gpu_operator_driver_version }}" {{ gpu_operator_registry_secret }} --set gfd.migStrateg="{{ k8s_gpu_mig_strategy }}" --set devicePlugin.args={"{{ gpu_operator_plugin_args }}"} --wait
+  command: /usr/local/bin/helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --set migStrategy="{{ k8s_gpu_mig_strategy }}" --set operator.defaultRuntime="{{ gpu_operator_default_runtime }}" --set driver.repository="{{ gpu_operator_driver_registry }}" --set driver.version="{{ gpu_operator_driver_version }}" {{ gpu_operator_registry_secret | default("") }} --set gfd.migStrateg="{{ k8s_gpu_mig_strategy }}" --set devicePlugin.args={"{{ gpu_operator_plugin_args }}"} --wait
