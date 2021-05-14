@@ -26,6 +26,7 @@ ingress_name="ingress-nginx"
 
 PROMETHEUS_YAML_CONFIG="${PROMETHEUS_YAML_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/monitoring.yml}"
 PROMETHEUS_YAML_NO_PERSIST_CONFIG="${PROMETHEUS_YAML_NO_PERSIST_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/monitoring-no-persist.yml}"
+DCGM_CONFIG_CSV="${DCGM_CONFIG_CSV:-${DEEPOPS_CONFIG_DIR}/files/k8s-cluster/dcgm-custom-metrics.csv}"
 
 function help_me() {
     echo "This script installs the DCGM exporter, Prometheus, Grafana, and configures a GPU Grafana dashboard."
@@ -149,6 +150,11 @@ function setup_gpu_monitoring() {
     if ! kubectl -n monitoring get configmap kube-prometheus-grafana-gpu >/dev/null 2>&1 ; then
         kubectl create configmap kube-prometheus-grafana-gpu --from-file=${ROOT_DIR}/src/dashboards/gpu-dashboard.json -n monitoring
         kubectl -n monitoring label configmap kube-prometheus-grafana-gpu grafana_dashboard=1
+    fi
+
+    # Create DCGM metrics config map
+    if ! kubectl -n monitoring get configmap dcgm-custom-metrics >/dev/null 2>&1 ; then
+        kubectl create configmap dcgm-custom-metrics --from-file=${DCGM_CONFIG_CSV} -n monitoring
     fi
 
     # Label GPU nodes
