@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# This script is meant as a quick best-effort debug log-bundler tool
+# Running this will create a quick tarbal with most of the information needed to debug a cluster
+
+
+# Source common libraries and env variables
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/../.."
+source ${ROOT_DIR}/scripts/common.sh
+
+
 timestamp=$(date +%s)
 logdir=config/log_${timestamp}
 mkdir ${logdir}

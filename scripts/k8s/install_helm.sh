@@ -2,6 +2,11 @@
 
 set -x
 
+# Source common libraries and env variables
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/../.."
+source ${ROOT_DIR}/scripts/common.sh
+
 HELM_INSTALL_DIR=/usr/local/bin
 HELM_INSTALL_SCRIPT_URL="${HELM_INSTALL_SCRIPT_URL:-https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3}"
 HELM_MINIMUM_VERSION=v3.4.1+gc4e7485
