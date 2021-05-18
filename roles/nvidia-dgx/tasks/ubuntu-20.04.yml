@@ -1,15 +1,11 @@
 ---
 - name: Check for Ubuntu version
   fail:
-    msg: "Role supports Ubuntu 18.04 only"
-  when: ansible_distribution_version != "18.04"
+    msg: "Role supports Ubuntu 20.04 only"
+  when: ansible_distribution_version != "20.04"
 
 - name: include os specific variables
-  include_vars: ubuntu-18.04.yml
-
-- name: include DGXA100 specific variables
-  include_vars: dgxa100.yml
-  when: ansible_product_name is search("DGXA100")
+  include_vars: ubuntu-20.04.yml
 
 - name: install dmidecode
   apt:
@@ -64,9 +60,6 @@
     block: |
       DGX_NAME="DGX Server"
       DGX_PRETTY_NAME="NVIDIA DGX Server"
-      DGX_SWBUILD_DATE="{{ DGX_SWBUILD_DATE }}"
-      DGX_SWBUILD_VERSION="{{ DGX_SWBUILD_VERSION }}"
-      DGX_COMMIT_ID="{{ DGX_COMMIT_ID }}"
       DGX_PLATFORM="DGX Server for {{ dgx_name.stdout }}"
       DGX_SERIAL_NUMBER="{{ dgx_serial }}"
 
@@ -76,38 +69,50 @@
     repo: ppa:graphics-drivers/ppa
     state: absent
 
-- name: add DGX repo keys
-  apt:
-    deb: "{{ nvidia_dgx_ubuntu_gpgkey }}"
+- name: add DGX repo key
+  ansible.builtin.apt_key:
+    url: "{{ nvidia_dgx_os5_ubuntu_gpgkey }}"
+    state: present
 
 - name: add DGX repo
   template:
-    src: dgx.list.j2
-    dest: /etc/apt/sources.list.d/dgx.list
+    src: dgxos5.list.j2
+    dest: /etc/apt/sources.list.d/dgx-temp.list
     mode: 0644
 
 - name: update apt cache
   apt:
     update_cache: yes
 
-- name: add DGX cuda 10.1 repo
+- name: install prerequisites
   apt:
-    name: dgx-bionic-r418+cuda10.1-repo
+    name: "{{ item }}"
+    state: present
     update_cache: yes
-    dpkg_options: "force-confdef,force-confold"
+  with_items:
+    - "{{ G_PREREQS }}"
+    - "{{ G_SETUP_PKGS }}"
 
-- name: add DGX cuda 11.0 repo
+- name: install DGX repo package
   apt:
-    name: dgx-bionic-r450+cuda11.0-repo
+    name: "{{ item }}"
     update_cache: yes
     dpkg_options: "force-confdef,force-confold"
+  with_items:
+    - "{{ G_DGX_REPO_PKG }}"
 
-- name: add DGXA100 repo
+- name: remove temporary repo package
+  file:
+    path: /etc/apt/sources.list.d/dgx-temp.list
+    state: absent
+
+- name: install more packages
   apt:
-    name: dgx-bionic-4.99-repo
+    name: "{{ item }}"
     update_cache: yes
     dpkg_options: "force-confdef,force-confold"
-  when: ansible_product_name is search("DGXA100")
+  with_items:
+    - "{{ G_PKGS_DEFAULT }}"
 
 - name: install DGX-1 packages
   apt:
@@ -115,7 +120,8 @@
     state: present
     update_cache: yes
   with_items:
-    - "{{ PKGS_DGX1_ALL }}"
+    - "{{ G_DGX_COMMON_PKGS }}"
+    - "{{ G_DGX1_PKGS }}"
   when: ansible_product_name is search("DGX-1")
   notify:
     - restart docker
@@ -126,7 +132,8 @@
     state: present
     update_cache: yes
   with_items:
-    - "{{ PKGS_DGX2_ALL }}"
+    - "{{ G_DGX_COMMON_PKGS }}"
+    - "{{ G_DGX2_PKGS }}"
   when: ansible_product_name is search("DGX-2")
   notify:
     - restart docker
@@ -137,51 +144,42 @@
     state: present
     update_cache: yes
   with_items:
-    - "{{ PKGS_DGXA100_ALL }}"
+    - "{{ G_DGX_COMMON_PKGS }}"
+    - "{{ G_DGX_A100_PKGS }}"
   when: ansible_product_name is search("DGXA100")
   notify:
     - restart docker
 
-- name: install extra DGX packages
-  apt:
-    name: "{{ item }}"
-    state: present
-    update_cache: yes
-  with_items:
-    - "{{ dgx_extra_packages }}"
+# Post-install stuff
+- name: disable release update prompt
+  lineinfile:
+    path: /etc/update-manager/release-upgrades
+    regexp: '^Prompt=.*'
+    line: Prompt=never
 
-- name: touch grub ipmisol.cfg
-  file:
-    path: /etc/default/grub.d/ipmisol.cfg
-    state: touch
-    mode: u=rw,g=r,o=r
-
-- name: add DGX IPMI SOL package
-  apt:
-    name: dgx-ipmisol
-    state: present
-  when: dgx_name is search("DGX")
- 
-# Post-install stuff from preseed
 - name: add ipmi kernel module at boot
   lineinfile:
     path: /etc/modules
     line: ipmi_devintf
 
-- name: enable openibd service
+- name: enable services
   systemd:
-    name: openibd
+    name: "{{ item }}"
     state: started
     enabled: yes
+    daemon_reload: yes
+  with_items:
+    - openibd
+    - dcgm
+    - nvidia-dcgm
+    - nvidia-persistenced
+    - nvidia-fabricmanager
+
+- name: enable PXE/UEFI on MLNX interfaces
+  command: /usr/sbin/mlnx_pxe_setup.bash
 
 - name: configure nv peer mem service startup
   command: /usr/sbin/update-rc.d nv_peer_mem defaults
-
-- name: configure default ubuntu repos
-  template:
-    src: sources.list.j2
-    dest: /etc/apt/sources.list
-    mode: 0644
 
 - name: enable nvidia fabricmanager
   systemd:
