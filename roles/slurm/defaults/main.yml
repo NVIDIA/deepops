@@ -5,7 +5,7 @@ hwloc_build_dir: /opt/deepops/build/hwloc
 pmix_build_dir: /opt/deepops/build/pmix
 
 slurm_workflow_build: yes
-slurm_version: 20.11.3
+slurm_version: 20.11.7
 slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
 slurm_build_make_clean: no
 slurm_build_dir_cleanup: no
