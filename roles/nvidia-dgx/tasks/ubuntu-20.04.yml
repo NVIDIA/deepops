@@ -162,31 +162,28 @@
     path: /etc/modules
     line: ipmi_devintf
 
+- name: populate service facts
+  service_facts:
+
 - name: enable services
   systemd:
     name: "{{ item }}"
     state: started
     enabled: yes
     daemon_reload: yes
-  with_items:
-    - openibd
-    - dcgm
-    - nvidia-dcgm
-    - nvidia-persistenced
-    - nvidia-fabricmanager
+  loop:
+    - openibd.service
+    - dcgm.service
+    - nvidia-dcgm.service
+    - nvidia-persistenced.service
+    - nvidia-fabricmanager.service
+  when: item in services
 
 - name: enable PXE/UEFI on MLNX interfaces
   command: /usr/sbin/mlnx_pxe_setup.bash
 
 - name: configure nv peer mem service startup
   command: /usr/sbin/update-rc.d nv_peer_mem defaults
-
-- name: enable nvidia fabricmanager
-  systemd:
-    name: nvidia-fabricmanager
-    state: started
-    enabled: yes
-  when: ansible_product_name is search("DGXA100")
 
 - name: disable srp services
   systemd:
@@ -211,15 +208,6 @@
     dest: /etc/cachefilesd.conf
 
 # Misc stuff
-- name: enable and start {{ item }} service
-  systemd:
-    name: "{{ item }}"
-    state: started
-    enabled: yes
-  with_items:
-    - nvidia-persistenced
-    - dcgm
-
 - name: restart docker service just in case...
   systemd:
     name: docker

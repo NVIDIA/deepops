@@ -93,7 +93,8 @@ G_DGX_COMMON_PKGS:
   - wportuguese
   - wspanish
   - wswiss
-  - cuda-compute-repodatacenter-gpu-manager
+  - cuda-compute-repo
+  - datacenter-gpu-manager
   - dgx-repo
   - libnvidia-nscq-450
   - linux-modules-nvidia-450-server-generic
