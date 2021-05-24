@@ -281,3 +281,11 @@ standalone_container_registry_port: "5000"
 # these if not specified.
 #docker_insecure_registries: ["<host>:<port>"]
 #docker_registry_mirrors: ["http://<host>:<port>"]
+
+################################################################################
+# Configuration for NGC-Ready playbok                                          #
+################################################################################
+ngc_ready_cuda_container: "nvcr.io/nvidia/cuda:10.1-base-ubuntu18.04"
+ngc_ready_pytorch: "nvcr.io/nvidia/pytorch:18.10-py3"
+ngc_ready_tensorflow: "nvcr.io/nvidia/tensorflow:18.10-py3"
+
