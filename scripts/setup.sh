@@ -131,11 +131,23 @@ if ! (cd "${SCRIPT_DIR}/.." && grep -i deepops README.md >/dev/null 2>&1 ) ; the
     fi
 fi
 
+# Copy default configuration
+if grep -i deepops README.md >/dev/null 2>&1 ; then
+    if [ ! -d "${CONFIG_DIR}" ] ; then
+        cp -rfp ./config.example "${CONFIG_DIR}"
+        echo "Copied default configuration to ${CONFIG_DIR}"
+    else
+        echo "Configuration directory '${CONFIG_DIR}' exists, not overwriting"
+    fi
+fi
+
 # Install Ansible Galaxy roles
 if command -v ansible-galaxy &> /dev/null ; then
     echo "Updating Ansible Galaxy roles..."
     as_user ansible-galaxy collection install --force -r roles/requirements.yml >/dev/null
     as_user ansible-galaxy role install --force -r roles/requirements.yml >/dev/null
+    as_user ansible-galaxy collection install --force -i -r config/requirements.yml >/dev/null
+    as_user ansible-galaxy role install --force -i -r config/requirements.yml >/dev/null
 else
     echo "ERROR: Unable to install Ansible Galaxy roles, 'ansible-galaxy' command not found"
 fi
@@ -145,16 +157,6 @@ if command -v git &> /dev/null ; then
     as_user git submodule update --init
 else
     echo "ERROR: Unable to update Git submodules, 'git' command not found"
-fi
-
-# Copy default configuration
-if grep -i deepops README.md >/dev/null 2>&1 ; then
-    if [ ! -d "${CONFIG_DIR}" ] ; then
-        cp -rfp ./config.example "${CONFIG_DIR}"
-        echo "Copied default configuration to ${CONFIG_DIR}"
-    else
-        echo "Configuration directory '${CONFIG_DIR}' exists, not overwriting"
-    fi
 fi
 
 # Add Ansible virtual env to PATH when using Bash
