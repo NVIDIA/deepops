@@ -100,7 +100,8 @@ besttime=9999999.0
 maxperf=0.0
 minperf=1.0e+12
 
-#for fn in os.listdir(expdir):
+##HPL_AI   WR01L8R2      288000   288     4     2              23.55              6.763e+05        11.53998      2          4.539e+05
+
 for fn in glob.glob(expdir + "/*.out", recursive=False):
         # Check 3 things, did the job complete, did the job pass or fail, what was the performance
         fncnt+=1
@@ -112,23 +113,32 @@ for fn in glob.glob(expdir + "/*.out", recursive=False):
         for l in file.readlines():
                 # Sometimes there may be a 2nd entry, only pull the last
                 explist[fn]=1
-                if re.search('^WR',l):
-                        cfg[fn]=l.split()[0]
-                        n[fn]=int(l.split()[1])
-                        nb[fn]=int(l.split()[2])
-                        p[fn]=int(l.split()[3])
-                        q[fn]=int(l.split()[4])
-                        time[fn]=float(l.split()[5])
+
+
+                if re.search('WR',l):
+                        # Check if this is regular HPL or HPL-AI
+                        off=0
+                        if (l.split()[0] == "HPL_AI"): off=1
+                        cfg[fn]=l.split()[0+off]
+                        n[fn]=int(l.split()[1+off])
+                        nb[fn]=int(l.split()[2+off])
+                        p[fn]=int(l.split()[3+off])
+                        q[fn]=int(l.split()[4+off])
+                        time[fn]=float(l.split()[5+off])
                         if time[fn] < besttime:
                                 besttime=time[fn]
-
-                        gflops[fn]=float(l.split()[6])
+               
+                        if (l.split()[0] == "HPL_AI"): 
+                            gflops[fn]=float(l.split()[10])
+                        else:
+                            gflops[fn]=float(l.split()[6])
                         if gflops[fn] < minperf:
                                 minperf=gflops[fn]
                         if gflops[fn] > maxperf:
                                 maxperf=gflops[fn]
 
-                if re.search('^\|\|Ax-b',l):
+                #if re.search('^\|\|Ax-b\|\|\/eps',l):
+                if re.search('\|\|Ax-b\|\|\_oo/\(eps',l):
                         if l.split()[3]=='PASSED':
                                 status[fn]='passed'
                         elif l.split()[3]=='FAILED':

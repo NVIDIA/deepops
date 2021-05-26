@@ -152,16 +152,16 @@ Deploy NetApp Trident for services that require persistent storage (such as Kube
 3. Verify that Trident is running.
 
    ```sh
-   ./tridentctl -n trident version
+   ./tridentctl -n deepops-trident version
    ```
 
-   Output of the above command should be:
+   Output of the above command should resemble the following:
 
    ```sh
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 20.04.0        | 20.04.0        |
+   | 21.01.2        | 21.01.2        |
    +----------------+----------------+
    ```
 

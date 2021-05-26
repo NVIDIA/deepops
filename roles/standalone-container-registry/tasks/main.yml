@@ -27,16 +27,10 @@
       - "{{ epel_package }}"
     state: present
   when: ansible_os_family == 'RedHat'
-- name: Install package dependencies
-  package:
+- name: Install python2 Docker dependencies
+  yum:
     name:
-      - python3-pip
-    state: present
-  when: ansible_os_family == "RedHat"
-- name: Install python3 dependencies
-  pip:
-    name:
-      - docker
+      - python-docker
     state: present
   when: ansible_os_family == "RedHat"
 

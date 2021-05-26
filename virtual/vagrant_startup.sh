@@ -123,7 +123,7 @@ esac
 # Set up Vagrantfile and start up the configuration in Vagrant
 if [ ${DEEPOPS_FULL_INSTALL} ]; then
   export CENTOS_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos${DEEPOPS_OS_VERSION}-full}"
-  export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu${DEPOPS_OS_VERSION}-full}"
+  export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu${DEEPOPS_OS_VERSION}-full}"
 else
   export CENTOS_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos}"
   export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu}"

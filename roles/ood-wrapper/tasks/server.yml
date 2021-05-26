@@ -53,8 +53,11 @@
 
 - name: install package dependency for htpasswd module
   package:
-    name: python-passlib
+    name: "{{ item }}"
     state: present
+  with_items:
+    - python-passlib
+    - python3-passlib
   tags:
     - configure
 
@@ -195,6 +198,13 @@
   template:
     src: bc_osc_codeserver/script.sh.erb.j2
     dest: "{{ ood_codeserver_app_dir }}/template/script.sh.erb"
+    mode: 0755
+  tags:
+    - configure
+
+- name: fix permissions on regex file
+  file:
+    path: "{{ ood_base_dir }}/ood_auth_map/bin/ood_auth_map.regex"
     mode: 0755
   tags:
     - configure

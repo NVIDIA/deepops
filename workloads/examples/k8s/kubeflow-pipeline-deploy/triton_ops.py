@@ -4,9 +4,9 @@ from kubernetes import client as k8s_client
 import yaml
 
 
-__TRTIS_CONTAINER_VERSION__ = 'nvcr.io/nvidia/tensorrtserver:20.02-py3'
-__TRTIS_POD_LABEL__ = 'trtis-kubeflow'
-__TRTIS_SERVICE_MANIFEST___ = '''
+__TRITON_CONTAINER_VERSION__ = 'nvcr.io/nvidia/tritonserver:21.02-py3'
+__TRITON_POD_LABEL__ = 'triton-kubeflow'
+__TRITON_SERVICE_MANIFEST___ = '''
 apiVersion: v1
 kind: Service
 metadata:
@@ -19,13 +19,17 @@ spec:
       protocol: TCP
       port: 8000
       targetPort: 8000
+      nodePort: 30800
     - name: grpc
       port: 8001
       targetPort: 8001
+      nodePort: 30801
     - name: metrics
       port: 8002
       targetPort: 8002
-'''.format(__TRTIS_POD_LABEL__, __TRTIS_POD_LABEL__)
+      nodePort: 30802
+  type: NodePort
+'''.format(__TRITON_POD_LABEL__, __TRITON_POD_LABEL__)
 
 
 class ObjectDict(dict):
@@ -36,30 +40,66 @@ class ObjectDict(dict):
       raise AttributeError("No such attribute: " + name)
 
 
-class TrtisDeploy(dsl.ContainerOp):
-  '''Deploy TRTIS'''
+class TritonVolume(dsl.ResourceOp):
+  '''Initialize a  volume if one does not exist'''
+  def __init__(self, name, pv_name):
+    super(TritonVolume, self).__init__(
+      k8s_resource=k8s_client.V1PersistentVolumeClaim(
+      api_version="v1", kind="PersistentVolumeClaim",
+      metadata=k8s_client.V1ObjectMeta(name=pv_name),
+      spec=k8s_client.V1PersistentVolumeClaimSpec(
+          access_modes=['ReadWriteMany'], resources=k8s_client.V1ResourceRequirements(
+              requests={'storage': '2000Gi'}),
+          storage_class_name="nfs-client")),
+      action='apply',
+      name=name
+      )
+    name=name
+
+
+class TritonDownload(dsl.ContainerOp):
+  '''Download example Triton models and move them into the PV'''
   def __init__(self, name, models):
     cmd = ["/bin/bash", "-cx"]
-    arguments = ["echo Deploying: " + str(models) + "TODO;ls /data; ls /results; ls /checkpoints; trtserver --model-store=" + models]
+    arguments = ["cd /tmp; git clone https://github.com/triton-inference-server/server.git; " \
+                "cd server/docs/examples; ./fetch_models.sh; cd model_repository; cp -a . " + str(models)]
 
-    super(TrtisDeploy, self).__init__(
+    super(TritonDownload, self).__init__(
       name=name,
-      image=__TRTIS_CONTAINER_VERSION__,
+      image=__TRITON_CONTAINER_VERSION__,
       command=cmd,
       arguments=arguments,
       file_outputs={}
       )
 
-    self.pod_labels['app'] = __TRTIS_POD_LABEL__
+    self.pod_labels['app'] = __TRITON_POD_LABEL__
     name=name
 
 
-class TrtisService(dsl.ResourceOp):
-  '''Launch TRTIS Service'''
+class TritonDeploy(dsl.ContainerOp):
+  '''Deploy Triton'''
+  def __init__(self, name, models):
+    cmd = ["/bin/bash", "-cx"]
+    arguments = ["echo Deploying: " + str(models) + ";ls /data; ls /results; ls /checkpoints; tritonserver --model-store=" + models]
+
+    super(TritonDeploy, self).__init__(
+      name=name,
+      image=__TRITON_CONTAINER_VERSION__,
+      command=cmd,
+      arguments=arguments,
+      file_outputs={}
+      )
+
+    self.pod_labels['app'] = __TRITON_POD_LABEL__
+    name=name
+
+
+class TritonService(dsl.ResourceOp):
+  '''Launch Triton Service'''
   def __init__(self, name):
 
-    super(TrtisService, self).__init__(
+    super(TritonService, self).__init__(
       name=name,
-      k8s_resource=yaml.load(__TRTIS_SERVICE_MANIFEST___),
+      k8s_resource=yaml.load(__TRITON_SERVICE_MANIFEST___),
       action='create'
 )

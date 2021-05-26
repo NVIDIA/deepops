@@ -216,17 +216,6 @@ for(int i = 0; i < axes.size(); i++) {
               '''
           }
         }
-        // TODO: There seems to be a bug here if tasks fail, they do not get cleaned up properly
-        // XXX: Not sure if the cleanup should live inside or outside of the lock. Also, this doesn't seem to work.
-        post {
-          always {
-            echo "Final cleanup"
-            sh '''
-              pwd
-              cd virtual && ./vagrant_shutdown.sh
-            '''
-          }
-        }
       }
     }
   }
