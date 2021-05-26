@@ -23,8 +23,9 @@ spec:
       nodeSelector:
         hardware-type: NVIDIAGPU
       containers:
-      - image: "nvcr.io/nvidia/k8s/dcgm-exporter:2.0.13-2.1.2-ubuntu20.04"
+      - image: "nvcr.io/nvidia/k8s/dcgm-exporter:2.1.8-2.4.0-rc.2-ubuntu20.04"
         name: nvidia-dcgm-exporter
+        command: ["/usr/bin/dcgm-exporter", "-f", "/etc/dcgm-config/dcgm-custom-metrics.csv"]
         env:
         - name: "DCGM_EXPORTER_LISTEN"
           value: ":9400"
@@ -33,14 +34,22 @@ spec:
         securityContext:
           runAsNonRoot: false
           runAsUser: 0
+          capabilities:
+            add: ["SYS_ADMIN"]
         volumeMounts:
         - name: "pod-gpu-resources"
           readOnly: true
           mountPath: "/var/lib/kubelet/pod-resources"
+        - name: "dcgm-config"
+          readOnly: true
+          mountPath: "/etc/dcgm-config"
       volumes:
       - name: "pod-gpu-resources"
         hostPath:
           path: "/var/lib/kubelet/pod-resources"
+      - name: "dcgm-config"
+        configMap:
+          name: "dcgm-custom-metrics"
       tolerations:
         - effect: NoSchedule
           operator: Exists
