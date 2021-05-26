@@ -26,6 +26,11 @@ For detailed help or guidance, read through our [Getting Started Guide](docs/) o
 
 ## Deployment Options
 
+### Supported Ansible versions
+
+DeepOps supports using Ansible 2.9.x.
+Ansible 2.10.x and newer are not currently supported.
+
 ### Supported distributions
 
 DeepOps currently supports the following Linux distributions:

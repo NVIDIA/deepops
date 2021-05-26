@@ -26,6 +26,13 @@
   pip:
     name: docker
 
+- name: Install python2 Docker dependencies
+  yum:
+    name:
+      - python-docker
+    state: present
+  when: ansible_os_family == "RedHat"
+
 - name: create a persistent docker volume for metrics
   docker_volume:
     name: "{{ prometheus_docker_volume_name }}"

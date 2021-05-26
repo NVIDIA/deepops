@@ -26,6 +26,12 @@ pipeline {
             bash -x ./workloads/jenkins/scripts/munge-files.sh
           '''
 
+          echo "Tear down any Vagrant that was not cleaned up"
+          sh '''
+	    pwd
+	    cd virtual && ./vagrant_shutdown.sh || true
+          '''
+
           echo "Vagrant Up"
           sh '''
             bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
