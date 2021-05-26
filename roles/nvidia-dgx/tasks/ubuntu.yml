@@ -8,17 +8,17 @@
 
 - name: include 18.04 specific variables for DGX OS 4
   include_vars: ubuntu-18.04.yml
-  when: ansible_distribution_version = "18.04"
+  when: ansible_distribution_version == "18.04"
 
 - name: include DGXA100 specific variables for DGX OS 4.99
   include_vars: dgxa100.yml
   when:
-    - ansible_distribution_version = "18.04"
+    - ansible_distribution_version == "18.04"
     - ansible_product_name is search("DGXA100")
 
 - name: include 20.04 specific variables for DGX OS 5
   include_vars: ubuntu-20.04.yml
-  when: ansible_distribution_version = "20.04"
+  when: ansible_distribution_version == "20.04"
 
 - name: install dmidecode
   apt:
@@ -84,7 +84,7 @@
       DGX_SWBUILD_DATE="{{ DGX_SWBUILD_DATE }}"
       DGX_SWBUILD_VERSION="{{ DGX_SWBUILD_VERSION }}"
       DGX_COMMIT_ID="{{ DGX_COMMIT_ID }}"
-  when: ansible_distribution_version = "18.04"
+  when: ansible_distribution_version == "18.04"
 
 # Repos and installs
 - name: remove ubuntu nvidia driver ppa if installed
@@ -123,27 +123,27 @@
 - name: add DGX repo keys for DGX OS 4
   apt:
     deb: "{{ nvidia_dgx_ubuntu_gpgkey }}"
-  when: ansible_distribution_version = "18.04"
+  when: ansible_distribution_version == "18.04"
 
 - name: add DGX repo key for DGX OS 5
   apt_key:
     url: "{{ nvidia_dgx_os5_ubuntu_gpgkey }}"
     state: present
-  when: ansible_distribution_version = "20.04"
+  when: ansible_distribution_version == "20.04"
 
 - name: add DGX repo for DGX OS 4
   template:
     src: dgx.list.j2
     dest: /etc/apt/sources.list.d/dgx.list
     mode: 0644
-  when: ansible_distribution_version = "18.04"
+  when: ansible_distribution_version == "18.04"
 
 - name: add DGX repo for DGX OS 5
   template:
     src: dgxos5.list.j2
     dest: /etc/apt/sources.list.d/dgx-temp.list
     mode: 0644
-  when: ansible_distribution_version = "20.04"
+  when: ansible_distribution_version == "20.04"
 
 - name: update apt cache
   apt:
@@ -154,14 +154,14 @@
     name: dgx-bionic-r418+cuda10.1-repo
     update_cache: yes
     dpkg_options: "force-confdef,force-confold"
-  when: ansible_distribution_version = "18.04"
+  when: ansible_distribution_version == "18.04"
 
 - name: add DGX cuda 11.0 repo for DGX OS 4
   apt:
     name: dgx-bionic-r450+cuda11.0-repo
     update_cache: yes
     dpkg_options: "force-confdef,force-confold"
-  when: ansible_distribution_version = "18.04"
+  when: ansible_distribution_version == "18.04"
 
 - name: add DGXA100 repo for DGX OS 4
   apt:
@@ -169,7 +169,7 @@
     update_cache: yes
     dpkg_options: "force-confdef,force-confold"
   when:
-    - ansible_distribution_version = "18.04"
+    - ansible_distribution_version == "18.04"
     - ansible_product_name is search("DGXA100")
 
 - name: install prerequisites for DGX OS 5
@@ -180,7 +180,7 @@
   with_items:
     - "{{ G_PREREQS }}"
     - "{{ G_SETUP_PKGS }}"
-  when: ansible_distribution_version = "20.04"
+  when: ansible_distribution_version == "20.04"
 
 - name: install DGX repo package for DGX OS 5
   apt:
@@ -189,13 +189,13 @@
     dpkg_options: "force-confdef,force-confold"
   with_items:
     - "{{ G_DGX_REPO_PKG }}"
-  when: ansible_distribution_version = "20.04"
+  when: ansible_distribution_version == "20.04"
 
 - name: remove temporary repo package for DGX OS 5
   file:
     path: /etc/apt/sources.list.d/dgx-temp.list
     state: absent
-  when: ansible_distribution_version = "20.04"
+  when: ansible_distribution_version == "20.04"
 
 - name: install more packages for DGX OS 5
   apt:
@@ -204,7 +204,7 @@
     dpkg_options: "force-confdef,force-confold"
   with_items:
     - "{{ G_PKGS_DEFAULT }}"
-  when: ansible_distribution_version = "20.04"
+  when: ansible_distribution_version == "20.04"
 
 - name: install DGX-1 packages for DGX OS 4
   apt:
@@ -214,7 +214,7 @@
   with_items:
     - "{{ PKGS_DGX1_ALL }}"
   when:
-    - ansible_distribution_version = "18.04"
+    - ansible_distribution_version == "18.04"
     - ansible_product_name is search("DGX-1")
   notify:
     - restart docker
@@ -228,7 +228,7 @@
     - "{{ G_DGX_COMMON_PKGS }}"
     - "{{ G_DGX1_PKGS }}"
   when:
-    - ansible_distribution_version = "20.04"
+    - ansible_distribution_version == "20.04"
     - ansible_product_name is search("DGX-1")
   notify:
     - restart docker
@@ -241,7 +241,7 @@
   with_items:
     - "{{ PKGS_DGX2_ALL }}"
   when:
-    - ansible_distribution_version = "18.04"
+    - ansible_distribution_version == "18.04"
     - ansible_product_name is search("DGX-2")
   notify:
     - restart docker
@@ -255,7 +255,7 @@
     - "{{ G_DGX_COMMON_PKGS }}"
     - "{{ G_DGX2_PKGS }}"
   when:
-    - ansible_distribution_version = "20.04"
+    - ansible_distribution_version == "20.04"
     - ansible_product_name is search("DGX-2")
   notify:
     - restart docker
@@ -268,7 +268,7 @@
   with_items:
     - "{{ PKGS_DGXA100_ALL }}"
   when:
-    - ansible_distribution_version = "18.04"
+    - ansible_distribution_version == "18.04"
     - ansible_product_name is search("DGXA100")
   notify:
     - restart docker
@@ -282,7 +282,7 @@
     - "{{ G_DGX_COMMON_PKGS }}"
     - "{{ G_DGX_A100_PKGS }}"
   when:
-    - ansible_distribution_version = "20.04"
+    - ansible_distribution_version == "20.04"
     - ansible_product_name is search("DGXA100")
   notify:
     - restart docker
@@ -294,21 +294,21 @@
     update_cache: yes
   with_items:
     - "{{ dgx_extra_packages }}"
-  when: ansible_distribution_version = "18.04"
+  when: ansible_distribution_version == "18.04"
 
 - name: touch grub ipmisol.cfg for DGX OS 4
   file:
     path: /etc/default/grub.d/ipmisol.cfg
     state: touch
     mode: u=rw,g=r,o=r
-  when: ansible_distribution_version = "18.04"
+  when: ansible_distribution_version == "18.04"
 
 - name: add DGX IPMI SOL package for DGX OS 4
   apt:
     name: dgx-ipmisol
     state: present
   when:
-    - ansible_distribution_version = "18.04"
+    - ansible_distribution_version == "18.04"
     - dgx_name is search("DGX")
 
 - name: disable release update prompt for DGX OS 5
@@ -316,7 +316,7 @@
     path: /etc/update-manager/release-upgrades
     regexp: '^Prompt=.*'
     line: Prompt=never
-  when: ansible_distribution_version = "20.04"
+  when: ansible_distribution_version == "20.04"
 
 - name: add ipmi kernel module at boot
   lineinfile:
@@ -342,7 +342,7 @@
 
 - name: enable PXE/UEFI on MLNX interfaces for DGX OS 5
   command: /usr/sbin/mlnx_pxe_setup.bash
-  when: ansible_distribution_version = "20.04"
+  when: ansible_distribution_version == "20.04"
 
 - name: configure nv peer mem service startup
   command: /usr/sbin/update-rc.d nv_peer_mem defaults
@@ -352,7 +352,7 @@
     src: sources.list.j2
     dest: /etc/apt/sources.list
     mode: 0644
-  when: ansible_distribution_version = "18.04"
+  when: ansible_distribution_version == "18.04"
 
 - name: disable srp services
   systemd:
