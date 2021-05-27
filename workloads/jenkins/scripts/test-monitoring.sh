@@ -62,6 +62,10 @@ if [ "${pass}" != "true" ]; then
   exit 1
 fi
 
+# Get some debug for Pods that did/didn't come up and verify DCGM metrics
+kubectl get all -n monitoring
+bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh
+
 # Delete Monitoring
 source ./scripts/k8s/deploy_monitoring.sh -d && exit 0
 

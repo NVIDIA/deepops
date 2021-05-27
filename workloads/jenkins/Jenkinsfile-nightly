@@ -150,6 +150,11 @@ pipeline {
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
           '''
 
+          echo "Test DCGM metrics"
+          sh '''
+             timeout 120 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh
+          '''
+
           echo "Reset repo and unmunge files"
           sh '''
             git reset --hard
@@ -254,6 +259,11 @@ pipeline {
           echo "Test GPU job"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+          '''
+
+          echo "Test DCGM metrics"
+          sh '''
+             timeout 120 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh
           '''
           
           echo "Test Enroot"
@@ -384,6 +394,11 @@ pipeline {
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
           '''
+
+          echo "Test DCGM metrics"
+          sh '''
+             timeout 120 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh
+          '''
           
           echo "Test Enroot"
           sh '''
@@ -500,6 +515,11 @@ pipeline {
           echo "Test GPU job"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+          '''
+
+          echo "Test DCGM metrics"
+          sh '''
+             timeout 120 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh
           '''
         }
       }
