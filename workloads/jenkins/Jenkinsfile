@@ -3,6 +3,7 @@ pipeline {
   environment {
     DEEPOPS_FULL_INSTALL = ''
     DEEPOPS_VAGRANT_OS = 'ubuntu'
+    DEEPOPS_OS_VERSION = '18.04'
   }
   stages {
     stage('Stop Any Old Builds') {
