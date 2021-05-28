@@ -29,6 +29,10 @@ done
 # Helm
 helm list -aA > ${logdir}/helm-list.log
 
+# DCGM example output / metrics
+# Collect metrics from all nodes for debug
+ansible kube-node -vv -bm raw -a "curl http://127.0.0.1:9400/metrics" > ${logdir}/dcgm-metrics.log
+
 # Packaging
 name="config/k8s-debug-${timestamp}.tgz"
 tar -zcf ${name} ${logdir}
