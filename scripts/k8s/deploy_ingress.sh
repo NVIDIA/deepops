@@ -55,5 +55,5 @@ fi
 # Set up the ingress controller
 if ! helm status "${app_name}" >/dev/null 2>&1; then
 	helm repo update
-	helm install --wait "${app_name}" "${helm_arguments[@]}" ingress-nginx/ingress-nginx --create-namespace --namespace deepops-ingress
+	helm upgrade --install --wait "${app_name}" "${helm_arguments[@]}" ingress-nginx/ingress-nginx --create-namespace --namespace deepops-ingress
 fi
