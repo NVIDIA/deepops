@@ -70,7 +70,7 @@ set -e # The loop is done, and we got debug if it failed, re-enable fail on erro
 
 # Get some debug for Pods that did/didn't come up and verify DCGM metrics
 kubectl get all -n monitoring
-bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh kube-node
+bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node # We use slurm-node here because it is GPU only, kube-node includes the mgmt plane
 
 # Delete Monitoring
 ./scripts/k8s/deploy_monitoring.sh -d
