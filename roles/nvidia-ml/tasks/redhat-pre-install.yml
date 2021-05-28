@@ -1,4 +1,9 @@
 ---
+- name: trust GPG key for EPEL
+  rpm_key:
+    key: "{{ epel_key_url }}"
+    state: present
+
 - name: add epel repo
   yum:
     name: 

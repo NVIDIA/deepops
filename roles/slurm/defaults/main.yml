@@ -1,4 +1,5 @@
 epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+epel_key_url: "https://getfedora.org/static/fedora.gpg"
 
 slurm_build_dir: /opt/deepops/build/slurm
 hwloc_build_dir: /opt/deepops/build/hwloc

@@ -21,10 +21,16 @@
   when: ansible_distribution == 'Ubuntu'
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
+- name: trust GPG key for EPEL
+  rpm_key:
+    key: "{{ epel_key_url }}"
+    state: present
+  when: ansible_os_family == "RedHat"
+
 - name: install EPEL for CentOS
   yum:
     name: "{{ epel_package }}"
-  when: ansible_distribution == "CentOS"
+  when: ansible_os_family == "RedHat"
 
   # TODO: Verify that RHEL  does not require venv
 - name: install openshift python client for k8s_raw module
