@@ -39,6 +39,13 @@ set -e # The loop is done, and we got debug if it failed, re-enable fail on erro
 
 # Delete Monitoring (this should take ~30 seconds)
 ./scripts/k8s/deploy_monitoring.sh -d
+set +e
+curl -s --raw -L "${prometheus_url}"     | grep Prometheus && \
+  curl -s --raw -L "${grafana_url}"      | grep Grafana && \
+  curl -s --raw -L "${alertmanager_url}" | grep Alertmanager && \
+  echo "Monitoring URLs are all responding when they should have been deleted" && \
+  exit 1
+set -e
 
 # Deploy Monitoring without persistent data (this should be faster because containers have already been downloaded)
 source ./scripts/k8s/deploy_monitoring.sh -x
@@ -74,3 +81,11 @@ bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node # We use slu
 
 # Delete Monitoring
 ./scripts/k8s/deploy_monitoring.sh -d
+
+set +e
+curl -s --raw -L "${prometheus_url}"     | grep Prometheus && \
+  curl -s --raw -L "${grafana_url}"      | grep Grafana && \
+  curl -s --raw -L "${alertmanager_url}" | grep Alertmanager && \
+  echo "Monitoring URLs are all responding when they should have been deleted" && \
+  exit 1
+set -e
