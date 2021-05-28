@@ -12,6 +12,7 @@ In particular, this directory includes:
 - `config/group_vars/all.yml`: An Ansible [variables file](https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html) that contains variables we expect to work for all hosts
 - `config/group_vars/k8s-cluster.yml`: Variables specific to deploying Kubernetes clusters
 - `config/group_vars/slurm-cluster.yml`: Variables specific to deploying Slurm clusters
+- `config/env.sh`: Global variables that override default variable values for all `sh` files in `scripts/*`.
 
 It's expected that most DeepOps deployments will make changes to these files!
 The inventory file will be different for every cluster;
