@@ -134,7 +134,7 @@ function setup_prom_monitoring() {
         kubectl create ns monitoring
     fi
     if ! helm status -n monitoring kube-prometheus-stack >/dev/null 2>&1 ; then
-        helm install \
+        helm upgrade --install \
             kube-prometheus-stack \
             prometheus-community/kube-prometheus-stack \
             --version "${HELM_PROMETHEUS_CHART_VERSION}" \
