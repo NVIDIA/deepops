@@ -37,11 +37,12 @@ function help_me() {
     echo "-p      Print monitoring URLs."
     echo "-d      Delete monitoring namespace and crds. Note, this may delete PVs storing prometheus metrics."
     echo "-x      Disable persistent data, this deploys Prometheus with no PV backing resulting in a loss of data across reboots."
+    echo "-w      Wait and poll the grafana/prometheus/alertmanager URLs until they properly return."
     echo "delete  Legacy positional argument for delete. Same as -d flag."
 }
 
 function get_opts() {
-    while getopts "hdpx" option; do
+    while getopts "hdpxw" option; do
         case $option in
             d)
                 delete_monitoring
@@ -51,13 +52,13 @@ function get_opts() {
                 help_me
                 exit 1
                 ;;
-            p)
-                print_monitoring
-                exit 0
-                ;;
             x)
 		PROMETHEUS_YAML_CONFIG="${PROMETHEUS_YAML_NO_PERSIST_CONFIG}"
 		PROMETHEUS_NO_PERSIST="true"
+                ;;
+            w)
+                poll_monitoring_url
+                exit 0
                 ;;
             * )
                 # Leave this here to preserve legacy positional args behavior
@@ -238,6 +239,20 @@ function install_dependencies() {
             exit 1
 	fi
     fi
+}
+
+
+function poll_monitoring_url() {
+    print_monitoring
+
+    while true; do
+        curl -s --raw -L "${prometheus_url}"     | grep Prometheus && \
+        curl -s --raw -L "${grafana_url}"      | grep Grafana && \
+        curl -s --raw -L "${alertmanager_url}" | grep Alertmanager && \
+        echo "Monitoring URLs are all responding" && \
+        break
+        sleep 10
+    done
 }
 
 
