@@ -12,6 +12,13 @@ DCGM_EXPORTER_PORT=9400
 # Run DCGM metric checks against all nodes in the group passed in (kube-node or slurm-node)
 group="${1}"
 
+# Collect metrics from all nodes for debug
+ansible ${group} -vv -m raw \
+  -b -i "virtual/config/inventory" \
+  -e "@virtual/vars_files/virt_k8s.yml" \
+  ${ansible_extra_args} \
+  -a "curl http://127.0.0.1:${DCGM_EXPORTER_PORT}/metrics"
+
 # Get an up-to-date list of all DCGM metrics included in the default dashboard, with some awk magic
 dcgm_metrics=$(grep DCGM ${ROOT_DIR}/src/dashboards/gpu-dashboard.json   | awk -F\{ '{print $1}' | awk -F"DCGM" '{print "DCGM"$2}' | sort | uniq)
 
