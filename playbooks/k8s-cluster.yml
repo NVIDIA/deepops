@@ -232,6 +232,9 @@
     - name: Install Helm on admin node
       command: "sh {{ playbook_dir }}/../scripts/k8s/install_helm.sh"
       delegate_to: localhost
+    - name: Globally update the deprecated "stable" helm repo
+      command: "/usr/local/bin/helm repo add 'stable' 'https://charts.helm.sh/stable' --force-update"
+      delegate_to: localhost
     - name: kubeadm | Remove taint for master with node role
       command: "{{ artifacts_dir }}/kubectl --kubeconfig {{ artifacts_dir }}/admin.conf taint node {{ inventory_hostname }} node-role.kubernetes.io/master:NoSchedule-"
       delegate_to: localhost
