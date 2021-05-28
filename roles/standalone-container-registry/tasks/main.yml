@@ -15,6 +15,12 @@
     group: "root"
     mode: "0600"
 
+- name: trust GPG key for EPEL
+  rpm_key:
+    key: "{{ epel_key_url }}"
+    state: present
+  when: ansible_os_family == "RedHat"
+
 - name: Enable EPEL repo
   package:
     name:

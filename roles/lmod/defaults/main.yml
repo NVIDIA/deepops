@@ -6,3 +6,4 @@ sm_module_path: "{{ sm_module_root }}/all"
 sm_software_path: "{{ sm_prefix }}/software"
 
 epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+epel_key_url: "https://getfedora.org/static/fedora.gpg"
