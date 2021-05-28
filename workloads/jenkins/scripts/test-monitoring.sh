@@ -34,7 +34,7 @@ fi
 # TODO: Create a test to verify storage is persisting
 
 # Delete Monitoring (this should take ~30 seconds)
-source ./scripts/k8s/deploy_monitoring.sh -d || exit 1
+./scripts/k8s/deploy_monitoring.sh -d || exit 1
 
 # Deploy Monitoring without persistent data (this should be faster because containers have already been downloaded)
 source ./scripts/k8s/deploy_monitoring.sh -x
@@ -67,7 +67,7 @@ kubectl get all -n monitoring
 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh
 
 # Delete Monitoring
-source ./scripts/k8s/deploy_monitoring.sh -d && exit 0
+./scripts/k8s/deploy_monitoring.sh -d && exit 0
 
 # Monitoring deployment failure
 echo "Monitoring did not come up in time"
