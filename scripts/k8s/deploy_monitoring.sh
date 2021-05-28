@@ -78,6 +78,8 @@ function delete_monitoring() {
     helm uninstall kube-prometheus-stack -n monitoring
     helm uninstall "${ingress_name}"
     helm uninstall "nginx-ingress" # Delete legacy naming
+    helm uninstall "ingress-nginx" # Delete legacy namespace
+    helm uninstall "ingress-nginx" -n deepops-ingress
     kubectl delete crd prometheuses.monitoring.coreos.com
     kubectl delete crd prometheusrules.monitoring.coreos.com
     kubectl delete crd servicemonitors.monitoring.coreos.com
