@@ -35,6 +35,9 @@ if [ "${pass}" != "true" ]; then
 fi
 set -e # The loop is done, and we got debug if it failed, re-enable fail on error
 
+# Verify that the polling option agrees that things are up
+./scripts/k8s/deploy_monitoring.sh -w
+
 # TODO: Create a test to verify storage is persisting
 
 # Delete Monitoring (this should take ~30 seconds)
