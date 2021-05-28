@@ -157,6 +157,15 @@ Next, shutdown the virtual cluster (if it is running) and startup vagrant + run 
 
 The default Vagrantfiles create VMs that are very minimal in terms of resources to maximize where a virtual DeepOps cluster can be run. To run resource-intensive Kubernetes applications such as Kubeflow, it's necessary to increase some of the settings.
 
+### Specify the cluster Operating System
+
+By default, all virtual nodes will deploy with Ubuntu 18.04. This can be changed by overriding the environment variables `DEEPOPS_VAGRANT_OS` and `DEEPOPS_OS_VERSION`. Supported OS versions are Ubuntu 18.04, Ubuntu 20.04, CentOS 7, and CentOS 8.
+
+```sh
+export DEEPOPS_VAGRANT_OS=centos
+export DEEPOPS_OS_VERSION=8
+```
+
 ### Increase CPUs, memory, and GPUs
 
 In the Vagrantfile of choice (Vagrantfile-<os_type>), make the following modifications...

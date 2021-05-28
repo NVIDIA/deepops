@@ -11,7 +11,7 @@
 //   Otherwise, the default in Jenkins should match the default here and that is used
 Map matrix_axes = [
   DEEPOPS_VAGRANT_OS: ['centos', 'ubuntu'],
-  DEEPOPS_OS_VERSION: ['', '18.04', '20.04', '7', '8'],
+  DEEPOPS_OS_VERSION: ['18.04', '20.04', '7', '8'],
   DEEPOPS_FULL_INSTALL: ['', 'multinode'],
   DEEPOPS_DEPLOYMENT_PLATFORM: ['slurm', 'k8s'],
   DEEPOPS_BRANCH: ['master'],
