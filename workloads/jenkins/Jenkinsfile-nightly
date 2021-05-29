@@ -155,7 +155,7 @@ pipeline {
 
           echo "Test DCGM metrics"
           sh '''
-             timeout 120 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
+             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
           '''
 
           echo "Reset repo and unmunge files"
@@ -267,7 +267,7 @@ pipeline {
 
           echo "Test DCGM metrics"
           sh '''
-             timeout 120 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
+             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
           '''
           
           echo "Test Enroot"
@@ -401,7 +401,7 @@ pipeline {
 
           echo "Test DCGM metrics"
           sh '''
-             timeout 120 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
+             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
           '''
           
           echo "Test Enroot"
@@ -523,7 +523,7 @@ pipeline {
 
           echo "Test DCGM metrics"
           sh '''
-             timeout 120 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
+             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
           '''
         }
       }
