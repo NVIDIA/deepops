@@ -18,32 +18,33 @@ timeout=500
 time=0
 set +e # This polling is expected to fail, so remove the -e flag for the loop
 while [ ${time} -lt ${timeout} ]; do
-# Collect metrics from all nodes for debug
-  ansible ${group} -vv -m raw \
-    -u vagrant \
-    ${ansible_extra_args} \
-    -b -i "virtual/config/inventory" \
-    -a "curl http://127.0.0.1:${DCGM_EXPORTER_PORT}/metrics | grep DCGM" && break
+    # Collect metrics from the first GPU node
+    if [ ${DEEPOPS_FULL_INSTALL} ]; then
+        curl http://10.0.0.5${GPU01}:${DCGM_EXPORTER_PORT}/metrics | grep DCGM && \
+        curl http://10.0.0.5${GPU02}:${DCGM_EXPORTER_PORT}/metrics | grep DCGM && break
+    else
+        curl http://10.0.0.5${GPU01}:${DCGM_EXPORTER_PORT}/metrics | grep DCGM && break
+    fi
     let time=$time+5
     sleep 5
 done
 set -e
 
 # Collect metrics from all nodes for debug
-ansible ${group} -vv -m raw \
-  -b -i "virtual/config/inventory" \
-  -u vagrant \
-  ${ansible_extra_args} \
-  -a "curl http://127.0.0.1:${DCGM_EXPORTER_PORT}/metrics"
+curl http://10.0.0.5${GPU01}:${DCGM_EXPORTER_PORT}/metrics
+if [ ${DEEPOPS_FULL_INSTALL} ]; then
+    curl http://10.0.0.5${GPU02}:${DCGM_EXPORTER_PORT}/metrics
+fi
 
 # Get an up-to-date list of all DCGM metrics included in the default dashboard, with some awk magic
 dcgm_metrics=$(grep DCGM ${ROOT_DIR}/src/dashboards/gpu-dashboard.json   | awk -F\{ '{print $1}' | awk -F"DCGM" '{print "DCGM"$2}' | sort | uniq)
 
 # Verify all DCGM metrics from the default dashboard are being returned by the DCGM-exporter
 for metric in ${dcgm_metrics}; do
-  ansible ${group} -vv -m raw \
-    -b -i "virtual/config/inventory" \
-    -u vagrant \
-    ${ansible_extra_args} \
-    -a "curl http://127.0.0.1:${DCGM_EXPORTER_PORT}/metrics | grep ${metric}" # TODO: optimize this by doing a single curl call per metric
+    if [ ${DEEPOPS_FULL_INSTALL} ]; then
+        curl http://10.0.0.5${GPU01}:${DCGM_EXPORTER_PORT}/metrics | grep ${metric} && \
+        curl http://10.0.0.5${GPU02}:${DCGM_EXPORTER_PORT}/metrics | grep ${metric}
+    else
+        curl http://10.0.0.5${GPU01}:${DCGM_EXPORTER_PORT}/metrics | grep ${metric} # TODO: Optimize this by doing a single curl call per metric
+    fi
 done
