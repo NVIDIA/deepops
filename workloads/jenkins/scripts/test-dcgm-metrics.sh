@@ -20,7 +20,7 @@ set +e # This polling is expected to fail, so remove the -e flag for the loop
 while [ ${time} -lt ${timeout} ]; do
 # Collect metrics from all nodes for debug
   ansible ${group} -vv -m raw \
-    -e "@virtual/vars_files/virt_k8s.yml" \
+    -u vagrant \
     ${ansible_extra_args} \
     -b -i "virtual/config/inventory" \
     -a "curl http://127.0.0.1:${DCGM_EXPORTER_PORT}/metrics | grep DCGM" && break
@@ -32,7 +32,7 @@ set -e
 # Collect metrics from all nodes for debug
 ansible ${group} -vv -m raw \
   -b -i "virtual/config/inventory" \
-  -e "@virtual/vars_files/virt_k8s.yml" \
+  -u vagrant \
   ${ansible_extra_args} \
   -a "curl http://127.0.0.1:${DCGM_EXPORTER_PORT}/metrics"
 
@@ -43,7 +43,7 @@ dcgm_metrics=$(grep DCGM ${ROOT_DIR}/src/dashboards/gpu-dashboard.json   | awk -
 for metric in ${dcgm_metrics}; do
   ansible ${group} -vv -m raw \
     -b -i "virtual/config/inventory" \
-    -e "@virtual/vars_files/virt_k8s.yml" \
+    -u vagrant \
     ${ansible_extra_args} \
     -a "curl http://127.0.0.1:${DCGM_EXPORTER_PORT}/metrics | grep ${metric}" # TODO: optimize this by doing a single curl call per metric
 done
