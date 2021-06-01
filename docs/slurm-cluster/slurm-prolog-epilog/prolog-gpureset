@@ -1,0 +1,27 @@
+#
+# Uncomment the following for a full GPU reset
+# Can be used to reset the GPU HW state in situations
+# that would otherwise require a machine reboot.
+# Typically useful if a double bit ECC error has
+# occurred.
+# Reset operations are not guarenteed to work in
+# all cases and should be used with caution.
+#
+#GPUCOUNT=`nvidia-smi -L | wc -l`
+#GPUMAXINDEX=`expr $GPUCOUNT - 1`
+#for i in `seq 0 $GPUMAXINDEX`; do
+#	e=`nvidia-smi -r -i $i 2>&1`
+#        if [ $? -ne 0 ]; then
+#            logger -t PROLOG "WARNING! GPU $i reset failed"
+#            logger -t PROLOG "GPU $i reset error: $e"
+#        fi
+#        sleep 1
+#done
+
+# Reset application clocks
+nvidia-smi -rac 2>/dev/null
+nvidia-smi -acp 0 2>/dev/null
+
+# Make sure accounting is activated and clear current logs
+nvidia-smi -am 1 > /dev/null
+nvidia-smi -caa > /dev/null

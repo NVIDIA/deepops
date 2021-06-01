@@ -1,0 +1,13 @@
+#
+# Check that mounts exist
+#
+MOUNTS="/raid /gpfs/fs1"
+for i in $MOUNTS
+        do
+	mount | grep $i &> /dev/null
+	if [ $? -ne 0 ]
+		then
+		echo "$HOSTNAME is missing $i"
+		echo "scontrol update nodename=$HOSTNAME state=drain reason="Mount missing: $i""
+	fi
+done

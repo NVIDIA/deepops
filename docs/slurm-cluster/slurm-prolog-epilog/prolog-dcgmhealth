@@ -1,0 +1,19 @@
+#
+# Check that all GPUs are healthy via dcgm
+#
+if [ $NUMGPUS -gt 0 ]; then
+        echo "Execute dcgm health check"
+        GPULIST=`nvidia-smi | grep Tesla | awk -vORS=, '{print $2}' | sed 's/,$/\n/'`
+        rm /tmp/dcgm.out 2> /dev/null
+        nv-hostengine
+        dcgmi group -c gpuinfo
+        dcgmi group -g 1 -a $GPULIST
+        dcgmi diag -g 1 -r 1 1> /tmp/dcgm.out
+        dcgmi group -d 1
+        nv-hostengine -t
+        grep -i fail /tmp/dcgm.out > /dev/null
+        if [ $? -gt 0 ]; then
+                scontrol update nodename=$HOSTNAME state=drain reason="Failed DCGM, see /tmp/dcgm.out"
+                exit 0
+        fi
+fi

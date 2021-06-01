@@ -1,0 +1,22 @@
+# Disable ECC if requested
+scontrol show job $SLURM_JOBID | grep Comment | grep -i ecc > /dev/null
+if [ $? -eq 0 ]; then
+    logger -t PROLOG "Disabling ECC"
+    nvidia-smi -e 0
+    GPUCOUNT=`nvidia-smi -L | wc -l`
+    GPUMAXINDEX=`expr $GPUCOUNT - 1`
+    systemctl stop collectd
+    logger -t PROLOG "Triggering GPU reset"
+    for i in `seq 0 $GPUMAXINDEX`; do
+        logger -t PROLOG "Resetting GPU $i"
+        e=`nvidia-smi -r -i $i 2>&1`
+        if [ $? -ne 0 ]; then
+            logger -t PROLOG "WARNING! GPU $i reset failed"
+            logger -t PROLOG "GPU $i reset error: $e"
+            nvidia-smi -e 1
+        fi
+    sleep 1
+    done
+    logger -t PROLOG "GPU reset done"
+    systemctl start collectd
+fi

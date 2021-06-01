@@ -73,7 +73,7 @@ Read through the [slurm usage guide](slurm-usage.md) and [Open OnDemand guide](o
 ## Prolog and Epilog
 
 The default Slurm deployment includes a collection of prolog and epilog scripts that should be modified to suit a particular system.
-For more information, see the [prolog/epilog documentation](slurm-prolog-epilog.md).
+For more information, see the [prolog/epilog documentation](slurm-prolog-epilog/README.md).
 
 ## Node Health Check
 

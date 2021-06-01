@@ -1,0 +1,13 @@
+#
+# Check that all GPUs are present
+#
+NUMGPUS=`scontrol -a show nodes $HOSTNAME | grep "Gres=gpu" | cut -d : -f 2`
+if [ $NUMGPUS -gt 0 ]; then
+        PCIGPUSFOUND=`lspci | grep "3D controller: NVIDIA Corporation" | wc -l`
+        if [ $PCIGPUSFOUND -ne $NUMGPUS ]; then
+                echo "Slurm expects $NUMGPUS GPUs but lspci found: $PCIGPUSFOUND"
+                scontrol update nodename=$HOSTNAME state=drain reason="Missing GPUs"
+                exit 0
+        fi
+        echo "Slurm expects $NUMGPUS GPUs lspci found: $PCIGPUSFOUND"
+fi

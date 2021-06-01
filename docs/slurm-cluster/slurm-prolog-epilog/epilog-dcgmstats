@@ -1,0 +1,8 @@
+# Stop DCGM GPU stats collection if requested
+scontrol show job $SLURM_JOBID | grep Comment | grep -i dcgmstats > /dev/null
+if [ $? -eq 0 ]; then
+        OUTPUTDIR=`scontrol show job $SLURM_JOBID | grep WorkDir | cut -d = -f 2`
+        sudo -u $SLURM_JOB_USER dcgmi stats -x $SLURM_JOBID
+        sudo -u $SLURM_JOB_USER dcgmi stats -v -j $SLURM_JOBID | sudo -u $SLURM_JOB_USER tee $OUTPUTDIR/dcgm-gpu-stats-$HOSTNAME-$SLURM_JOBID.out
+        sudo -u $SLURM_JOB_USER nv-hostengine -t
+fi
