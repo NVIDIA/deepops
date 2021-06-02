@@ -93,7 +93,7 @@ case "$ID" in
     if ! groups "$(whoami)" | grep "${LIBVIRT_GROUP}"; then
       echo "Adding your user to ${LIBVIRT_GROUP} so you can manage VMs."
       echo "You may need to start a new shell to use vagrant interactively."
-      sudo usermod -a -G libvirt "$(whoami)"
+      sudo usermod -a -G "$(LIBVIRT_GROUP)" "$(whoami)"
     fi
 
     # Install Vagrant
