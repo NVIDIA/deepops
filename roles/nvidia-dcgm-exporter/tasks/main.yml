@@ -30,7 +30,9 @@
     owner: "root"
     group: "root"
     mode: "0644"
-  when: has_gpus
+  when:
+    - has_gpus
+    - ansible_product_name is search("DGX-1")
   notify: restart dcgm
 
 - name: install systemd unit file
