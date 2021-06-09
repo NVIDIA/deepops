@@ -11,15 +11,6 @@ DCGM_EXPORTER_PORT=9400
 # Run DCGM metric checks against all nodes in the group passed in (kube-node or slurm-node)
 group="${1}"
 
-# Debug: check running containers
-ssh \
-	-o "StrictHostKeyChecking no" \
-	-o "UserKnownHostsFile /dev/null" \
-	-l vagrant \
-	-i "${HOME}/.ssh/id_rsa" \
-	"10.0.0.6${GPU01}" \
-	"docker ps -a"
-
 # DCGM-exporter takes some time to initialize after it has started up
 # Before checking specific metrics we poll for any DCGM metrics to return
 set +e
