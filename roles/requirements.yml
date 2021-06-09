@@ -30,7 +30,7 @@ roles:
   version: "v2.0.0"
 
 - src: nvidia.nvidia_docker
-  version: "v1.2.1"
+  version: "v1.2.3"
 
 - src: nvidia.enroot
   version: "v0.4.0"
