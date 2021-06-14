@@ -26,7 +26,7 @@ A short description of the nightly testing is outlined below. The full suit of t
 | Test | [PR](../../workloads/jenkins/Jenkinsfile) | [Nightly](../../workloads/jenkins/Jenkinsfile-nightly) | [Nightly Multi-node](../../workloads/jenkins/Jenkinsfile-multi-nightly) | Comments |
 | --- | --- | --- | --- | --- |
 | Ubuntu 18.04 | x | x | x | |
-| Ubuntu 20.04 | | | | x |
+| Ubuntu 20.04 | | x | x | |
 | CentOS 7 | | x | x | |
 | CentOS | | | x | |
 | DGX OS | | | | No automated testing support |
