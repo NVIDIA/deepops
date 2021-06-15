@@ -3,14 +3,26 @@
 - hosts: all
   become: true
   tasks:
+
+    - name: Set backward compatible values for ssh-hardening if not defined
+      block:
+      - set_fact:
+          ssh_client_hardening: false
+        when: ssh_client_hardening is undefined
+      - set_fact:
+          ssh_server_password_login: true
+        when: ssh_server_password_login is undefined
+      - set_fact:
+          ssh_use_pam: true
+        when: ssh_use_pam is undefined
+      - set_fact:
+          ssh_max_auth_retries: 10
+        when: ssh_use_pam is undefined
+
     - name: Configure SSH to allow login with password
       include_role:
         name: dev-sec.ssh-hardening
-      vars:
-        ssh_client_hardening: false
-        ssh_server_password_login: true
-        ssh_use_pam: true
-        ssh_max_auth_retries: 10
+
     - name: Set user password
       include_role:
         name: DeepOps.users
