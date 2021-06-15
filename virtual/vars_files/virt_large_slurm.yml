@@ -1,0 +1,33 @@
+---
+# For virtual cluster, ensure hosts file correctly uses private network
+hosts_network_interface: "eth1"
+
+# Ensure vagrant user has SSH access after pam_slurm for debugging
+slurm_allow_ssh_user:
+- "vagrant"
+- "root"
+
+# Perform cleanup tasks during the install to minimize disk space impact
+hpcsdk_clean_up_tarball_after_extract: true
+hpcsdk_clean_up_temp_dir: true
+slurm_build_dir_cleanup: false
+
+# Ensure we use the slurm management node for syslog
+rsyslog_client_tcp_host: "{{ groups['slurm-master'][0] }}"
+
+slurm_cluster_install_singularity: false
+slurm_cluster_install_cuda: false
+install_open_ondemand: false
+slurm_install_hpcsdk: false
+
+slurm_cluster_install_nvidia_driver: false
+
+slurm_install_nhc: true
+slurm_install_enroot: true
+slurm_install_pyxis: true
+
+slurm_monitoring_group: "slurm-metric"
+nfs_server_group: "slurm-master[0]"
+nfs_client_group: "slurm-master[1:],slurm-node,slurm-login,slurm-metric"
+
+slurm_enable_ha: true
