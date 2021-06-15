@@ -1,0 +1,15 @@
+# This yaml file will launch a container with a 1g.5gb MIG device
+# It will deploy onto any GPU where this profile is available
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-pod
+spec:
+  containers:
+    - name: gpu-pod
+      image:  nvcr.io/nvidia/k8s/cuda-sample:nbody
+      command: ["/bin/sh"]
+      args: ["-c", "nvidia-smi"]
+      resources:
+        limits:
+          nvidia.com/mig-1g.5gb: 1
