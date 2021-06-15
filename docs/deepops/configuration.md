@@ -12,6 +12,7 @@ In particular, this directory includes:
 - `config/group_vars/all.yml`: An Ansible [variables file](https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html) that contains variables we expect to work for all hosts
 - `config/group_vars/k8s-cluster.yml`: Variables specific to deploying Kubernetes clusters
 - `config/group_vars/slurm-cluster.yml`: Variables specific to deploying Slurm clusters
+- `config/requirements.yml`: An Ansible Galaxy [requirements file](https://docs.ansible.com/ansible/latest/galaxy/user_guide.html#installing-roles-and-collections-from-the-same-requirements-yml-file) that contains a list of custom Collections and Roles to install. Collections and Roles required by DeepOps are stored in a separate `roles/requirements.yml` file, which should not be modified.
 
 It's expected that most DeepOps deployments will make changes to these files!
 The inventory file will be different for every cluster;

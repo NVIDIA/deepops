@@ -2,7 +2,6 @@ pipeline {
   agent any
   environment {
     DEEPOPS_FULL_INSTALL = 'true'
-    DEEPOPS_VAGRANT_OS = 'ubuntu'
   }
   stages {
     stage('Stop Any Old Builds') {
@@ -12,6 +11,10 @@ pipeline {
       }
     }
     stage('Cluster Up - Ubuntu') {
+      environment {
+        DEEPOPS_VAGRANT_OS = 'ubuntu'
+        DEEPOPS_OS_VERSION = '18.04'
+      }
       steps {
         // TODO: ideally lock should work with declared stages
         lock(resource: null, label: 'gpu', quantity: 2, variable: 'GPUDATA') {
@@ -150,6 +153,11 @@ pipeline {
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
           '''
 
+          echo "Test DCGM metrics"
+          sh '''
+             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
+          '''
+
           echo "Reset repo and unmunge files"
           sh '''
             git reset --hard
@@ -167,6 +175,7 @@ pipeline {
     stage('Cluster Up - CentOS') {
       environment {
         DEEPOPS_VAGRANT_OS = 'centos'
+        DEEPOPS_OS_VERSION = '7'
       }
       steps {
         // TODO: ideally lock should work with declared stages
@@ -264,6 +273,11 @@ pipeline {
           echo "Test GPU job"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+          '''
+
+          echo "Test DCGM metrics"
+          sh '''
+             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
           '''
 
           echo "Reset repo and unmunge files"
@@ -394,6 +408,11 @@ pipeline {
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
           '''
 
+          echo "Test DCGM metrics"
+          sh '''
+             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
+          '''
+
           echo "Reset repo and unmunge files"
           sh '''
             git reset --hard
@@ -509,6 +528,11 @@ pipeline {
           echo "Test GPU job"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+          '''
+
+          echo "Test DCGM metrics"
+          sh '''
+             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
           '''
         }
       }

@@ -165,7 +165,7 @@ allow_user_set_gpu_clocks: no
 ################################################################################
 slurm_install_enroot: true
 slurm_install_pyxis: true
-slurm_pyxis_version: 0.8.1
+slurm_pyxis_version: 0.9.1
 
 ################################################################################
 # Node Health Check                                                            #

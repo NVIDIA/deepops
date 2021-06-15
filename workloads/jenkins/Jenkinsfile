@@ -3,6 +3,7 @@ pipeline {
   environment {
     DEEPOPS_FULL_INSTALL = ''
     DEEPOPS_VAGRANT_OS = 'ubuntu'
+    DEEPOPS_OS_VERSION = '18.04'
   }
   stages {
     stage('Stop Any Old Builds') {
@@ -115,6 +116,11 @@ pipeline {
           echo "Test GPU job"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+          '''
+
+          echo "Test DCGM metrics"
+          sh '''
+            timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
           '''
         }
       }
