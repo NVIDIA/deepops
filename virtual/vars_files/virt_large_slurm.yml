@@ -15,19 +15,27 @@ slurm_build_dir_cleanup: false
 # Ensure we use the slurm management node for syslog
 rsyslog_client_tcp_host: "{{ groups['slurm-master'][0] }}"
 
+# Don't install these packages by default on large cluster
 slurm_cluster_install_singularity: false
 slurm_cluster_install_cuda: false
 install_open_ondemand: false
 slurm_install_hpcsdk: false
 
-slurm_cluster_install_nvidia_driver: false
-
+# Ensure NHC and Enroot/Pyxis are configured
 slurm_install_nhc: true
 slurm_install_enroot: true
 slurm_install_pyxis: true
 
-slurm_monitoring_group: "slurm-metric"
-nfs_server_group: "slurm-master[0]"
-nfs_client_group: "slurm-master[1:],slurm-node,slurm-login,slurm-metric"
+# Configure NGINX container cache
+slurm_enable_container_registry: false
+slurm_enable_nginx_docker_cache: true
+nginx_docker_cache_hostgroup: "slurm-cache"
+nginx_docker_cache_clients: "slurm-node"
 
+# Configure monitoring stack on slurm-metric nodes
+slurm_monitoring_group: "slurm-metric"
+nfs_server_group: "slurm-nfs"
+nfs_client_group: "slurm-master,slurm-node,slurm-login,slurm-metric"
+
+# Enable Slurm HA
 slurm_enable_ha: true
