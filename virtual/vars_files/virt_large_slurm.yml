@@ -13,7 +13,7 @@ hpcsdk_clean_up_temp_dir: true
 slurm_build_dir_cleanup: false
 
 # Ensure we use the slurm management node for syslog
-rsyslog_client_tcp_host: "{{ groups['slurm-master'][0] }}"
+rsyslog_client_tcp_host: "{{ groups['slurm-metric'][0] }}"
 
 # Don't install these packages by default on large cluster
 slurm_cluster_install_singularity: false
