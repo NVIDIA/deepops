@@ -69,7 +69,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     metric.vm.network :private_network, ip: "10.0.0.8"
   end
 
-
   config.vm.define "virtual-gpu01" do |gpu|
     config.vm.provider "libvirt" do |v|
       v.memory = 16384
@@ -98,6 +97,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
     gpu.vm.box = BOX_IMAGE
     gpu.vm.network :private_network, ip: "10.0.0.10"
+  end
+
+  config.vm.define "virtual-nfs01" do |nfs|
+    config.vm.provider "libvirt" do |v|
+      vm.memory = 2048
+      vm.cpus = 2
+    end
+    nfs.vm.box = BOX_IMAGE
+    nfs.vm.network :private_network, :ip "10.0.0.11"
   end
 
   config.vm.provision "shell", inline: <<-SHELL
