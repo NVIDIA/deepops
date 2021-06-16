@@ -24,9 +24,6 @@ virtual-nfs01 ansible_host=10.0.0.11 ip=10.0.0.11
 ######
 # SLURM
 ######
-[slurm-nfs]
-virtual-nfs01
-
 [slurm-master]
 virtual-wm01
 virtual-wm02
@@ -46,12 +43,16 @@ virtual-cache02
 virtual-gpu01
 virtual-gpu02
 
+[slurm-nfs]
+virtual-nfs01
+
 [slurm-cluster:children]
 slurm-master
 slurm-node
 slurm-login
 slurm-metric
 slurm-cache
+slurm-nfs
 
 ######
 # SSH connection configuration

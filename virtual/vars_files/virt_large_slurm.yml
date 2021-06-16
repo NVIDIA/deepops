@@ -34,8 +34,19 @@ nginx_docker_cache_clients: "slurm-node"
 
 # Configure monitoring stack on slurm-metric nodes
 slurm_monitoring_group: "slurm-metric"
+
+# Configure NFS
 nfs_server_group: "slurm-nfs"
 nfs_client_group: "slurm-master,slurm-node,slurm-login,slurm-metric"
+nfs_mounts:
+  - mountpoint: /home
+    server: '{{ groups["slurm-nfs"][0] }}'
+    path: /home
+    options: async,vers=3
+  - mountpoint: /sw
+    server: '{{ groups["slurm-nfs"][0] }}'
+    path: /sw
+    options: async,vers=3
 
 # Enable Slurm HA
 slurm_enable_ha: true
