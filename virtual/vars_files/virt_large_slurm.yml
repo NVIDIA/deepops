@@ -19,7 +19,10 @@ rsyslog_client_tcp_host: "{{ groups['slurm-metric'][0] }}"
 slurm_cluster_install_singularity: false
 slurm_cluster_install_cuda: false
 install_open_ondemand: false
-slurm_install_hpcsdk: false
+
+# HPC SDK install
+sm_install_host: "{{ groups['slurm-login'][0] }}"
+slurm_install_hpcsdk: true
 
 # Ensure NHC and Enroot/Pyxis are configured
 slurm_install_nhc: true
