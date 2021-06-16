@@ -19,6 +19,9 @@ if [ "${DEEPOPS_OFFLINE}" -ne 0 ]; then
 	ansible_extra_args="-e "@${VIRT_DIR}/config/airgap/offline_repo_vars.yml" --skip-tags configure_docker_repo -vv"
 fi
 
+# Extra vars file
+SLURM_EXTRA_VARS="${SLURM_EXTRA_VARS:-${VIRT_DIR}/vars_files/virt_slurm.yml}"
+
 # Use ansible install in virtualenv
 # NOTE: Added here because this script is also called from Jenkinsfile and not just cluster_up.sh
 if [ -d env ] ; then
@@ -28,10 +31,10 @@ else
 fi
 
 # Configure Slurm cluster
-ansible-playbook \
+ansible-playbook -vv \
 	-i "${VIRT_DIR}/config/inventory" \
 	-l slurm-cluster \
-	-e "@${VIRT_DIR}/vars_files/virt_slurm.yml" ${ansible_extra_args} \
+	-e "@${SLURM_EXTRA_VARS}" ${ansible_extra_args} \
 	"${ROOT_DIR}/playbooks/slurm-cluster.yml"
 
 # Un-drain nodes
