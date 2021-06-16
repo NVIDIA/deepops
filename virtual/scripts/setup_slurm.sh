@@ -34,6 +34,7 @@ fi
 ansible-playbook -vv \
 	-i "${VIRT_DIR}/config/inventory" \
 	-l slurm-cluster \
+	--forks 16 \
 	-e "@${SLURM_EXTRA_VARS}" ${ansible_extra_args} \
 	"${ROOT_DIR}/playbooks/slurm-cluster.yml"
 
