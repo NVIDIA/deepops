@@ -106,6 +106,18 @@ users:
 
 
 ################################################################################
+# SSH HARDENING                                                                #
+#   dev-sec.ssh-hardening role called from users playbook                      #
+################################################################################
+
+ssh_client_hardening: false
+ssh_server_password_login: true
+ssh_use_pam: 10
+ssh_max_auth_retries: 10
+sftp_enabled: true
+sftp_chroot: false
+
+################################################################################
 # NVIDIA                                                                       #
 ################################################################################
 # NVIDIA GPU configuration
