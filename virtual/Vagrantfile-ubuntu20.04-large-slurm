@@ -99,13 +99,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     gpu.vm.network :private_network, ip: "10.0.0.10"
   end
 
-  config.vm.define "virtual-nfs01" do |nfs|
-    config.vm.provider "libvirt" do |v|
-      vm.memory = 2048
-      vm.cpus = 2
+  config.vm.define "virtual-nfs01" do |mgmt|
+    mgmt.vm.provider "libvirt" do |v|
+      v.memory = 2048
+      v.cpus = 2
     end
-    nfs.vm.box = BOX_IMAGE
-    nfs.vm.network :private_network, :ip "10.0.0.11"
+    mgmt.vm.box = BOX_IMAGE
+    mgmt.vm.network :private_network, ip: "10.0.0.11"
   end
 
   config.vm.provision "shell", inline: <<-SHELL
