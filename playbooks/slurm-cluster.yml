@@ -31,7 +31,11 @@
   when: slurm_cluster_install_nvidia_driver|default(true)
 
 # Install NVIDIA CUDA Toolkit
+#   Note: the CUDA playbook also installs the driver, so we pass the
+#   appropriate flag to this playbook as well.
 - include: nvidia-software/nvidia-cuda.yml
+  vars:
+     cuda_playbook_install_driver: "{{ slurm_cluster_install_nvidia_driver }}"
   when: slurm_cluster_install_cuda|default(true)
 
 # Install software
