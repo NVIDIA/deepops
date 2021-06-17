@@ -20,7 +20,11 @@ if [ "${DEEPOPS_OFFLINE}" -ne 0 ]; then
 fi
 
 # Extra vars file
-SLURM_EXTRA_VARS="${SLURM_EXTRA_VARS:-${VIRT_DIR}/vars_files/virt_slurm.yml}"
+if [ ${DEEPOPS_LARGE_SLURM} ]; then
+  SLURM_EXTRA_VARS="${SLURM_EXTRA_VARS:-${VIRT_DIR}/vars_files/virt_large_slurm.yml}"
+else
+  SLURM_EXTRA_VARS="${SLURM_EXTRA_VARS:-${VIRT_DIR}/vars_files/virt_slurm.yml}"
+fi
 
 # Use ansible install in virtualenv
 # NOTE: Added here because this script is also called from Jenkinsfile and not just cluster_up.sh
