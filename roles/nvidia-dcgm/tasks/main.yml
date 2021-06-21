@@ -16,9 +16,21 @@
   when: (ansible_os_family == "RedHat") and not dcgm_is_dgx
   include: install-redhat.yml
 
-- name: Start the DCGM service
+- name: Populate service facts
+  service_facts:
+
+- name: Start the nvidia-dcgm service when present (preferred)
   systemd:
     daemon_reload: yes
-    name: "nvidia-dcgm"
+    name: "nvidia-dcgm.service"
     state: "started"
     enabled: true
+  when: '"nvidia-dcgm.service" in services'
+
+- name: Start the dcgm service otherwise
+  systemd:
+    daemon_reload: yes
+    name: "dcgm.service"
+    state: "started"
+    enabled: true
+  when: '"nvidia-dcgm.service" not in services'
