@@ -1,0 +1,21 @@
+# This yaml file will launch a container with a 32GB V100 GPU
+# Specifying the nvidia.com/gpu.product label and the nvidia.com/gpu resource type 
+#    restricts the type of GPU this container will run on
+#
+# Specifying both a nodeSelector and resource type supports clusters with multiple GPU types or MIG configurations
+# This is the preferred method of deployment
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-pod
+spec:
+  nodeSelector:
+    nvidia.com/gpu.product: Tesla-V100-DGXS-32GB
+  containers:
+    - name: gpu-pod
+      image:  nvcr.io/nvidia/k8s/cuda-sample:nbody
+      command: ["/bin/sh"]
+      args: ["-c", "nvidia-smi"]
+      resources:
+        limits:
+          nvidia.com/gpu: 1

@@ -26,7 +26,7 @@ A short description of the nightly testing is outlined below. The full suit of t
 | Test | [PR](../../workloads/jenkins/Jenkinsfile) | [Nightly](../../workloads/jenkins/Jenkinsfile-nightly) | [Nightly Multi-node](../../workloads/jenkins/Jenkinsfile-multi-nightly) | Comments |
 | --- | --- | --- | --- | --- |
 | Ubuntu 18.04 | x | x | x | |
-| Ubuntu 20.04 | | | | x |
+| Ubuntu 20.04 | | x | x | |
 | CentOS 7 | | x | x | |
 | CentOS | | | x | |
 | DGX OS | | | | No automated testing support |
@@ -39,7 +39,7 @@ A short description of the nightly testing is outlined below. The full suit of t
 | Verify GPU workload with srun | x | x | x |
 | Verify Slurm nfs mount | x | x | x | |
 | Verify basic mpi job in Slurm | x | x | x | |
-| Verify basic enroot job in Slurm | x | x | x | No current CentOS support |
+| Verify basic enroot job in Slurm | x | x | x | x |
 | Verify rsyslog setup in Slurm | x | x | x | |
 | Verify rsyslog setup in K8s | x | x | x | |
 | Deploys K8s (No GPU Operator) | x | x | x | |
@@ -55,6 +55,7 @@ A short description of the nightly testing is outlined below. The full suit of t
 | Test Kubeflow deployment (with Dex) | | x | x |
 | Test Kubeflow deployment (without Dex) | | x | x |
 | Execute GPU workload with Kubeflow pipeline | | x | x |
+| Verify GPU dashboard metrics are configured in DCGM | x | x | x | x |
 | Airgap testing | | | | No testing support
 | Verify multinode job in K8s | | | | No testing support
 | Verify Ceph deployment | | | | Support dropped

@@ -4,6 +4,7 @@ nvidia_nccl_package_version: ''
 rhel_nvidiaml_gpgkey: "https://developer.download.nvidia.com/compute/machine-learning/repos/{{ rhel_repo_dir }}/7fa2af80.pub"
 rhel_nvidiaml_baseurl: "https://developer.download.nvidia.com/compute/machine-learning/repos/{{ rhel_repo_dir }}/"
 epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+epel_key_url: "https://getfedora.org/static/fedora.gpg"
 ubuntu_nvidiaml_gpgkey: "https://developer.download.nvidia.com/compute/machine-learning/repos/{{ ubuntu_repo_dir }}/7fa2af80.pub"
 ubuntu_nvidiaml_baseurl: "http://developer.download.nvidia.com/compute/machine-learning/repos/{{ ubuntu_repo_dir }}"
 ubuntu_nvidiaml_keyid: "7fa2af80"

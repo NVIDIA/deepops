@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -ex
+
+if [[ -n "$SLURM_JOB_USER" && "$SLURM_JOB_USER" != "root" ]]; then
+    logger -s -t slurm-epilog 'Removed residual user files'
+    for dir in /tmp /dev/shm ; do
+	find "${dir}" -user "${SLURM_JOB_USER}" -print0 | xargs -0 -r rm -fr ||:
+    done
+fi

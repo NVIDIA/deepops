@@ -1,0 +1,6 @@
+# Put custom Ansible Galaxy requirements here
+# Galaxy roles that are used by the DeepOps roles can be found in roles/requirements.yml
+# https://docs.ansible.com/ansible/latest/galaxy/user_guide.html
+---
+collections:
+roles:

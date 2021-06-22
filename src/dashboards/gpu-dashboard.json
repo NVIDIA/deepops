@@ -796,7 +796,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(DCGM_FI_DEV_PCIE_TX_THROUGHPUT{instance=\"$hostname:9400\"}[$__interval]))",
+          "expr": "sum(DCGM_FI_PROF_PCIE_TX_BYTES{instance=\"$hostname:9400\"})",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -805,7 +805,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(rate(DCGM_FI_DEV_PCIE_RX_THROUGHPUT{instance=\"$hostname:9400\"}[$__interval]))",
+          "expr": "sum(DCGM_FI_PROF_PCIE_RX_BYTES{instance=\"$hostname:9400\"})",
           "format": "time_series",
           "hide": false,
           "interval": "",

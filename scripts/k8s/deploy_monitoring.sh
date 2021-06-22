@@ -29,6 +29,7 @@ ingress_name="ingress-nginx"
 
 PROMETHEUS_YAML_CONFIG="${PROMETHEUS_YAML_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/monitoring.yml}"
 PROMETHEUS_YAML_NO_PERSIST_CONFIG="${PROMETHEUS_YAML_NO_PERSIST_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/monitoring-no-persist.yml}"
+DCGM_CONFIG_CSV="${DCGM_CONFIG_CSV:-${DEEPOPS_CONFIG_DIR}/files/k8s-cluster/dcgm-custom-metrics.csv}"
 
 function help_me() {
     echo "This script installs the DCGM exporter, Prometheus, Grafana, and configures a GPU Grafana dashboard."
@@ -39,11 +40,12 @@ function help_me() {
     echo "-p      Print monitoring URLs."
     echo "-d      Delete monitoring namespace and crds. Note, this may delete PVs storing prometheus metrics."
     echo "-x      Disable persistent data, this deploys Prometheus with no PV backing resulting in a loss of data across reboots."
+    echo "-w      Wait and poll the grafana/prometheus/alertmanager URLs until they properly return."
     echo "delete  Legacy positional argument for delete. Same as -d flag."
 }
 
 function get_opts() {
-    while getopts "hdpx" option; do
+    while getopts "hdpxw" option; do
         case $option in
             d)
                 delete_monitoring
@@ -53,13 +55,13 @@ function get_opts() {
                 help_me
                 exit 1
                 ;;
-            p)
-                print_monitoring
-                exit 0
-                ;;
             x)
 		PROMETHEUS_YAML_CONFIG="${PROMETHEUS_YAML_NO_PERSIST_CONFIG}"
 		PROMETHEUS_NO_PERSIST="true"
+                ;;
+            w)
+                poll_monitoring_url
+                exit 0
                 ;;
             * )
                 # Leave this here to preserve legacy positional args behavior
@@ -80,6 +82,8 @@ function delete_monitoring() {
     helm uninstall kube-prometheus-stack -n monitoring
     helm uninstall "${ingress_name}"
     helm uninstall "nginx-ingress" # Delete legacy naming
+    helm uninstall "ingress-nginx" # Delete legacy namespace
+    helm uninstall "ingress-nginx" -n deepops-ingress
     kubectl delete crd prometheuses.monitoring.coreos.com
     kubectl delete crd prometheusrules.monitoring.coreos.com
     kubectl delete crd servicemonitors.monitoring.coreos.com
@@ -133,7 +137,7 @@ function setup_prom_monitoring() {
         kubectl create ns monitoring
     fi
     if ! helm status -n monitoring kube-prometheus-stack >/dev/null 2>&1 ; then
-        helm install \
+        helm upgrade --install \
             kube-prometheus-stack \
             prometheus-community/kube-prometheus-stack \
             --version "${HELM_PROMETHEUS_CHART_VERSION}" \
@@ -152,6 +156,11 @@ function setup_gpu_monitoring() {
     if ! kubectl -n monitoring get configmap kube-prometheus-grafana-gpu >/dev/null 2>&1 ; then
         kubectl create configmap kube-prometheus-grafana-gpu --from-file=${ROOT_DIR}/src/dashboards/gpu-dashboard.json -n monitoring
         kubectl -n monitoring label configmap kube-prometheus-grafana-gpu grafana_dashboard=1
+    fi
+
+    # Create DCGM metrics config map
+    if ! kubectl -n monitoring get configmap dcgm-custom-metrics >/dev/null 2>&1 ; then
+        kubectl create configmap dcgm-custom-metrics --from-file=${DCGM_CONFIG_CSV} -n monitoring
     fi
 
     # Label GPU nodes
@@ -233,6 +242,20 @@ function install_dependencies() {
             exit 1
 	fi
     fi
+}
+
+
+function poll_monitoring_url() {
+    print_monitoring
+
+    while true; do
+        curl -s --raw -L "${prometheus_url}"     | grep Prometheus && \
+        curl -s --raw -L "${grafana_url}"      | grep Grafana && \
+        curl -s --raw -L "${alertmanager_url}" | grep Alertmanager && \
+        echo "Monitoring URLs are all responding" && \
+        break
+        sleep 10
+    done
 }
 
 

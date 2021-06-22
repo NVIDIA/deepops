@@ -15,24 +15,35 @@
     group: "root"
     mode: "0600"
 
-- name: install docker python3 module
-  apt:
-    name: python3-docker
+- name: trust GPG key for EPEL
+  rpm_key:
+    key: "{{ epel_key_url }}"
     state: present
-    update_cache: yes
-  when: ansible_distribution == "Ubuntu"
+  when: ansible_os_family == "RedHat"
+
 - name: Enable EPEL repo
   package:
     name:
       - "{{ epel_package }}"
     state: present
   when: ansible_os_family == 'RedHat'
-- name: Install python2 Docker dependencies
-  yum:
-    name:
-      - python-docker
-    state: present
-  when: ansible_os_family == "RedHat"
+
+- name: Ensure Python 2 dependencies are installed via OS packages
+  when: (ansible_python.version.major==2) and (ansible_python.version.minor==7)
+  block:
+  - name: install python-docker
+    package:
+      name: python-docker
+
+- name: Ensure Python 3 dependencies are installed via pip
+  when: ansible_python.version.major==3
+  block:
+  - name: install pip
+    package:
+      name: python3-pip
+  - name: install docker
+    pip:
+      name: docker
 
 - name: run registry docker container
   docker_container:

@@ -27,10 +27,10 @@ roles:
   version: "v5.2.6"
 
 - src: nvidia.nvidia_driver
-  version: "v2.0.0"
+  version: "v2.0.1"
 
 - src: nvidia.nvidia_docker
-  version: "v1.2.1"
+  version: "v1.2.3"
 
 - src: nvidia.enroot
   version: "v0.4.0"
