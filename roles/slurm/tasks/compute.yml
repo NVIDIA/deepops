@@ -143,6 +143,7 @@
     block: |
       -account required {{ slurm_pam_lib_dir }}/pam_slurm_adopt.so action_no_jobs=ignore
       -account sufficient pam_listfile.so item=user sense=allow file=/etc/localusers
+      -account required {{ slurm_pam_lib_dir }}/pam_slurm_adopt.so
     insertafter: EOF
     marker: "# {mark} ANSIBLE MANAGED BLOCK (ansible-role-slurm)"
   tags:
