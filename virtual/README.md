@@ -32,7 +32,7 @@ Also, using VMs and optionally GPU passthrough assumes that the host machine has
 
 1. From the main deepops directory, run the setup script.
 
-   This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](/docs/ANSIBLE.md).
+   This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](/docs/deepops/ansible.md).
 
    ```sh
    ./scripts/setup.sh
