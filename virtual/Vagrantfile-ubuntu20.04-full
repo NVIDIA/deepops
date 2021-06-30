@@ -43,7 +43,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.define "virtual-gpu01" do |gpu|
-    config.vm.provider "libvirt" do |v|
+    gpu.vm.provider "libvirt" do |v|
       v.memory = 16384
       v.cpus = 2
       v.machine_type = "q35"
@@ -58,7 +58,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.define "virtual-gpu02" do |gpu|
-    config.vm.provider "libvirt" do |v|
+    gpu.vm.provider "libvirt" do |v|
       v.memory = 16384
       v.cpus = 2
       v.machine_type = "q35"

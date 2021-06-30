@@ -43,7 +43,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.define "virtual-gpu01" do |gpu|
-    config.vm.provider "libvirt" do |v|
+    gpu.vm.provider "libvirt" do |v|
       v.memory = 16384
       v.cpus = 2
       v.machine_type = "q35"
@@ -52,13 +52,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # to local hw setup - `lspci -nnk | grep NVIDIA`)
       # BUS-GPU01 is a magic string used by automation, this should be removed
       #BUS-GPU01 v.pci :bus => '0x08', :slot => '0x00', :function => '0x0'
-    end 
+    end
     gpu.vm.box = BOX_IMAGE
     gpu.vm.network :private_network, ip: "10.0.0.6"
   end
 
   config.vm.define "virtual-gpu02" do |gpu|
-    config.vm.provider "libvirt" do |v|
+    gpu.vm.provider "libvirt" do |v|
       v.memory = 16384
       v.cpus = 2
       v.machine_type = "q35"
