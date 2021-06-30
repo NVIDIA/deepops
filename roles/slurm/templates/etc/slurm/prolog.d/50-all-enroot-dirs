@@ -15,7 +15,7 @@ chmod 0700 "$runtime_path"
 cache_path="$(sudo -u "$SLURM_JOB_USER" sh -c 'echo "{{ enroot_cache_path }}"')"
 mkdir -p "$cache_path"
 chown "$SLURM_JOB_UID:$(id -g "$SLURM_JOB_UID")" "$cache_path"
-chmod 0770 "$cache_path"
+chmod 0700 "$cache_path"
 {% endif %}
 
 {% if enroot_data_path | default(none) %}
