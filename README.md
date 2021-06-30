@@ -7,7 +7,7 @@ GPU infrastructure and automation tools
 
 The DeepOps project encapsulates best practices in the deployment of GPU server clusters and sharing single powerful nodes (such as [NVIDIA DGX Systems](https://www.nvidia.com/en-us/data-center/dgx-systems/)). DeepOps can also be adapted or used in a modular fashion to match site-specific cluster needs. For example:
 
-* An on-prem, air-gapped data center of NVIDIA DGX servers where DeepOps provides end-to-end capabilities to set up the entire cluster management stack
+* An on-prem data center of NVIDIA DGX servers where DeepOps provides end-to-end capabilities to set up the entire cluster management stack
 * An existing cluster running Kubernetes where DeepOps scripts are used to deploy Kubeflow and connect NFS storage
 * An existing cluster that needs a resource manager / batch scheduler, where DeepOps is used to install Slurm, Kubernetes, or a hybrid of both
 * A single machine where no scheduler is desired, only NVIDIA drivers, Docker, and the NVIDIA Container Runtime
@@ -16,9 +16,9 @@ Check out the [video tutorial](https://drive.google.com/file/d/1RNLQYlgJqE8JMv0n
 
 ## Releases
 
-Latest release: [DeepOps 20.10 Release](https://github.com/NVIDIA/deepops/releases/tag/20.10)
+Latest release: [DeepOps 21.06 Release](https://github.com/NVIDIA/deepops/releases/tag/21.06)
 
-It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally functional but may change significantly between releases.
+It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally [functional](docs/deepops/testing.md) but may change significantly between releases.
 
 ## Getting Started
 
@@ -26,13 +26,18 @@ For detailed help or guidance, read through our [Getting Started Guide](docs/) o
 
 ## Deployment Options
 
+### Supported Ansible versions
+
+DeepOps supports using Ansible 2.9.x.
+Ansible 2.10.x and newer are not currently supported.
+
 ### Supported distributions
 
 DeepOps currently supports the following Linux distributions:
 
-* NVIDIA DGX OS 4
-* Ubuntu 18.04 LTS
-* CentOS 7
+* NVIDIA DGX OS 4, 5
+* Ubuntu 18.04 LTS, 20.04 LTS
+* CentOS 7, 8
 
 ### Kubernetes
 
@@ -78,6 +83,4 @@ Otherwise, bugs and feature requests can be made by [filing a GitHub Issue](http
 
 ## Contributing
 
-To contribute, please issue a [pull request](https://help.github.com/articles/using-pull-requests/) against the master branch from a local fork.
-
-A signed copy of the [Contributor License Agreement](https://raw.githubusercontent.com/NVIDIA/deepops/master/CLA) needs to be provided to deepops [at] nvidia.com before any change can be accepted.
+To contribute, please issue a [signed](https://raw.githubusercontent.com/NVIDIA/deepops/master/CONTRIBUTING.md) [pull request](https://help.github.com/articles/using-pull-requests/) against the master branch from a local fork. See the [contribution document](https://raw.githubusercontent.com/NVIDIA/deepops/master/CONTRIBUTING.md) for more information.

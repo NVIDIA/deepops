@@ -1,0 +1,23 @@
+#
+# Cluster ingress controller
+# An ingress controller routes external traffic to services
+#
+
+# Ingress controller
+controller:
+  # Use host network to listen on ports 80 and 443
+  hostNetwork: true
+  # Service type LoadBalancer requires a load balancer to be configured, e.g.
+  # MetalLB in an on-prem cluster. See metallb.yml for a sample definition.
+  # NodePort can be used instead where we don't have a load balancer.
+  service:
+    type: NodePort
+  # Always run on master nodes
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
+
+# Ingress back-end
+defaultBackend:
+  # Always run on master nodes
+  nodeSelector:
+    node-role.kubernetes.io/master: ""

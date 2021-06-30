@@ -1,6 +1,7 @@
 prometheus_config_dir: /etc/prometheus
 prometheus_container: "prom/prometheus"
 prometheus_svc_name: "docker.prometheus.service"
+prometheus_docker_volume_name: "deepops_prometheus_metrics"
 prometheus_state: started
 prometheus_enabled: yes
 

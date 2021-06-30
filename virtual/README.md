@@ -10,14 +10,14 @@ Set up a virtual cluster with DeepOps. Useful for...
 
 ### Hardware Requirements
 
-The host machine should have enough resources to fufill the minimum VM needs...
+The host machine should have enough resources to fulfill the minimum VM needs...
 
 Total: 8 vCPU, 22 GB RAM, 96 GB Storage
 * virtual-login01: 2 vCPU, 2GB RAM and 32GB Storage
 * virtual-mgmt01: 4 vCPU, 4GB RAM and 32GB Storage
 * virtual-gpu01: 2 vCPU, 16GB RAM and 32GB Storage
 
-If deploying kubeflow or another resource-intensive application in this environment, more vCPU, RAM, and storage resouces must be allocated to virtual-mgmt01 especially.
+If deploying kubeflow or another resource-intensive application in this environment, more vCPU, RAM, and storage resources must be allocated to virtual-mgmt01 especially.
 
 ### Operating System Requirements
 
@@ -156,6 +156,15 @@ Next, shutdown the virtual cluster (if it is running) and startup vagrant + run 
 ## Other Customization
 
 The default Vagrantfiles create VMs that are very minimal in terms of resources to maximize where a virtual DeepOps cluster can be run. To run resource-intensive Kubernetes applications such as Kubeflow, it's necessary to increase some of the settings.
+
+### Specify the cluster Operating System
+
+By default, all virtual nodes will deploy with Ubuntu 18.04. This can be changed by overriding the environment variables `DEEPOPS_VAGRANT_OS` and `DEEPOPS_OS_VERSION`. Supported OS versions are Ubuntu 18.04, Ubuntu 20.04, CentOS 7, and CentOS 8.
+
+```sh
+export DEEPOPS_VAGRANT_OS=centos
+export DEEPOPS_OS_VERSION=8
+```
 
 ### Increase CPUs, memory, and GPUs
 

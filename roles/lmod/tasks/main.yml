@@ -2,12 +2,18 @@
 # ansible role to install lmod:
 #
 ---
+- name: RedHat | trust GPG key for EPEL
+  rpm_key:
+    key: "{{ epel_key_url }}"
+    state: present
+  when: ansible_os_family == "RedHat"
+
 - name: RedHat | add epel repo
-  yum_repository:
-    name: epel
-    description: EPEL YUM repo
-    baseurl: "{{ lmod_rhel_epel_repo_baseurl }}"
-    gpgkey: "{{ lmod_rhel_epel_repo_gpgkey }}"
+  become: yes
+  yum:
+    name: 
+      - "{{ epel_package }}"
+    state: latest
   environment: "{{proxy_env if proxy_env is defined else {}}}"
   when: ansible_os_family == "RedHat"
 
@@ -28,7 +34,17 @@
     - bash
     - tcsh
     - Lmod
-  when: ansible_os_family == "RedHat"
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+
+- name: "install packages"
+  become: yes
+  dnf:
+    name:
+    - bash
+    - tcsh
+    - Lmod
+    enablerepo: powertools
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
 
 - name: "mkdir software path"
   become: yes
@@ -67,7 +83,9 @@
     ln -s -f /usr/lib/x86_64-linux-gnu/lua/5.1/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.1/posix.so
     ln -s -f /usr/lib/x86_64-linux-gnu/lua/5.2/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.2/posix.so
     ln -s -f /usr/lib/x86_64-linux-gnu/lua/5.3/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.3/posix.so
-  when: ansible_os_family == "Debian"
+  when: 
+    - ansible_distribution == 'Ubuntu'
+    - ansible_distribution_version == '18.04'
 
 - name: "unset previous lmod setup"
   shell: unset MODULEPATH_ROOT

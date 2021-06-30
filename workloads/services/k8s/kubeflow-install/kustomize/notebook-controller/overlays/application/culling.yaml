@@ -1,0 +1,20 @@
+# See GitHub for more details: https://github.com/kubeflow/kubeflow/pull/3856
+# Automatically shutdown Jupyter Notebook containers if idle
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: manager        
+        env:
+          - name: ENABLE_CULLING
+            value: "false" # Off by default
+          - name: IDLE_TIME
+            value: "1440" # 1 day        
+          - name: CULLING_CHECK_PERIOD
+            value: "5"        
+          - name: CLUSTER_DOMAIN
+            value: "cluster.local"        

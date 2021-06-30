@@ -11,7 +11,7 @@
 
 - name: install config file
   template:
-    src: templates/slurm-exporter.yml.j2
+    src: "{{ slurm_exporter_conf_template }}"
     dest: "{{ prometheus_cfg_endpoint_dir }}/slurm-exporter.yml"
     owner: root
     group: root

@@ -2,14 +2,11 @@
 # defaults file for netapp-trident role
 
 # URL of the Trident installer package that you wish to download and use
-trident_version: "20.07.0"
+trident_version: "21.01.2"
 trident_installer_url: "https://github.com/NetApp/trident/releases/download/v{{ trident_version }}/trident-installer-{{ trident_version }}.tar.gz"
 
-# Kubernetes version
-# Note: Do not include patch version, e.g. provide value of 1.16, not 1.16.7.
-# Note: Versions 1.14 and above are supported when deploying Trident with DeepOps.
-#   If you are using an earlier version, you must deploy Trident manually.
-k8s_version: 1.16
+# Namespace to install Trident in
+trident_namespace: trident
 
 # Denotes whether or not to create new backends after deploying trident
 # For more info, refer to: https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/operator-install.html#creating-a-trident-backend
@@ -91,6 +88,30 @@ storageClasses_to_create:
     parameters:
       backendType: "ontap-nas-flexgroup"
   # Add additional StorageClasses as needed
+
+# Denotes whether or not to enable volume snapshots in your Kubernetes cluster
+# For more info, refer to: https://netapp-trident.readthedocs.io/en/stable-v21.01/kubernetes/operations/tasks/volumes/snapshots.html
+enable_volume_snapshots: true
+
+# List of volume snapshot CRDs to create
+volume_snapshot_CRD_manifest_URLs:
+  - https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-3.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+  - https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-3.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+  - https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-3.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+
+# List of snapshot controller manifest URLs
+snapshot_controller_manifest_URLs:
+  - https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-3.0/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
+  - https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/release-3.0/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
+
+# List of volume snapshot classes to create
+volume_snapshot_classes_to_create:
+  - apiVersion: snapshot.storage.k8s.io/v1beta1
+    kind: VolumeSnapshotClass
+    metadata:
+      name: csi-snapclass
+    driver: csi.trident.netapp.io
+    deletionPolicy: Delete
 
 # Denotes whether or not to copy tridenctl binary to localhost
 copy_tridentctl_to_localhost: true

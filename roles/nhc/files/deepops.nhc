@@ -45,3 +45,53 @@ function check_nv_dcgmi_diag() {
 	fi
 	return 0
 }
+
+function check_ipoib_up() {
+	interface=$1
+	if ! ibdev2netdev | grep $interface | grep -q Up ; then
+		echo "IPoIB not up on $interface"
+		return 1
+	fi
+	return 0
+}
+
+function check_ib_link_ber() {
+	interface=$1
+	# Check (negative) exponent of bit error rate
+	ber_exp="$(mlxlink -d $interface -c | grep "Effective Physical BER" | cut -d : -f 2 | cut -d - -f 2)"
+	if [ $ber_exp -lt 9 ]; then
+		echo "BER rate on $interface is too high"
+		return 1
+	fi
+	return 0
+}
+
+check_num_numa_nodes() {
+	expected=$1
+	actual="$(lscpu | grep "NUMA.*CPU" | wc -l)"
+	if [ $expected -ne $actual ]; then
+		echo "Incorrect number of NUMA nodes"
+		return 1
+	fi
+	return 0
+}
+
+check_num_nvme_devs() {
+	expected=$1
+	actual="$(nvme list | grep "/dev/nvme" | wc -l)"
+	if [ $expected -ne $actual ]; then
+		echo "Incorrect number of NVME devices"
+		return 1
+	fi
+	return 0
+}
+
+check_xid_errors() {
+	excluded_xid='94'
+	xid_list=$(journalctl -b 0  --since "1 hour ago" --no-pager 2> /dev/null | grep "NVRM: Xid" | sed 's/^.*\] \(.*\)/\1/' | awk '{print $9}' | sed 's/,//' | sort -n | uniq | grep -v -E "${excluded_xid}" | paste -s -d,)
+	if [ x"$xid_list" != x"" ]; then
+		echo "Found XID errors: $xid_list"
+		return 1
+	fi
+	return 0
+}

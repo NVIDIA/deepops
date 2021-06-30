@@ -6,8 +6,8 @@ command -v enroot >/dev/null || exit 0  # enroot not installed
 {% if enroot_cache_path | default(none) %}
 cache_path="$(sudo -u "$SLURM_JOB_USER" sh -c 'echo "{{ enroot_cache_path }}"')"
 mkdir -p "$cache_path"
-chgrp "$(id -g "$SLURM_JOB_UID")" "$cache_path"
-chmod 0770 "$cache_path"
+chown "$SLURM_JOB_UID:$(id -g "$SLURM_JOB_UID")" "$cache_path"
+chmod 0700 "$cache_path"
 {% endif %}
 
 {% if enroot_runtime_path | default(none) %}

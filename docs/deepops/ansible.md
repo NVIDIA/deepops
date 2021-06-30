@@ -26,8 +26,7 @@ A script is provided to install Ansible on Ubuntu and RHEL/CentOS machines. Ansi
 ./scripts/setup.sh
 ```
 
-See the official [Ansible documentation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
-for more detailed installation information.
+See the official [Ansible documentation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) for more detailed installation information.
 
 ### Passwordless configuration using SSH keys
 
@@ -53,24 +52,19 @@ If sudo requires a password, add the `-K` flag
 
 ## Ansible Playbooks
 
-[Ansible playbooks](https://docs.ansible.com/ansible/latest/user_guide/playbooks.html) are files which
-manage the configuration of remote machines.
+[Ansible playbooks](https://docs.ansible.com/ansible/latest/user_guide/playbooks.html) are files which manage the configuration of remote machines.
 
 ### Ansible playbook output
 
-*Green* indicates nothing changed as a result of the task
-
-*Yellow* indicates something changed as a result of the task
-
-*Blue* indicates the task was skipped
-
-*Red* indicates the task failed
+* *Green* indicates nothing changed as a result of the task
+* *Yellow* indicates something changed as a result of the task
+* *Blue* indicates the task was skipped
+* *Red* indicates the task failed
 
 
-For more verbose output, add `-v`, `-vv`, `-vvv`, etc. flags
+For more verbose output, add `-v`, `-vv`, `-vvv`, etc. flags.
 
-A successful ansible-playbook run should provide a list of hosts and changes
-and indicate no failures, for example:
+A successful ansible-playbook run should provide a list of hosts changes and indicate no failures, for example:
 
 ```console
 PLAY RECAP ************************************************************************************************************
@@ -84,6 +78,7 @@ _Create server inventory_
 
 ```sh
 # Copy the default configuration
+# This should be in the deepops directory and will be done automatically by setup.sh
 cp -r config.example config
 
 # Review and edit the inventory file to set IPs/hostnames for servers
@@ -93,6 +88,8 @@ cat config/inventory
 cat config/group_vars/all.yml
 cat config/group_vars/gpu-servers.yml
 ```
+
+After creating an inventory file all `ansbile` and `ansible-playbook` commands must be run in the `./deepops` directory or the inventory file must be provided with the `-i` flag (`-i config/inventory`).
 
 _Run Commands_
 
@@ -106,6 +103,7 @@ ansible management -a hostname
 _Run Playbooks_
 
 To run playbooks, use the `ansible-playbook` command:
+
 
 ```sh
 # If sudo requires a password, add the -K flag

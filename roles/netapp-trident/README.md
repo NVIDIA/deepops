@@ -6,10 +6,11 @@ Ansible role that can be used to deploy NetApp Trident within a Kubernetes clust
 Requirements
 ------------
 
-**Prerequesites:**
+**Prerequisites:**
 
 1. 'kubectl' must be installed on the target host.
 2. '~/.kube/config' must be configured, on the target host, for access to the cluster that you wish to deploy Trident to.
+3. 'helm' must be installed on the target host.
 
 Role Variables
 --------------
@@ -19,7 +20,7 @@ See defaults/main.yml, vars/main.yml
 Dependencies
 ------------
 
-Roles: openshift (https://github.com/mboglesby/deepops/tree/master/roles/openshift)
+Kubernetes must have already been deployed using DeepOps.
 
 Example Playbooks
 ----------------

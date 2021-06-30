@@ -1,5 +1,5 @@
 ---
-- hosts: slurm-master
+- hosts: slurm-master[0]
   become: yes
   roles:
     - {role: ood-wrapper, ood_is_server: yes }

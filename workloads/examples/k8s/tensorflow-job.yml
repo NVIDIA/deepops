@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tensorflow-job
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: tensorflow-job-container
+          image:  nvcr.io/nvidia/tensorflow:21.03-tf1-py3
+          command: ["/bin/sh"]
+          args: ["-c", "python /workspace/nvidia-examples/cnn/resnet.py --layers=50 --batch_size=64"]
+          resources:
+            limits:
+              nvidia.com/gpu: 1

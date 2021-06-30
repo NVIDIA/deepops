@@ -1,0 +1,15 @@
+---
+- include: ../nvidia-software/nvidia-driver.yml
+
+- include: nvidia-docker.yml
+  vars:
+    nvidia_docker_skip_docker_reload: true
+
+- include: ../slurm-cluster/lmod.yml
+
+- hosts: all
+  become: yes
+  tasks:
+    - name: install rootless docker
+      include_role:
+        name: docker-rootless

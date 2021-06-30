@@ -1,0 +1,73 @@
+#!/bin/bash
+
+{% if ansible_os_family == "RedHat" %}
+
+mun=$(sysctl -n user.max_user_namespaces 2>/dev/null || echo 0 )
+
+if [ "$mun" -lt "28633" ] ; then
+
+cat <<EOT > /etc/sysctl.d/51-rootless.conf
+user.max_user_namespaces = 28633
+EOT
+sudo sysctl --system
+
+fi
+
+# On RedHat the following might be needed:
+# grubby --update-kernel=ALL --args="namespace.unpriv_enable=1 user_namespace.enable=1"
+
+{% endif %}
+
+configfiledst="{{ rootlessdocker_install_dir }}/config/nvidia-container-runtime/config.toml"
+configfilesrc=/etc/nvidia-container-runtime/config.toml
+
+if [ -f "$configfilesrc" ]; then
+  cp $configfilesrc $configfiledst
+  # delete and set no-cgroups to true
+  sed -i '/^\[nvidia-container-cli\]$/,/^\[/{/no-cgroups/d}' $configfiledst
+  sed -i '/^\[nvidia-container-cli\]$/a no-cgroups = true' $configfiledst
+fi
+
+
+userid=$(id -u)
+largestuid=$(cat /etc/subuid | awk '{split($0,a,":"); print a[2]}' | sort -n | tail -1)
+mysubuid=$(( largestuid + 65536 ))
+cleansubuid=false
+if ! grep "^$(id -un):\|^$(id -u):" /etc/subuid >/dev/null 2>&1; then
+  echo ${userid}:${mysubuid}:65536 >> /etc/subuid
+  cleansubuid=true
+fi
+
+largestgid=$(cat /etc/subgid | awk '{split($0,a,":"); print a[2]}' | sort -n | tail -1)
+mysubgid=$(( largestgid + 65536 ))
+cleansubgid=false
+if ! grep "^$(id -un):\|^$(id -u):" /etc/subgid >/dev/null 2>&1; then
+  echo ${userid}:${mysubgid}:65536 >> /etc/subgid
+  cleansubgid=true
+fi
+
+curl -fsSL https://get.docker.com/rootless | \
+  SKIP_IPTABLES=1 FORCE_ROOTLESS_INSTALL=1 DOCKER_BIN="{{ rootlessdocker_install_dir }}/bin" sh
+
+installsuccess=false
+if [ $? -eq 0 ] ; then
+  installsuccess=true
+fi
+
+if [ "$cleansubuid" = true ] ; then
+  sed -i "/^${userid}:/d" /etc/subuid
+fi
+
+if [ "$cleansubgid" = true ] ; then
+  sed -i "/^${userid}:/d" /etc/subgid
+fi
+
+if [ "$installsuccess" = true ] ; then
+  touch "{{ rootlessdocker_install_dir }}/config/install_success"
+else
+  echo curl -fsSL https://get.docker.com/rootless \| \
+    SKIP_IPTABLES=1 FORCE_ROOTLESS_INSTALL=1 DOCKER_BIN="{{ rootlessdocker_install_dir }}/bin" sh
+  exit 1
+fi
+
+chown root:root {{ rootlessdocker_install_dir }}/bin/*

@@ -1,10 +1,15 @@
 ---
+- name: RedHat | trust GPG key for EPEL
+  rpm_key:
+    key: "{{ epel_key_url }}"
+    state: present
+
 - name: RedHat | add epel repo
-  yum_repository:
-    name: epel
-    description: EPEL YUM repo
-    baseurl: "{{ nvidia_driver_rhel_epel_repo_baseurl }}"
-    gpgkey: "{{ nvidia_driver_rhel_epel_repo_gpgkey }}"
+  become: yes
+  yum:
+    name: 
+      - "{{ epel_package }}"
+    state: latest
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
 - name: RedHat | add CUDA repo

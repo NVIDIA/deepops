@@ -1,0 +1,84 @@
+---
+
+- name: install dependencies (ubuntu)
+  apt:
+    name:
+    - "uidmap"
+    state: present
+  when: ansible_distribution == "Ubuntu"
+
+- name: install dependencies (Red Hat)
+  yum:
+    name:
+    - "shadow-utils"
+    - "fuse-overlayfs"
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Ensure directory structure exists
+  file:
+    path: '{{ rootlessdocker_install_dir }}/{{ item.path }}'
+    owner: 'root'
+    group: 'root'
+    state: directory
+    mode: '0755'
+  with_filetree: '{{ role_path }}/templates/rootless-docker'
+  when: item.state == 'directory'
+
+- name: Copy over templates.
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ rootlessdocker_install_dir }}/{{ item.path }}'
+    owner: 'root'
+    group: 'root'
+    mode: '{{ item.mode }}'
+    force: no
+  with_filetree: '{{ role_path }}/templates/rootless-docker'
+  when: item.state == 'file'
+
+- name: add rootless docker profile script to source modules
+  template:
+    src: '{{ item }}'
+    dest: '/etc/profile.d/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+    force: no
+  with_items:
+  - 'z96_rootlessdocker_modules.sh'
+
+- name: check if rootless docker already installed successfully
+  stat: 
+    path: '{{ rootlessdocker_install_dir }}/config/install_success'
+  register: rootless_docker_installed
+
+- name: Template setup rootless docker script
+  template:
+    src: '{{ role_path }}/templates/rootless_docker_setup.sh.j2'
+    dest: /tmp/rootless_docker_setup.sh
+    mode: 0755
+  when: not rootless_docker_installed.stat.exists
+
+- name: Execute setup rootless docker script
+  become: true
+  shell:
+    /tmp/rootless_docker_setup.sh
+  args:
+    executable: /bin/bash
+    creates: '{{ rootlessdocker_install_dir }}/config/install_success'
+
+- name: Clean up rootless docker set script
+  file:
+    path: /tmp/rootless_docker_setup.sh
+    state: absent
+
+- name: Add the br_netfilter module
+  modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Load br_netfilter module at boot
+  lineinfile:
+    path: /etc/modules
+    create: yes
+    line: "br_netfilter"

@@ -32,7 +32,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    Install a supported operating system on all servers utilizing the [DGXie](/docs/pxe/dgxie-container.md) provisioning container, via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)), or server BMC/console.
 
-   > NOTE: During OS installation, it is ideal if the identical user/password is configured. Otherwise, follow step 4 below to create an idential user across all nodes in the cluster.
+   > NOTE: During OS installation, it is ideal if the identical user/password is configured. Otherwise, follow step 4 below to create an identical user across all nodes in the cluster.
 
 2. Set up your provisioning machine.
 
@@ -60,7 +60,7 @@ High-Performance Multi-Node Cluster Deployment Guide
 
    > NOTE: Be warned that `/etc/hostname` and `/etc/hosts` on each host will be modified to the name(s) specified in the inventory file, so it is best to use the actual names of the hosts.
 
-   When modifying the inventory, if the hosts are not accessible from the provisioning node by their hostname, supply an an `ansible_host`. For example:
+   When modifying the inventory, if the hosts are not accessible from the provisioning node by their hostname, supply an `ansible_host`. For example:
 
    ```yml
    # in config/inventory...

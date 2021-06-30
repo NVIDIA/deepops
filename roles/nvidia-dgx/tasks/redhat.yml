@@ -2,12 +2,16 @@
 - name: include os specific variables
   include_vars: redhat.yml
 
+- name: trust GPG key for EPEL
+  rpm_key:
+    key: "{{ epel_key_url }}"
+    state: present
+
 - name: Add epel repo
-  yum_repository:
-    name: epel
-    description: EPEL YUM repo
-    baseurl: "{{ epel_baseurl }}"
-    gpgkey: "{{ epel_gpgkey }}"
+  yum:
+    name: 
+      - "{{ epel_package }}"
+    state: latest
 
 - name: Add DGX repo
   yum_repository:

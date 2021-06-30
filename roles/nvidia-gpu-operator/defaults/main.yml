@@ -1,7 +1,34 @@
 ---
+# See GitHub for more information https://github.com/NVIDIA/gpu-operator
+
+# For vGPU support, this role require a manual build step to create a driver container image in a private registry
+# See https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html#considerations-to-install-gpu-operator-with-nvidia-vgpu-driver
+#  for additional details around buidling/pushing/using driver containers and setting gpu_operator_driver_version to the correct value
+
 # Vars needed to install operator
 gpu_operator_helm_repo: "https://nvidia.github.io/gpu-operator"
 gpu_operator_chart_name: "nvidia/gpu-operator"
 gpu_operator_release_name: "nvidia-gpu-operator"
-gpu_operator_chart_version: "1.1.7"
+gpu_operator_chart_version: "1.6.2"
 k8s_gpu_mig_strategy: "mixed"
+
+# Configuration customization
+# XXX: This currently appears to be hardcoded in the operator
+gpu_operator_namespace: "gpu-operator-resources"
+gpu_operator_grid_config_dir: "{{ deepops_dir }}/gpu_operator"
+
+# Defaults from https://github.com/NVIDIA/gpu-operator/blob/master/deployments/gpu-operator/values.yaml
+gpu_operator_default_runtime: "docker"
+gpu_operator_driver_registry: "nvcr.io/nvidia"
+gpu_operator_driver_version: "460.32.03"
+gpu_operator_plugin_args: "--mig-strategy={{ k8s_gpu_mig_strategy }},--pass-device-specs=true,--fail-on-init-error=true,--device-list-strategy=envvar,--nvidia-driver-root=/run/nvidia/driver"
+
+# Variables used for vGPU
+## This is the IP of the license server used for vGPU, must be set to use vGPU
+vgpu_grid_license_server: ""
+## This should remain as $oauthtoken if using an NGC API key
+gpu_operator_registry_username: "$oauthtoken"
+## This is most likely an NGC API key
+gpu_operator_registry_password: ""
+## This is most likely an NGC email
+gpu_operator_registry_email: ""

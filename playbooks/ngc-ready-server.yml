@@ -13,28 +13,26 @@
 
 - hosts: all
   become: true
-  vars:
-    ngc_container_tag: 18.10-py3
   tasks:
-    - name: install docker python module
+    - name: install docker python3 module
       apt:
-        name: python-docker
+        name: python3-docker
         state: present
         update_cache: yes
       when: ansible_distribution == "Ubuntu"
     - name: Enable EPEL repo
       package:
         name:
-          - epel-release
+          - "{{ epel_package }}"
         state: present
       when: ansible_os_family == 'RedHat'
     - name: Install package dependencies
       package:
         name:
-          - python-pip
+          - python3-pip
         state: present
       when: ansible_os_family == "RedHat"
-    - name: Install python dependencies
+    - name: Install python3 dependencies
       pip:
         name:
           - docker
@@ -43,7 +41,7 @@
     - name: pull CUDA container
       docker_container:
         name: gpu-test-pull
-        image: nvcr.io/nvidia/cuda
+        image: "{{ ngc_ready_cuda_container }}" 
         auto_remove: yes
         pull: yes
       tags:
@@ -52,7 +50,7 @@
     - name: test CUDA container
       docker_container:
         name: gpu-test
-        image: nvcr.io/nvidia/cuda
+        image: "{{ ngc_ready_cuda_container }}" 
         detach: no
         command: nvidia-smi -L
       register: cuda
@@ -75,7 +73,7 @@
     - name: pull pytorch container
       docker_container:
         name: pytorch-pull
-        image: "nvcr.io/nvidia/pytorch:{{ ngc_container_tag }}"
+        image: "{{ ngc_ready_pytorch }}"
         auto_remove: yes
         pull: yes
       tags:
@@ -84,7 +82,7 @@
     - name: test pytorch
       docker_container:
         name: pytorch
-        image: "nvcr.io/nvidia/pytorch:{{ ngc_container_tag }}"
+        image: "{{ ngc_ready_pytorch }}"
         working_dir: /opt/pytorch/examples/upstream/mnist
         detach: no
         network_mode: host
@@ -109,7 +107,7 @@
     - name: pull tensorflow container
       docker_container:
         name: tensorflow-pull
-        image: "nvcr.io/nvidia/tensorflow:{{ ngc_container_tag }}"
+        image: "{{ ngc_ready_tensorflow }}"
         auto_remove: yes
         pull: yes
       tags:
@@ -118,7 +116,7 @@
     - name: test tensorflow
       docker_container:
         name: tensorflow
-        image: "nvcr.io/nvidia/tensorflow:{{ ngc_container_tag }}"
+        image: "{{ ngc_ready_tensorflow }}"
         working_dir: /opt/tensorflow/tensorflow/examples/tutorials/mnist
         detach: no
         network_mode: host

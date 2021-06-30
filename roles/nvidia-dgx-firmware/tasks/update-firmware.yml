@@ -1,50 +1,57 @@
 ---
+- name: Starting firmware update step
+  debug:
+    msg: "Starting now"
 
 - include: check-firmware.yml
 
-- name: Check if force update requested
-  set_fact:
-    force_parameter: '-f'
-  when: force_update
+- block:
+  - name: Check if force update requested
+    set_fact:
+      force_parameter: "{{ '-f' if force_update else '' }}"
 
-- name: Update firmware if required
-  block:
-    - name: Update firmware if required
-      command: "docker run --rm -ti --privileged -v /:/hostfs -e auto=1 -e COLUMNS=200 -e LINES=300 {{ firmware_update_repo }}:{{ firmware_update_tag }} set_flags AUTO=1 update_fw {{ force_parameter }} {{ target_fw }}"
-      register: update_output
-      when:
-        - "'no' in firmware_versions.stdout"
-      failed_when: "'fail' in update_output.stdout"
-  rescue:
-    - name: Show failure message
-      debug:
-        var: update_output.stdout
-    - include: transfer-logs.yml
+  - name: Update firmware if required
+    shell: "docker run --rm -ti --privileged -v /:/hostfs -e NVSM_MODE=1 {{ firmware_update_repo }}:{{ firmware_update_tag }} set_flags AUTO=1 update_fw {{ target_fw }} {{ force_parameter }} > {{ fw_dir }}/fw-update.json" 
+
+  - name: "Parse FW Update output"
+    command: "python3 {{ fw_dir }}/parse_manifest.py parse_update_json {{ fw_dir }}/fw-update.json"
+    register: update_output
+  - name: To json
+    set_fact:
+      fw_update_json: "{{ update_output.stdout }}"
+  - name: Register reboot as required
+    set_fact:
+       reboot_required: true
+    when: fw_update_json.RebootRequired == true
+
+  when:
+    - firmware_needs_upgrade | default(false)
 
 - name: Reboot if necessary
   shell: sleep 2 && /sbin/shutdown -r now "Reboot required"
   async: 1
   poll: 0
-  when: " 'no' in firmware_versions.stdout and 'reboot required: yes' in update_output.stdout"
-  changed_when: False
+  when:
+    - reboot_required | default(false)
 
-- name: Wait for server to reboot
+# TODO: This script does not handle the case of a chassis-levl power cycle being required with ipmitool 
+
+- name: Register power cycle required
+  when: fw_update_json.FirmwareLoadAction == "DC Power Cycle"
+  set_fact:
+    nv_fw_power_cycle_needed: true
+- name: Tell user to manually power cycle chassis
+  when: nv_fw_power_cycle_needed | default(false)
+  debug:
+    msg: "It is necessary to manually power cycle this DGX using the BMC or ipmitool. FW update message: {{ fw_update_json.Message }}"
+
+- name: Wait for server to reboot (if required)
   wait_for_connection:
     delay=15
     timeout={{ reboot_timeout }}
-  when: " 'no' in firmware_versions.stdout and 'reboot required: yes' in update_output.stdout"
 
-- name: Ensure firmware was updated and everything is up-to-date. Skip if force update was used.
-  block:
-    - include: check-firmware.yml
-    - name: "Ensure all fw versions are up-to-date after the update - skip if force update was used or specific target fw was updated"
-      debug:
-        msg: ""
-      failed_when: "'no' in firmware_versions.stdout"
-  when: "target_fw == 'all' and force_parameter == '' and not 'fail' in update_output.stdout"
-  rescue:
-    - name: Show debug information for firmware update mismatch
-      debug:
-        var: firmware_versions.stdout
-    - include: transfer-logs.yml
+- name: Print Debug
+  debug:
+    msg: Host is online
 
+- include: verify-firmware.yml

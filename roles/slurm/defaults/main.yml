@@ -1,12 +1,12 @@
-epel_baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"
-epel_gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+epel_key_url: "https://getfedora.org/static/fedora.gpg"
 
 slurm_build_dir: /opt/deepops/build/slurm
 hwloc_build_dir: /opt/deepops/build/hwloc
 pmix_build_dir: /opt/deepops/build/pmix
 
 slurm_workflow_build: yes
-slurm_version: 20.02.4
+slurm_version: 20.11.7
 slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
 slurm_build_make_clean: no
 slurm_build_dir_cleanup: no
@@ -28,12 +28,17 @@ slurm_allow_ssh_user: []
 slurm_db_username: slurm
 slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 
+slurm_enable_ha: false
+slurm_ha_state_save_location: "/sw/slurm"
+
 is_controller: no
 is_compute: no
 
 # Controls when a DOWN node will be returned to service.
 # See "man slurm.conf" for more details.
 slurm_return_to_service: 1
+slurm_reboot_program: "/bin/systemctl reboot"
+slurm_resume_timeout: 900
 
 # Sets: GresTypes=gpu
 # Sets: Gres=gpu:{{ gpu_topology|count }}
@@ -63,6 +68,9 @@ slurm_oversubscribe: "NO"
 # Default: <not included>
 # slurm_default_job_timelimit: 
 
+# Maximum time to wait for Slurm compute nodes to reboot during playbook setup
+slurm_node_reboot_timeout: 600
+
 # Set up prolog and epilog
 slurm_enable_prolog_epilog: true
 
@@ -79,7 +87,7 @@ epilog_fileglob:
 slurm_fix_shm: true
 
 slurm_include_hwloc: yes
-hwloc_version: 2.2.0
+hwloc_version: 2.4.1
 hwloc_tag: "v{{ hwloc_version.split('.')[0] }}.{{ hwloc_version.split('.')[1] }}"
 hwloc_src_url: "https://download.open-mpi.org/release/hwloc/{{ hwloc_tag }}/hwloc-{{ hwloc_version }}.tar.gz"
 hwloc_install_prefix: /opt/deepops/hwloc
@@ -87,7 +95,7 @@ hwloc_configure: "./configure --prefix={{ hwloc_install_prefix }} --enable-stati
 hwloc_force_rebuild: no
 
 slurm_include_pmix: yes
-pmix_version: 2.2.4
+pmix_version: 3.2.3
 pmix_src_url: "https://github.com/openpmix/openpmix/releases/download/v{{ pmix_version }}/pmix-{{ pmix_version }}.tar.bz2"
 pmix_install_prefix: /opt/deepops/pmix
 pmix_configure: "./configure --prefix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}"

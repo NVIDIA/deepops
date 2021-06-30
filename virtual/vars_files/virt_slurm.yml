@@ -10,7 +10,7 @@ slurm_allow_ssh_user:
 # Perform cleanup tasks during the install to minimize disk space impact
 hpcsdk_clean_up_tarball_after_extract: true
 hpcsdk_clean_up_temp_dir: true
-slurm_build_dir_cleanup: true
+slurm_build_dir_cleanup: false
 
-# Build OpenMPI locally for testing
-slurm_cluster_install_openmpi: true
+# Ensure we use the slurm management node for syslog
+rsyslog_client_tcp_host: "{{ groups['slurm-master'][0] }}"

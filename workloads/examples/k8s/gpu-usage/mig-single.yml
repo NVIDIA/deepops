@@ -1,0 +1,18 @@
+# This yaml file will launch a container with a 1g.5gb MIG device
+# It will only deploy onto a node containing A100 40B GPUs
+# The node must be configured in mig-strategy=single mode with all 1g.5gb profiles created
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-pod
+spec:
+  nodeSelector:
+    nvidia.com/gpu.product: A100-SXM4-40GB-MIG-1g.5gb
+  containers:
+    - name: gpu-pod
+      image:  nvcr.io/nvidia/k8s/cuda-sample:nbody
+      command: ["/bin/sh"]
+      args: ["-c", "nvidia-smi"]
+      resources:
+        limits:
+          nvidia.com/gpu: 1

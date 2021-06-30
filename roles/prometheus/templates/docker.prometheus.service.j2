@@ -9,7 +9,7 @@ Restart=always
 ExecStartPre=-/usr/bin/docker stop %n
 ExecStartPre=-/usr/bin/docker rm %n
 ExecStartPre=/usr/bin/docker pull {{ prometheus_container }}
-ExecStart=/usr/bin/docker run --rm --network host --name %n -v {{ prometheus_config_dir }}:/etc/prometheus {{ prometheus_container }}
+ExecStart=/usr/bin/docker run --rm --network host --name %n -v {{ prometheus_config_dir }}:/etc/prometheus -v {{ prometheus_docker_volume_name }}:/prometheus {{ prometheus_container }}
 
 [Install]
 WantedBy=multi-user.target

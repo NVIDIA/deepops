@@ -14,17 +14,28 @@
 
 # Configure hostnames, /etc/hosts
 - include: generic/hosts.yml
+  when: "{{ slurm_configure_etc_hosts | default(true) }}"
+  tags:
+  - set-etc-hosts
 
 # Configure Chrony (NTP) sync
 - include: generic/chrony-client.yml
   when: chrony_install
+
+# Set up a local cluster container registry
+- include: container/standalone-container-registry.yml hostlist=slurm-master
+  when: slurm_enable_container_registry|default(true)
 
 # Install NVIDIA driver
 - include: nvidia-software/nvidia-driver.yml
   when: slurm_cluster_install_nvidia_driver|default(true)
 
 # Install NVIDIA CUDA Toolkit
+#   Note: the CUDA playbook also installs the driver, so we pass the
+#   appropriate flag to this playbook as well.
 - include: nvidia-software/nvidia-cuda.yml
+  vars:
+     cuda_playbook_install_driver: "{{ slurm_cluster_install_nvidia_driver }}"
   when: slurm_cluster_install_cuda|default(true)
 
 # Install software
@@ -33,11 +44,11 @@
 # Set up NFS filesystem
 - include: generic/nfs-server.yml
   vars:
-    hostlist: "{{ nfs_server_group | default('slurm-master') }}"
+    hostlist: "{{ nfs_server_group | default('slurm-master[0]') }}"
   when: slurm_enable_nfs_server
 - include: generic/nfs-client.yml
   vars:
-    hostlist: "{{ nfs_client_group | default('slurm-node') }}"
+    hostlist: "{{ nfs_client_group | default('slurm-master[1:],slurm-node') }}"
   when: slurm_enable_nfs_client_nodes
 
 # Install DCGM
@@ -60,20 +71,40 @@
   when: slurm_install_lmod
 
 # Install the NVIDIA HPC SDK
-- include: nvidia-software/nvidia-hpc-sdk.yml hostlist=slurm-master
+- include: nvidia-software/nvidia-hpc-sdk.yml
+  vars:
+    hostlist: "{{ sm_install_host | default('slurm-master[0]')}}"
   when: slurm_install_hpcsdk
 
-# Install monitoring tools
-- include: slurm-cluster/prometheus.yml hostlist=slurm-master
+# Install monitoring services
+- include: slurm-cluster/prometheus.yml
+  vars:
+    hostlist: "{{ slurm_monitoring_group | default('slurm-master[0]') }}"
   when: slurm_enable_monitoring
-- include: slurm-cluster/grafana.yml hostlist=slurm-master
+- include: slurm-cluster/grafana.yml
+  vars:
+    hostlist: "{{ slurm_monitoring_group | default('slurm-master[0]') }}"
   when: slurm_enable_monitoring
-- include: slurm-cluster/prometheus-slurm-exporter.yml hostlist=slurm-master
+
+# Install monitoring exporters
+- include: slurm-cluster/prometheus-slurm-exporter.yml
+  vars:
+    hostlist: "{{ slurm_monitoring_group | default('slurm-master[0]') }}"
   when: slurm_enable_monitoring
 - include: slurm-cluster/prometheus-node-exporter.yml
   when: slurm_enable_monitoring
 - include: slurm-cluster/nvidia-dcgm-exporter.yml
   when: slurm_enable_monitoring
+
+# Set up rsyslog forwarding from compute nodes to head node
+- include: generic/rsyslog-server.yml
+  vars:
+    hostlist: "{{ rsyslog_server_hostname | default('slurm-master[0]') }}"
+  when: slurm_enable_rsyslog_server|default(true)
+- include: generic/rsyslog-client.yml
+  vars:
+    hostlist: "{{ rsyslog_client_group | default('slurm-node') }}"
+  when: slurm_enable_rsyslog_client|default(true)
 
 # Install Singularity
 - include: container/singularity.yml

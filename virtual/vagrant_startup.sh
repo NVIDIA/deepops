@@ -5,6 +5,13 @@ set -xe
 # Get absolute path for script, and convenience vars for virtual and root
 VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+# The default Vagrant Operating System is Ubuntu 18.04
+# To override thise, change these variables to a supported OS
+DEEPOPS_VAGRANT_OS=${DEEPOPS_VAGRANT_OS:-ubuntu}
+DEEPOPS_OS_VERSION=${DEEPOPS_OS_VERSION:-18.04}
+
+# Startup the specified VM OS, defaulting to Ubuntu
+
 #####################################
 # Install Vagrant and Dependencies
 #####################################
@@ -48,7 +55,7 @@ case "$ID" in
     if ! which vagrant >/dev/null 2>&1; then
       # install vagrant (frozen at 2.2.3 to avoid various issues)
       pushd "$(mktemp -d)"
-      wget https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_x86_64.rpm -O vagrant.rpm
+      wget https://releases.hashicorp.com/vagrant/2.2.14/vagrant_2.2.14_x86_64.rpm -O vagrant.rpm
       #sudo rpm -i vagrant.rpm
       sudo yum -y localinstall vagrant.rpm
       popd
@@ -100,7 +107,7 @@ case "$ID" in
     if ! which vagrant >/dev/null 2>&1; then
       # install vagrant (frozen at 2.2.3 to avoid various issues)
       pushd "$(mktemp -d)"
-      wget https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_x86_64.deb -O vagrant.deb
+      wget https://releases.hashicorp.com/vagrant/2.2.14/vagrant_2.2.14_x86_64.deb -O vagrant.deb
       sudo dpkg -i vagrant.deb
       popd
   
@@ -122,14 +129,13 @@ esac
 #####################################
 # Set up Vagrantfile and start up the configuration in Vagrant
 if [ ${DEEPOPS_FULL_INSTALL} ]; then
-  export CENTOS_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos-full}"
-  export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu-full}"
+  export CENTOS_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos${DEEPOPS_OS_VERSION}-full}"
+  export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu${DEEPOPS_OS_VERSION}-full}"
 else
-  export CENTOS_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos}"
-  export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu}"
+  export CENTOS_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos${DEEPOPS_OS_VERSION}}"
+  export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu${DEEPOPS_OS_VERSION}}"
 fi
 
-# Startup the specified VM OS, defaulting to Ubuntu
 if [ ${DEEPOPS_VAGRANT_OS} = "centos" ]; then
   export DEEPOPS_VAGRANT_FILE=${CENTOS_DEEPOPS_VAGRANT_FILE}
 else

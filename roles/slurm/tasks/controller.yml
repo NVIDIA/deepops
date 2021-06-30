@@ -6,7 +6,7 @@
     state: present
   with_items:
     - mariadb-server
-    - python-mysqldb
+    - python3-mysqldb
     - s-nail
     - ssmtp
   when: ansible_os_family == "Debian"
@@ -21,7 +21,18 @@
     - mailx
     - ssmtp
     - policycoreutils-python
-  when: ansible_os_family == "RedHat"
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+
+- name: install dependencies
+  dnf:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - mariadb-server
+    - python3-PyMySQL
+    - mailx
+    - policycoreutils-python-utils
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
 
 - name: Allow mysql to read libaio.so.1
   sefcontext:
@@ -61,6 +72,14 @@
     - /var/spool/slurm/ctld
     - /var/log/slurm
 
+- name: create slurm HA directory
+  file:
+    path: "{{ slurm_ha_state_save_location }}"
+    state: directory
+    owner: slurm
+    mode: 0755
+  when: "{{ slurm_enable_ha }}"
+
 - name: configure slurm.conf
   template:
     src: "{{ slurm_conf_template }}"
@@ -74,7 +93,8 @@
   template:
     src: "{{ slurm_dbd_conf_template }}"
     dest: "{{ slurm_config_dir }}/slurmdbd.conf"
-    mode: 0600 # https://www.hpcsec.com/2019/12/22/cve-2019-19727/
+    owner: "{{ slurm_username }}"
+    mode: 0600
   notify:
   - restart slurmdbd
   tags:

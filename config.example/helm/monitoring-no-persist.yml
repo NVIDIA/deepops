@@ -1,0 +1,59 @@
+prometheusOperator:
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
+
+prometheus:
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/rewrite-target: /
+  prometheusSpec:
+    nodeSelector:
+      node-role.kubernetes.io/master: ""
+  service:
+    type: NodePort
+    nodePort: 30500
+  additionalServiceMonitors:
+  - name: dcgm-exporter
+    selector:
+      matchLabels:
+        app: dcgm-exporter
+    endpoints:
+    - port: scrape
+      interval: 1s
+      honorLabels: true       
+  serviceMonitorsSelector:
+    matchLabels:
+      prometheus: "kube-prometheus"
+
+alertmanager:
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/rewrite-target: /
+  alertmanagerSpec:
+    nodeSelector:
+      node-role.kubernetes.io/master: ""
+  service:
+    type: NodePort
+    nodePort: 30400
+
+grafana:
+  adminPassword: deepops
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/rewrite-target: /
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
+  service:
+    type: NodePort
+    nodePort: 30200
+  serverDashboardConfigmaps:
+    - kube-prometheus-grafana-gpu
