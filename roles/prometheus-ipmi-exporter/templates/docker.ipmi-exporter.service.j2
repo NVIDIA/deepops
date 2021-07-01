@@ -1,0 +1,15 @@
+[Unit]
+Description=Prometheus IPMI Exporter
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+# ExecStartPre=/usr/bin/docker pull {{ ipmi_exporter_container }}
+ExecStart=/usr/bin/docker run --rm --cpus={{ ipmi_exporter_max_cpu }} --name %n -p 9290:9290 --device /dev/ipmi0:/dev/ipmi0 {{ ipmi_exporter_container }}
+
+[Install]
+WantedBy=multi-user.target

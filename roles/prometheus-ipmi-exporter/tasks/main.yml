@@ -1,0 +1,37 @@
+---
+- name: create config dir
+  file:
+    path: "{{ prometheus_config_dir }}"
+    state: directory
+
+- name: create endpoints config dir
+  file:
+    path: "{{ prometheus_cfg_endpoint_dir }}"
+    state: directory
+
+- name: install config file
+  template:
+    src: templates/ipmi-exporter.yml.j2
+    dest: "{{ prometheus_cfg_endpoint_dir }}/ipmi-exporter.yml"
+    owner: root
+    group: root
+    mode: 0644
+
+- include: container-build.yml
+
+- name: install systemd unit file
+  template:
+    src: templates/docker.ipmi-exporter.service.j2
+    dest: "/etc/systemd/system/{{ ipmi_exporter_svc_name }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart ipmi-exporter
+
+- name: configure service
+  systemd:
+    name: "{{ ipmi_exporter_svc_name }}"
+    state: "{{ ipmi_exporter_state }}"
+    enabled: "{{ ipmi_exporter_enabled }}"
+    daemon_reload: yes
+  notify: restart ipmi-exporter

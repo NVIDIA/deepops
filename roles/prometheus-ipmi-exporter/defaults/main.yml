@@ -1,0 +1,10 @@
+ipmi_exporter_dockerfile: ../../../src/containers/prometheus-ipmi-exporter
+ipmi_exporter_container: "deepops/prometheus-ipmi-exporter"
+ipmi_exporter_svc_name: "docker.ipmi-exporter.service"
+ipmi_exporter_state: started
+ipmi_exporter_enabled: yes
+
+prometheus_config_dir: /etc/prometheus
+prometheus_cfg_endpoint_dir: "{{ prometheus_config_dir }}/endpoints"
+
+ipmi_exporter_max_cpu: "0.5"

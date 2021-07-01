@@ -95,6 +95,8 @@
   when: slurm_enable_monitoring
 - include: slurm-cluster/nvidia-dcgm-exporter.yml
   when: slurm_enable_monitoring
+- include: slurm-cluster/prometheus-ipmi-exporter.yml
+  when: slurm_enable_monitoring
 
 # Set up rsyslog forwarding from compute nodes to head node
 - include: generic/rsyslog-server.yml

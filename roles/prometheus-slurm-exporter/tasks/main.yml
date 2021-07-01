@@ -35,8 +35,10 @@
     dest: "{{ grafana_cfg_dashboard_path }}"
     owner: "{{ grafana_user_id }}"
   with_items:
-    - slurm-dashboard.json
+    - ../../../src/dashboards/slurm-dashboard.json
   notify: restart grafana
+
+- include: container-build.yml
 
 - name: install systemd unit file
   template:

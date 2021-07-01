@@ -1,0 +1,18 @@
+# Configuration file for ipmi_exporter
+
+# This is an example config for scraping the local host.
+# In most cases, this should work without using a config file at all.
+modules:
+  default:
+    # Available collectors are bmc, ipmi, chassis, dcmi, sel, and sm-lan-mode
+    collectors:
+    - bmc
+    - ipmi
+    - dcmi
+    - chassis
+    - sel
+    # Got any sensors you don't care about? Add them here.
+    exclude_sensor_ids:
+    - 2
+    - 29
+    - 32

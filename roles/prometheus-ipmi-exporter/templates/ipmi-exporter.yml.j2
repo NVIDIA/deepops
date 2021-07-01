@@ -1,0 +1,3 @@
+- targets: [{{ groups['slurm-node'] | zip_longest([], fillvalue=':9290') | map('join') | join(',') }}]
+  labels:
+    module: ipmi-exporter

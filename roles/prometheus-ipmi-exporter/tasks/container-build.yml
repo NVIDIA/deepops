@@ -1,0 +1,30 @@
+---
+- name: create build directory
+  file:
+    path: /tmp/prometheus-ipmi-exporter
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: copy Dockerfile
+  copy:
+    src: "{{ ipmi_exporter_dockerfile }}/{{ item }}"
+    dest: /tmp/prometheus-ipmi-exporter
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - Dockerfile
+    - config.yml
+
+- name: build container
+  docker_image:
+    name: "{{ ipmi_exporter_container }}"
+    build:
+      network: host
+      pull: no
+      rm: yes
+      path: /tmp/prometheus-ipmi-exporter
+    source: build
+    state: present

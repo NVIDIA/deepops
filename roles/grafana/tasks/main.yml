@@ -32,6 +32,7 @@
     owner: "{{ grafana_user_id }}"
   with_items:
     - ../../../src/dashboards/gpu-dashboard.json
+    - ../../../src/dashboards/slurm-dashboard.json
   notify: restart grafana
 
 - name: install datasource config

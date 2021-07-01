@@ -1,0 +1,29 @@
+---
+- name: create build directory
+  file:
+    path: /tmp/prometheus-slurm-exporter
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: copy Dockerfile
+  copy:
+    src: "{{ slurm_exporter_dockerfile }}/{{ item }}"
+    dest: /tmp/prometheus-slurm-exporter
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - Dockerfile
+
+- name: build container
+  docker_image:
+    name: "{{ slurm_exporter_container }}"
+    build:
+      network: host
+      pull: no
+      rm: yes
+      path: /tmp/prometheus-slurm-exporter
+    source: build
+    state: present
