@@ -61,6 +61,7 @@
     dest: "{{ hwloc_build_dir }}"
     extra_opts:
       - --strip-components=1
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
   when: hwloc_build
 
 - name: uninstall old hwloc version
