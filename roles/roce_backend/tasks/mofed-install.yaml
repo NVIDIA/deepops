@@ -30,7 +30,7 @@
         warn: no
       when: (ofed_installed.stat.exists == False) or (mofed_version not in current_mofed_version.stdout)
       register: install_mofed
-    - name: Reboot host after installtion mellanox OFED
+    - name: Reboot host after installing mellanox OFED
       reboot:
       when: install_mofed.changed
   when: check_mlnx_adapter.stdout|int > 0
