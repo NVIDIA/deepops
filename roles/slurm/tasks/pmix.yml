@@ -62,6 +62,7 @@
     dest: "{{ pmix_build_dir }}"
     extra_opts:
       - --strip-components=1
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
   when: pmix_build
 
 - name: uninstall old pmix version
