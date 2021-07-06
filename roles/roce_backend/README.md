@@ -7,7 +7,7 @@ For full Reference Deployment Guide please look - https://docs.mellanox.com/page
 Requirements
 ------------
 1. SR-IOV supported server platform 
-2. Enable SR-IOV in the NIC firmware (For Mellanox adapters plase refer to https://community.mellanox.com/s/article/howto-configure-sr-iov-for-connectx-4-connectx-5-with-kvm--ethernet-x#jive_content_id_I_Enable_SRIOV_on_the_Firmware)
+2. Enable SR-IOV in the NIC firmware (For Mellanox adapters please refer to https://community.mellanox.com/s/article/howto-configure-sr-iov-for-connectx-4-connectx-5-with-kvm--ethernet-x#jive_content_id_I_Enable_SRIOV_on_the_Firmware)
 3. Kubernetes cluster is deployed by DeepOps deployment tools 
 
 You should consult your hardware documentation for the BIOS specific settings in order to enable support for SR-IOV networking.

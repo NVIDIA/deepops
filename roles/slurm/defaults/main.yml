@@ -47,7 +47,7 @@ slurm_manage_gpus: true
 # Configuration file templates to use for configuring Slurm.
 # The default values are relative paths that will point to files within the
 # templates/ directory of this role, but we provide variables so that they
-# can be overrided.
+# can be overridden.
 slurm_conf_template: "etc/slurm/slurm.conf"
 slurm_cgroup_conf_template: "etc/slurm/cgroup.conf"
 slurm_gres_conf_template: "etc/slurm/gres.conf"
