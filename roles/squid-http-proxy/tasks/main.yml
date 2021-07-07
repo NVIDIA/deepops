@@ -1,0 +1,21 @@
+---
+- name: install squid http proxy
+  package:
+    name: "squid"
+    state: "present"
+
+- name: configure squid
+  template:
+    src: "squid.conf.j2"
+    dest: "/etc/squid/squid.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  notify:
+  - restart squid
+
+- name: start squid service
+  service:
+    name: "squid"
+    state: "started"
+    enabled: true

@@ -1,0 +1,10 @@
+# Configure the http port to listen on
+http_port {{ squid_http_port }}
+
+# Allow all requests
+http_access allow all
+
+{% if squid_disable_caching|bool %}
+# Never cache requests
+cache deny all
+{% endif %}
