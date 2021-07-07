@@ -114,7 +114,7 @@
 - include: slurm-cluster/open-ondemand.yml
   when: install_open_ondemand
 
-#Set Permisions to adjust GPU Clocks speeds
+# Set Permissions to adjust GPU Clocks speeds
 - include: utilities/gpu-clocks.yml
   when: allow_user_set_gpu_clocks
 
