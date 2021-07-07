@@ -9,11 +9,11 @@ Usage: $(basename $0) [-h|--help] [--quiet]
     Example:
         $(basename $0)
 
-    To ommit rootless docker daemon messages redirect output to dev null or
+    To omit rootless docker daemon messages redirect output to dev null or
     specify quiet option:
         $(basename $0) > /dev/null 2>&1
 
-    --quiet - Ommit rootless docker messages. Do not use this option when
+    --quiet - Omit rootless docker messages. Do not use this option when
         troubleshooting.
         Default: ${quiet}
 
