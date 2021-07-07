@@ -16,11 +16,7 @@ cd "${ROOT_DIR}" || exit 1
 # Set the K8s Ansible config directory (same as for Slurm)
 K8S_CONFIG_DIR="${VIRT_DIR}/config"
 
-DEEPOPS_OFFLINE="${DEEPOPS_OFFLINE:-0}"
 ansible_extra_args=""
-if [ "${DEEPOPS_OFFLINE}" -ne 0 ]; then
-	ansible_extra_args="-e "@${VIRT_DIR}/config/airgap/offline_repo_vars.yml""
-fi
 if [ ${DEEPOPS_K8S_OPERATOR} ]; then
 	ansible_extra_args="${ansible_extra_args} -e deepops_gpu_operator_enabled=true"
 fi
