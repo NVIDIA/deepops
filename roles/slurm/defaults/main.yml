@@ -13,7 +13,7 @@ slurm_build_dir_cleanup: no
 slurm_config_dir: /etc/slurm
 slurm_sysconf_dir: /etc/sysconfig
 slurm_install_prefix: /usr/local
-slurm_configure:  './configure --prefix={{ slurm_install_prefix }} --disable-dependency-tracking --disable-debug --disable-x11 --enable-really-no-cray --enable-salloc-kill-cmd --with-hdf5=no --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --without-shared-libslurm --without-rpath --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}'
+slurm_configure:  './configure --prefix={{ slurm_install_prefix }} --disable-dependency-tracking --disable-debug --disable-x11 --enable-really-no-cray --enable-salloc-kill-cmd --with-hdf5=no --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --with-shared-libslurm --without-rpath --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}'
 slurm_force_rebuild: no
 slurm_contain_ssh: yes
 
