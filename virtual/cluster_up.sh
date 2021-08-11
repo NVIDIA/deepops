@@ -32,6 +32,8 @@ if [ "${DEEPOPS_VIRT_CLEAN_CONFIG}" -ne 0 ]; then
 	cp "${VIRT_DIR}/virtual_inventory" "${DEEPOPS_CONFIG_DIR}/inventory"
 	if [ ${DEEPOPS_FULL_INSTALL} ]; then
 	  cp "${VIRT_DIR}/virtual_inventory_full" "${DEEPOPS_CONFIG_DIR}/inventory"
+	elif [ ${DEEPOPS_LARGE_SLURM} ]; then
+	  cp "${VIRT_DIR}/virtual_inventory_large_slurm" "${DEEPOPS_CONFIG_DIR}/inventory"
 	fi
 fi
 

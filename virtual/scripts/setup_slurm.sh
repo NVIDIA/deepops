@@ -15,6 +15,13 @@ cd "${ROOT_DIR}" || exit 1
 
 ansible_extra_args=""
 
+# Extra vars file
+if [ ${DEEPOPS_LARGE_SLURM} ]; then
+  SLURM_EXTRA_VARS="${SLURM_EXTRA_VARS:-${VIRT_DIR}/vars_files/virt_large_slurm.yml}"
+else
+  SLURM_EXTRA_VARS="${SLURM_EXTRA_VARS:-${VIRT_DIR}/vars_files/virt_slurm.yml}"
+fi
+
 # Use ansible install in virtualenv
 # NOTE: Added here because this script is also called from Jenkinsfile and not just cluster_up.sh
 if [ -d env ] ; then
@@ -24,10 +31,11 @@ else
 fi
 
 # Configure Slurm cluster
-ansible-playbook \
+ansible-playbook -vv \
 	-i "${VIRT_DIR}/config/inventory" \
 	-l slurm-cluster \
-	-e "@${VIRT_DIR}/vars_files/virt_slurm.yml" ${ansible_extra_args} \
+	--forks 16 \
+	-e "@${SLURM_EXTRA_VARS}" ${ansible_extra_args} \
 	"${ROOT_DIR}/playbooks/slurm-cluster.yml"
 
 # Un-drain nodes

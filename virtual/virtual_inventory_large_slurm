@@ -1,0 +1,62 @@
+#
+# Server Inventory File
+#
+# Uncomment and change the IP addresses in this file to match your environment
+# Define per-group or per-host configuration in group_vars/*.yml
+
+######
+# ALL NODES
+######
+[all]
+
+virtual-wm01 ansible_host=10.0.0.2 ip=10.0.0.2
+virtual-wm02 ansible_host=10.0.0.3 ip=10.0.0.3
+virtual-login01 ansible_host=10.0.0.4 ip=10.0.0.4
+virtual-login02 ansible_host=10.0.0.5 ip=10.0.0.5
+virtual-cache01 ansible_host=10.0.0.6 ip=10.0.0.6
+virtual-cache02 ansible_host=10.0.0.7 ip=10.0.0.7
+virtual-metric01 ansible_host=10.0.0.8 ip=10.0.0.8
+virtual-gpu01 ansible_host=10.0.0.9 ip=10.0.0.9
+virtual-gpu02 ansible_host=10.0.0.10 ip=10.0.0.10
+virtual-nfs01 ansible_host=10.0.0.11 ip=10.0.0.11
+
+
+######
+# SLURM
+######
+[slurm-master]
+virtual-wm01
+virtual-wm02
+
+[slurm-login]
+virtual-login01
+virtual-login02
+
+[slurm-metric]
+virtual-metric01
+
+[slurm-cache]
+virtual-cache01
+virtual-cache02
+
+[slurm-node]
+virtual-gpu01
+virtual-gpu02
+
+[slurm-nfs]
+virtual-nfs01
+
+[slurm-cluster:children]
+slurm-master
+slurm-node
+slurm-login
+slurm-metric
+slurm-cache
+slurm-nfs
+
+######
+# SSH connection configuration
+######
+[all:vars]
+ansible_user=vagrant
+ansible_password=vagrant
