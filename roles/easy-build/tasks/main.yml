@@ -106,7 +106,7 @@
     owner: root
     group: root
     mode: 0777
-  when: ansible_os_family == "Debian" and not ebsw_exe.matched
+  when: not ebsw_exe.matched
   tags:
     - configuration
 
@@ -118,6 +118,6 @@
     owner: root
     group: root
     mode: 0777
-  when: ansible_os_family == "RedHat" and not ebsw_exe.matched
+  when: not ebsw_exe.matched
   tags:
     - configuration
