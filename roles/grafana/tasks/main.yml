@@ -54,7 +54,7 @@
 
 - name: install config file
   template:
-    src: templates/grafana.ini.j2
+    src: "{{ grafana_config_template }}"
     dest: "{{ grafana_config_dir }}/grafana.ini"
     owner: root
     group: root
