@@ -99,7 +99,7 @@ To use DeepOps this repository will need to be downloaded onto the administrator
 
 2. Set up your provisioning machine. 
 
-   This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](ANSIBLE.md). 
+   This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](ansible.md). 
 
    ```sh
    # Install software prerequisites and copy default configuration.  See the script for components installed.  
@@ -168,7 +168,7 @@ k8-mgmt03        Ready    master   21m   v1.12.5
 
 1. Install an ingress controller for the cluster.
 
-   See the [Ingress Guide](ingress.md) for details on how to install and configure ingress.
+   See the [Ingress Guide](../k8s-cluster/ingress.md) for details on how to install and configure ingress.
 
 2. (Optional) Use DGXie for OS management of DGX servers.
 
@@ -190,7 +190,7 @@ k8-mgmt03        Ready    master   21m   v1.12.5
 
 3. (Optional) Deploy Internal Repositories
 
-   For instructions, see: [Building DeepOps Offline](offline.md)
+   For instructions, see: [Air-Gap Support](../airgap/README.md)
 
 4. (Optional) Deploy the NGC Container Replicator
 
@@ -399,8 +399,8 @@ For more on Kubeflow, please refer to the [official documentation](https://www.k
 ## Cluster Usage
 
 Refer to the following guides for examples of how to use the cluster:
-* [Kubernetes Usage Guide](kubernetes-usage.md)
-* [Slurm "Hello World" MPI Example](../examples/slurm/mpi-hello/README.md)
+* [Kubernetes Usage Guide](../k8s-cluster/kubernetes-usage.md)
+* [Slurm "Hello World" MPI Example](../../workloads/examples/slurm/mpi-hello/README.md)
 
 ## Cluster Updates
 
