@@ -93,7 +93,7 @@ function find_hpl_dat_file() {
     local system=$1
     local gpus_per_node=$2
     local nnodes=$3
-    locxal hplai=$4
+    local hplai=$4
 
     HPLDATFN=${HPL_FILE_DIR}/HPL.dat_${nnodes}N_${system}
     if [ x"$hplai" == x"1" ]; then
