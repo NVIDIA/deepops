@@ -17,7 +17,7 @@ roles:
   version: 'e67df1db28bf099aa06d0ab250478963532b4d29'
 
 - src: https://github.com/DeepOps/ansible-role-hosts.git
-  version: '8311d6ecfe39b665a06d1fc55502c6916e9ab5ce'
+  version: 'c21a676088c07db3db3ac9332cf584eeb068e3fd'
   name: DeepOps.hosts
 
 - src: geerlingguy.ntp
