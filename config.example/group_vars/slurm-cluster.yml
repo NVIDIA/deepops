@@ -118,8 +118,8 @@ slurm_install_hpcsdk: true
 
 # Select the version of HPC SDK to download
 hpcsdk_major_version: "21"
-hpcsdk_minor_version: "3"
-hpcsdk_file_cuda: "11.2"
+hpcsdk_minor_version: "7"
+hpcsdk_file_cuda: "11.4"
 hpcsdk_arch: "x86_64"
 
 # In a Slurm cluster, default to setting up HPC SDK as modules rather than in
