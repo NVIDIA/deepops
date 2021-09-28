@@ -7,9 +7,7 @@
 
 # Vars needed to install operator
 gpu_operator_helm_repo: "https://nvidia.github.io/gpu-operator"
-# Set to nvaie for vGPU+NVAIE
-gpu_operator_helm_repo_name: "nvidia"
-gpu_operator_chart_name: "{{ gpu_operator_helm_repo_name }}/gpu-operator"
+gpu_operator_chart_name: "nvidia/gpu-operator"
 gpu_operator_release_name: "nvidia-gpu-operator"
 gpu_operator_chart_version: "1.8.2"
 k8s_gpu_mig_strategy: "mixed"
@@ -25,6 +23,8 @@ gpu_operator_driver_registry: "nvcr.io/nvidia"
 gpu_operator_driver_version: "470.57.02"
 
 # Variables used for vGPU
+gpu_operator_nvaie_helm_repo: "https://helm.ngc.nvidia.com/nvaie"
+gpu_operator_nvaie_chart_name: "nvaie/gpu-operator"
 ## This is the IP of the license server used for vGPU, must be set to use vGPU
 vgpu_grid_license_server: ""
 ## This should remain as $oauthtoken if using an NGC API key
