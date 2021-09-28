@@ -34,7 +34,7 @@
 # Unfortunately this will not be fixed until Ansible 2.10 which is not yet released.
 # So for now we will run /usr/local/bin/helm commands directly...
 - name: install gpu-operator helm repo
-  command: /usr/local/bin/helm repo add nvidia "{{ gpu_operator_helm_repo }}"
+  command: /usr/local/bin/helm repo add "{{ gpu_operator_helm_repo_name }}" "{{ gpu_operator_helm_repo }}"
 
 - name: update helm repos
   command: /usr/local/bin/helm repo update

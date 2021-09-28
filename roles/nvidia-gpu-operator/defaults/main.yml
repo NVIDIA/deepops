@@ -7,7 +7,9 @@
 
 # Vars needed to install operator
 gpu_operator_helm_repo: "https://nvidia.github.io/gpu-operator"
-gpu_operator_chart_name: "nvidia/gpu-operator"
+# Set to nvaie for vGPU+NVAIE
+gpu_operator_helm_repo_name: "nvidia"
+gpu_operator_chart_name: "{{ gpu_operator_helm_repo_name }}/gpu-operator"
 gpu_operator_release_name: "nvidia-gpu-operator"
 gpu_operator_chart_version: "1.8.2"
 k8s_gpu_mig_strategy: "mixed"
