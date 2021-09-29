@@ -8,6 +8,14 @@ cd "${ROOT_DIR}"
 export KF_DIR=${ROOT_DIR}/config/kubeflow
 export KFCTL=${ROOT_DIR}/config/kfctl
 
+#  Collect all the standard debug
+./scripts/k8s/debug.sh
+
+# Iterate over each .log file and pring to screen, ignoring the tar
+for logfile in $(ls ./config/${logdir}/*log); do
+    cat ${logfile}
+done
+
 # Get some basic info about all nodes
 kubectl describe nodes
 kubectl get nodes
