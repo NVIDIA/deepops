@@ -30,8 +30,8 @@
   - name: Use NVAIE helm charts
     set_fact:
       gpu_operator_chart_name: "{{ gpu_operator_nvaie_chart_name }}"
-- name: install NVAIE gpu-operator helm repo
-  command: /usr/local/bin/helm repo add nvaie "{{ gpu_operator_nvaie_helm_repo }}" --username='{{ gpu_operator_registry_username }}' --password="{{ gpu_operator_registry_password }}"
+  - name: install NVAIE gpu-operator helm repo
+    command: /usr/local/bin/helm repo add nvaie "{{ gpu_operator_nvaie_helm_repo }}" --username='{{ gpu_operator_registry_username }}' --password="{{ gpu_operator_registry_password }}"
   when: vgpu_grid_license_server != ""
 
 # While we would prefer to use the Ansible helm module, it's broken! :-(
