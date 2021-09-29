@@ -5,7 +5,7 @@ source workloads/jenkins/scripts/jenkins-common.sh
 # Ensure working directory is root
 cd "${ROOT_DIR}"
 
-#  collect all the standard debug
+#  Collect all the standard debug
 ./scripts/slurm/debug.sh
 
 # The debug script will create a time-stamped log dir
