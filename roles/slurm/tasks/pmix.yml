@@ -27,6 +27,12 @@
   with_items: "{{ slurm_pmix_deps }}"
   when: ansible_os_family == 'RedHat'
 
+- name: install pmix 'pandoc' build dependency for RHEL 7
+  yum:
+    name: pandoc
+    state: present
+  when: ansible_os_family == 'RedHat' and ansible_distribution_major_version == "7"
+
 - name: install pmix 'pandoc' build dependency for RHEL 8
   dnf:
     name: pandoc
