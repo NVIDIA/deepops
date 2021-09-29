@@ -43,4 +43,4 @@
     - ansible_os_family == "RedHat"
     - "'firewalld' in ansible_facts.packages"
     - "'firewalld.service' in ansible_facts.services"
-    - ansible_facts.services['firewalld.service']['state'] == "started"
+    - ansible_facts.services['firewalld.service']['state'] == "running"
