@@ -118,7 +118,7 @@ slurm_install_hpcsdk: true
 
 # Select the version of HPC SDK to download
 hpcsdk_major_version: "21"
-hpcsdk_minor_version: "7"
+hpcsdk_minor_version: "9"
 hpcsdk_file_cuda: "11.4"
 hpcsdk_arch: "x86_64"
 
