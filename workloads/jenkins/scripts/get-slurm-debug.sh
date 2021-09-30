@@ -2,11 +2,12 @@
 set -x
 source workloads/jenkins/scripts/jenkins-common.sh
 
-# Ensure working directory is root
-cd "${ROOT_DIR}"
+
+# Ensure working directory is virtual, so downstream Ansible picks up the correct inventory
+cd "${VIRT_DIR}/virtual"
 
 #  Collect all the standard debug
-./scripts/slurm/debug.sh
+${ROOT_DIR}/scripts/slurm/debug.sh
 
 # The debug script will create a time-stamped log dir
 logdir=$(ls -Art ./config | grep log_ | tail -n 1)
