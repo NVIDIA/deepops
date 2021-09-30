@@ -3,7 +3,7 @@ set -x
 source workloads/jenkins/scripts/jenkins-common.sh
 
 # Ensure working directory is virtual, so downstream Ansible picks up the correct inventory
-cd "${VIRT_DIR}/virtual"
+cd "${VIRT_DIR}"
 
 export KF_DIR=${ROOT_DIR}/config/kubeflow
 export KFCTL=${ROOT_DIR}/config/kfctl
