@@ -26,7 +26,7 @@
       gpu_operator_registry_secret: --set driver.imagePullSecrets[0]="registry-secret"
   - name: Set license config var for helm command line if specified
     set_fact:
-      gpu_operator_license_var: --set driver.licensingConfig.configMapName=licensing-config
+      gpu_operator_license_var: --set driver.licensingConfig.configMapName=licensing-config --set driver.nlsEnabled="{{ gpu_operator_nvaie_nls }}"
   - name: Use NVAIE helm charts
     set_fact:
       gpu_operator_chart_name: "{{ gpu_operator_nvaie_chart_name }}"

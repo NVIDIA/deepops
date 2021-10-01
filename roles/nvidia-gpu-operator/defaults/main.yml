@@ -25,6 +25,9 @@ gpu_operator_driver_version: "470.57.02"
 # Variables used for vGPU
 gpu_operator_nvaie_helm_repo: "https://helm.ngc.nvidia.com/nvaie"
 gpu_operator_nvaie_chart_name: "nvaie/gpu-operator"
+
+## This enables/disables NLS licensing for NVAIE
+gpu_operator_nvaie_nls: "false"
 ## This is the IP of the license server used for vGPU, must be set to use vGPU
 vgpu_grid_license_server: ""
 ## This should remain as $oauthtoken if using an NGC API key
