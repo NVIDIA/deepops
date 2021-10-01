@@ -149,7 +149,14 @@ High-Performance Multi-Node Cluster Deployment Guide
 
 ## Performance Validation
 
-   The `slurm-validation.yml` playbook connects to the login node and executes the NCCL tests against all nodes and GPUs. This checks both the correctness and the performance of the cluster. For a full explanation of what these tests do and what the [results mean](https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md) see the official [NCCL Tests documentation](https://github.com/NVIDIA/nccl-tests).
+   The `slurm-validation.yml` playbook connects to the login node and executes
+   the NCCL tests against all nodes and GPUs. Refer to
+   ["Slurm Validation"](./README.md#slurm-validation) for details on running
+   the playbook. This checks both the correctness and the performance of the
+   cluster. For a full explanation of what these tests do and what the
+   [results mean](https://github.com/NVIDIA/nccl-tests/blob/master/doc/PERFORMANCE.md)
+   see the official
+   [NCCL Tests documentation](https://github.com/NVIDIA/nccl-tests).
 
    ```sh
    # Verify Slurm connectivity across all nodes

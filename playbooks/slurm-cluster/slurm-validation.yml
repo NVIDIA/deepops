@@ -1,33 +1,210 @@
 ---
-# Playbook designed to run a NCCL test across all nodes in a cluster of DGX-1s
+# Playbook designed to run a NCCL test across nodes in a cluster of DGXs
+# Example to run on NSL-B with two nodes:
+#   ansible-playbook -l slurm-cluster playbooks/slurm-cluster/slurm-validation.yml \
+#     -e '{num_nodes: 2}' \
+#     -e '{srun_exports: "NCCL_DEBUG=INFO,OMPI_MCA_pml=^ucx,OMPI_MCA_coll=^hcoll,NCCL_SOCKET_IFNAME=enp"}' \
+#     -e '{cleanup: True}'
 - hosts: slurm-master[0]
+
   vars:
-    nccl_test_repo: "deepops/nccl-tests-tf20.06-ubuntu18.04:latest" # Public repository for nccl performance/validation tests
-    num_gpus: 8 # A DGX A100 Server has 8 GPUs
+    # String; Container for nccl performance/validation tests. Either docker
+    #   repo or can be path to sqsh file.
+    base_container: "nvcr.io/nvidia/tensorflow:21.09-tf2-py3"
+    # String; Container to be created or one that might exist with nccl tests.
+    #   If `compile_nccl_tests` is True, it must be a sqsh file.
+    nccl_tests_container: "${HOME}/enroot_images/nccl_tests_slurm_val.sqsh"
+    # Bool; Compile and add NCCL tests to the base_container outputing to
+    #   nccl_tests_container (will delete/overwrite if one already exists). If
+    #   false assumes nccl_tests_container already has the NCCL tests and uses
+    #   the nccl_tests_container.
+    compile_nccl_tests: True
+    # String; NCCL allreduce test command.
+    allreduce_command: "all_reduce_perf -b 1M -e 4G -f 2 -g 1"
+    # Int; Number of GPUs per node. DGX-1 and DGX A100 Server have 8 GPUs.
+    #   DGX-2 has 16 GPUs.
+    num_gpus: 8
+    # String; Slurm parition to use
+    partition: batch
+    # Time string; Time limit for the Slurm job.
+    timelimit: "10:00"
+    # String; Exports for srun command.
+    srun_exports: NCCL_DEBUG=INFO
+    # String; Custom srun options.
+    srun_options:
+    # Int or empty; Number of nodes. If empty uses all idle nodes on the partition.
+    num_nodes:
+    # Bool; Delete the `nccl_tests_container` after running the playbook, only
+    #   if `compile_nccl_tests` is true as well.
+    cleanup: False
+
   tasks:
+    - name: Check that NCCL sqsh base container exists when sqsh is specified.
+      file:
+        path: "{{ nccl_tests_container }}"
+        state: file
+      when:
+        - compile_nccl_tests|bool == True
+        - base_container | splitext | last == ".sqsh"
+
+    - name: Check nccl_tests_container is sqsh path when compiling.
+      fail:
+        msg: >
+          When compiling the `nccl_tests_container` must be a path to enroot
+          ".sqsh" file. Currently it is set to:
+            "{{ nccl_tests_container }}"
+      when:
+        - compile_nccl_tests|bool == True
+        - nccl_tests_container | splitext | last != ".sqsh"
+
+    - name: Set nccl tests compilation command
+      set_fact:
+        ncclmake: |
+          mkdir -p /opt/nccl_tests
+          cd /opt/nccl_tests
+          NCCL_TESTS_COMMITISH=f773748b46
+          wget -q -O - https://github.com/NVIDIA/nccl-tests/archive/${NCCL_TESTS_COMMITISH}.tar.gz | \
+            tar --strip-components=1 -xzf - \
+          && CC=mpicc CXX=mpicxx make MPI=1
+          cp -R /opt/nccl_tests/build/* /usr/local/bin/
+      when: compile_nccl_tests|bool == True
+
+    - name: Print nccl make command
+      debug:
+        msg:
+          - |
+            Will compile container:
+              {{ nccl_tests_container }}
+            {% if not cleanup|bool %}Delete container manually afterwards.{% endif %}
+          - "NCCL compilation command:\n{{ ncclmake }}"
+      when: compile_nccl_tests|bool == True
+
+    - name: Check or create enroot images directory for nccl_tests_container.
+      file:
+        path: "{{ nccl_tests_container | dirname }}"
+        state: directory
+      when: compile_nccl_tests|bool == True
+
+    - name: Remove NCCL container if re-compiling.
+      file:
+        path: "{{ nccl_tests_container }}"
+        state: absent
+      when: compile_nccl_tests|bool == True
+
+    - name: Compiling NCCL tests
+      shell:
+        cmd: |
+          srun -p {{ partition }} -N 1 \
+            --ntasks-per-node=1 \
+            --cpus-per-task=10 \
+            --container-image="{{ base_container }}" \
+            --container-save="{{ nccl_tests_container }}" \
+            --container-remap-root \
+            {{ srun_options }} \
+            bash -c '{{ ncclmake }}'
+        creates: "{{ nccl_tests_container }}"
+      when: compile_nccl_tests|bool == True
+
+    - name: Check that nccl_tests_container exists when sqsh is specified.
+      file:
+        path: "{{ nccl_tests_container }}"
+        state: file
+      when: nccl_tests_container | splitext | last == ".sqsh"
+
+    - name: Print nccl_tests_container setting if not sqsh file.
+      debug:
+        msg: >
+          The nccl_tests_container is not set to sqsh file. Assuming it is a
+          valid docker tag. Currently it is set to:
+            "{{ nccl_tests_container }}"
+          WARNING: No validation is performed.
+      when:
+        - compile_nccl_tests|bool == False
+        - nccl_tests_container | splitext | last != ".sqsh"
+
     - name: Get node count from sinfo
       shell: >
-                sinfo |
-                tail -n +2  |
-                awk '{sum += $4} END {print sum}'
+        sinfo -p {{ partition }} -t idle |
+        tail -n +2  |
+        awk '{sum += $4} END {print sum}'
       register: node_out
+      when: (not num_nodes) or (num_nodes|int <= 0)
 
     - name: Set num_nodes variable
       set_fact:
-        num_nodes: "{{ node_out.stdout }}"
-    - name: Set cmd variable
-      set_fact:
-        cmd: "srun -N {{ num_nodes }} -G {{ num_nodes|int * num_gpus }} --ntasks-per-node={{ num_gpus }} --mpi=pmix --exclusive  --container-image={{ nccl_test_repo }} all_reduce_perf -b 1M -e 4G -f 2 -g {{ num_gpus }}"
-    - name: Print node/gpu counts
-      debug:
-              msg:
-                - "Detected {{ num_nodes }} nodes with {{ num_gpus }} gpus each."
-                - "Proceeding to run validation test, this may take several minutes: {{ cmd }}."
+        num_nodes_: "{{ node_out.stdout | default(num_nodes) }}"
 
-    - name: Execute NCCL test across all nodes and GPUs
-      shell: >
-              srun -N {{ num_nodes }} -G {{ num_nodes|int * num_gpus }} --ntasks-per-node={{ num_gpus }} --mpi=pmix --exclusive  --container-image={{ nccl_test_repo }} all_reduce_perf -b 1M -e 4G -f 2 -g {{ num_gpus }}
-      register: out
-    - name: Print results
+    - name: Set nccl run command
+      set_fact:
+        ncclcmd: |
+          srun --export={{ srun_exports }} \
+            -p {{ partition }} \
+            --time {{ timelimit }} \
+            -N {{ num_nodes_ }} \
+            --ntasks-per-node={{ num_gpus }} \
+            --gpus-per-task=1 \
+            --exclusive \
+            --mpi=pmi2 \
+            --no-container-remap-root \
+            --container-image="{{ nccl_tests_container }}" \
+            {{ srun_options }} \
+            {{ allreduce_command }}
+
+    - name: Print node/gpu counts and nccl tests run command
+      debug:
+        msg:
+          - "Detected {{ num_nodes_ }} nodes with {{ num_gpus }} gpus each."
+          - "Proceeding to run validation test, this may take several
+            minutes:\n{{ ncclcmd }}"
+
+    - block:
+      - name: Execute NCCL allreduce test
+        shell:
+          cmd: "{{ ncclcmd }}"
+        register: result
+        no_log: true
+
+      rescue:
+        - name: NCCL allreduce running error
+          debug:
+            msg: "{{ result }}"
+
+        - name: Save error results to /tmp/nccl_tests.err
+          local_action: 
+            module: copy 
+            content: "STDOUT:\n{{ result.stdout }}\n\nSTDERR:\n{{ result.stderr }}"
+            dest: /tmp/nccl_tests.err
+
+        - name: Fail Slurm validation playbook
+          fail:
+            msg: See debug of stderr above. Also refer to "/tmp/nccl_tests.err"
+
+    - name: Save results to /tmp/nccl_tests.out
+      local_action: 
+        module: copy 
+        content: "STDERR:\n{{ result.stderr }}\n\nSTDOUT:\n{{ result.stdout }}"
+        dest: /tmp/nccl_tests.out
+
+    - name: Extract "Out of bounds values" and "Avg bus bandwidth".
+      shell:
+        cmd: |
+          echo "{{ result.stdout }}" | \
+            grep "Out of bounds values\|Avg bus bandwidth"
+      register: result_vals
+      when: result.stdout != ""
+
+    - name: Print and analyze results
       debug: 
-        msg: "{{ out }}"
+        msg:
+          - "{{ result_vals.stdout }}"
+          - Out of bounds values should be 0 otherwise FAIL.
+          - Bandwidth will vary based on GPU topology and network interconnect types.
+          - Refer to /tmp/nccl_tests.out for detailed NCCL allreduce output.
+
+    - name: Cleanup NCCL container.
+      file:
+        path: "{{ nccl_tests_container }}"
+        state: absent
+      when:
+        - cleanup|bool == True
+        - compile_nccl_tests|bool == True
