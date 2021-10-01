@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-nodes=$(scontrol show node "${1}" | grep -oe "^NodeName=[a-Z,0-9,-]*" | cut -d= -f2)
+nodes=$(scontrol show node "${1}" | grep -oe "^NodeName=[a-z,A-Z,0-9,-]*" | cut -d= -f2)
 
 shift
 
@@ -17,7 +17,7 @@ case "$1" in
             echo -n "k8s: "
             kubectl get node ${node} | tail -1 | awk '{print $2}'
             echo -n "slurm: "
-            scontrol show node ${node} | grep -oe "State=[a-Z,+]*" | cut -d= -f2
+            scontrol show node ${node} | grep -oe "State=[a-z,A-Z,+]*" | cut -d= -f2
         done
         ;;
     slurm)
@@ -29,7 +29,7 @@ case "$1" in
             echo -n "k8s: "
             kubectl get node ${node} | tail -1 | awk '{print $2}'
             echo -n "slurm: "
-            scontrol show node ${node} | grep -oe "State=[a-Z,+]*" | cut -d= -f2
+            scontrol show node ${node} | grep -oe "State=[a-z,A-Z,+]*" | cut -d= -f2
         done
         ;;
     state)
