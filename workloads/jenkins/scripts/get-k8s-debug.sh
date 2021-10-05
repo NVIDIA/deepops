@@ -2,11 +2,19 @@
 set -x
 source workloads/jenkins/scripts/jenkins-common.sh
 
-# Ensure working directory is root
-cd "${ROOT_DIR}"
+# Ensure working directory is virtual, so downstream Ansible picks up the correct inventory
+cd "${VIRT_DIR}"
 
 export KF_DIR=${ROOT_DIR}/config/kubeflow
 export KFCTL=${ROOT_DIR}/config/kfctl
+
+#  Collect all the standard debug
+${ROOT_DIR}/scripts/k8s/debug.sh
+
+# Iterate over each .log file and pring to screen, ignoring the tar
+for logfile in $(ls ./config/${logdir}/*log); do
+    cat ${logfile}
+done
 
 # Get some basic info about all nodes
 kubectl describe nodes

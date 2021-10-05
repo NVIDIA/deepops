@@ -1,5 +1,5 @@
 ---
-ood_source_version: "v1.8.20"
+ood_source_version: "v2.0.9"
 ood_config_dir: /etc/ood/config
 ood_base_dir: /opt/ood
 

@@ -24,6 +24,14 @@
   - name: Set secret var for helm command line if specified
     set_fact:
       gpu_operator_registry_secret: --set driver.imagePullSecrets[0]="registry-secret"
+  - name: Set license config var for helm command line if specified
+    set_fact:
+      gpu_operator_license_var: --set driver.licensingConfig.configMapName=licensing-config
+  - name: Use NVAIE helm charts
+    set_fact:
+      gpu_operator_chart_name: "{{ gpu_operator_nvaie_chart_name }}"
+  - name: install NVAIE gpu-operator helm repo
+    command: /usr/local/bin/helm repo add nvaie "{{ gpu_operator_nvaie_helm_repo }}" --username='{{ gpu_operator_registry_username }}' --password="{{ gpu_operator_registry_password }}"
   when: vgpu_grid_license_server != ""
 
 # While we would prefer to use the Ansible helm module, it's broken! :-(
@@ -39,4 +47,4 @@
 # XXX: This currently installs into the default namespace, as per the GPU Operator docs
 # https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html
 - name: install nvidia gpu operator
-  command: /usr/local/bin/helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --set migStrategy="{{ k8s_gpu_mig_strategy }}" --set operator.defaultRuntime="{{ gpu_operator_default_runtime }}" --set driver.repository="{{ gpu_operator_driver_registry }}" --set driver.version="{{ gpu_operator_driver_version }}" {{ gpu_operator_registry_secret | default("") }} --set gfd.migStrateg="{{ k8s_gpu_mig_strategy }}" --set devicePlugin.args={"{{ gpu_operator_plugin_args }}"} --wait
+  command: /usr/local/bin/helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --set operator.defaultRuntime="{{ gpu_operator_default_runtime }}" --set driver.repository="{{ gpu_operator_driver_registry }}" --set driver.version="{{ gpu_operator_driver_version }}" {{ gpu_operator_registry_secret | default("") }} {{ gpu_operator_license_var | default("") }} --set mig.strategy="{{ k8s_gpu_mig_strategy }}" --wait

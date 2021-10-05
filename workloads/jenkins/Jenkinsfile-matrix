@@ -114,6 +114,11 @@ for(int i = 0; i < axes.size(); i++) {
                 bash -x ./workloads/jenkins/scripts/test-setup-slurm.sh
               '''
 
+              echo "Get Slurm Cluster Status"
+              sh '''
+                bash -x ./workloads/jenkins/scripts/get-slurm-debug.sh
+              '''
+
               echo "Verify we can run a basic Slurm job"
               sh '''
                 timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-job.sh

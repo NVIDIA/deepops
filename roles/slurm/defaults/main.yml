@@ -6,7 +6,7 @@ hwloc_build_dir: /opt/deepops/build/hwloc
 pmix_build_dir: /opt/deepops/build/pmix
 
 slurm_workflow_build: yes
-slurm_version: 20.11.7
+slurm_version: 21.08.0
 slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
 slurm_build_make_clean: no
 slurm_build_dir_cleanup: no
@@ -87,7 +87,7 @@ epilog_fileglob:
 slurm_fix_shm: true
 
 slurm_include_hwloc: yes
-hwloc_version: 2.4.1
+hwloc_version: 2.5.0
 hwloc_tag: "v{{ hwloc_version.split('.')[0] }}.{{ hwloc_version.split('.')[1] }}"
 hwloc_src_url: "https://download.open-mpi.org/release/hwloc/{{ hwloc_tag }}/hwloc-{{ hwloc_version }}.tar.gz"
 hwloc_install_prefix: /opt/deepops/hwloc

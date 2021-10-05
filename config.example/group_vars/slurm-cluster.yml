@@ -3,7 +3,7 @@
 ################################################################################
 # Slurm job scheduler configuration
 # Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
-slurm_version: 20.11.7
+slurm_version: 21.08.1
 slurm_install_prefix: /usr/local
 pmix_install_prefix: /opt/deepops/pmix
 hwloc_install_prefix: /opt/deepops/hwloc
@@ -118,8 +118,8 @@ slurm_install_hpcsdk: true
 
 # Select the version of HPC SDK to download
 hpcsdk_major_version: "21"
-hpcsdk_minor_version: "3"
-hpcsdk_file_cuda: "11.2"
+hpcsdk_minor_version: "9"
+hpcsdk_file_cuda: "11.4"
 hpcsdk_arch: "x86_64"
 
 # In a Slurm cluster, default to setting up HPC SDK as modules rather than in
@@ -165,7 +165,7 @@ allow_user_set_gpu_clocks: no
 ################################################################################
 slurm_install_enroot: true
 slurm_install_pyxis: true
-slurm_pyxis_version: 0.9.1
+slurm_pyxis_version: 0.11.1
 
 ################################################################################
 # Node Health Check                                                            #
