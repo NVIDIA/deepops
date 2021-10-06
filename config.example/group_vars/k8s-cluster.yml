@@ -10,6 +10,10 @@ kubeconfig_localhost: true
 helm_enabled: true
 tiller_node_selectors: "node-role.kubernetes.io/master=''"
 
+## Container runtime
+## docker for docker, crio for cri-o and containerd for containerd.
+container_manager: containerd
+
 artifacts_dir: "{{ inventory_dir }}/artifacts"
 
 # Reset Flex Volume path to the default. Kubespray changes the path, which breaks Rook
@@ -37,7 +41,7 @@ dashboard_metrics_scrape_tagr: "v1.0.4"
 dashboard_metrics_scraper_repo: "kubernetesui/metrics-scraper"
 
 # Override the Helm version installed by Kubespray
-helm_version: "v3.5.4"
+#helm_version: "v3.5.4"
 
 # Ensure hosts file generation only runs across k8s cluster
 hosts_add_ansible_managed_hosts_groups: ["k8s-cluster"]
