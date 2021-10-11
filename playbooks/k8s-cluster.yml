@@ -6,13 +6,20 @@
 # etcd_deployment_type must be `host` when container_manager is not `docker`
 - hosts: all
   tasks:
-    - name: Set facts depending on container runtime
+    - name: Set facts when not using docker container runtime (default)
       set_fact:
         deepops_gpu_operator_enabled: true
         etcd_deployment_type: host
       when:
         - container_manager is defined
         - container_manager != "docker"
+    - name: Set facts when using Docker container runtime
+      set_fact:
+        etcd_deployment_type: docker
+        gpu_operator_default_runtime: "docker"
+      when:
+        - container_manager is defined
+        - container_manager == "docker"
 
 # Install python required for Ansible
 - include: bootstrap/bootstrap-python.yml
