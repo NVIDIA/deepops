@@ -10,7 +10,6 @@
       set_fact:
         deepops_gpu_operator_enabled: true
         etcd_deployment_type: host
-        gpu_operator_default_runtime: "containerd"
       when:
         - container_manager is defined
         - container_manager != "docker"
