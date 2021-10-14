@@ -37,4 +37,4 @@ ssh \
 kubectl apply -f workloads/jenkins/scripts/files/nginx-from-local-registry.yml
 
 # Wait for the pod to be ready
-kubectl wait --for=condition=ready --timeout=420s pod/nginx-registry-local
+kubectl wait --for=condition=ready --timeout=300s pod/nginx-registry-local
