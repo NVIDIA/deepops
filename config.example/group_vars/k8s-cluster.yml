@@ -63,6 +63,7 @@ nfs_exports:
 ################################################################################
 kube_enable_container_registry: true
 docker_insecure_registries: "{{ groups['kube-master']|map('regex_replace', '^(.*)$', '\\1:5000')|list + ['registry.local:31500']}}"
+crio_insecure_registries: "{{ groups['kube-master']|map('regex_replace', '^(.*)$', '\\1:5000')|list + ['registry.local:31500']}}"
 docker_registry_mirrors: "{{ groups['kube-master'] | map('regex_replace', '^(.*)$', 'http://\\1:5000') | list }}"
 
 ################################################################################
