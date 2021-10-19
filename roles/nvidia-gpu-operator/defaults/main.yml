@@ -29,9 +29,8 @@ gpu_operator_driver_version: "470.57.02"
 
 # This enables/disables NVAIE
 gpu_operator_nvaie_enable: "false"
-
-# When using NVAIE, this enables/disables NLS licensing
-# When true, NLS is used. When false, traditional license server is used.
+## When using NVAIE, this enables/disables NLS licensing
+## When true, NLS is used. When false, traditional license server is used.
 gpu_operator_nvaie_nls_enabled: "true"
 
 # vGPU Licensing Info
