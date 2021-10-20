@@ -34,7 +34,13 @@ done
 
 
 function stop_docker_rootless() {
-    pkill -u $USER -f dockerd
+    # pkill -u $USER -f dockerd
+    dockerdpid=$(lsof -a -u ${USER} +D ${DOCKER_DATAROOT} \
+      -d mem -c dockerd -t 2>/dev/null | head -n1)
+
+    if [ ! -z "${dockerdpid}" ]; then
+        kill ${dockerdpid}
+    fi
 
     # Check that docker is not working
     #docker ps  >/dev/null 2>&1
