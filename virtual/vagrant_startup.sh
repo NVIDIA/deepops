@@ -78,7 +78,7 @@ case "$ID" in
     if [[ ! ${VERSION_ID} =~ ^20\.* ]]; then
       APT_DEPENDENCIES=${APT_DEPENDENCIES}" libvirt-bin"
     fi
-    export ${APT_DEPENDENCIES}
+    export APT_DEPENDENCIES
 
     # shellcheck disable=SC2086
     if ! (dpkg -s $APT_DEPENDENCIES) >/dev/null 2>&1; then
