@@ -1,94 +1,457 @@
-Updating DeepOps
-===
+Updating a cluster deployed with DeepOps
+========================================
 
-## Overview
+Updating the DeepOps repository
+-------------------------------
 
-This document details how to upgrade DeepOps to the next release.
+### A note on DeepOps updates
 
-## Updating the DeepOps repository
+DeepOps should be considered a deployment toolkit, rather than an integrated bundle of released software. Each new release of DeepOps brings new features in terms of software that can be deployed, or the configuration options supported by the Ansible playbooks.
 
-### Update the repository
+However, updating to a new DeepOps release doesn’t necessarily require updating the software components you have deployed to a cluster, and in most cases, you don’t need to update the DeepOps repository to install new software versions on your cluster.
 
-Each release of DeepOps is a named tag of the Git repository, with versions using the `YY.MM` numbering scheme. So, for example, the March 2019 release of DeepOps is a tag named `19.03`.
+When updating a cluster deployed with DeepOps, we generally recommend updating individual components based on the particular features or bugfixes you want to track, rather than performing blanket updates. For example, you may want to upgrade the NVIDIA driver on a different schedule than Kubernetes.
+
+Most of the component-based upgrades detailed below do not require updating the DeepOps repository itself.
+
+
+### Updating the repository
+
+Each release of DeepOps is a named tag of the Git repository, with versions using the YY.MM numbering scheme. So, for example, the March 2019 release of DeepOps is a tag named 19.03.
 
 If you don’t have a local clone of the DeepOps repository, you should clone one to your local provisioning host.
 
-```sh
+```
 git clone https://github.com/NVIDIA/deepops
 ```
 
 Check out the git tag for the release you’re upgrading to:
 
-```sh
+```
 git checkout <YY.MM>
 ```
 
-If you want to create a new branch to retain commits you create, you may
-do so (now or later) by using -b with the checkout command again. Example:
+If you want to create a new branch to retain commits you create, you may do so (now or later) by using -b with the checkout command again. Example:
 
-```sh
+```
 git checkout -b <new-branch-name>
 ```
 
-If you’ve made local changes to the DeepOps repository in your own branch, you can rebase your branch onto the release to port your changes to the new release. 
+If you’ve made local changes to the DeepOps repository in your own branch, you can rebase your branch onto the release to port your changes to the new release.
 
-```sh
+```
 git checkout <your-branch>
 git rebase <YY.MM>
 ```
 
-> Note that if there are any conflicts between your local branch and the release, you will need to resolve those conflicts as part of the rebase process.
+Note that if there are any conflicts between your local branch and the release, you will need to resolve those conflicts as part of the rebase process.
 
-### Port your config
+### Porting your configuration
 
 The DeepOps configuration files sometimes change from one release to the next. You should compare your existing configuration (usually in the config/ directory) to the example configuration provided by DeepOps (in config.example/) to identify new required parameters or changes in the config structure.
 
-## Component-based upgrade
+To identify any configuration changes between releases you may run:
 
-DeepOps provides a modular toolkit for deploying many different components of a GPU cluster, such as Kubernetes, Slurm, and Ceph. Each release of DeepOps pins a specific set of versions for these components, so updating to the next release will update the versions of the provided components.
-
-Because DeepOps is modular, any given deployment may only include a subset of the available components. You should identify which components of DeepOps you’re currently using, and what parts of your cluster you will need to upgrade.
-
-Unless otherwise specified, components can be upgraded in any order.
-
-### Updating Slurm
-
-DeepOps specifies the Slurm version as part of the Ansible playbook, so we can upgrade Slurm simply by re-running Ansible.
-
-First, run Ansible in check mode to verify the playbook can run successfully.
-
-```sh
-ansible-playbook --check -i config/inventory -l slurm-cluster playbooks/slurm-cluster.yml
+```
+git diff 21.06 21.09 -- config.example/
 ```
 
-If there are any errors (for example, due to a changed config), identify and fix those issues. Once check mode runs clean, run Ansible to perform the upgrade.
 
-```sh
-ansible-playbook --check -i config/inventory -l slurm-cluster playbooks/slurm-cluster.yml
+Updating Kubernetes clusters
+----------------------------
+
+### Overview
+
+This section assumes you are performing a disruptive upgrade to the cluster. This means that we expect you are not running any production workloads on the cluster, and should expect pods or even nodes to be restarted at will.
+
+If you plan to perform a more graceful upgrade, we recommend that you upgrade each node individually, [safely draining it before the upgrade](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/) and then uncordoning it after.
+
+Performing these component-based upgrades does not require updating the DeepOps repository to a new release.
+
+
+### Re-deploying the full cluster
+
+**Warning:** re-deploying the cluster will remove any persistent volumes stored on the cluster.
+By default, persistent volumes are stored on the first Kubernetes management node under `/export/deepops_nfs` as defined by the Ansible variables `k8s_nfs_server` and `k8s_nfs_export_path`, and exported using the NFS client provisioner.  As a result of running the below `reset.yml`, all PVs stored in this directory will be moved to `/export_deepops_nfs/archived_<pv_uuuid>`; however it is advised that you manually ensure your critical data is backed up on external storage before trying this procedure.
+
+In some instances, you may want to start fresh with a newly-deployed Kubernetes cluster, rather than upgrading existing components.
+
+Before resetting the cluster, ensure you have a DeepOps repo checked out at the same version tag of your initial deployment. For example, if the cluster was originally deployed using DeepOps 21.03, ensure you have checked out the 21.03 tag during the reset process.
+
+First, reset the cluster using the Kubespray reset playbook:
+
+```
+$ ansible-playbook submodules/kubespray/reset.yml
 ```
 
-### Updating Kubernetes (Kubespray)
+Ensure this playbook has completed cleanly before continuing.
 
-DeepOps deploys Kubernetes using Kubespray, an Ansible framework for deploying production-ready Kubernetes clusters. The Kubernetes upgrade process will be specific to the release of Kubespray which is pinned in the new release of DeepOps. Please see the [Kubespray upgrade docs](https://github.com/kubernetes-sigs/kubespray/blob/7d8da8348e095a5f0b160c1e05c4c399d201d1f0/docs/upgrades.md) for instructions to upgrade Kubernetes.
+Once the cluster has been reset, edit your DeepOps configuration to specify your desired software versions, or remove any pinned versions that you want to allow to be upgraded. If you want to update the DeepOps repository to a different version tag, do that as well.
 
-### Updating Helm
+Then re-run the DeepOps k8s-cluster playbook:
 
-The preferred version of Helm for DeepOps is specified as part the install script. To make sure you have the correct version of Helm, just re-run the install script from the root of the repository.
-
-```sh
-scripts/k8s/install_helm.sh
+```
+$ ansible-playbook playbooks/k8s-cluster.yml
 ```
 
-### Updating Ceph (Rook)
+And re-deploy any desired workloads.
 
-Ceph is installed for DeepOps via [Rook](https://github.com/rook/rook), an orchestration system for deploying storage systems in Kubernetes.
 
-To upgrade to the most recent version of Ceph and Rook, use the following commands:
+### Component-based upgrades
 
-```sh
-helm update
-helm search rook		# Find the most recent version of rook
-helm upgrade --namespace rook-ceph-system rook-ceph rook-master/rook-ceph --version ${version}
+#### Updating Kubernetes
+
+For updating Kubernetes itself to a new revision, we recommend following the upgrade instructions provided by Kubespray for the particular version of DeepOps in use. For example, DeepOps 21.09 uses Kubespray v2.16.0, with upgrade instructions found [here](https://github.com/kubernetes-sigs/kubespray/blob/release-2.16/docs/upgrades.md).
+
+#### Update verification
+
+All of the NVIDIA-specific K8s components and most of the DeepOps included services rely on Helm for installation and upgrade. These installation packages include built-in validation steps as part of the install. To verify that a component has been installed and upgraded correctly there are two commands you can run. Note that any NVIDIA-provided pods or Helm applications will have a name such as `nvidia-<service>-<uuid>`.
+
+Verify the Helm install is in a Ready or Completed state by running:
+
+```
+$ helm list -aA
 ```
 
-For more details on the Ceph upgrade process, please consult the [Rook documentation](https://github.com/rook/rook/blob/master/Documentation/ceph-upgrade.md).
+Verify the Pods are all in a Ready or Completed state by running:
+
+```
+$ kubectl get pods -aA
+```
+
+
+#### Updating the NVIDIA GPU Operator
+
+The [NVIDIA GPU Operator](https://github.com/NVIDIA/gpu-operator) automates the process of setting up all necessary components for a Kubernetes cluster to make use of NVIDIA GPUs. The GPU Operator is used in a DeepOps cluster when `deepops_gpu_operator_enabled` is set to true. In general, the below steps can be applied to upgrade the GPU Operator helm charts, but for certain major releases their may be additional upgrade steps, please refer to the GPU Operator release notes before performing this upgrade.
+
+To update to a new version of the GPU operator, set the following parameter in your DeepOps configuration:
+
+```
+gpu_operator_chart_version: "1.8.2"
+```
+
+Substituting in your desired version.
+
+Then re-run the GPU operator playbook:
+
+```
+$ ansible-playbook playbooks/k8s-cluster/nvidia-gpu-operator.yml
+```
+
+#### Updating NVIDIA Kubernetes components (no GPU Operator)
+
+##### Overview
+
+DeepOps offers the option to configure each of the necessary NVIDIA components individually on the cluster, rather than using the GPU Operator. This option is used when `deepops_gpu_operator_enabled` is set to false. This is likely the configuration you used if setting up a cluster with NVIDIA DGX systems.
+
+##### Updating the NVIDIA driver
+
+**Important**: Note that upgrading the NVIDIA driver will reboot the node, unless you set `nvidia_driver_skip_reboot` to false.
+If you  are using MIG-enabled GPUs ensure that your MIG configuration is persistent by using the [nvidia-mig-manager systemd](https://github.com/NVIDIA/mig-parted/tree/master/deployments/systemd) service
+or the [nvidia-mig-manager Kubernetes GPU Operator-included DaemonSet](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/gpu-operator-mig.html).
+
+###### On DGX
+
+To update the driver on a DGX system, we recommend following the instructions in the DGX User Guide.
+
+###### On Ubuntu
+
+On Ubuntu, the default behavior in DeepOps is to use the LTS release branch distributed through the Ubuntu repositories. In this mode, the driver is generally pinned to a particular release branch such as 450 or 470.
+
+To upgrade to the latest driver within your current release branch, run:
+
+```
+$ ansible-playbook playbooks/nvidia-software/nvidia-driver.yml -e nvidia_driver_package_state="latest" [-l <list-of-nodes>]
+```
+
+To upgrade the driver to a new release branch, set the following parameter in your DeepOps configuration:
+
+```
+nvidia_driver_ubuntu_branch: "470"
+```
+
+Then run:
+
+```
+$ ansible-playbook playbooks/nvidia-software/nvidia-driver.yml [-l <list-of-nodes>]
+```
+
+###### On RHEL
+
+On RHEL and related distros, DeepOps uses the driver distributed in the CUDA repository. To upgrade to the latest driver, run:
+
+```
+$ ansible-playbook playbooks/nvidia-software/nvidia-driver.yml -e nvidia_driver_package_state="latest" [-l <list-of-nodes>]
+```
+
+##### Updating the NVIDIA Container Runtime
+
+To update the NVIDIA container runtime to the latest release, run the following command on each node:
+
+```
+$ sudo apt-get install nvidia-container-runtime
+```
+
+##### Updating NVIDIA GPU Feature Discovery
+
+Updating GFD should typically be non-disruptive, and does not need to be run on a per-node basis.
+
+To update to a new version of GFD, set the following variable in your DeepOps configuration:
+
+```
+k8s_gpu_feature_discovery_chart_version: "0.4.1"
+```
+
+substituting your desired version of the feature discovery chart.
+
+Then run:
+
+```
+$ ansible-playbook playbooks/k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml
+```
+
+##### Updating the NVIDIA GPU Device Plugin
+
+Updating the GPU Device Plugin should typically be non-disruptive, and does not need to be run on a per-node basis.
+
+To update to a new version, set the following variable in your DeepOps configuration:
+
+```
+k8s_gpu_plugin_chart_version: "0.9.0"
+```
+
+substituting your desired version of the device plugin chart.
+
+Then run:
+
+```
+ansible-playbook playbooks/k8s-cluster/nvidia-k8s-gpu-device-plugin.yml
+```
+
+### Updating the monitoring stack
+
+We deploy our monitoring stack using the [kube-prometheus-stack project](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack). 
+
+Metrics data is stored using a Kubernetes persistent volume with PVC named `monitoring/prometheus-kube-prometheus-stack-prometheus-db-prometheus-kube-prometheus-stack-prometheus-0`.
+By default, this data is stored on the first Kubernetes management node and exported using NFS from `/export/deepops_nfs`. Before upgrading the monitoring stack, we recommend backing this data up.
+
+To check which version of this stack was deployed by default using your deployment script, run:
+
+```
+$ helm list -n monitoring
+NAME                    NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION
+kube-prometheus-stack   monitoring      1               2021-10-14 15:27:58.663573206 +0000 UTC deployed        kube-prometheus-stack-10.0.2    0.42.1
+```
+
+Here, the deployed version of kube-prometheus-stack is 10.0.2.
+
+The procedure for updating the stack will be different depending on whether it is a minor version update of the kube-prometheus-stack (e.g., 10.0.2 to 10.3.4) or a major update (e.g., 10.x to 11.x).
+
+#### Minor version upgrades
+
+To perform a minor version upgrade, run:
+
+```
+$ helm upgrade -n monitoring kube-prometheus-stack prometheus-community/kube-prometheus-stack --version 10.3.4
+```
+
+Substituting your desired version number.
+
+#### Major version upgrades
+
+For major version upgrades, see the instructions documented in the [README for the kube-prometheus-stack project](https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/README.md).
+
+### Updating OS packages 
+
+#### On Ubuntu
+
+To update the underlying OS packages on the nodes, run the following on each node:
+
+```
+$ sudo apt-get update
+$ sudo apt-get full-upgrade
+```
+
+#### On RHEL
+
+To update the underlying OS packages on the nodes, run the following on each node:
+
+```
+$ sudo yum update
+```
+
+
+Updating Slurm clusters
+-----------------------
+
+### Overview
+
+This section assumes you are performing a disruptive upgrade to the cluster. This means that we expect you are not running any production workloads on the cluster, and should expect nodes to be restarted at will.
+
+If you plan to perform a more graceful upgrade, we recommend that you upgrade each node individually, draining it and then resuming it in Slurm.
+
+Performing these component-based upgrades does not require updating the DeepOps repository to a new release.
+
+### Component-based upgrades
+
+#### Updating Slurm
+
+**Important:** Slurm generally supports upgrading within two major releases without loss of state information or accounting data. E.g., you can upgrade to 21.08 from 20.11 or 20.02, but not prior releases. We recommend consulting the release notes for your desired version of Slurm before running an upgrade.
+
+To upgrade to a new version of Slurm, modify your DeepOps configuration to specify your desired Slurm version:
+
+```
+slurm_version: 21.08.0
+```
+
+Then re-run the Slurm playbook:
+
+```
+$ ansible-playbook playbooks/slurm-cluster/slurm.yml [-l <list-of-nodes>]
+```
+
+Note that this can take a long time, as we download and build Slurm from source in this process.
+
+#### Updating the NVIDIA driver
+**Important**: Note that upgrading the NVIDIA driver will reboot the node, unless you set `nvidia_driver_skip_reboot` to false.
+
+##### On DGX
+
+To update the driver on a DGX system, we recommend following the instructions in the DGX User Guide.
+
+##### On Ubuntu
+
+On Ubuntu, the default behavior in DeepOps is to use the LTS release branch distributed through the Ubuntu repositories. In this mode, the driver is generally pinned to a particular release branch such as 450 or 470.
+
+To upgrade to the latest driver within your current release branch, run:
+
+```
+$ ansible-playbook playbooks/nvidia-software/nvidia-driver.yml -e nvidia_driver_package_state="latest" [-l <list-of-nodes>]
+```
+
+To upgrade the driver to a new release branch, set the following parameter in your DeepOps configuration:
+
+```
+nvidia_driver_ubuntu_branch: "470"
+```
+
+Then run:
+
+```
+$ ansible-playbook playbooks/nvidia-software/nvidia-driver.yml [-l <list-of-nodes>]
+```
+
+##### On RHEL
+
+On RHEL and related distros, DeepOps uses the driver distributed in the CUDA repository. To upgrade to the latest driver, run:
+
+```
+$ ansible-playbook playbooks/nvidia-software/nvidia-driver.yml -e nvidia_driver_package_state="latest" [-l <list-of-nodes>]
+```
+
+#### Updating the CUDA toolkit
+
+To upgrade to a new version of the CUDA toolkit, edit your DeepOps configuration and specify the name of the new toolkit package you wish to install. For example,
+
+```
+cuda_version: "cuda-toolkit-11-3"
+```
+
+Then re-run the CUDA toolkit playbook:
+
+```
+$ ansible-playbook playbooks/nvidia-software/nvidia-cuda.yml
+```
+
+#### Updating the monitoring stack (excluding dcgm-exporter)
+
+The monitoring stack on a Slurm cluster deployed with DeepOps is container-based. For most of these, we use the "latest" tag by default. So in order to upgrade, all you typically need to do is run "docker pull" for the container in question and then restart the service.
+
+On the monitoring host, the commands to use are:
+
+```
+$ docker pull prom/prometheus
+$ systemctl restart docker.prometheus
+$ docker pull grafana/grafana
+$ systemctl restart docker.grafana
+$ docker pull deepops/prometheus-slurm-exporter
+$ systemctl restart docker.slurm-exporter
+```
+
+On the compute nodes, the commands to use are:
+
+```
+$ docker pull quay.io/prometheus/node-exporter
+$ systemctl restart docker.node-exporter
+```
+
+#### Updating dcgm-exporter
+
+For the NVIDIA DCGM Exporter, we do pin a particular version of the container. To update to a newer version, edit your DeepOps configuration to specify a new container tag:
+
+```
+nvidia_dcgm_container_version: "2.1.8-2.4.0-rc.2-ubuntu20.04"
+```
+
+Then re-run the playbook:
+
+```
+$ ansible-playbook -l slurm-node playbooks/slurm-cluster/nvidia-dcgm-exporter.yml
+```
+
+#### Updating Enroot and Pyxis
+
+To update Pyxis and/or Enroot, edit your DeepOps configuration and specify the new versions you wise to use:
+
+```
+slurm_pyxis_version: "0.11.1"
+enroot_version: "3.2.0"
+```
+
+Then re-run the Pyxis playbook:
+
+```
+$ ansible-playbook playbooks/container/pyxis.yml [-l <list-of-nodes>]
+```
+
+### Installing a new HPC SDK
+
+The NVIDIA HPC SDK is installed in versioned directories, so that new versions are installed alongside the old ones.
+
+To install a newer HPC SDK, first configure the version variables in your DeepOps configuration:
+
+```
+hpcsdk_major_version: "21"
+hpcsdk_minor_version: "9"
+hpcsdk_file_cuda: "11.4"
+hpcsdk_arch: "x86_64"
+```
+
+Then re-run the playbook to install:
+
+```
+$ ansible-playbook -l <install-node> playbooks/nvidia-software/nvidia-hpc-sdk.yml
+```
+
+Note that we typically install the HPC SDK in an NFS-shared directory, so this playbook only has to be executed on one node. The cluster login node is typically used.
+
+### Updating OS packages 
+
+#### On Ubuntu
+
+To update the underlying OS packages on the nodes, run the following on each node:
+
+```
+$ sudo apt-get update
+$ sudo apt-get full-upgrade
+```
+
+#### On RHEL
+
+To update the underlying OS packages on the nodes, run the following on each node:
+
+```
+$ sudo yum update
+```
+
+
