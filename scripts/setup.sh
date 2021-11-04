@@ -7,6 +7,9 @@
 # Can be run standalone with: curl -sL git.io/deepops | bash
 #                         or: curl -sL git.io/deepops | bash -s -- 19.07
 
+# Ensure we fail out if we run into problems during execution
+set -euo pipefail
+
 # Configuration
 ANSIBLE_VERSION="${ANSIBLE_VERSION:-2.9.21}"     # Ansible version to install
 ANSIBLE_TOO_NEW="${ANSIBLE_TOO_NEW:-2.10.0}"    # Ansible version too new
