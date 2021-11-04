@@ -61,6 +61,19 @@ as_user(){
     eval $cmd
 }
 
+# Many tools fail for weird reasons if locales are not set correctly.
+# this can happen when doing things like SSHing from Ubuntu to CentOS
+# systems or vice-versa.
+# Ensure we are running with a supported locale to avoid weird failures. 
+if ! locale -a | grep "${LANG}" ; then
+    system_locale="$(localectl status | grep 'System' | sed 's/=/ /' | awk '{print $NF}')"
+    if echo "${system_locale}" | grep -i "utf-8" ; then
+	    export LANG="${system_locale}"
+    else
+        export LANG="en_US.UTF-8"
+    fi
+fi	
+
 # Install software dependencies
 case "$ID" in
     rhel*|centos*)
