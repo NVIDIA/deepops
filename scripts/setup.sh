@@ -19,6 +19,7 @@ JINJA2_VERSION="${JINJA2_VERSION:-2.11.1}"      # Jinja2 required version
 PIP="${PIP:-pip3}"                              # Pip binary to use
 PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"    # Python3 path
 VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environment to create
+PROXY_USE="${PROXY_USE:-0}"			# Configure whether to use a proxy
 
 ###
 
