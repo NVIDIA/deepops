@@ -1,7 +1,7 @@
 ---
 - include: k8s.yml
-  when: gpu_operator_nvaie_enable == false
+  when: not gpu_operator_nvaie_enable
 
 - include: nvaie.yml
-  when: gpu_operator_nvaie_enable == true
+  when: gpu_operator_nvaie_enable
 
