@@ -41,7 +41,7 @@
   tasks:
     - name: Check that NCCL sqsh base container exists when sqsh is specified.
       file:
-        path: "{{ nccl_tests_container }}"
+        path: "{{ base_container }}"
         state: file
       when:
         - compile_nccl_tests|bool == True
@@ -109,7 +109,9 @@
       file:
         path: "{{ nccl_tests_container }}"
         state: file
-      when: nccl_tests_container | splitext | last == ".sqsh"
+      when:
+        - compile_nccl_tests|bool == False
+        - nccl_tests_container | splitext | last == ".sqsh"
 
     - name: Print nccl_tests_container setting if not sqsh file.
       debug:
