@@ -114,7 +114,7 @@ This will do the following:
 * Transfer all logs to the provisioning node
 * List nodes that require a manual power cycle.
 
-For large DGX clusters, it is recommended to first perform a single manual firmware update and verify that node before using any automation cluster-wide.
+For large DGX clusters, it is recommended to first perform a single manual firmware update and verify that node before using any automation cluster-wide. Before running through any firmware update steps, it is recommended to first run through the diagnostics playbook to collect a snapshot of the cluster status.
 
 After verifying that a single node can be successfully upgraded, upgrade the rest of the cluster with the Ansible automation. For larger clusters it is recommended to do this in batches. Perform an initial test of the provisioning node by updating a single node with Ansible and then deploy in batches of ~40 nodes. It is not necessary to do this, but in the case of an error or outage in the provisioning node this will reduce risk of firmware upgrade failure.
 

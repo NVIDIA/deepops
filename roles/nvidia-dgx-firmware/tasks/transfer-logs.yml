@@ -45,7 +45,7 @@
     flat: yes
   with_items:
     - "fw-update.json"
-  when: firmware_needs_upgrade
+  when: update_performed is defined and update_performed is true
  
 - name: Copy over all log files, etc. - stress tests
   ignore_errors: yes

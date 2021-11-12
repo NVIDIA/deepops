@@ -13,7 +13,10 @@
   - name: Check if inactive update requested
     set_fact:
       inactive_parameter: "{{ '-i' if inactive_update else '' }}"
-
+  
+  - name: Set update_performed flag
+    set_fact:
+      update_performed: true
 
   - name: Update firmware if required
     shell: "docker run --rm -ti --privileged -v /:/hostfs -e NVSM_MODE=1 {{ firmware_update_repo }}:{{ firmware_update_tag }} set_flags AUTO=1 update_fw {{ target_fw }} {{ inactive_parameter }} {{ force_parameter }} > {{ fw_dir }}/fw-update.json" 
