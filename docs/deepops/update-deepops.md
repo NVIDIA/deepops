@@ -160,6 +160,19 @@ In particular,
 * Make sure the `kube_version` you are using appears in the list of supported versions in `kubectl_checksums`.
     You can verify your supported version appears in the list by checking the `kubectl_checksums` variable in the `submodules/kubespray/roles/download/defaults/main.yml` file.
 
+Additionally, please note that Kubespray can only upgrade between one minor version of Kubernetes at a time.
+This means that you may need to upgrade multiple times between your current version and your desired version of Kubernetes.
+
+For example, to upgrade from Kubernetes version 1.19.9 and 1.21.1, you might use a workflow like this:
+
+```
+# Starting at version v1.19.9
+$ ansible-playbook -e kube_version=v1.20.7 submodules/kubespray/upgrade-cluster.yml
+$ ansible-playbook -e kube_version=v1.21.1 submodules/kubespray/upgrade-cluster.yml
+```
+
+Where each version of Kubernetes in the chain should be supported by the Kubespray release in use.
+
 #### Update verification
 
 All of the NVIDIA-specific K8s components and most of the DeepOps included services rely on Helm for installation and upgrade. These installation packages include built-in validation steps as part of the install. To verify that a component has been installed and upgraded correctly there are two commands you can run. Note that any NVIDIA-provided pods or Helm applications will have a name such as `nvidia-<service>-<uuid>`.
