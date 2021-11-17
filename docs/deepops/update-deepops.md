@@ -144,7 +144,21 @@ And re-deploy any desired workloads.
 
 #### Updating Kubernetes
 
-For updating Kubernetes itself to a new revision, we recommend following the upgrade instructions provided by Kubespray for the particular version of DeepOps in use. For example, DeepOps 21.09 uses Kubespray v2.16.0, with upgrade instructions found [here](https://github.com/kubernetes-sigs/kubespray/blob/release-2.16/docs/upgrades.md).
+For updating Kubernetes itself to a new revision, we recommend following the upgrade instructions provided by Kubespray for the particular version of DeepOps in use.
+For example, DeepOps 21.09 uses Kubespray v2.16.0, with upgrade instructions found [here](https://github.com/kubernetes-sigs/kubespray/blob/release-2.16/docs/upgrades.md).
+
+When performing an update, it's important to make sure that your configured versions align with the supported versions in the version of Kubespray you are using.
+In particular,
+
+* Make sure the `helm_version` variable in your `config/group_vars/k8s-cluster.yml` file matches the version supported in the current Kubespray release.
+    You can determine this version by running:
+    ```
+    $ grep -E "^helm_version:" submodules/kubespray/roles/download/defaults/main.yml
+    helm_version: "v3.5.4"
+    ```
+
+* Make sure the `kube_version` you are using appears in the list of supported versions in `kubectl_checksums`.
+    You can verify your supported version appears in the list by checking the `kubectl_checksums` variable in the `submodules/kubespray/roles/download/defaults/main.yml` file.
 
 #### Update verification
 
