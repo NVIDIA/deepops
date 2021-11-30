@@ -7,7 +7,25 @@
   register: nvsm_dump_file
   ignore_errors: yes
 
-- name: Copy over all log files, etc.
+# These files are generated when the user requests diagnostics (occurs during firmware update in default playbook)
+- name: Copy over all log files, etc. - from diagnostics
+  ignore_errors: yes
+  fetch:
+    src: "{{ fw_dir }}/{{ item }}"
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-{{ item }}"
+    flat: yes
+  with_items:
+    - "fw-versions-pre-check.log"
+    - "fw-versions-post-check.log"
+    - "fw-manifests-pre-check.log"
+    - "fw-manifests-post-check.log"
+    - "{{ inventory_hostname }}.log"
+    - "nvsm-show-health.log"
+    - "dcgm_diag_1.log"
+  when: run_diagnostics
+
+# These files are generated when the user reqeuests a firmware update
+- name: Copy over all log files, etc. - from firmware update
   ignore_errors: yes
   fetch:
     src: "{{ fw_dir }}/{{ item }}"
@@ -15,15 +33,37 @@
     flat: yes
   with_items:
     - "fw-manifests.log"
-    - "fw-versions-pre-check.log"
-    - "{{ inventory_hostname }}.log"
-    - "fw-versions-post-check.log"
     - "fw-versions.log"
+  when: update_firmware
+
+# These files are only generated when the firmware is actually updated
+- name: Copy over all log files, etc. - from firmware update output
+  ignore_errors: yes
+  fetch:
+    src: "{{ fw_dir }}/{{ item }}"
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-{{ item }}"
+    flat: yes
+  with_items:
     - "fw-update.json"
-    - "{{ nvsm_dump_file.stdout }}"
-    - "nvsm-show-health.log"
-    - "dcgm_diag_1.log"
+  when: update_performed is defined and update_performed is true
+ 
+- name: Copy over all log files, etc. - stress tests
+  ignore_errors: yes
+  fetch:
+    src: "{{ fw_dir }}/{{ item }}"
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-{{ item }}"
+    flat: yes
+  with_items:
     - "dcgm_diag_3.log"
+  when: dcgm_stress
+
+- name: Copy NVSM dump health tarball from /tmp to local machine
+  fetch:
+    src: "/tmp/{{ nvsm_dump_file.stdout }}"
+    dest: "{{ local_log_directory }}/logs/{{ inventory_hostname }}/{{ inventory_hostname }}-{{ current_time.stdout }}-nvsm-dump-health.xz"
+    flat: yes
+  ignore_errors: yes
+  when: nvsm_dump_file.stdout != ''
 
 - name: Copy /var/log/syslog to local machine
   fetch:

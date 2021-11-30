@@ -113,6 +113,7 @@ if command -v virtualenv &> /dev/null ; then
         netaddr \
         ruamel.yaml \
         PyMySQL \
+        parimiko \
         selinux"
 else
     echo "ERROR: Unable to create Python virtual environment, 'virtualenv' command not found"

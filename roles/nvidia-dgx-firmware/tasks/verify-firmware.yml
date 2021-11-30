@@ -2,6 +2,7 @@
 - name: "Parse FW Update output"
   command: "python3 {{ fw_dir }}/parse_manifest.py parse_update_json {{ fw_dir }}/fw-update.json"
   register: result
+  when: firmware_needs_upgrade | default(false)
 
 - name: To json
   set_fact:
@@ -19,7 +20,7 @@
       debug:
         msg: ""
       failed_when: firmware_needs_upgrade | default(true)
-      when: target_fw == 'all' and force_parameter == '' and fw_update_json.State == "Success" # If we forced it or didn't upgrade everything this check would always fail # TODO: parse from json
+      when: target_fw == 'all' and force_parameter | default('')  == '' and fw_update_json.State == "Success" # If we forced it or didn't upgrade everything this check would always fail # TODO: parse from json
   rescue:
     - name: Show debug information for firmware update mismatch
       debug:
