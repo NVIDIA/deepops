@@ -50,3 +50,4 @@ export PATH="${K8S_CONFIG_DIR}/artifacts:${PATH}"
 
 # Let setup script know we're running from a Jenkins job
 export JENKINS=1
+export VENV_DIR="./env"
