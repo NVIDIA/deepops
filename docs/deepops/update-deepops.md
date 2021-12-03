@@ -10,6 +10,7 @@ Updating a cluster deployed with DeepOps
    * [Re-deploying the full cluster](#re-deploying-the-full-cluster)
    * [Component-based upgrades](#component-based-upgrades)
       * [Updating Kubernetes](#updating-kubernetes)
+         * [Troubleshooting: failure to drain node when Kubeflow is installed](#troubleshooting-failure-to-drain-node-when-kubeflow-is-installed)
       * [Update verification](#update-verification)
       * [Updating the NVIDIA GPU Operator](#updating-the-nvidia-gpu-operator)
       * [Updating NVIDIA Kubernetes components (no GPU Operator)](#updating-nvidia-kubernetes-components-no-gpu-operator)
@@ -172,6 +173,60 @@ $ ansible-playbook -e kube_version=v1.21.1 submodules/kubespray/upgrade-cluster.
 ```
 
 Where each version of Kubernetes in the chain should be supported by the Kubespray release in use.
+
+##### Troubleshooting: failure to drain node when Kubeflow is installed
+
+If Kubeflow has been installed on your Kubernetes cluster, you may find that the upgrade process fails due to an inability to drain nodes where Istio pods are running.
+The default configuration for Istio sets a [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) which may prevent these pods from being migrated.
+
+In this case, you can work around the issue by disabling the Istio pod disruption budgets and restoring them following the upgrade.
+
+1. Show the pod disruption budget configuration for the Istio namespace
+    ```
+    $ kubectl -n istio-system get pdb
+    NAME                     MIN AVAILABLE   MAX UNAVAILABLE   ALLOWED DISRUPTIONS   AGE
+    cluster-local-gateway    1               N/A               1                     3m40s
+    istio-galley             1               N/A               0                     3m40s
+    istio-ingressgateway     1               N/A               0                     3m40s
+    istio-pilot              1               N/A               0                     3m40s
+    istio-policy             1               N/A               1                     3m40s
+    istio-sidecar-injector   1               N/A               1                     3m40s
+    istio-telemetry          1               N/A               0                     3m40s
+    ```
+1. Save the pod disruption configuration to a file
+    ```
+    $ kubectl -n istio-system get pdb -o yaml > config/istio-pdb.yaml
+    ```
+1. Remove the pod disruption budget objects from the active cluster
+    ```
+    $ for x in $(kubectl -n istio-system get pdb  | grep -v NAME | awk '{print $1}'); do echo ${x}; kubectl -n istio-system delete pdb ${x}; done
+    cluster-local-gateway
+    poddisruptionbudget.policy "cluster-local-gateway" deleted
+    istio-galley
+    poddisruptionbudget.policy "istio-galley" deleted
+    istio-ingressgateway
+    poddisruptionbudget.policy "istio-ingressgateway" deleted
+    istio-pilot
+    poddisruptionbudget.policy "istio-pilot" deleted
+    istio-policy
+    poddisruptionbudget.policy "istio-policy" deleted
+    istio-sidecar-injector
+    poddisruptionbudget.policy "istio-sidecar-injector" deleted
+    istio-telemetry
+    poddisruptionbudget.policy "istio-telemetry" deleted
+    ```
+1. Proceed with your Kubernetes upgrade
+1. Once the upgrade is complete, restore the pod disruption budget configuration
+    ```
+    $ kubectl apply -f config/istio-pdb.yaml
+    poddisruptionbudget.policy/cluster-local-gateway created
+    poddisruptionbudget.policy/istio-galley created
+    poddisruptionbudget.policy/istio-ingressgateway created
+    poddisruptionbudget.policy/istio-pilot created
+    poddisruptionbudget.policy/istio-policy created
+    poddisruptionbudget.policy/istio-sidecar-injector created
+    poddisruptionbudget.policy/istio-telemetry created
+    ```
 
 #### Update verification
 
