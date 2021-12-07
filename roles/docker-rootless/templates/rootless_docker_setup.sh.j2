@@ -47,6 +47,7 @@ if ! grep "^$(id -un):\|^$(id -u):" /etc/subgid >/dev/null 2>&1; then
 fi
 
 curl -fsSL https://get.docker.com/rootless | \
+  sed  's/\b20.10.11\b/19.03.13/g' | \
   SKIP_IPTABLES=1 FORCE_ROOTLESS_INSTALL=1 DOCKER_BIN="{{ rootlessdocker_install_dir }}/bin" sh
 
 installsuccess=false
@@ -66,6 +67,7 @@ if [ "$installsuccess" = true ] ; then
   touch "{{ rootlessdocker_install_dir }}/config/install_success"
 else
   echo curl -fsSL https://get.docker.com/rootless \| \
+    sed  's/\b20.10.11\b/19.03.15/g' \| \
     SKIP_IPTABLES=1 FORCE_ROOTLESS_INSTALL=1 DOCKER_BIN="{{ rootlessdocker_install_dir }}/bin" sh
   exit 1
 fi

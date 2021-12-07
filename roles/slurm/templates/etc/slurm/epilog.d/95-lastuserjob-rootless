@@ -1,19 +1,22 @@
 #!/usr/bin/env bash
+set -x
+
+# clean up rootless docker /var/tmp/userid-${SLURM_JOB_UID}-jobid-${SLURM_JOB_ID}
+user_vartmp_dir="/var/tmp/userid-${SLURM_JOB_UID}-jobid-${SLURM_JOB_ID}"
+DOCKER_DATAROOT="${user_vartmp_dir}/docker-container-storage"
+
+dockerdpid="$(lsof -a -u ${SLURM_JOB_UID} +D ${DOCKER_DATAROOT} \
+  -d mem -c dockerd -t 2>/dev/null | head -n1)"
+
+echo EPILOG LASTUSERJOB DOCKERDPID: ${dockerdpid}
+
+if [ ! -z "${dockerdpid}" ]; then
+    kill ${dockerdpid} || :
+fi
+
+if [ -d "${user_vartmp_dir}" ]; then
+    rm -rf "${user_vartmp_dir}" || :
+fi
 
 command -v singularity || exit 0
 /usr/local/bin/singularity config fakeroot -r "${SLURM_JOB_USER}" || true
-
-# clean up rootless docker /var/tmp/userid-${SLURM_JOB_UID}-jobid-${SLURM_JOB_ID}
-
-dockerdpid=$(lsof -a -u ${SLURM_JOB_UID} +D ${DOCKER_DATAROOT} \
-  -d mem -c dockerd -t 2>/dev/null | head -n1)
-
-if [ ! -z "${dockerdpid}" ]; then
-    kill ${dockerdpid} || true
-fi
-
-user_vartmp_dir="/var/tmp/userid-${SLURM_JOB_UID}-jobid-${SLURM_JOB_ID}"
-
-if [ -d "${user_vartmp_dir}" ]; then
-    rm -rf "${user_vartmp_dir}"
-fi

@@ -67,10 +67,10 @@
     executable: /bin/bash
     creates: '{{ rootlessdocker_install_dir }}/config/install_success'
 
-- name: Clean up rootless docker set script
-  file:
-    path: /tmp/rootless_docker_setup.sh
-    state: absent
+#- name: Clean up rootless docker set script
+#  file:
+#    path: /tmp/rootless_docker_setup.sh
+#    state: absent
 
 - name: Add the br_netfilter module
   modprobe:

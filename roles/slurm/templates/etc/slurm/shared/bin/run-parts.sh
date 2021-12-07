@@ -15,7 +15,7 @@ log () {
 
 # Find out if we are running in exclusive mode
 exclusive=0
-numcpus_sys=$(( $(grep -c ^processor /proc/cpuinfo) * $(scontrol show job "$SLURM_JOBID" | grep -Eio "TRES=.*node=[0-9]+" | cut -d= -f5) ))
+numcpus_sys=$(( $(grep -c ^processor /proc/cpuinfo) * $(scontrol show job "$SLURM_JOBID" | grep -Eio "TRES=.*node=[0-9]+" | cut -d= -f4) ))
 numcpus_job=$(scontrol show job "$SLURM_JOBID" | grep -Eio "TRES=cpu=[0-9]+" | cut -d= -f3)
 if [ "$numcpus_sys" == "$numcpus_job" ] ; then
     exclusive=1
