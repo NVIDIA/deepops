@@ -19,6 +19,8 @@ k8s_gpu_mig_strategy: "mixed"
 # Enable/Disalbe specific components of GPU Operator
 gpu_operator_enable_driver: true
 gpu_operator_enable_toolkit: true
+gpu_operator_enable_dcgm: true
+gpu_operator_enable_migmanager: true
 
 # Configuration customization
 gpu_operator_namespace: "gpu-operator-resources"
