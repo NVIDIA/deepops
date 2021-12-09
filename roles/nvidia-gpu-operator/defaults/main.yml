@@ -21,7 +21,6 @@ gpu_operator_namespace: "gpu-operator-resources"
 gpu_operator_grid_config_dir: "{{ deepops_dir }}/gpu_operator"
 
 # Defaults from https://github.com/NVIDIA/gpu-operator/blob/master/deployments/gpu-operator/values.yaml
-gpu_operator_default_runtime: "docker"
 gpu_operator_driver_registry: "nvcr.io/nvidia"
 gpu_operator_driver_version: "470.82.01"
 
