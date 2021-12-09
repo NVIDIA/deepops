@@ -2,6 +2,20 @@
 - hosts: all
   become: yes
   pre_tasks:
+  - name: centos 8 - ensure powertools installed
+    block:
+      - name: ensure prereq packages installed
+        yum:
+          name: "dnf-plugins-core"
+          state: "present"
+      - name: enable powertools
+        command: "yum config-manager --set-enabled powertools"
+        warn: false
+    when: (ansible_distribution == "CentOS") and (ansible_distribution_major_version == "8")
+  - name: rhel 8 - ensure CRB repository is enabled
+    rhsm_repository:
+      name: "codeready-builder-for-rhel-8-x86_64-rpms"
+    when: (ansible_distribution == "Red Hat Enterprise Linux") and (ansible_distribution_major_version == "8")
   - name: create a folder for go
     file:
       path: "{{ golang_install_dir }}"
