@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include singularity_wrapper"
+      include_role:
+        name: "singularity_wrapper"
