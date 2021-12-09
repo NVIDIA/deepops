@@ -1,4 +1,15 @@
 ---
+- name: Check for DGX packages
+  stat:
+    path: /etc/dgx-release
+  register: is_dgx
+
+- name: Set DGX specific GPU Operator flags
+  set_fact:
+    gpu_operator_enable_driver: false
+    gpu_operator_enable_toolkit: false
+  when: is_dgx.stat.exists == False
+
 - include: k8s.yml
   when: not gpu_operator_nvaie_enable
 

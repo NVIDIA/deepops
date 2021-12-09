@@ -16,6 +16,10 @@ gpu_operator_chart_version: "1.9.0"
 
 k8s_gpu_mig_strategy: "mixed"
 
+# Enable/Disalbe specific components of GPU Operator
+gpu_operator_enable_driver: true
+gpu_operator_enable_toolkit: true
+
 # Configuration customization
 gpu_operator_namespace: "gpu-operator-resources"
 gpu_operator_grid_config_dir: "{{ deepops_dir }}/gpu_operator"
