@@ -1,15 +1,29 @@
 # NVIDIA Diagnostics & DGX Firmware Upgrades
 
-The [`nvidia-dgx-firmware`](roles/nvidia-dgx-firmware) role has been built to perform several administrative tasks cluster-wide.
+The [`nvidia-dgx-firmware`](../../roles/nvidia-dgx-firmware) role has been built to perform several administrative tasks cluster-wide.
 
 1. Upgrade the the DGX firmware (*DGX only clusters*)
 2. Run system diagnostics and collect a log bundle (*DGX and non-DGX clusters*)
 
 While documentation exists to [run system health checks](https://docs.nvidia.com/dgx/dgx1-fw-container-release-notes/index.html) and update [DGX firmware](https://docs.nvidia.com/dgx/dgx1-fw-container-release-notes/index.html), this role and document is meant to give guidance on performing these operations cluster-wide using `Ansible` for automation.
 
+## Prerequisites
+
+Before running either the diagnostic or the firmware upgrade playbooks, please ensure the following conditions are true on each node where you plan to run:
+
+* No user workloads should be running on the node
+* The firmware update container has been downloaded
+* DeepOps is correctly configured as outlined in the [Setup section](#setup)
+* DGX OS is installed to the minimum revision listed in the release notes of the firmware update container to be used
+
+**In addition, please ensure that any system services that access the GPU have been stopped.**
+The firmware update process should attempt to stop a standard list of services which are provided in DGX OS, including
+`dcgm-exporter`, `nvidia-dcgm`, `nvidia-fabricmanager`, `nvidia-persistenced`, `xorg-setup`, `lightdm`, `nvsm-core`, and `kubelet`.
+However, if any of these services were launched via Docker, or if you have installed additional services which access the GPU,
+those services will need to be stopped manually in advance of running this playbook.
 
 ## Setup
-Ensure that the playbook is being executed from an admin node where the `scripts/setup.sh` script has already been run and the inventory file is properly configured with DGX nodes all listed under the `slurm-node` group. Refer to the [DeepOps Slurm Deployment Guide](docs/slurm-cluster/) for details.
+Ensure that the playbook is being executed from an admin node where the `scripts/setup.sh` script has already been run and the inventory file is properly configured with DGX nodes all listed under the `slurm-node` group. Refer to the [DeepOps Slurm Deployment Guide](../slurm-cluster/) for details.
 
 If running on a DGX cluster, it is necessary to provide the DGX firmware container in order to gather installed firmware information or perform firmware updates. If running on a non-DGX cluster skip this first step and set `load_firmware` and `update_firmware` to `false`.
 
@@ -25,10 +39,10 @@ or may have additional instructions related to specific updates in this release.
 firmware_update_repo: nvfw-dgxa100
 
 # The Docker tag
-firmware_update_tag: 21.11.2
+firmware_update_tag: 21.11.4
 
 # The tarball name
-firmware_update_container: "nvfw-dgxa100_21.11.2_211102.tar.gz"
+firmware_update_container: "nvfw-dgxa100_21.11.4_211111.tar.gz"
 ```
 
 2. Change the `nv_mgmt_interface` variable to reflect the systems being collected from. The example interface names below should be true in most cases, but make sure to use specify the actual network interface in use on the systems being updated.
@@ -42,7 +56,6 @@ nv_mgmt_interface: enp225s0f0 # DGX A100
 ```
 
 > Note: This playbook is meant to run on a system running the DGX OS or a system that has had the nvidia-dgx role applied to it. Certain diagnostics may fail if this is not the case.
-
 
 ## Collect Diagnostics
 
