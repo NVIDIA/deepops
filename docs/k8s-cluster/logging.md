@@ -1,61 +1,82 @@
-# ELK
+# Centralized logging
 
 Centralized logging is provided by Filebeat, Elasticsearch and Kibana.
 
 ## Installation
 
-> Note: The ELK Helm chart is current out of date and does not provide support for setting the Kibana NodePort
+The following procedure walks through installation of a centralized logging stack using the Helm repositories provided by [Elastic NV](https://www.elastic.co/).
 
-*todo:*
-  * filebeat syslog module needs to be in UTC somehow, syslog in UTC?
-  * fix kibana nodeport issue
+Our centralized logging solution requires that all hosts be configured with the same timezone and synchronized clocks.
+This should be done automatically in our Kubernetes deployment process, but can be enforced manually by running the Chrony playbook:
 
-Make sure all systems are set to the same timezone:
-
-```sh
-ansible all -k -b -a 'timedatectl status'
+```
+ansible-playbook playbooks/generic/chrony-client.yml
 ```
 
-To update, use: `ansible <hostname> -k -b -a 'timedatectl set-timezone <timezone>'
+Add the Elastic repo in Helm:
 
-Install [Osquery](https://osquery.io/):
-
-```sh
-ansible-playbook -k ansible/playbooks/osquery.yml
+```
+$ helm repo add elastic https://helm.elastic.co
 ```
 
-Deploy Elasticsearch and Kibana:
+### [Install and validate the Elasticsearch cluster](https://github.com/elastic/helm-charts/blob/main/elasticsearch/README.md)
 
-```sh
-helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
-helm install --name elk --namespace logging --values config/helm/elk.yml incubator/elastic-stack
+```
+# Install Elasticsearch
+# - Note that this document uses three replicas for availability, but you may
+#   want to set a different value depending on cluster size
+$ helm install elasticsearch elastic/elasticsearch --set replicas=3
+
+# Wait for the cluster to come online
+$ kubectl get pods --namespace=default -l app=elasticsearch-master -w
+
+# Test the cluster health
+$ helm --namespace=default test elasticsearch
 ```
 
-> Important: The ELK stack will take several minutes to install,
-wait for elasticsearch to be ready in Kibana before proceeding.
+### [Install Filebeat](https://github.com/elastic/helm-charts/blob/main/filebeat/README.md)
 
-Verify that all of the ELK services are `RUNNING` with:
+Note that the default Filebeat configuration will import all container logs from the Kubernetes cluster nodes.
 
-```sh
-kubectl get pods -n logging
+```
+# Install Filebeat
+$ helm install filebeat elastic/filebeat
+
+# Wait for all containers to come up
+$ kubectl get pods --namespace=default -l app=filebeat-filebeat -w
 ```
 
-Launch Filebeat, which will create an Elasticsearch index automatically:
+### [Install Kibana](https://github.com/elastic/helm-charts/blob/main/kibana/README.md)
 
-```sh
-helm install --name log --namespace logging --values config/helm/filebeat.yml stable/filebeat
+```
+# Install Kibana
+$ helm install kibana elastic/kibana
+
+# Wait for the container to come up
+$ kubectl get pods --namespace=default -l app=kibana -w
 ```
 
-Kibana can now be reached at http://\<kube-master\>:30700
+By default, Kibana is only deployed as a ClusterIP service.
+In order to expose it for user access, see the [chart documentation](https://github.com/elastic/helm-charts/blob/main/kibana/README.md)
+or just expose it as a NodePort service:
+
+```
+$ kubectl expose deployment kibana-kibana --type=NodePort --name=kibana-nodeport
+service/kibana-nodeport exposed
+
+$ kubectl get service kibana-nodeport
+NAME              TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+kibana-nodeport   NodePort   10.233.39.104   <none>        5601:30965/TCP   42s
+```
+
 
 ## Deleting the logging stack
 
 If there is an issue, you can follow these steps to delete the logging stack:
 
-```sh
-helm del --purge log
-helm del --purge elk
-kubectl delete statefulset/elk-elasticsearch-data
-kubectl delete pvc -l app=elasticsearch
-# wait for all statefulsets to be removed before re-installing...
+```
+$ helm delete kibana
+$ helm delete filebeat
+$ helm delete elasticsearch
+$ kubectl delete pvc -l app=elasticsearch-master
 ```
