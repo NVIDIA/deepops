@@ -8,7 +8,7 @@ VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # The default Vagrant Operating System is Ubuntu 18.04
 # To override thise, change these variables to a supported OS
 DEEPOPS_VAGRANT_OS=${DEEPOPS_VAGRANT_OS:-ubuntu}
-DEEPOPS_OS_VERSION=${DEEPOPS_OS_VERSION:-18.04}
+DEEPOPS_OS_VERSION=${DEEPOPS_OS_VERSION:-20.04}
 
 # Startup the specified VM OS, defaulting to Ubuntu
 
