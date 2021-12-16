@@ -59,11 +59,12 @@
     NVHPC_DEFAULT_CUDA: "{{ hpcsdk_default_cuda }}"
 
 - name: clean up the temp directory
-  when: not nvhpc_localrc.stat.exists
   file:
     path: "{{ hpcsdk_temp_dir }}"
     state: absent
-  when: hpcsdk_clean_up_temp_dir
+  when:
+    - not nvhpc_localrc.stat.exists
+    - hpcsdk_clean_up_temp_dir
 
 - name: run the makelocalrc script
   when: not nvhpc_localrc.stat.exists

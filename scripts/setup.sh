@@ -23,6 +23,7 @@ VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environ
 . /etc/os-release
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/.."
 
 DEPS_DEB=(git virtualenv python3-virtualenv sshpass wget)
 DEPS_EL7=(git libselinux-python3 python-virtualenv python3-virtualenv sshpass wget)
@@ -112,6 +113,7 @@ if command -v virtualenv &> /dev/null ; then
         netaddr \
         ruamel.yaml \
         PyMySQL \
+        paramiko \
         selinux"
 else
     echo "ERROR: Unable to create Python virtual environment, 'virtualenv' command not found"
@@ -134,7 +136,7 @@ fi
 # Copy default configuration
 if grep -i deepops README.md >/dev/null 2>&1 ; then
     if [ ! -d "${CONFIG_DIR}" ] ; then
-        cp -rfp ./config.example "${CONFIG_DIR}"
+        cp -rfp "${ROOT_DIR}/config.example" "${CONFIG_DIR}"
         echo "Copied default configuration to ${CONFIG_DIR}"
     else
         echo "Configuration directory '${CONFIG_DIR}' exists, not overwriting"
@@ -144,10 +146,10 @@ fi
 # Install Ansible Galaxy roles
 if command -v ansible-galaxy &> /dev/null ; then
     echo "Updating Ansible Galaxy roles..."
-    as_user ansible-galaxy collection install --force -r roles/requirements.yml >/dev/null
-    as_user ansible-galaxy role install --force -r roles/requirements.yml >/dev/null
-    as_user ansible-galaxy collection install --force -i -r config/requirements.yml >/dev/null
-    as_user ansible-galaxy role install --force -i -r config/requirements.yml >/dev/null
+    as_user ansible-galaxy collection install --force -r "${ROOT_DIR}/roles/requirements.yml" >/dev/null
+    as_user ansible-galaxy role install --force -r "${ROOT_DIR}/roles/requirements.yml" >/dev/null
+    as_user ansible-galaxy collection install --force -i -r "${ROOT_DIR}/config/requirements.yml" >/dev/null
+    as_user ansible-galaxy role install --force -i -r "${ROOT_DIR}/config/requirements.yml" >/dev/null
 else
     echo "ERROR: Unable to install Ansible Galaxy roles, 'ansible-galaxy' command not found"
 fi

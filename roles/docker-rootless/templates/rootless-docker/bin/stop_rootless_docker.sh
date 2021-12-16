@@ -7,7 +7,7 @@ Usage: $(basename $0) [-h|--help]
     Example:
         $(basename $0)
 
-    To ommit messages redirect output to dev null.
+    To omit messages redirect output to dev null.
         $(basename $0) > /dev/null 2>&1
 
     -h|--help - Displays this help.

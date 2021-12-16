@@ -73,8 +73,12 @@ case "$ID" in
     export DEBIAN_FRONTEND=noninteractive
     # Install Vagrant & Dependencies for Debian Systems
 
-    export APT_DEPENDENCIES="build-essential sshpass qemu-kvm libvirt-bin libvirt-dev bridge-utils \
+    APT_DEPENDENCIES="build-essential sshpass qemu-kvm libvirt-dev bridge-utils \
       libguestfs-tools qemu ovmf virt-manager firewalld"
+    if [[ ! ${VERSION_ID} =~ ^20\.* ]]; then
+      APT_DEPENDENCIES=${APT_DEPENDENCIES}" libvirt-bin"
+    fi
+    export APT_DEPENDENCIES
 
     # shellcheck disable=SC2086
     if ! (dpkg -s $APT_DEPENDENCIES) >/dev/null 2>&1; then
@@ -90,7 +94,7 @@ case "$ID" in
 
     # Ensure we have permissions to manage VMs
     case "${VERSION_ID}" in
-      18.*)
+      18.* | 20.*)
         export LIBVIRT_GROUP="libvirt"
 	;;
       *)
@@ -131,6 +135,9 @@ esac
 if [ ${DEEPOPS_FULL_INSTALL} ]; then
   export CENTOS_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos${DEEPOPS_OS_VERSION}-full}"
   export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu${DEEPOPS_OS_VERSION}-full}"
+elif [ ${DEEPOPS_LARGE_SLURM} ]; then
+  export CENTOS_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos${DEEPOPS_OS_VERSION}-large-slurm}"
+  export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu${DEEPOPS_OS_VERSION}-large-slurm}"
 else
   export CENTOS_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-centos${DEEPOPS_OS_VERSION}}"
   export UBUNTU_DEEPOPS_VAGRANT_FILE="${DEEPOPS_VAGRANT_FILE:-${VIRT_DIR}/Vagrantfile-ubuntu${DEEPOPS_OS_VERSION}}"

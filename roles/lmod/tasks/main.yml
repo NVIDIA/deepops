@@ -77,7 +77,7 @@
     - configuration
 
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=891541
-- name: "bugfix for lomd posix_c"
+- name: "bugfix for lmod posix_c"
   become: yes
   shell: |
     ln -s -f /usr/lib/x86_64-linux-gnu/lua/5.1/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.1/posix.so

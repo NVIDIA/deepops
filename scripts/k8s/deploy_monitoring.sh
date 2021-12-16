@@ -51,6 +51,10 @@ function get_opts() {
                 delete_monitoring
                 exit 0
                 ;;
+            p)
+                print_monitoring
+                exit 0
+                ;;
             h)
                 help_me
                 exit 1

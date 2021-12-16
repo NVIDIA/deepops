@@ -40,7 +40,7 @@
   register: matrixmul
   ignore_errors: yes
 
-# -r 1 for quick system validation test, 2 for mediuem extended validation, 3 for long HW diagnostics/stress
+# -r 1 for quick system validation test, 2 for medium extended validation, 3 for long HW diagnostics/stress
 - name: run dcgm diag for up to 15 minutes
   shell: "dcgmi diag -r {{ gpu_test_dcgm_level }}"
   register: dcgm

@@ -10,6 +10,7 @@
       file:
         path: "{{ lookup('env','HOME') + '/.ssh' }}"
         state: directory
+        mode: 0700
       delegate_to: 127.0.0.1
       run_once: true
 
@@ -23,7 +24,7 @@
     - name: run setup to get ansible user
       setup: gather_subset=min
 
-    - name: Add SSH public key to ansible user user authorized keys
+    - name: Add SSH public key to ansible user authorized keys
       authorized_key:
         user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
         state: present

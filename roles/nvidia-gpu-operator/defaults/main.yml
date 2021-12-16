@@ -9,7 +9,12 @@
 gpu_operator_helm_repo: "https://nvidia.github.io/gpu-operator"
 gpu_operator_chart_name: "nvidia/gpu-operator"
 gpu_operator_release_name: "nvidia-gpu-operator"
-gpu_operator_chart_version: "1.6.2"
+gpu_operator_nvaie_helm_repo: "https://helm.ngc.nvidia.com/nvaie"
+gpu_operator_nvaie_chart_name: "nvaie/gpu-operator"
+
+# NVAIE GPU Operator may require different version, check NGC enterprise collection.
+gpu_operator_chart_version: "1.8.2"
+
 k8s_gpu_mig_strategy: "mixed"
 
 # Configuration customization
@@ -20,15 +25,25 @@ gpu_operator_grid_config_dir: "{{ deepops_dir }}/gpu_operator"
 # Defaults from https://github.com/NVIDIA/gpu-operator/blob/master/deployments/gpu-operator/values.yaml
 gpu_operator_default_runtime: "docker"
 gpu_operator_driver_registry: "nvcr.io/nvidia"
-gpu_operator_driver_version: "460.32.03"
-gpu_operator_plugin_args: "--mig-strategy={{ k8s_gpu_mig_strategy }},--pass-device-specs=true,--fail-on-init-error=true,--device-list-strategy=envvar,--nvidia-driver-root=/run/nvidia/driver"
+gpu_operator_driver_version: "470.57.02"
 
-# Variables used for vGPU
+# This enables/disables NVAIE
+gpu_operator_nvaie_enable: false
+## When using NVAIE, this enables/disables NLS licensing
+## When true, NLS is used. When false, traditional license server is used.
+gpu_operator_nvaie_nls_enabled: true
+
+# vGPU Licensing Info
+## Value of NLS Token file String
+gpu_operator_nvaie_nls_token: ""
 ## This is the IP of the license server used for vGPU, must be set to use vGPU
 vgpu_grid_license_server: ""
+
+# NGC authentication information (Required for NVAIE)
 ## This should remain as $oauthtoken if using an NGC API key
 gpu_operator_registry_username: "$oauthtoken"
 ## This is most likely an NGC API key
 gpu_operator_registry_password: ""
 ## This is most likely an NGC email
 gpu_operator_registry_email: ""
+

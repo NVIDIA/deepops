@@ -15,6 +15,7 @@
       args:
         chdir: "{{ playbook_dir | dirname }}"
       delegate_to: localhost
+      run_once: true
   vars:
     ansible_become: no
     ansible_connection: local
@@ -163,7 +164,7 @@
         mode: pull
         src: "/usr/local/bin/kubectl"
         dest: "{{ artifacts_dir }}/kubectl"
-      run_once: yes
+      run_once: true
   tags:
     - local
 - hosts: k8s-cluster

@@ -112,7 +112,7 @@ users:
 
 ssh_client_hardening: false
 ssh_server_password_login: true
-ssh_use_pam: 10
+ssh_use_pam: true
 ssh_max_auth_retries: 10
 sftp_enabled: true
 sftp_chroot: false
@@ -122,7 +122,7 @@ sftp_chroot: false
 ################################################################################
 # NVIDIA GPU configuration
 # Playbook: nvidia-cuda
-cuda_version: cuda-toolkit-11-3
+cuda_version: cuda-toolkit-11-4
 
 # DGX-specific vars may be used to target specific models,
 # because available versions for DGX may differ from the generic repo
@@ -133,7 +133,7 @@ cuda_version: cuda-toolkit-11-3
 # Playbook: nvidia-set-gpu-clocks
 # Resets the Gpu clocks to the default values. (see the `--reset-gpu-clocks` flag in nvidia-smi for more)
 gpu_clock_reset: no
-# Specifies <minGpuClock,maxGpuClock> clocks as a pair (e.g. 1500,1500) that defines the range of desired locked GPU clock speed in MHz. Setting this will supercede application clocks and take effect regardless if an app is running. Input can also be a singular desired clock value. (see the `--lock-gpu-clocks` flag in nvidia-smi for more)
+# Specifies <minGpuClock,maxGpuClock> clocks as a pair (e.g. 1500,1500) that defines the range of desired locked GPU clock speed in MHz. Setting this will supersede application clocks and take effect regardless if an app is running. Input can also be a singular desired clock value. (see the `--lock-gpu-clocks` flag in nvidia-smi for more)
 gpu_clock_lock: "1507,1507"
 
 # Debugging var: force install NVIDIA driver even if GPU not detected
@@ -148,7 +148,7 @@ nvidia_driver_force_install: false
 #
 # For supported Docker versions, see: kubespray/roles/container-engine/docker/vars/*
 docker_install: yes
-docker_version: '19.03'
+docker_version: '20.10'
 docker_dns_servers_strict: no
 docker_storage_options: -s overlay2
 #docker_options: "--bip=192.168.99.1/24"
@@ -173,7 +173,7 @@ docker_iptables_enabled: true
 #
 # See: https://github.com/NVIDIA/pyxis/wiki/Setup#enroot-configuration-example
 enroot_runtime_path: '/run/enroot/user-$(id -u)'
-enroot_cache_path: '/var/lib/enroot-cache/group-$(id -g)'
+enroot_cache_path: '/var/lib/enroot-cache/user-$(id -u)'
 enroot_data_path: '/tmp/enroot-data/user-$(id -u)'
 enroot_config: |
   ENROOT_CONFIG_PATH ${HOME}/.config/enroot
@@ -295,7 +295,7 @@ standalone_container_registry_port: "5000"
 #docker_registry_mirrors: ["http://<host>:<port>"]
 
 ################################################################################
-# Configuration for NGC-Ready playbok                                          #
+# Configuration for NGC-Ready playbook                                         #
 ################################################################################
 ngc_ready_cuda_container: "nvcr.io/nvidia/cuda:10.1-base-ubuntu18.04"
 ngc_ready_pytorch: "nvcr.io/nvidia/pytorch:18.10-py3"

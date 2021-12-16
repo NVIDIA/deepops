@@ -15,6 +15,9 @@ slurm_pmix_deps:
   - build-essential
   - libev-dev
   - libevent-dev
+  - zlib1g
+  - zlib1g-dev
+  - pandoc
 
 slurm_hwloc_deps:
   - build-essential

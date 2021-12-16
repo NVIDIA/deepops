@@ -26,6 +26,16 @@
 - include: container/standalone-container-registry.yml hostlist=slurm-master
   when: slurm_enable_container_registry|default(true)
 
+# Set up NGINX-based container caching
+- include: container/nginx-docker-registry-cache-server.yml
+  vars:
+    hostlist: "{{ nginx_docker_cache_hostgroup | default('slurm-master') }}"
+  when: slurm_enable_nginx_docker_cache | default(false)
+- include: container/nginx-docker-registry-cache-client.yml
+  vars:
+    hostlist: "{{ nginx_docker_cache_clients | default('slurm-node') }}"
+  when: slurm_enable_nginx_docker_cache | default(false)
+
 # Install NVIDIA driver
 - include: nvidia-software/nvidia-driver.yml
   when: slurm_cluster_install_nvidia_driver|default(true)
@@ -114,7 +124,7 @@
 - include: slurm-cluster/open-ondemand.yml
   when: install_open_ondemand
 
-#Set Permisions to adjust GPU Clocks speeds
+# Set Permissions to adjust GPU Clocks speeds
 - include: utilities/gpu-clocks.yml
   when: allow_user_set_gpu_clocks
 
