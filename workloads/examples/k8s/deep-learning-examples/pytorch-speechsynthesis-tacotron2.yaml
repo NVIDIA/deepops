@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pytorch-speechsynthesis-tacotron2
+  labels:
+    name: pytorch-speechsynthesis-tacotron2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pytorch-speechsynthesis-tacotron2
+  namespace: pytorch-speechsynthesis-tacotron2
+  labels:
+    app: pytorch-speechsynthesis-tacotron2
+spec:
+  selector:
+    matchLabels:
+      app: pytorch-speechsynthesis-tacotron2
+  template:
+    metadata:
+      labels:
+        app: pytorch-speechsynthesis-tacotron2
+    spec:
+      containers:
+        - name: pytorch-speechsynthesis-tacotron2
+          image: pytorch-speechsynthesis-tacotron2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8888
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+          args:
+            - jupyter
+            - lab
+            - --ip=0.0.0.0
+            - --no-browser
+            - --allow-root
+            - --port=8888
+            - --NotebookApp.token=''
+            - --NotebookApp.password=''
+            - --NotebookApp.allow_origin='*'
+            - --NotebookApp.base_url=/
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+      volumes:
+        - name: dshm
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.service.nodeport.port: "30888"
+    kompose.service.type: nodeport
+  creationTimestamp: null
+  labels:
+    app: pytorch-speechsynthesis-tacotron2
+  name: pytorch-speechsynthesis-tacotron2
+  namespace: pytorch-speechsynthesis-tacotron2
+spec:
+  ports:
+    - name: jupyterlab
+      nodePort: 30888
+      port: 8888
+      targetPort: 8888
+  selector:
+    app: pytorch-speechsynthesis-tacotron2
+  type: NodePort
+status:
+  loadBalancer: {}

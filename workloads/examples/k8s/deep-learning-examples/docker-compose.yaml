@@ -1,0 +1,169 @@
+version: "3"
+services:
+  tensorflow-efficientnet:
+
+    image: tensorflow-efficientnet
+    build:
+      context: ../../../../submodules/deeplearningexamples/TensorFlow2/Classification/ConvNets/efficientnet
+      dockerfile: Dockerfile
+
+  tensorflow-languagemodeling-bert:
+
+    image: tensorflow-languagemodeling-bert
+    build:
+      context: ../../../../submodules/deeplearningexamples/TensorFlow2/LanguageModeling/BERT
+      dockerfile: Dockerfile
+
+  tensorflow-languagemodeling-electra:
+
+    image: tensorflow-languagemodeling-electra
+    build:
+      context: ../../../../submodules/deeplearningexamples/TensorFlow2/LanguageModeling/ELECTRA
+      dockerfile: Dockerfile
+
+  tensorflow-recommendation-dlrm:
+
+    image: tensorflow-recommendation-dlrm
+    build:
+      context: ../../../../submodules/deeplearningexamples/TensorFlow2/Recommendation/DLRM
+      dockerfile: Dockerfile
+
+  tensorflow-recommendation-wideanddeep:
+
+    image: tensorflow-recommendation-wideanddeep
+    build:
+      context: ../../../../submodules/deeplearningexamples/TensorFlow2/Recommendation/WideAndDeep
+      dockerfile: Dockerfile
+
+  tensorflow-segmentation-maskrcnn:
+
+    image: tensorflow-segmentation-maskrcnn
+    build:
+      context: ../../../../submodules/deeplearningexamples/TensorFlow2/Segmentation/MaskRCNN
+      dockerfile: Dockerfile
+
+  tensorflow-segmentation-unet-medical:
+
+    image: tensorflow-segmentation-unet-medical
+    build:
+      context: ../../../../submodules/deeplearningexamples/TensorFlow2/Segmentation/UNet_Medical
+      dockerfile: Dockerfile
+
+  pytorch-classification-convnets:
+
+    image: pytorch-classification-convnets
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/Classification/ConvNets
+      dockerfile: Dockerfile
+
+  pytorch-detection-efficientdet:
+
+    image: pytorch-detection-efficientdet
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/Detection/Efficientdet
+      dockerfile: Dockerfile
+
+  pytorch-detection-ssd:
+
+    image: pytorch-detection-ssd
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/Detection/SSD
+      dockerfile: Dockerfile
+
+  pytorch-forecasting-tft:
+
+    image: pytorch-forecasting-tft
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/Forecasting/TFT
+      dockerfile: Dockerfile
+
+  pytorch-languagemodeling-bart:
+
+    image: pytorch-languagemodeling-bart
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/LanguageModeling/BART
+      dockerfile: Dockerfile
+
+  pytorch-languagemodeling-bert:
+
+    image: pytorch-languagemodeling-bert
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/LanguageModeling/BERT
+      dockerfile: Dockerfile
+
+  pytorch-languagemodeling-transformer-xl:
+
+    image: pytorch-languagemodeling-transformer-xl
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/LanguageModeling/Transformer-XL
+      dockerfile: Dockerfile
+
+  pytorch-recommendation-dlrm:
+
+    image: pytorch-recommendation-dlrm
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/Recommendation/DLRM
+      dockerfile: Dockerfile
+
+  pytorch-recommendation-ncf:
+
+    image: pytorch-recommendation-ncf
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/Recommendation/NCF
+      dockerfile: Dockerfile
+
+  pytorch-segmentation-maskrcnn:
+
+    image: pytorch-segmentation-maskrcnn
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/Segmentation/MaskRCNN
+      dockerfile: Dockerfile
+
+  pytorch-segmentation-nnunet:
+
+    image: pytorch-segmentation-nnunet
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/Segmentation/nnUNet
+      dockerfile: Dockerfile
+
+  pytorch-speechrecognition-jasper:
+
+    image: pytorch-speechrecognition-jasper
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/SpeechRecognition/Jasper
+      dockerfile: Dockerfile
+
+  pytorch-speechrecognition-quartznet:
+
+    image: pytorch-speechrecognition-quartznet
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/SpeechRecognition/QuartzNet
+      dockerfile: Dockerfile
+
+  pytorch-speechsynthesis-fastpitch:
+
+    image: pytorch-speechsynthesis-fastpitch
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/SpeechSynthesis/FastPitch
+      dockerfile: Dockerfile
+
+  pytorch-speechsynthesis-tacotron2:
+
+    image: pytorch-speechsynthesis-tacotron2
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/SpeechSynthesis/Tacotron2
+      dockerfile: Dockerfile
+
+  pytorch-translation-gnmt:
+
+    image: pytorch-translation-gnmt
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/Translation/GNMT
+      dockerfile: Dockerfile
+
+  pytorch-translation-transformer:
+
+    image: pytorch-translation-transformer
+    build:
+      context: ../../../../submodules/deeplearningexamples/PyTorch/Translation/Transformer
+      dockerfile: Dockerfile

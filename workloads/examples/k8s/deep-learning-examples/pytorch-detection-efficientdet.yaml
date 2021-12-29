@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pytorch-detection-efficientdet
+  labels:
+    name: pytorch-detection-efficientdet
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pytorch-detection-efficientdet
+  namespace: pytorch-detection-efficientdet
+  labels:
+    app: pytorch-detection-efficientdet
+spec:
+  selector:
+    matchLabels:
+      app: pytorch-detection-efficientdet
+  template:
+    metadata:
+      labels:
+        app: pytorch-detection-efficientdet
+    spec:
+      containers:
+        - name: pytorch-detection-efficientdet
+          image: pytorch-detection-efficientdet
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8888
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+          args:
+            - jupyter
+            - lab
+            - --ip=0.0.0.0
+            - --no-browser
+            - --allow-root
+            - --port=8888
+            - --NotebookApp.token=''
+            - --NotebookApp.password=''
+            - --NotebookApp.allow_origin='*'
+            - --NotebookApp.base_url=/
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+      volumes:
+        - name: dshm
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.service.nodeport.port: "30888"
+    kompose.service.type: nodeport
+  creationTimestamp: null
+  labels:
+    app: pytorch-detection-efficientdet
+  name: pytorch-detection-efficientdet
+  namespace: pytorch-detection-efficientdet
+spec:
+  ports:
+    - name: jupyterlab
+      nodePort: 30888
+      port: 8888
+      targetPort: 8888
+  selector:
+    app: pytorch-detection-efficientdet
+  type: NodePort
+status:
+  loadBalancer: {}
