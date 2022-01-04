@@ -85,13 +85,14 @@ function get_opts() {
 
 function build_image(){
     echo "Building the image for ${DLE_DEPLOYMENT}"
-    docker-compose --file=${DEEP_LEARNING_COMPOSE} build ${DLE_DEPLOYMENT} 
+    docker-compose --file=${DEEP_LEARNING_COMPOSE} build ${DLE_DEPLOYMENT}
+    docker-compose --file=${DEEP_LEARNING_COMPOSE} push ${DLE_DEPLOYMENT} 
 }
 
 function deploy_service(){
     
     echo "You can remove this service from the cluster by running the following:"
-    echo "  kubectl -f "${DEEP_LEARNING_DIR}${DLE_DEPLOYMENT}.yaml" delete --wait"
+    echo "  ansible-playbook -l k8s-cluster playbooks/k8s-cluster/deep-learning-examples.yaml -e 'action=d ${DLE_DEPLOYMENT}'"
     sudo kubectl -f "${DEEP_LEARNING_DIR}${DLE_DEPLOYMENT}.yaml" delete --wait > /dev/null 2>&1
     sudo kubectl -f "${DEEP_LEARNING_DIR}${DLE_DEPLOYMENT}.yaml" create
     sudo kubectl get all -n ${DLE_DEPLOYMENT}
