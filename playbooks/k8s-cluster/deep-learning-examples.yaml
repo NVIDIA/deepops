@@ -1,0 +1,24 @@
+---
+- hosts: kube-master[0]
+  name: Deploy NVIDIA's Deep Learning Example (nvdle)
+  become: true
+  tasks:
+    - name: Checking for docker-compose image on kube-nodes
+      command: docker-compose -v
+      ignore_errors: true
+      register: docker_compose_version
+
+    - name: Pull docker-compose image
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.2.2/run.sh
+        dest: /usr/local/bin/docker-compose
+        mode: "777"
+      when: docker_compose_version is failed
+
+    - name: Building image with docker-compose
+      register: deployment_information
+      shell:
+        chdir: "{{ playbook_dir | dirname | dirname }}"
+        cmd: bash scripts/k8s/deep-learning-examples/deploy-deeep-learning-example.sh -"{{ action | default('c')}}" "{{ nvdle | default('tensorflow-recommendation-wideanddeep') }}"
+    - debug:
+        msg: "{{ deployment_information.stdout }}"
