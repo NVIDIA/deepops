@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow-segmentation-maskrcnn
-          image: tensorflow-segmentation-maskrcnn
+          image: registry.local/tensorflow-segmentation-maskrcnn
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

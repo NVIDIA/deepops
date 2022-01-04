@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-segmentation-nnunet
-          image: pytorch-segmentation-nnunet
+          image: registry.local/pytorch-segmentation-nnunet
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

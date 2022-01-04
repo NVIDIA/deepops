@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-languagemodeling-bert
-          image: pytorch-languagemodeling-bert
+          image: registry.local/pytorch-languagemodeling-bert
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

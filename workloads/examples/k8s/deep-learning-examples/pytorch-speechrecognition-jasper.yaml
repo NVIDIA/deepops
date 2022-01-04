@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-speechrecognition-jasper
-          image: pytorch-speechrecognition-jasper
+          image: registry.local/pytorch-speechrecognition-jasper
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

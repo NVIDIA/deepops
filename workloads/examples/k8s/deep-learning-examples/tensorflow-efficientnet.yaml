@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow-efficientnet
-          image: tensorflow-efficientnet
+          image: registry.local/tensorflow-efficientnet
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

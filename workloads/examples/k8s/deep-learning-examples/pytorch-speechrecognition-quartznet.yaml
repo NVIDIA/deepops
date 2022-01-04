@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-speechrecognition-quartznet
-          image: pytorch-speechrecognition-quartznet
+          image: registry.local/pytorch-speechrecognition-quartznet
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

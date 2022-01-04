@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow-recommendation-dlrm
-          image: tensorflow-recommendation-dlrm
+          image: registry.local/tensorflow-recommendation-dlrm
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

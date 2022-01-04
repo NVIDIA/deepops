@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-speechsynthesis-fastpitch
-          image: pytorch-speechsynthesis-fastpitch
+          image: registry.local/pytorch-speechsynthesis-fastpitch
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888
