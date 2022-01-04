@@ -25,3 +25,7 @@ jobs:
         stale-pr-message: 'This PR is stale because it has been open for 60 days with no activity. Please update the PR or it will be closed in 7 days.'
         stale-issue-label: 'no-issue-activity'
         stale-pr-label: 'no-pr-activity'
+        days-before-issue-stale: 60
+        days-before-pr-stale: 180
+        exempt-pr-labels: 'no-stale'
+        exempt-issue-labels: 'no-stale'
