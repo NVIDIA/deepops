@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tensorflow-detection-ssd
+  labels:
+    name: tensorflow-detection-ssd
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tensorflow-detection-ssd
+  namespace: tensorflow-detection-ssd
+  labels:
+    app: tensorflow-detection-ssd
+spec:
+  selector:
+    matchLabels:
+      app: tensorflow-detection-ssd
+  template:
+    metadata:
+      labels:
+        app: tensorflow-detection-ssd
+    spec:
+      containers:
+        - name: tensorflow-detection-ssd
+          image: registry.local/tensorflow-detection-ssd
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8888
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+          args:
+            - jupyter
+            - lab
+            - --ip=0.0.0.0
+            - --no-browser
+            - --allow-root
+            - --port=8888
+            - --NotebookApp.token=''
+            - --NotebookApp.password=''
+            - --NotebookApp.allow_origin='*'
+            - --NotebookApp.base_url=/
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+      volumes:
+        - name: dshm
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.service.nodeport.port: "30888"
+    kompose.service.type: nodeport
+  creationTimestamp: null
+  labels:
+    app: tensorflow-detection-ssd
+  name: tensorflow-detection-ssd
+  namespace: tensorflow-detection-ssd
+spec:
+  ports:
+    - name: jupyterlab
+      nodePort: 30888
+      port: 8888
+      targetPort: 8888
+  selector:
+    app: tensorflow-detection-ssd
+  type: NodePort
+status:
+  loadBalancer: {}

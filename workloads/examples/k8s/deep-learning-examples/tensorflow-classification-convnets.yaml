@@ -1,29 +1,29 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: tensorflow-languagemodeling-electra
+  name: tensorflow-classification-convnets
   labels:
-    name: tensorflow-languagemodeling-electra
+    name: tensorflow-classification-convnets
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tensorflow-languagemodeling-electra
-  namespace: tensorflow-languagemodeling-electra
+  name: tensorflow-classification-convnets
+  namespace: tensorflow-classification-convnets
   labels:
-    app: tensorflow-languagemodeling-electra
+    app: tensorflow-classification-convnets
 spec:
   selector:
     matchLabels:
-      app: tensorflow-languagemodeling-electra
+      app: tensorflow-classification-convnets
   template:
     metadata:
       labels:
-        app: tensorflow-languagemodeling-electra
+        app: tensorflow-classification-convnets
     spec:
       containers:
-        - name: tensorflow-languagemodeling-electra
-          image: registry.local/tensorflow-languagemodeling-electra
+        - name: tensorflow-classification-convnets
+          image: registry.local/tensorflow-classification-convnets
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888
@@ -56,9 +56,9 @@ metadata:
     kompose.service.type: nodeport
   creationTimestamp: null
   labels:
-    app: tensorflow-languagemodeling-electra
-  name: tensorflow-languagemodeling-electra
-  namespace: tensorflow-languagemodeling-electra
+    app: tensorflow-classification-convnets
+  name: tensorflow-classification-convnets
+  namespace: tensorflow-classification-convnets
 spec:
   ports:
     - name: jupyterlab
@@ -66,7 +66,7 @@ spec:
       port: 8888
       targetPort: 8888
   selector:
-    app: tensorflow-languagemodeling-electra
+    app: tensorflow-classification-convnets
   type: NodePort
 status:
   loadBalancer: {}

@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dglpytorch-drugdiscovery-se3transformer
+  labels:
+    name: dglpytorch-drugdiscovery-se3transformer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dglpytorch-drugdiscovery-se3transformer
+  namespace: dglpytorch-drugdiscovery-se3transformer
+  labels:
+    app: dglpytorch-drugdiscovery-se3transformer
+spec:
+  selector:
+    matchLabels:
+      app: dglpytorch-drugdiscovery-se3transformer
+  template:
+    metadata:
+      labels:
+        app: dglpytorch-drugdiscovery-se3transformer
+    spec:
+      containers:
+        - name: dglpytorch-drugdiscovery-se3transformer
+          image: registry.local/dglpytorch-drugdiscovery-se3transformer
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8888
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+          args:
+            - jupyter
+            - lab
+            - --ip=0.0.0.0
+            - --no-browser
+            - --allow-root
+            - --port=8888
+            - --NotebookApp.token=''
+            - --NotebookApp.password=''
+            - --NotebookApp.allow_origin='*'
+            - --NotebookApp.base_url=/
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+      volumes:
+        - name: dshm
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.service.nodeport.port: "30888"
+    kompose.service.type: nodeport
+  creationTimestamp: null
+  labels:
+    app: dglpytorch-drugdiscovery-se3transformer
+  name: dglpytorch-drugdiscovery-se3transformer
+  namespace: dglpytorch-drugdiscovery-se3transformer
+spec:
+  ports:
+    - name: jupyterlab
+      nodePort: 30888
+      port: 8888
+      targetPort: 8888
+  selector:
+    app: dglpytorch-drugdiscovery-se3transformer
+  type: NodePort
+status:
+  loadBalancer: {}

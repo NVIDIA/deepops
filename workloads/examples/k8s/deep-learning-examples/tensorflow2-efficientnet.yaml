@@ -1,29 +1,29 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: tensorflow-efficientnet
+  name: tensorflow2-efficientnet
   labels:
-    name: tensorflow-efficientnet
+    name: tensorflow2-efficientnet
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tensorflow-efficientnet
-  namespace: tensorflow-efficientnet
+  name: tensorflow2-efficientnet
+  namespace: tensorflow2-efficientnet
   labels:
-    app: tensorflow-efficientnet
+    app: tensorflow2-efficientnet
 spec:
   selector:
     matchLabels:
-      app: tensorflow-efficientnet
+      app: tensorflow2-efficientnet
   template:
     metadata:
       labels:
-        app: tensorflow-efficientnet
+        app: tensorflow2-efficientnet
     spec:
       containers:
-        - name: tensorflow-efficientnet
-          image: registry.local/tensorflow-efficientnet
+        - name: tensorflow2-efficientnet
+          image: registry.local/tensorflow2-efficientnet
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888
@@ -56,9 +56,9 @@ metadata:
     kompose.service.type: nodeport
   creationTimestamp: null
   labels:
-    app: tensorflow-efficientnet
-  name: tensorflow-efficientnet
-  namespace: tensorflow-efficientnet
+    app: tensorflow2-efficientnet
+  name: tensorflow2-efficientnet
+  namespace: tensorflow2-efficientnet
 spec:
   ports:
     - name: jupyterlab
@@ -66,7 +66,7 @@ spec:
       port: 8888
       targetPort: 8888
   selector:
-    app: tensorflow-efficientnet
+    app: tensorflow2-efficientnet
   type: NodePort
 status:
   loadBalancer: {}

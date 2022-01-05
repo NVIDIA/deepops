@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kaldi-speechrecognition
+  labels:
+    name: kaldi-speechrecognition
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kaldi-speechrecognition
+  namespace: kaldi-speechrecognition
+  labels:
+    app: kaldi-speechrecognition
+spec:
+  selector:
+    matchLabels:
+      app: kaldi-speechrecognition
+  template:
+    metadata:
+      labels:
+        app: kaldi-speechrecognition
+    spec:
+      containers:
+        - name: kaldi-speechrecognition
+          image: registry.local/kaldi-speechrecognition
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8888
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+          args:
+            - jupyter
+            - lab
+            - --ip=0.0.0.0
+            - --no-browser
+            - --allow-root
+            - --port=8888
+            - --NotebookApp.token=''
+            - --NotebookApp.password=''
+            - --NotebookApp.allow_origin='*'
+            - --NotebookApp.base_url=/
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+      volumes:
+        - name: dshm
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.service.nodeport.port: "30888"
+    kompose.service.type: nodeport
+  creationTimestamp: null
+  labels:
+    app: kaldi-speechrecognition
+  name: kaldi-speechrecognition
+  namespace: kaldi-speechrecognition
+spec:
+  ports:
+    - name: jupyterlab
+      nodePort: 30888
+      port: 8888
+      targetPort: 8888
+  selector:
+    app: kaldi-speechrecognition
+  type: NodePort
+status:
+  loadBalancer: {}
