@@ -57,7 +57,7 @@ ansible-playbook -l k8s-cluster playbooks/k8s-cluster/deep-learning-examples.yam
 - tensorflow-segmentation-vnet
 - tensorflow-translation-gnmt
 - tensorflow2-efficientne
-- tensorflow2-languagemodeling-bert"
+- tensorflow2-languagemodeling-bert
 - tensorflow2-languagemodeling-electra
 - tensorflow2-recommendation-dlrm
 - tensorflow2-recommendation-wideanddeep
