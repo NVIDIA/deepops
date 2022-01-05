@@ -15,7 +15,7 @@ services:
     image: registry.local/kaldi-speechrecognition
     build:
       context: ../../../../submodules/deeplearningexamples/Kaldi/SpeechRecognition
-      dockerfile: Dockerfile.notebook
+      dockerfile: Dockerfile
 
   mxnet-classification:
     image: registry.local/mxnet-classification
