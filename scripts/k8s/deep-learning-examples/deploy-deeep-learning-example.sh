@@ -30,12 +30,16 @@ function help_me() {
     echo "This script creates a deployment of one of NVIDIA's DeepLearningExamples."
     echo "  (https://github.com/NVIDIA/DeepLearningExamples)"
     echo "Example:"
-    echo "  ./scripts/k8s/deep-learning-examples/deploy-deeep-learning-example.sh -c tensorflow-recommendation-wideanddeep"
+    echo "  ./scripts/k8s/deep-learning-examples/deploy-deeep-learning-example.sh -c tensorflow2-recommendation-wideanddeep"
     echo ""
     echo "Usage:"
     echo "-(d)elete      Delete a named deployment, if it exists."
     echo "-(h)elp        This message."
     echo "-(c)reate      Define a named experiment to run, one of:"
+    echo " - cuda-optimized-fastspeech"
+    echo " - dglpytorch-drugdiscovery-se3transformer"
+    echo " - kaldi-speechrecognition"
+    echo " - mxnet-classification"
     echo " - pytorch-classification-convnets"
     echo " - pytorch-detection-efficientdet"
     echo " - pytorch-detection-ssd"
@@ -53,13 +57,25 @@ function help_me() {
     echo " - pytorch-speechsynthesis-tacotron2"
     echo " - pytorch-translation-gnmt"
     echo " - pytorch-translation-transformer"
-    echo " - tensorflow-efficientnet"
+    echo " - tensorflow-classification-convnets"
+    echo " - tensorflow-detection-ssd"
     echo " - tensorflow-languagemodeling-bert"
-    echo " - tensorflow-languagemodeling-electra"
-    echo " - tensorflow-recommendation-dlrm"
+    echo " - tensorflow-languagemodeling-transformerxl"
+    echo " - tensorflow-recommendation-ncf"
+    echo " - tensorflow-recommendation-vaecf"
     echo " - tensorflow-recommendation-wideanddeep"
-    echo " - tensorflow-segmentation-maskrcnn"
-    echo " - tensorflow-segmentation-unet-medical"
+    echo " - tensorflow-segmentation-unet3dmedical"
+    echo " - tensorflow-segmentation-unetindustrial"
+    echo " - tensorflow-segmentation-unetmedical"
+    echo " - tensorflow-segmentation-vnet"
+    echo " - tensorflow-translation-gnmt"
+    echo " - tensorflow2-efficientnet"
+    echo " - tensorflow2-languagemodeling-bert"
+    echo " - tensorflow2-languagemodeling-electra"
+    echo " - tensorflow2-recommendation-dlrm"
+    echo " - tensorflow2-recommendation-wideanddeep"
+    echo " - tensorflow2-segmentation-maskrcnn"
+    echo " - tensorflow2-segmentation-unet-medical"
 }
 
 
@@ -92,7 +108,7 @@ function build_image(){
 function deploy_service(){
     
     echo "You can remove this service from the cluster by running the following:"
-    echo "  ansible-playbook -l k8s-cluster playbooks/k8s-cluster/deep-learning-examples.yaml -e 'action=d ${DLE_DEPLOYMENT}'"
+    echo "  ansible-playbook -l k8s-cluster playbooks/k8s-cluster/deep-learning-examples.yaml -e 'action=d nvdle=${DLE_DEPLOYMENT}'"
     sudo kubectl -f "${DEEP_LEARNING_DIR}${DLE_DEPLOYMENT}.yaml" delete --wait > /dev/null 2>&1
     sudo kubectl -f "${DEEP_LEARNING_DIR}${DLE_DEPLOYMENT}.yaml" create
     sudo kubectl get all -n ${DLE_DEPLOYMENT}
