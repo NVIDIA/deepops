@@ -45,6 +45,9 @@ kube-node
 [slurm-master]
 #login01
 
+[slurm-nfs]
+#login01
+
 [slurm-node]
 #gpu01
 #gpu02
@@ -56,8 +59,8 @@ kube-node
 [slurm-cache:children]
 slurm-master
 
-[slurm-nfs:children]
-slurm-master
+[slurm-nfs-client:children]
+slurm-node
 
 [slurm-metric:children]
 slurm-master

@@ -58,7 +58,7 @@
   when: slurm_enable_nfs_server
 - include: generic/nfs-client.yml
   vars:
-    hostlist: "{{ nfs_client_group | default('slurm-master[1:],slurm-node') }}"
+    hostlist: "{{ nfs_client_group | default('slurm-nfs-client') }}"
   when: slurm_enable_nfs_client_nodes
 
 # Install DCGM
