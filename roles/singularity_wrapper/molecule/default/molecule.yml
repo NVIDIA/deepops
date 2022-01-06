@@ -1,0 +1,17 @@
+---
+dependency:
+  name: galaxy
+  options:
+    requirements-file: requirements.yml
+driver:
+  name: docker
+platforms:
+  - name: ubuntu-1804
+    image: geerlingguy/docker-ubuntu1804-ansible
+    pre_build_image: true
+provisioner:
+  name: ansible
+  ansible_args:
+  - -vv
+verifier:
+  name: ansible
