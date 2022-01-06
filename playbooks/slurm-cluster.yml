@@ -29,7 +29,7 @@
 # Set up NGINX-based container caching
 - include: container/nginx-docker-registry-cache-server.yml
   vars:
-    hostlist: "{{ nginx_docker_cache_hostgroup | default('slurm-master') }}"
+    hostlist: "{{ nginx_docker_cache_hostgroup | default('slurm-cache') }}"
   when: slurm_enable_nginx_docker_cache | default(false)
 - include: container/nginx-docker-registry-cache-client.yml
   vars:
@@ -54,7 +54,7 @@
 # Set up NFS filesystem
 - include: generic/nfs-server.yml
   vars:
-    hostlist: "{{ nfs_server_group | default('slurm-master[0]') }}"
+    hostlist: "{{ nfs_server_group | default('slurm-nfs[0]') }}"
   when: slurm_enable_nfs_server
 - include: generic/nfs-client.yml
   vars:
@@ -83,7 +83,7 @@
 # Install the NVIDIA HPC SDK
 - include: nvidia-software/nvidia-hpc-sdk.yml
   vars:
-    hostlist: "{{ sm_install_host | default('slurm-master[0]')}}"
+    hostlist: "{{ sm_install_host | default('slurm-login[0]')}}"
   when: slurm_install_hpcsdk
 
 # Install monitoring services
