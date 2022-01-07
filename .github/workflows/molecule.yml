@@ -1,0 +1,30 @@
+---
+name: test ansible roles with molecule
+on:
+  - push
+  - pull_request
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      max-parallel: 4
+      matrix:
+        deepops-role:
+          - singularity_wrapper
+    steps:
+      - name: check out repo
+        uses: actions/checkout@v2
+        with:
+          path: "${{ github.repository }}"
+      - name: set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.10
+      - name: install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install "molecule[docker,lint]"
+      - name: run molecule test
+        run: |
+          cd "${{ github.repository }}/roles/${{ matrix.deepops-role }}"
+          molecule test
