@@ -1,10 +1,13 @@
 ---
-# This is an example playbook to execute Ansible tests.
-
-- name: Verify
+- name: verify
   hosts: all
-  gather_facts: false
   tasks:
-  - name: Example assertion
+  - name: check for path to singularity
+    command: which singularity
+    register: which_singularity
+    changed_when: which_singularity.rc != 0
+
+  - name: verify path to singularity
     assert:
-      that: true
+      that:
+      - "'/usr/local/bin/singularity' in which_singularity.stdout"
