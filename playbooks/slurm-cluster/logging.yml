@@ -42,10 +42,16 @@
       mode: "0644"
     notify:
     - restart-elasticsearch
+  - name: check for relevant class in logstash
+    shell: unzip -l /usr/share/logstash/logstash-core/lib/jars/log4j-core-2.* | grep JndiLookup.class
+    register: logstash_jndi
+    changed_when: logstash_jndi.rc == 0
+    failed_when: logstash_jndi.rc == 2
   - name: configure logstash to mitigate CVE-2021-44228
     shell: zip -q -d /usr/share/logstash/logstash-core/lib/jars/log4j-core-2.* org/apache/logging/log4j/core/lookup/JndiLookup.class
     notify:
     - restart-logstash
+    when: logstash_jndi.changed
   handlers:
   - name: restart-elasticsearch
     service:
