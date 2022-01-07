@@ -3,6 +3,11 @@
   become: true
   vars:
     elasticsearch_network_host: 0.0.0.0
+  pre_tasks:
+    - name: debian - ensure apt cache updated
+      apt:
+        update_cache: true
+      when: ansible_os_family == "Debian"
   roles:
     - robertdebock.java
     - robertdebock.elastic_repo
