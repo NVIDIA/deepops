@@ -24,6 +24,7 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install "molecule[docker,lint]"
+          python3 -m pip install docker
       - name: run molecule test
         run: |
           cd "${{ github.repository }}/roles/${{ matrix.deepops-role }}"
