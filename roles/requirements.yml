@@ -9,7 +9,7 @@ collections:
 
 roles:
 
-- include: singularity_wrapper/requirements.yml
+- include: singularity_wrapper/roles.yml
 
 - src: dev-sec.ssh-hardening
   version: "6.1.3"
