@@ -19,3 +19,6 @@ standalone_container_registry_cache_enable: false
 standalone_container_registry_cache_upstream: "https://registry-1.docker.io"
 # standalone_container_registry_cache_username: 
 # standalone_container_registry_cache_password:
+
+# standalone_container_registry_http_proxy:
+# standalone_container_registry_https_proxy:

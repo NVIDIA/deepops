@@ -53,5 +53,8 @@
     network_mode: host
     restart: yes
     restart_policy: unless-stopped
+    env:
+      http_proxy: "{{ standalone_container_registry_http_proxy }}"
+      https_proxy: "{{ standalone_container_registry_https_proxy }}"
     volumes:
     - "{{ standalone_container_registry_config_dir }}/config.yml:/etc/docker/registry/config.yml"
