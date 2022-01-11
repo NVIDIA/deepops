@@ -52,6 +52,13 @@
     notify:
     - restart-logstash
     when: logstash_jndi.changed
+  - name: manually stop logstash as restart is not consistently working later
+    service:
+      name: logstash
+      state: stopped
+    notify:
+    - restart-logstash
+    when: logstash_jndi.changed
   handlers:
   - name: restart-elasticsearch
     service:
