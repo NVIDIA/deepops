@@ -12,6 +12,7 @@ jobs:
         deepops-role:
           - nhc
           - nvidia_cuda
+          - nvidia_dcgm
           - singularity_wrapper
     steps:
       - name: check out repo
