@@ -17,6 +17,8 @@
   include: install-redhat.yml
 
 - name: Populate service facts
+  tags:
+  - molecule-notest
   service_facts:
 
 - name: Start the nvidia-dcgm service when present (preferred)
@@ -26,6 +28,8 @@
     state: "started"
     enabled: true
   when: '"nvidia-dcgm.service" in services'
+  tags:
+  - molecule-notest
 
 - name: Start the dcgm service otherwise
   systemd:
@@ -34,3 +38,5 @@
     state: "started"
     enabled: true
   when: '"nvidia-dcgm.service" not in services'
+  tags:
+  - molecule-notest
