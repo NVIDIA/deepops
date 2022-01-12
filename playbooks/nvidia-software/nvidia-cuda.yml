@@ -25,7 +25,7 @@
 
     - name: install nvidia cuda toolkit
       include_role:
-        name: nvidia-cuda
+        name: nvidia_cuda
 
     - name: test nvidia-smi
       command: nvidia-smi
