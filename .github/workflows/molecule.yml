@@ -10,6 +10,7 @@ jobs:
       max-parallel: 4
       matrix:
         deepops-role:
+          - nhc
           - nvidia_cuda
           - singularity_wrapper
     steps:
