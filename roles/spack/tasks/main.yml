@@ -1,6 +1,7 @@
 ---
 - name: ensure development tools are installed (Ubuntu)
   apt:
+    update_cache: yes
     name: "{{ item }}"
     state: "present"
   with_items: "{{ spack_ubuntu_deps }}"

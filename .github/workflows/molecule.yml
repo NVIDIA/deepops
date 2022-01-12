@@ -14,6 +14,7 @@ jobs:
           - nvidia_cuda
           - nvidia_dcgm
           - singularity_wrapper
+          - spack
     steps:
       - name: check out repo
         uses: actions/checkout@v2
