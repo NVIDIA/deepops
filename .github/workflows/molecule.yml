@@ -10,6 +10,7 @@ jobs:
       max-parallel: 4
       matrix:
         deepops-role:
+          - lmod
           - nhc
           - nvidia_dcgm
           - singularity_wrapper
