@@ -1,0 +1,12 @@
+---
+# This is an example playbook to execute Ansible tests.
+#
+# TODO: Add test to check for lmod bug in Ubuntu
+
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: Example assertion
+    assert:
+      that: true
