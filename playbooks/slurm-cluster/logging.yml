@@ -3,21 +3,77 @@
   become: true
   vars:
     elasticsearch_network_host: 0.0.0.0
-    logstash_listen_port_beats: 5000
+  pre_tasks:
+    - name: debian - ensure apt cache updated
+      apt:
+        update_cache: true
+      when: ansible_os_family == "Debian"
   roles:
-    - geerlingguy.java
-    - geerlingguy.elasticsearch
-    - geerlingguy.logstash
-    - geerlingguy.kibana
+    - robertdebock.java
+    - robertdebock.elastic_repo
+    - robertdebock.elasticsearch
+    - robertdebock.logstash
+    - robertdebock.kibana
+
+- hosts: slurm-master[0]
+  become: true
+  vars:
+    filebeat_port: "5000"
   tasks:
-    - name: fix bug in logstash role
-      command: /usr/share/logstash/bin/logstash-plugin install logstash-filter-multiline
+  - name: configure logstash to accept logs from filebeat
+    template:
+      src: "filebeat.conf"
+      dest: "/etc/logstash/conf.d/filebeat.conf"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+
+# Mitigation for CVE-2021-44228 impacting Log4j2
+# https://discuss.elastic.co/t/apache-log4j2-remote-code-execution-rce-vulnerability-cve-2021-44228-esa-2021-31/291476
+- hosts: slurm-master[0]
+  become: yes
+  tasks:
+  - name: configure elasticsearch to mitigate CVE-2021-44228
+    copy:
+      src: "cve_2021_44228.options"
+      dest: "/etc/elasticsearch/jvm.options.d/cve_2021_44228.options"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+    notify:
+    - restart-elasticsearch
+  - name: check for relevant class in logstash
+    shell: unzip -l /usr/share/logstash/logstash-core/lib/jars/log4j-core-2.* | grep JndiLookup.class
+    register: logstash_jndi
+    changed_when: logstash_jndi.rc == 0
+    failed_when: logstash_jndi.rc == 2
+  - name: configure logstash to mitigate CVE-2021-44228
+    shell: zip -q -d /usr/share/logstash/logstash-core/lib/jars/log4j-core-2.* org/apache/logging/log4j/core/lookup/JndiLookup.class
+    notify:
+    - restart-logstash
+    when: logstash_jndi.changed
+  - name: manually stop logstash as restart is not consistently working later
+    service:
+      name: logstash
+      state: stopped
+    notify:
+    - restart-logstash
+    when: logstash_jndi.changed
+  handlers:
+  - name: restart-elasticsearch
+    service:
+      name: elasticsearch
+      state: restarted
+  - name: restart-logstash
+    service:
+      name: logstash
+      state: restarted
 
 - hosts: slurm-cluster
   become: true
   vars:
     filebeat_create_config: true
-    filebeat_prospectors:
+    filebeat_inputs:
       - input_type: log
         paths:
           - "/var/log/*.log"
