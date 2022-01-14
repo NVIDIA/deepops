@@ -3,4 +3,4 @@
 # Global variables (in all caps) that are defined here will be automatically sourced and used in all scripts
 # See deepops/scripts/common.sh for implementation details
 
-DEEPOPS_VERSION="development-branch"
+DEEPOPS_EXAMPLE_VAR=""
