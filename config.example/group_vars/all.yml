@@ -122,7 +122,7 @@ sftp_chroot: false
 ################################################################################
 # NVIDIA GPU configuration
 # Playbook: nvidia-cuda
-cuda_version: cuda-toolkit-11-4
+cuda_version: cuda-toolkit-11-5
 
 # DGX-specific vars may be used to target specific models,
 # because available versions for DGX may differ from the generic repo
