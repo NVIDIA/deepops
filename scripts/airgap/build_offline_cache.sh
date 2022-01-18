@@ -4,6 +4,10 @@ set -ex
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../.."
 DEEPOPS_CONFIG_DIR="${DEEPOPS_CONFIG_DIR:-${ROOT_DIR}/config.example}"
+
+# Source common libraries and env variables
+source ${ROOT_DIR}/scripts/common.sh
+
 DEST_DIR="/tmp/deepops"
 TARBALL="/tmp/deepops-archive.tar"
 DEEPOPS_BUILD_TARBALL="${DEEPOPS_BUILD_TARBALL:-1}"
