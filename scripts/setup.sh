@@ -150,13 +150,9 @@ if command -v ansible-galaxy &> /dev/null ; then
     roles_path="${ROOT_DIR}/roles/galaxy"
     collections_path="${ROOT_DIR}/collections"
 
-    # First, install requirements from role requirements.
-    # Note: due to a known issue in ansible-galaxy, this works best when the
-    # cwd is the same as the directory where the file is located.
-    # https://github.com/ansible/ansible/issues/46385
-    cd "${ROOT_DIR}/roles"
-    as_user ansible-galaxy collection install -p "${collections_path}" --force -r "requirements.yml" >/dev/null
-    as_user ansible-galaxy role install -p "${roles_path}" --force -r "requirements.yml" >/dev/null
+    cd "${ROOT_DIR}"
+    as_user ansible-galaxy collection install -p "${collections_path}" --force -r "roles/requirements.yml" >/dev/null
+    as_user ansible-galaxy role install -p "${roles_path}" --force -r "roles/requirements.yml" >/dev/null
 
     # Install any user-defined config requirements
     if [ -d "${CONFIG_DIR}" ]; then
