@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Source common libraries and env variables
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/../.."
+source ${ROOT_DIR}/scripts/common.sh
+
 KUBECTL_BINARY_URL="${KUBECTL_BINARY_URL:-https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl}"
 
 # Install dependencies

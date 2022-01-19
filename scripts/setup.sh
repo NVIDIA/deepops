@@ -7,10 +7,14 @@
 # Can be run standalone with: curl -sL git.io/deepops | bash
 #                         or: curl -sL git.io/deepops | bash -s -- 19.07
 
+# Determine current directory and root directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/.."
+
 # Configuration
 ANSIBLE_VERSION="${ANSIBLE_VERSION:-2.9.27}"     # Ansible version to install
 ANSIBLE_TOO_NEW="${ANSIBLE_TOO_NEW:-2.10.0}"    # Ansible version too new
-CONFIG_DIR="${CONFIG_DIR:-./config}"            # Default configuration directory location
+CONFIG_DIR="${CONFIG_DIR:-${ROOT_DIR}/config}"            # Default configuration directory location
 DEEPOPS_TAG="${1:-master}"                      # DeepOps branch to set up
 JINJA2_VERSION="${JINJA2_VERSION:-2.11.1}"      # Jinja2 required version
 PIP="${PIP:-pip3}"                              # Pip binary to use
@@ -21,10 +25,6 @@ VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environ
 
 # Set distro-specific variables
 . /etc/os-release
-
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-ROOT_DIR="${SCRIPT_DIR}/.."
-
 DEPS_DEB=(git virtualenv python3-virtualenv sshpass wget)
 DEPS_EL7=(git libselinux-python3 python-virtualenv python3-virtualenv sshpass wget)
 DEPS_EL8=(git python3-libselinux python3-virtualenv sshpass wget)
@@ -146,10 +146,21 @@ fi
 # Install Ansible Galaxy roles
 if command -v ansible-galaxy &> /dev/null ; then
     echo "Updating Ansible Galaxy roles..."
-    as_user ansible-galaxy collection install --force -r "${ROOT_DIR}/roles/requirements.yml" >/dev/null
-    as_user ansible-galaxy role install --force -r "${ROOT_DIR}/roles/requirements.yml" >/dev/null
-    as_user ansible-galaxy collection install --force -i -r "${ROOT_DIR}/config/requirements.yml" >/dev/null
-    as_user ansible-galaxy role install --force -i -r "${ROOT_DIR}/config/requirements.yml" >/dev/null
+    initial_dir="$(pwd)"
+    roles_path="${ROOT_DIR}/roles/galaxy"
+    collections_path="${ROOT_DIR}/collections"
+
+    cd "${ROOT_DIR}"
+    as_user ansible-galaxy collection install -p "${collections_path}" --force -r "roles/requirements.yml" >/dev/null
+    as_user ansible-galaxy role install -p "${roles_path}" --force -r "roles/requirements.yml" >/dev/null
+
+    # Install any user-defined config requirements
+    if [ -d "${CONFIG_DIR}" ] && [ -f "${CONFIG_DIR}/requirement.yml" ] ; then
+        cd "${CONFIG_DIR}"
+        as_user ansible-galaxy collection install -p "${collections_path}" --force -i -r "requirements.yml" >/dev/null
+        as_user ansible-galaxy role install -p "${roles_path}" --force -i -r "requirements.yml" >/dev/null
+    fi
+    cd "${initial_dir}"
 else
     echo "ERROR: Unable to install Ansible Galaxy roles, 'ansible-galaxy' command not found"
 fi
