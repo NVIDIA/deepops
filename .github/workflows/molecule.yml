@@ -11,6 +11,7 @@ jobs:
       matrix:
         deepops-role:
           - cachefilesd
+          - facts
           - lmod
           - nhc
           - nvidia_dcgm
