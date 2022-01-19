@@ -19,3 +19,5 @@
     name: cachefilesd
     state: restarted
     enabled: yes
+  tags:
+  - molecule-notest
