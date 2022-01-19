@@ -20,6 +20,7 @@
   apt:
     update_cache: yes
   when: ansible_os_family == "Debian"
+  changed_when: false
 
 - name: create a folder for go
   file:
