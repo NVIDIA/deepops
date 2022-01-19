@@ -4,5 +4,5 @@
   roles:
     - move-home-dirs
     - kerberos_client
-    - nis-client
+    - nis_client
     - autofs
