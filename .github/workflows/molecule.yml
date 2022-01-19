@@ -14,6 +14,7 @@ jobs:
           - facts
           - kerberos_client
           - lmod
+          - nfs
           - nhc
           - nvidia_dcgm
           - singularity_wrapper
