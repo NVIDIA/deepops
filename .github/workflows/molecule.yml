@@ -14,6 +14,7 @@ jobs:
           - facts
           - kerberos_client
           - lmod
+          - nis_client
           - nfs
           - nhc
           - nvidia_dcgm

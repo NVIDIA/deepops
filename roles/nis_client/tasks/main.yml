@@ -14,6 +14,7 @@
     owner: root
     group: root
     mode: 0700
+  changed_when: false
 
 - name: install Ubuntu packages
   apt: name=nis,rpcbind state=latest
@@ -25,6 +26,8 @@
 
 - name: ensure rpcbind is running
   service: name=rpcbind state=started enabled=yes
+  tags:
+  - molecule-notest
 
 - name: set server
   lineinfile:
@@ -40,6 +43,7 @@
     group: root
     mode: "0644"
     state: touch
+  changed_when: false
 
 - name: configure yp domainname
   lineinfile:
@@ -62,11 +66,16 @@
 
 - name: make sure rpcbind is running
   service: name=rpcbind state=started enabled=yes
+  tags:
+  - molecule-notest
 
 - name: make sure ypbind is running
   service: name=nis state=started enabled=yes
+  tags:
+  - molecule-notest
 
 - name: remove file to prevent starting services at install time
   file:
     path: /usr/sbin/policy-rc.d
     state: absent
+  changed_when: false
