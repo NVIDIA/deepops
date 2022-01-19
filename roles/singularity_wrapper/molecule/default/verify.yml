@@ -1,0 +1,13 @@
+---
+- name: verify
+  hosts: all
+  tasks:
+  - name: check for path to singularity
+    command: which singularity
+    register: which_singularity
+    changed_when: which_singularity.rc != 0
+
+  - name: verify path to singularity
+    assert:
+      that:
+      - "'/usr/local/bin/singularity' in which_singularity.stdout"
