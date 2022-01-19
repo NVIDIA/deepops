@@ -4,6 +4,8 @@ galaxy_info:
   company: AnsibleWorks
   license: BSD
   min_ansible_version: 1.4 
+  role_name: kerberos_client
+  namespace: deepops
   platforms:
    - name: EL
      versions:

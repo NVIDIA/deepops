@@ -12,6 +12,7 @@ jobs:
         deepops-role:
           - cachefilesd
           - facts
+          - kerberos_client
           - lmod
           - nhc
           - nvidia_dcgm

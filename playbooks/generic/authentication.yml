@@ -3,6 +3,6 @@
   become: yes
   roles:
     - move-home-dirs
-    - kerberos-client
+    - kerberos_client
     - nis-client
     - autofs
