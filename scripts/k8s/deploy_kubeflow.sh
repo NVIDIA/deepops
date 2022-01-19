@@ -5,6 +5,9 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../.."
 CONFIG_DIR="${ROOT_DIR}/config"
 
+# Source common libraries and env variables
+source ${ROOT_DIR}/scripts/common.sh
+
 # Specify credentials for the default user.
 # TODO: Dynamically sed/hash these value into the CONFIG, these are currently not used
 export KUBEFLOW_USER_EMAIL="${KUBEFLOW_USER_EMAIL:-admin@kubeflow.org}"
