@@ -18,7 +18,7 @@ jobs:
           - nfs
           - nhc
           - nvidia_dcgm
-          - nvidia_hpc_sdk
+          - openmpi
           - singularity_wrapper
           - spack
     steps:
