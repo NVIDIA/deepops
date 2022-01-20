@@ -21,6 +21,7 @@ jobs:
           - openmpi
           - openshift
           - rsyslog_client
+          - rsyslog_server
           - singularity_wrapper
           - spack
     steps:
