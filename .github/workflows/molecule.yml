@@ -19,6 +19,7 @@ jobs:
           - nhc
           - nvidia_dcgm
           - openmpi
+          - openshift
           - singularity_wrapper
           - spack
     steps:
