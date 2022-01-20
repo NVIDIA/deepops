@@ -20,6 +20,7 @@ jobs:
           - nvidia_dcgm
           - openmpi
           - openshift
+          - rsyslog_client
           - singularity_wrapper
           - spack
     steps:
