@@ -81,17 +81,18 @@ To add Molecule tests to a new role, the following procedure can be used.
 
 1. Ensure you have Docker installed in your development environment
 
-2. Install Ansible Molecule in your development environment
+2. Install Ansible Molecule and `community.docker` Ansible Galaxy collection in your development environment
 
 ```
 $ python3 -m pip install "molecule[docker,lint]"
+$ ansible-galaxy collection install community.docker
 ```
 
 3. Initialize Molecule in your new role
 
 ```
 $ cd deepops/roles/<your-role>
-$ molecule init scenario -r <your-role> --driver docker
+$ molecule init scenario -r <your-role> --driver-name docker
 ```
 
 4. In the file `molecule/default/molecule.yml`, define the list of platforms to be tested.
