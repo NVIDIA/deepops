@@ -11,5 +11,13 @@
     owner: "root"
     group: "root"
     mode: "0644"
+
+- name: create directory for clients logs
+  file:
+    path: "{{ rsyslog_log_file_path }}"
+    state: directory
+    owner: "syslog"
+    group: "syslog"
+    mode: "0755"
   notify:
   - reload rsyslog
