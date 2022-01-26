@@ -8,9 +8,19 @@
       ignore_errors: true
       register: docker_compose_version
 
+    - name: gather kernel name
+      register: kernel_name
+      shell: uname -s
+      when: docker_compose_version is failed
+
+    - name: gather machine type
+      register: machine_type
+      shell: uname -m
+      when: docker_compose_version is failed
+
     - name: Pull docker-compose image
       get_url:
-        url: https://github.com/docker/compose/releases/download/v2.2.2/run.sh
+        url: "https://github.com/docker/compose/releases/download/v2.2.2/docker-compose-{{ kernel_name.stdout }}-{{ machine_type.stdout }}"
         dest: /usr/local/bin/docker-compose
         mode: "777"
       when: docker_compose_version is failed
@@ -20,5 +30,6 @@
       shell:
         chdir: "{{ playbook_dir | dirname | dirname }}"
         cmd: bash scripts/k8s/deep-learning-examples/deploy-deeep-learning-example.sh -"{{ action | default('c')}}" "{{ nvdle | default('tensorflow-recommendation-wideanddeep') }}"
+       
     - debug:
         msg: "{{ deployment_information.stdout }}"
