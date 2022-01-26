@@ -23,6 +23,7 @@ jobs:
           - rsyslog_client
           - rsyslog_server
           - singularity_wrapper
+          - slurm
           - spack
     steps:
       - name: check out repo
