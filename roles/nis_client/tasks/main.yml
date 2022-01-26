@@ -26,8 +26,6 @@
 
 - name: ensure rpcbind is running
   service: name=rpcbind state=started enabled=yes
-  tags:
-  - molecule-notest
 
 - name: set server
   lineinfile:
@@ -66,11 +64,16 @@
 
 - name: make sure rpcbind is running
   service: name=rpcbind state=started enabled=yes
-  tags:
-  - molecule-notest
 
-- name: make sure ypbind is running
+- name: Debian - make sure ypbind is running
   service: name=nis state=started enabled=yes
+  when: ansible_os_family == "Debian"
+
+# ypbind will not successfull start on RedHat if there's no NIS server to
+# bind to, so we skip this in Molecule tests
+- name: RedHat - make sure ypbind is running
+  service: name=ypbind state=started enabled=yes
+  when: ansible_os_family == "RedHat"
   tags:
   - molecule-notest
 

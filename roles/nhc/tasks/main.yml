@@ -83,8 +83,6 @@
     group: "root"
     mode: "0644"
 
-# Don't test configuration in molecule, as it depends on hardware topology
-# that is difficult to include in the docker test driver
 - name: install NHC config
   template:
     src: "{{ nhc_config_template }}"
@@ -92,8 +90,6 @@
     owner: "root"
     group: "root"
     mode: "0644"
-  tags:
-  - molecule-notest
 
 - name: create sysconfig dir
   file:
