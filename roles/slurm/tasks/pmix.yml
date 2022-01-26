@@ -8,6 +8,7 @@
   shell: "grep PMIX_NUMERIC_VERSION {{ pmix_install_prefix }}/include/pmix_version.h | awk '{print $3}' | tr -d 'x0'"
   register: pmix_info_version
   ignore_errors: yes
+  changed_when: pmix_info_version.rc != 0
 
 - name: don't build pmix if it's already installed, unless forced
   set_fact:

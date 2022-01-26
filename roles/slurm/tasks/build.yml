@@ -39,6 +39,7 @@
   shell: "{{ slurm_install_prefix }}/sbin/slurmd --version | awk '{print $2}'"
   register: slurmd_reported_version
   ignore_errors: yes
+  changed_when: slurmd_reported_version.rc != 0
 
 - name: don't build slurm if it's already installed, unless forced
   set_fact:

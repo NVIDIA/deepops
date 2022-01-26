@@ -7,6 +7,7 @@
   shell: "{{ hwloc_install_prefix }}/bin/hwloc-info --version | awk '{print $2}'"
   register: hwloc_info_version
   ignore_errors: yes
+  changed_when: hwloc_info_version.rc != 0
 
 - name: don't build hwloc if it's already installed, unless forced
   set_fact:
