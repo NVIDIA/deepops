@@ -27,9 +27,9 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888
-          resources:
-            limits:
-              nvidia.com/gpu: 1
+          env:
+            - name: GRPC_SERVER_SECURITY_ENABLED
+              value: "false"
           args:
             - jupyter
             - lab
@@ -44,9 +44,77 @@ spec:
           volumeMounts:
             - mountPath: /dev/shm
               name: dshm
+            - mountPath: /Kaldi/data
+              name: data
+        - name: kaldi-speechrecognition-server
+          image: registry.local/kaldi-speechrecognition-server
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+            - containerPort: 8001
+            - containerPort: 8002
+          env:
+            - name: GRPC_SERVER_SECURITY_ENABLED
+              value: "false"
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+          args:
+            - tritonserver
+            - --model-repo=/workspace/model-repo
+          volumeMounts:
+            - mountPath: /data
+              name: data
+            - mountPath: /dev/shm
+              name: dshm
+      initContainers:
+        - name: data-setup
+          image: registry.local/kaldi-speechrecognition-server
+          imagePullPolicy: IfNotPresent
+          command:
+            - /workspace/scripts/docker/dataset_setup.sh
+            - "0"
+            - "0"
+          volumeMounts:
+            - mountPath: /mnt/data
+              name: data
       volumes:
         - name: dshm
           emptyDir: {}
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.service.nodeport.port: "triton-port-30800"
+    kompose.service.nodeport.port: "triton-port-30801"
+    kompose.service.nodeport.port: "triton-port-30802"
+    kompose.service.type: nodeport
+  labels:
+    app: kaldi-speechrecognition-server
+  name: kaldi-speechrecognition-server
+  namespace: kaldi-speechrecognition
+spec:
+  ports:
+    - name: "triton-port-30800"
+      nodePort: 30800
+      port: 8000
+      targetPort: 8000
+    - name: "triton-port-30801"
+      nodePort: 30801
+      port: 8001
+      targetPort: 8001
+    - name: "triton-port-30802"
+      nodePort: 30802
+      port: 8002
+      targetPort: 8002
+  selector:
+    app: kaldi-speechrecognition
+  type: NodePort
+status:
+  loadBalancer: {}
 ---
 apiVersion: v1
 kind: Service

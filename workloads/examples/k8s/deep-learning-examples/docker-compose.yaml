@@ -11,11 +11,17 @@ services:
       context: ../../../../submodules/deeplearningexamples/DGLPyTorch/DrugDiscovery/SE3Transformer
       dockerfile: Dockerfile
 
+  kaldi-speechrecognition-server:
+    image: registry.local/kaldi-speechrecognition-server
+    build:
+      context: ../../../../submodules/deeplearningexamples/Kaldi/SpeechRecognition
+      dockerfile: Dockerfile
+
   kaldi-speechrecognition:
     image: registry.local/kaldi-speechrecognition
     build:
       context: ../../../../submodules/deeplearningexamples/Kaldi/SpeechRecognition
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.notebook
 
   mxnet-classification:
     image: registry.local/mxnet-classification
