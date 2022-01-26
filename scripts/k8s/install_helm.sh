@@ -46,7 +46,7 @@ if [ "${HELM_MINIMUM_VERSION}" != "${helm_min_installed}" ]; then
     chmod +x /var/tmp/get_helm.sh
     #sed -i 's/sudo//g' /var/tmp/get_helm.sh
     mkdir -p ${HELM_INSTALL_DIR}
-    HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v3.5.4 /var/tmp/get_helm.sh # Should match: config/group_vars/k8s-cluster.yml:helm_version:
+    HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v3.7.1 /var/tmp/get_helm.sh # Should match: config/group_vars/k8s-cluster.yml:helm_version:
 fi
 
 # Display the helm version for better debug

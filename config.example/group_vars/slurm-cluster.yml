@@ -3,7 +3,7 @@
 ################################################################################
 # Slurm job scheduler configuration
 # Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
-slurm_version: 21.08.1
+slurm_version: 21.08.5
 slurm_install_prefix: /usr/local
 pmix_install_prefix: /opt/deepops/pmix
 hwloc_install_prefix: /opt/deepops/hwloc
@@ -117,9 +117,9 @@ sm_install_host: "slurm-master[0]"
 slurm_install_hpcsdk: true
 
 # Select the version of HPC SDK to download
-hpcsdk_major_version: "21"
-hpcsdk_minor_version: "9"
-hpcsdk_file_cuda: "11.4"
+hpcsdk_major_version: "22"
+hpcsdk_minor_version: "1"
+hpcsdk_file_cuda: "11.5"
 hpcsdk_arch: "x86_64"
 
 # In a Slurm cluster, default to setting up HPC SDK as modules rather than in
