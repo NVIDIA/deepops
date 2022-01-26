@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+
+  - name: ensure apt cache is updated
+    apt:
+      update_cache: true
+    when: ansible_distribution == "Ubuntu"
+
+  - name: workaround to enable service in container
+    shell: printf '$!/bin/sh\nexit 0' > /usr/sbin/policy-rc.d
+    when: ansible_distribution == "Ubuntu"
