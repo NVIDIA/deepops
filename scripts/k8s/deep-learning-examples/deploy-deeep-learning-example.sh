@@ -15,16 +15,6 @@ export DLE_DEPLOYMENT=0
 DEEP_LEARNING_DIR="${DEEP_LEARNING_DIR:-workloads/examples/k8s/deep-learning-examples/}"
 DEEP_LEARNING_COMPOSE="${DEEP_LEARNING_COMPOSE:-workloads/examples/k8s/deep-learning-examples/docker-compose.yaml}"
 
-function maybe_install_docker_compose(){
-    if docker-compose -v ; 
-    then
-        echo "Building with docker-compose"
-    else
-        echo "Downloading docker-compose container"
-        sudo curl -L --fail https://github.com/docker/compose/releases/download/1.29.2/run.sh -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-    fi
-}
 
 function help_me() {
     echo "This script creates a deployment of one of NVIDIA's DeepLearningExamples."
@@ -38,7 +28,7 @@ function help_me() {
     echo "-(c)reate      Define a named experiment to run, one of:"
     echo " - cuda-optimized-fastspeech"
     echo " - dglpytorch-drugdiscovery-se3transformer"
-    echo " - kaldi-speechrecognition"
+    echo " - kaldi-speechrecognition (Work in Progress)"
     echo " - mxnet-classification"
     echo " - pytorch-classification-convnets"
     echo " - pytorch-detection-efficientdet"
@@ -138,7 +128,6 @@ if [ ${DLE_DEPLOYMENT} == 0 ];
         help_me
         exit 0
     else
-        maybe_install_docker_compose
         build_image
         deploy_service
         print_nodeport
