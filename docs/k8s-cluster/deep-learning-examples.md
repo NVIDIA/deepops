@@ -15,7 +15,7 @@ These examples, along with our NVIDIA deep learning software stack, are provided
 
 ## DeepOps Deployment Options
 
-Once you've set up a working cluster, you may use the provided script to deploy a jupyter lab session on node port 30888.
+Once you've set up a working cluster, and a [local docker registry](playbooks/k8s-cluster/container-registry.yml) accessible by all nodes, you may use the provided script to deploy a jupyter lab session on node port 30888.
 
 ```bash
 ansible-playbook -l k8s-cluster playbooks/k8s-cluster/deep-learning-examples.yaml -e "action=c nvdle=pytorch-detection-ssd"
