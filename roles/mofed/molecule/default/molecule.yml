@@ -1,0 +1,44 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: mofed-ubuntu-1804
+    image: geerlingguy/docker-ubuntu1804-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    pre_build_image: true
+    privileged: true
+  - name: mofed-ubuntu-2004
+    image: geerlingguy/docker-ubuntu2004-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    pre_build_image: true
+    privileged: true
+  - name: mofed-centos-7
+    image: geerlingguy/docker-centos7-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    pre_build_image: true
+    privileged: true
+  - name: mofed-centos-8
+    image: geerlingguy/docker-centos8-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    pre_build_image: true
+    privileged: true
+provisioner:
+  name: ansible
+  ansible_args:
+  - -vv
+  inventory:
+    group_vars:
+      all:
+        mofed_install_flags: "--all --without-fw-update --user-space-only" 
+verifier:
+  name: ansible
