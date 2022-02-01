@@ -105,11 +105,26 @@
   when: ansible_os_family == 'RedHat'
   ignore_errors: yes
 
-- name: remove any old build dir that may exist before downloading source
-  file:
-    path: "{{ slurm_build_dir }}"
-    state: absent
+- name: when building, try to uninstall first before downloading source
   when: slurm_build
+  block:
+
+  - name: check that we have an old build dir
+    stat:
+      path: "{{ slurm_build_dir }}"
+    register: slurm_old_build_dir
+
+  - name: uninstall old verson
+    command: make -j uninstall
+    args:
+      chdir: "{{ slurm_build_dir }}"
+    ignore_errors: yes
+    when: slurm_old_build_dir.stat.exists
+
+  - name: remove old build dir
+    file:
+      path: "{{ slurm_build_dir }}"
+      state: absent
 
 - name: make build directory
   file:
@@ -126,15 +141,6 @@
       - --strip-components=1
   environment: "{{proxy_env if proxy_env is defined else {}}}"
   when: slurm_build
-
-- name: uninstall old version
-  command: make -j uninstall
-  args:
-    chdir: "{{ slurm_build_dir }}"
-  ignore_errors: yes
-  when: slurm_build
-  tags:
-    - uninstall
 
 - name: clean src dir
   command: make distclean
