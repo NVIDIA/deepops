@@ -48,6 +48,12 @@
   when: ansible_os_family == 'RedHat'
   ignore_errors: yes
 
+- name: remove any old build dir that may exist before downloading source
+  file:
+    path: "{{ hwloc_build_dir }}"
+    state: absent
+  when: hwloc_build
+
 - name: make hwloc build directory
   file:
     path: "{{ hwloc_build_dir }}"

@@ -62,6 +62,12 @@
   when: ansible_os_family == 'RedHat'
   ignore_errors: yes
 
+- name: remove any old build dir that may exist before downloading source
+  file:
+    path: "{{ pmix_build_dir }}"
+    state: absent
+  when: pmix_build
+
 - name: make pmix build directory
   file:
     path: "{{ pmix_build_dir }}"
