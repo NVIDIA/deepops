@@ -21,33 +21,22 @@ Kubeflow requires a DefaultStorageClass to be defined. By default DeepOps instal
 Deploy Kubeflow:
 
 ```sh
-# Deploy (using istio configuration)
 ./scripts/k8s/deploy_kubeflow.sh
-
-```
-
-Deploy Kubeflow with Dex and SSO integration:
-
-```sh
-# Deploy (using istio_dex configuration)
-./scripts/k8s/deploy_kubeflow.sh -x
 
 ```
 
 See the [install docs](https://www.kubeflow.org/docs/started/k8s/overview/) for additional install configuration options.
 
-Kubeflow configuration files will be saved to `./config/kubeflow-install`.
-
-The kfctl binary will be saved to `./config/kfctl`. For easier management this file can be copied to `/usr/local/bin` or added to the `PATH`.
+A local checkout of the [Kubeflow manifests](https://github.com/kubeflow/manifests) will be saved to `./config/kubeflow-install/manifests`.
 
 The services can be reached from the following address:
 * Kubeflow: http://\<kube-master\>:31380
 
 ## Login information
 
-The default username is `admin@kubeflow.org` and the default password is `12341234`.
+The default username is `deepops@example.com` and the default password is `deepops`.
 
-These can be modified at startup time following the steps outlined [here](https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/).
+This can be modified before deploying Kubeflow by editing `./config/files/kubeflow/dex-config-map.yaml`.
 
 ## Other usage
 
@@ -77,14 +66,15 @@ To uninstall and re-install Kubeflow run:
 
 ### Modifying Kubeflow configuration
 
-To modify the Kubeflow configuration, modify the downloaded `CONFIG` YAML file in `config/kubeflow-install/` or one of the many overlay YAML files in `config/kubeflow-install/kustomize`.
-
-After modifying the configuration, apply the changes to the cluster using `kfctl`:
+To modify the Kubeflow manifests, you can first clone the manifests directory without deploying Kubeflow:
 
 ```sh
-cd config/kubeflow-install
-../kfctl apply -f kfctl_k8s_istio.yaml
+./scripts/k8s/deploy_kubeflow.sh -c
 ```
+
+And then make changes as needed in the manifests directory at `./config/kubeflow-install/manifests`.
+
+Then deploy Kubeflow as usual.
 
 ## Debugging common issues
 
