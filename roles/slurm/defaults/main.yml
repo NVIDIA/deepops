@@ -1,18 +1,19 @@
 epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+epel_key_url: "https://getfedora.org/static/fedora.gpg"
 
 slurm_build_dir: /opt/deepops/build/slurm
 hwloc_build_dir: /opt/deepops/build/hwloc
 pmix_build_dir: /opt/deepops/build/pmix
 
 slurm_workflow_build: yes
-slurm_version: 20.11.3
+slurm_version: 21.08.5
 slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
 slurm_build_make_clean: no
 slurm_build_dir_cleanup: no
 slurm_config_dir: /etc/slurm
 slurm_sysconf_dir: /etc/sysconfig
 slurm_install_prefix: /usr/local
-slurm_configure:  './configure --prefix={{ slurm_install_prefix }} --disable-dependency-tracking --disable-debug --disable-x11 --enable-really-no-cray --enable-salloc-kill-cmd --with-hdf5=no --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --without-shared-libslurm --without-rpath --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}'
+slurm_configure:  './configure --prefix={{ slurm_install_prefix }} --disable-dependency-tracking --disable-debug --disable-x11 --enable-really-no-cray --enable-salloc-kill-cmd --with-hdf5=no --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --with-shared-libslurm --without-rpath --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}'
 slurm_force_rebuild: no
 slurm_contain_ssh: yes
 
@@ -46,7 +47,7 @@ slurm_manage_gpus: true
 # Configuration file templates to use for configuring Slurm.
 # The default values are relative paths that will point to files within the
 # templates/ directory of this role, but we provide variables so that they
-# can be overrided.
+# can be overridden.
 slurm_conf_template: "etc/slurm/slurm.conf"
 slurm_cgroup_conf_template: "etc/slurm/cgroup.conf"
 slurm_gres_conf_template: "etc/slurm/gres.conf"
@@ -86,7 +87,7 @@ epilog_fileglob:
 slurm_fix_shm: true
 
 slurm_include_hwloc: yes
-hwloc_version: 2.2.0
+hwloc_version: 2.5.0
 hwloc_tag: "v{{ hwloc_version.split('.')[0] }}.{{ hwloc_version.split('.')[1] }}"
 hwloc_src_url: "https://download.open-mpi.org/release/hwloc/{{ hwloc_tag }}/hwloc-{{ hwloc_version }}.tar.gz"
 hwloc_install_prefix: /opt/deepops/hwloc
@@ -94,7 +95,7 @@ hwloc_configure: "./configure --prefix={{ hwloc_install_prefix }} --enable-stati
 hwloc_force_rebuild: no
 
 slurm_include_pmix: yes
-pmix_version: 2.2.4
+pmix_version: 3.2.3
 pmix_src_url: "https://github.com/openpmix/openpmix/releases/download/v{{ pmix_version }}/pmix-{{ pmix_version }}.tar.bz2"
 pmix_install_prefix: /opt/deepops/pmix
 pmix_configure: "./configure --prefix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}"

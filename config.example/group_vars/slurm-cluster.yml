@@ -3,7 +3,7 @@
 ################################################################################
 # Slurm job scheduler configuration
 # Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
-slurm_version: 20.11.3
+slurm_version: 21.08.5
 slurm_install_prefix: /usr/local
 pmix_install_prefix: /opt/deepops/pmix
 hwloc_install_prefix: /opt/deepops/hwloc
@@ -35,6 +35,12 @@ slurm_ha_state_save_location: "/sw/slurm"
 #slurm_cgroup_conf_template: "/path/to/cgroup.conf"
 #slurm_gres_conf_template: "/path/to/gres.conf"
 #slurm_dbd_conf_template: "/path/to/slurmdbd.conf"
+
+################################################################################
+# Login on compute
+################################################################################
+slurm_allow_ssh_user: []
+slurm_login_on_compute: false
 
 ################################################################################
 # Optional installs                                                            #
@@ -111,9 +117,9 @@ sm_install_host: "slurm-master[0]"
 slurm_install_hpcsdk: true
 
 # Select the version of HPC SDK to download
-hpcsdk_major_version: "21"
-hpcsdk_minor_version: "3"
-hpcsdk_file_cuda: "11.2"
+hpcsdk_major_version: "22"
+hpcsdk_minor_version: "1"
+hpcsdk_file_cuda: "11.5"
 hpcsdk_arch: "x86_64"
 
 # In a Slurm cluster, default to setting up HPC SDK as modules rather than in
@@ -138,7 +144,8 @@ openmpi_configure: "./configure --prefix={{ openmpi_install_prefix }} --disable-
 # Open OnDemand                                                                #
 ################################################################################
 install_open_ondemand: no
-ood_install_linuxhost_adapter: yes
+# OOD Linux-host adapter requires `slurm_cluster_install_singularity` to be true
+ood_install_linuxhost_adapter: no
 
 servername: '{{ ansible_fqdn }}'
 httpd_port: 9050
@@ -149,7 +156,7 @@ node_uri: /node
 rnode_uri: /rnode
 
 ################################################################################
-# Allow the User Permision to Set GPU Clocks                                   #
+# Allow the User Permission to Set GPU Clocks                                  #
 ################################################################################
 allow_user_set_gpu_clocks: no
 
@@ -158,7 +165,7 @@ allow_user_set_gpu_clocks: no
 ################################################################################
 slurm_install_enroot: true
 slurm_install_pyxis: true
-slurm_pyxis_version: 0.8.1
+slurm_pyxis_version: 0.11.1
 
 ################################################################################
 # Node Health Check                                                            #

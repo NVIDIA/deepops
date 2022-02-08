@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  role_name: singularity_wrapper
+  namespace: deepops
+  author: DeepOps Team
+  company: NVIDIA
+  description: Wrap lecourguille.singularity role
+  license: 3-Clause BSD
+  min_ansible_version: 2.9

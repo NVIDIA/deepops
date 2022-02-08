@@ -5,6 +5,9 @@ set -x
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../.."
 
+# Source common libraries and env variables
+source ${ROOT_DIR}/scripts/common.sh
+
 HELM_CHARTS_REPO_INGRESS="${HELM_CHARTS_REPO_INGRESS:-https://kubernetes.github.io/ingress-nginx}"
 HELM_INGRESS_CHART_VERSION="${HELM_INGRESS_CHART_VERSION:-3.5.1}"
 # HELM_INGRESS_CONFIG, defaults below based on presence of metallb
@@ -29,7 +32,7 @@ if ! kubectl version ; then
 fi
 
 # If MetalLB is installed, use LoadBalancer, otherwise use NodePort (unless the user specifies a config)
-if ! helm status metallb >/dev/null 2>&1; then
+if ! helm status metallb -n deepops-loadbalancer >/dev/null 2>&1; then
 	HELM_INGRESS_CONFIG="${HELM_INGRESS_CONFIG:-${ROOT_DIR}/workloads/examples/k8s/ingress-nodeport.yml}"
 else
 	HELM_INGRESS_CONFIG="${HELM_INGRESS_CONFIG:-${ROOT_DIR}/workloads/examples/k8s/ingress-loadbalancer.yml}"
@@ -55,5 +58,5 @@ fi
 # Set up the ingress controller
 if ! helm status "${app_name}" >/dev/null 2>&1; then
 	helm repo update
-	helm install --wait "${app_name}" "${helm_arguments[@]}" ingress-nginx/ingress-nginx
+	helm upgrade --install --wait "${app_name}" "${helm_arguments[@]}" ingress-nginx/ingress-nginx --create-namespace --namespace deepops-ingress
 fi

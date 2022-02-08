@@ -106,11 +106,23 @@ users:
 
 
 ################################################################################
+# SSH HARDENING                                                                #
+#   dev-sec.ssh-hardening role called from users playbook                      #
+################################################################################
+
+ssh_client_hardening: false
+ssh_server_password_login: true
+ssh_use_pam: true
+ssh_max_auth_retries: 10
+sftp_enabled: true
+sftp_chroot: false
+
+################################################################################
 # NVIDIA                                                                       #
 ################################################################################
 # NVIDIA GPU configuration
 # Playbook: nvidia-cuda
-cuda_version: cuda-toolkit-11-0
+cuda_version: cuda-toolkit-11-5
 
 # DGX-specific vars may be used to target specific models,
 # because available versions for DGX may differ from the generic repo
@@ -121,7 +133,7 @@ cuda_version: cuda-toolkit-11-0
 # Playbook: nvidia-set-gpu-clocks
 # Resets the Gpu clocks to the default values. (see the `--reset-gpu-clocks` flag in nvidia-smi for more)
 gpu_clock_reset: no
-# Specifies <minGpuClock,maxGpuClock> clocks as a pair (e.g. 1500,1500) that defines the range of desired locked GPU clock speed in MHz. Setting this will supercede application clocks and take effect regardless if an app is running. Input can also be a singular desired clock value. (see the `--lock-gpu-clocks` flag in nvidia-smi for more)
+# Specifies <minGpuClock,maxGpuClock> clocks as a pair (e.g. 1500,1500) that defines the range of desired locked GPU clock speed in MHz. Setting this will supersede application clocks and take effect regardless if an app is running. Input can also be a singular desired clock value. (see the `--lock-gpu-clocks` flag in nvidia-smi for more)
 gpu_clock_lock: "1507,1507"
 
 # Debugging var: force install NVIDIA driver even if GPU not detected
@@ -133,10 +145,10 @@ nvidia_driver_force_install: false
 ################################################################################
 # Docker configuration
 # Playbook: docker, nvidia-docker, k8s-cluster
-# 
+#
 # For supported Docker versions, see: kubespray/roles/container-engine/docker/vars/*
 docker_install: yes
-docker_version: '19.03'
+docker_version: '20.10'
 docker_dns_servers_strict: no
 docker_storage_options: -s overlay2
 #docker_options: "--bip=192.168.99.1/24"
@@ -161,7 +173,7 @@ docker_iptables_enabled: true
 #
 # See: https://github.com/NVIDIA/pyxis/wiki/Setup#enroot-configuration-example
 enroot_runtime_path: '/run/enroot/user-$(id -u)'
-enroot_cache_path: '/var/lib/enroot-cache/group-$(id -g)'
+enroot_cache_path: '/var/lib/enroot-cache/user-$(id -u)'
 enroot_data_path: '/tmp/enroot-data/user-$(id -u)'
 enroot_config: |
   ENROOT_CONFIG_PATH ${HOME}/.config/enroot
@@ -184,7 +196,7 @@ enroot_environ_config_files_dgx:
 # Singularity configuration
 # Playbook: singularity, slurm-cluster
 # Singularity target version
-singularity_version: "3.5.3"
+singularity_version: "3.7.3"
 singularity_conf_path: "/etc/singularity/singularity.conf"
 bind_paths: []
   # example:
@@ -246,17 +258,7 @@ maas_kvm: false
 ################################################################################
 # NVIDIA Datacenter GPU Manager                                                #
 ################################################################################
-# DCGM is available through package repositories for DGX, but for other host
-# types you must download from the NVIDIA Developer portal at
-# https://developer.nvidia.com/dcgm
-# To install DCGM, please download the correct package type(s) and set the
-# following variables to a path where the file exists on the Ansible control
-# machine.
-#
-# dcgm_rpm_package: "/tmp/datacenter-gpu-manager.rpm"
-# dcgm_deb_package: "/tmp/datacenter-gpu-manager.deb"
-
-install_dcgm: false
+install_dcgm: true
 
 ################################################################################
 # Misc.                                                                        #
@@ -291,3 +293,11 @@ standalone_container_registry_port: "5000"
 # these if not specified.
 #docker_insecure_registries: ["<host>:<port>"]
 #docker_registry_mirrors: ["http://<host>:<port>"]
+
+################################################################################
+# Configuration for NGC-Ready playbook                                         #
+################################################################################
+ngc_ready_cuda_container: "nvcr.io/nvidia/cuda:10.1-base-ubuntu18.04"
+ngc_ready_pytorch: "nvcr.io/nvidia/pytorch:18.10-py3"
+ngc_ready_tensorflow: "nvcr.io/nvidia/tensorflow:18.10-py3"
+

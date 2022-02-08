@@ -51,3 +51,16 @@
         user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
         is_compute: yes
         slurm_workflow_build: no
+
+# Set up slurm-login-on-compute if enabled
+- hosts: slurm-master
+  become: yes
+  tasks:
+    - name: Setup slurm login on compute if enabled.
+      include_role:
+        name: slurm
+        tasks_from: login-compute-setup
+      vars:
+        user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
+        is_controller: yes
+      when: slurm_login_on_compute | default(false)

@@ -15,6 +15,7 @@
       args:
         chdir: "{{ playbook_dir | dirname }}"
       delegate_to: localhost
+      run_once: true
   vars:
     ansible_become: no
     ansible_connection: local
@@ -163,7 +164,7 @@
         mode: pull
         src: "/usr/local/bin/kubectl"
         dest: "{{ artifacts_dir }}/kubectl"
-      run_once: yes
+      run_once: true
   tags:
     - local
 - hosts: k8s-cluster
@@ -231,6 +232,9 @@
   tasks:
     - name: Install Helm on admin node
       command: "sh {{ playbook_dir }}/../scripts/k8s/install_helm.sh"
+      delegate_to: localhost
+    - name: Globally update the deprecated "stable" helm repo
+      command: "/usr/local/bin/helm repo add 'stable' 'https://charts.helm.sh/stable' --force-update"
       delegate_to: localhost
     - name: kubeadm | Remove taint for master with node role
       command: "{{ artifacts_dir }}/kubectl --kubeconfig {{ artifacts_dir }}/admin.conf taint node {{ inventory_hostname }} node-role.kubernetes.io/master:NoSchedule-"

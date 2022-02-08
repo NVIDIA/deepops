@@ -2,6 +2,11 @@
 
 set -x
 
+# Source common libraries and env variables
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/../.."
+source ${ROOT_DIR}/scripts/common.sh
+
 HELM_INSTALL_DIR=/usr/local/bin
 HELM_INSTALL_SCRIPT_URL="${HELM_INSTALL_SCRIPT_URL:-https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3}"
 HELM_MINIMUM_VERSION=v3.4.1+gc4e7485
@@ -41,7 +46,7 @@ if [ "${HELM_MINIMUM_VERSION}" != "${helm_min_installed}" ]; then
     chmod +x /var/tmp/get_helm.sh
     #sed -i 's/sudo//g' /var/tmp/get_helm.sh
     mkdir -p ${HELM_INSTALL_DIR}
-    HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v3.4.1 /var/tmp/get_helm.sh # Should match: config/group_vars/k8s-cluster.yml:helm_version:
+    HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v3.7.1 /var/tmp/get_helm.sh # Should match: config/group_vars/k8s-cluster.yml:helm_version:
 fi
 
 # Display the helm version for better debug

@@ -4,11 +4,10 @@
     msg: "Role supports DGX systems only"
   when: ansible_product_name is not search("DGX")
 
-- name: ubuntu tasks
-  include_tasks: ubuntu-18.04.yml
+- name: Ubuntu tasks for DGX OS 4/5
+  include_tasks: ubuntu.yml
   when:
     - ansible_distribution == 'Ubuntu'
-    - ansible_distribution_version == '18.04'
 
 - name: redhat family tasks
   include_tasks: redhat.yml

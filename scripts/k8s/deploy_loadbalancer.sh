@@ -5,6 +5,9 @@ set -x
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../.."
 
+# Source common libraries and env variables
+source ${ROOT_DIR}/scripts/common.sh
+
 # Allow overriding config dir to look in
 DEEPOPS_CONFIG_DIR=${DEEPOPS_CONFIG_DIR:-"${ROOT_DIR}/config"}
 if [ ! -d "${DEEPOPS_CONFIG_DIR}" ]; then
@@ -36,7 +39,7 @@ if [ "${METALLB_CONTROLLER_REPO}" ]; then
 fi
 
 # Set up the MetalLB load balancer
-if ! helm status metallb >/dev/null 2>&1; then
+if ! helm status metallb -n deepops-loadbalancer >/dev/null 2>&1; then
 	kubectl create namespace deepops-loadbalancer
 	helm install --wait metallb bitnami/metallb "${helm_install_args[@]}" --version ${HELM_METALLB_CHART_VERSION} --namespace deepops-loadbalancer
 fi

@@ -19,6 +19,7 @@
       when:
         - ansible_local['gpus']['count']
         - is_dgx.stat.exists == False
+        - cuda_playbook_install_driver|default(true)
       tags:
       - nvidia_driver
 
@@ -31,6 +32,7 @@
       changed_when: false
       when:
         - ansible_local['gpus']['count']
+        - cuda_playbook_install_driver|default(true)
       tags:
       - nvidia_driver
   environment: "{{ proxy_env if proxy_env is defined else{} }}"

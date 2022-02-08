@@ -119,6 +119,7 @@
   changed_when: "'already exists' not in create_cluster_result.stdout"
   environment:
     PATH: '{{ slurm_install_prefix }}/bin:{{ ansible_env.PATH }}'
+  run_once: true
 
 - name: create account
   command: sacctmgr -i add account compute-account Description="Compute Accounts" Organization="Prestige"

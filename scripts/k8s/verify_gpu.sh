@@ -4,6 +4,11 @@
 # Check the output and verify the number of nodes and GPUs is as expected
 # TODO: This script should be wrapped by Ansible to verify that the output of nvidia-smi on each node matches K8S
 
+# Source common libraries and env variables
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/../.."
+source ${ROOT_DIR}/scripts/common.sh
+
 export KFCTL=${KFCTL:-~/kfctl}
 export CLUSTER_VERIFY_NS=${CLUSTER_VERIFY_NS:-cluster-gpu-verify}
 export CLUSTER_VERIFY_EXPECTED_PODS=${CLUSTER_VERIFY_EXPECTED_PODS:-}

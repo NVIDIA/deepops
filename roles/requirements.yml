@@ -4,6 +4,9 @@ collections:
 - name: ansible.posix
   version: 1.1.1
 
+- name: community.general
+  version: 3.0.0
+
 roles:
 
 - src: dev-sec.ssh-hardening
@@ -14,7 +17,7 @@ roles:
   version: 'e67df1db28bf099aa06d0ab250478963532b4d29'
 
 - src: https://github.com/DeepOps/ansible-role-hosts.git
-  version: '8311d6ecfe39b665a06d1fc55502c6916e9ab5ce'
+  version: 'c21a676088c07db3db3ac9332cf584eeb068e3fd'
   name: DeepOps.hosts
 
 - src: geerlingguy.ntp
@@ -24,28 +27,31 @@ roles:
   version: "v5.2.6"
 
 - src: nvidia.nvidia_driver
-  version: "v2.0.0"
+  version: "v2.0.2"
 
 - src: nvidia.nvidia_docker
-  version: "v1.2.1"
+  version: "v1.2.3"
 
 - src: nvidia.enroot
-  version: "v0.4.0"
+  version: "v0.5.0"
 
 - src: geerlingguy.filebeat
-  version: "2.0.1"
+  version: "3.3.0"
 
-- src: geerlingguy.logstash
-  version: "4.0.0"
+- src: robertdebock.java
+  version: "4.1.1"
 
-- src: geerlingguy.elasticsearch
-  version: "3.0.1"
+- src: robertdebock.elastic_repo
+  version: "1.0.3"
 
-- src: geerlingguy.java
-  version: "1.9.5"
+- src: robertdebock.logstash
+  version: "1.1.1"
 
-- src: geerlingguy.kibana
-  version: "3.2.1"
+- src: robertdebock.elasticsearch
+  version: "1.1.3"
+
+- src: robertdebock.kibana
+  version: "1.2.4"
 
 - src: https://github.com/DeepOps/ansible-maas.git
   name: ansible-maas
@@ -56,10 +62,10 @@ roles:
   version: 'c9022153036dfdde4e2b313aecde4a46cd6f6687'
 
 - src: https://github.com/OSC/ood-ansible.git
-  version: 'a56783750d5e61f0d099a2b294d9f050d194f293'
+  version: 'v2.0.3'
+
+- src: abims_sbr.singularity
+  version: 3.7.1-1
 
 - src: gantsign.golang
   version: 2.4.0
-
-- src: lecorguille.singularity
-  version: 1.2.0

@@ -11,6 +11,11 @@ chmod 755 "$K8S_CONFIG_DIR/artifacts/kubectl"
 kubectl get nodes
 kubectl describe nodes
 
+# Wait for GPU operator to finish
+if kubectl get pods -n gpu-operator-resources | grep nvidia-operator-validator ; then
+    kubectl wait --for=condition=ready --timeout=600s pod -n gpu-operator-resources -l app=nvidia-operator-validator
+fi
+
 # Verify GPU Feature Discovery was installed and one or more nodes were labeled, run queries and remove new lines/white space/non-gpu node output
 strategy=$(kubectl get node -o=custom-columns=:.metadata.labels.nvidia\\.com/mig\\.strategy | grep -v none | tr -d '\040\011\012\015')
 product=$(kubectl get node -o=custom-columns=:.metadata.labels.nvidia\\.com/gpu\\.product | grep -v none | tr -d '\040\011\012\015')

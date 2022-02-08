@@ -9,7 +9,7 @@
     state: started
 
 - name: Check firmware manifest
-  shell: "docker run --rm --privileged  -v /:/hostfs {{ firmware_update_repo }}:{{ firmware_update_tag }} show_fw_manifest | tee {{ fw_dir }}/fw-manifests{{ run_diagnostics_type }}.log"
+  shell: "docker run -ti --rm --privileged  -v /:/hostfs {{ firmware_update_repo }}:{{ firmware_update_tag }} show_fw_manifest | tee {{ fw_dir }}/fw-manifests{{ run_diagnostics_type }}.log"
   register: firmware_manifest
 
 # This is an optimization, checking the firmware versions can take a long time, so unless we are forcing an update only do this once
@@ -26,7 +26,19 @@
   debug:
     msg: "{{ firmware_versions_response.stdout }}"
 
-- name: Register firmware as needing upgrade
+- name: Removing Inactive/standby components from consideration for determining firmware_needs_upgrade
+  shell: "grep -v Inactive {{ fw_dir }}/fw-versions{{ run_diagnostics_type }}.log" # Don't count inactive/standby components as needing upgrade
+  register: firmware_versions_response_parsed
+  failed_when: false
+
+- name: Register firmware as needing upgrade - skipping inactive
+  set_fact:
+    firmware_needs_upgrade: "{{ true if 'no' in firmware_versions_response_parsed.stdout or force_update else false }}" # TODO: Parse this from Json?
+  changed_when: firmware_needs_upgrade
+  when: inactive_update is false
+
+- name: Register firmware as needing upgrade - including inactive
   set_fact:
     firmware_needs_upgrade: "{{ true if 'no' in firmware_versions_response.stdout or force_update else false }}" # TODO: Parse this from Json?
   changed_when: firmware_needs_upgrade
+  when: inactive_update

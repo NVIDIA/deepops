@@ -16,7 +16,7 @@ Check out the [video tutorial](https://drive.google.com/file/d/1RNLQYlgJqE8JMv0n
 
 ## Releases
 
-Latest release: [DeepOps 21.03 Release](https://github.com/NVIDIA/deepops/releases/tag/21.03)
+Latest release: [DeepOps 22.01 Release](https://github.com/NVIDIA/deepops/releases/tag/22.01)
 
 It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally [functional](docs/deepops/testing.md) but may change significantly between releases.
 
@@ -25,6 +25,11 @@ It is recommended to use the latest release branch for stable code (linked above
 For detailed help or guidance, read through our [Getting Started Guide](docs/) or pick one of the deployment options documented below.
 
 ## Deployment Options
+
+### Supported Ansible versions
+
+DeepOps supports using Ansible 2.9.x.
+Ansible 2.10.x and newer are not currently supported.
 
 ### Supported distributions
 

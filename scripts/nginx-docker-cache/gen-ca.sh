@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Source common libraries and env variables
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/../.."
+source ${ROOT_DIR}/scripts/common.sh
+
 CA_CRT_OUTFILE="${CA_CRT_OUTFILE:-/tmp/ca.crt}"
 CA_KEY_OUTFILE="${CA_KEY_OUTFILE:-/tmp/ca.key}"
 

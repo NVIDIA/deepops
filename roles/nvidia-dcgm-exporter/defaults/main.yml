@@ -1,4 +1,7 @@
-nvidia_dcgm_container: "nvidia/dcgm-exporter"
+nvidia_dcgm_container_version: "2.1.8-2.4.0-rc.2-ubuntu20.04"
+nvidia_dcgm_container: "nvcr.io/nvidia/k8s/dcgm-exporter:{{ nvidia_dcgm_container_version }}"
+nvidia_dcgm_container_config_dir: "/opt/deepops/nvidia-dcgm-exporter"
+nvidia_dcgm_container_custom_metrics_file: "dcgm-custom-metrics.csv"
 nvidia_dcgm_prom_dir: "/run/prometheus"
 nvidia_dcgm_svc_name: "docker.dcgm-exporter.service"
 nvidia_dcgm_state: started

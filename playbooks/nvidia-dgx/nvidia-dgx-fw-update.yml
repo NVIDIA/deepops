@@ -13,5 +13,5 @@
       include_role:
         name: nvidia-dgx-firmware
       vars:
-        run_diagnostics: false
+        run_diagnostics: true
         update_firmware: true

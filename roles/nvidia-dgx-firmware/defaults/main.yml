@@ -20,12 +20,11 @@ nvsm_dump_health: true
 firmware_update_repo: nvfw-dgxa100
 
 # The Docker tag
-firmware_update_tag: 20.10.9
+firmware_update_tag: 21.11.2
 
 # firmware update container to use and where it is locally stored
-firmware_update_container: "{{ firmware_update_repo }}_{{ firmware_update_tag }}.tar.gz"
-firmware_update_container: "nvfw-dgxa100_20.10.9_201103.tar.gz"
-firmware_container_src_dir: "{{ inventory_dir }}/src/containers/dgx-firmware"
+firmware_update_container: "nvfw-dgxa100_21.11.2_211102.tar.gz"
+firmware_container_src_dir: "{{ inventory_dir }}/containers/dgx-firmware"
 
 # default log directory is set to the location of your inventory file (./deepops/config/)
 local_log_directory: "{{ inventory_dir }}"
@@ -48,8 +47,11 @@ target_fw: all
 # Set force_update to 'true' if you need to downgrade the firmware version
 force_update: false
 
-# Reboot timeout (in seconds)
-reboot_timeout: 600
+# Set inactive_update to 'true' if you need to upgrade inactive components
+inactive_update: false
+
+# Reboot timeout (in seconds) 600s for a normal reboot, longer needed for an SBIOS update
+reboot_timeout: 1200
 
 nv_services:
   - nvsm

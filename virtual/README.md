@@ -32,7 +32,7 @@ Also, using VMs and optionally GPU passthrough assumes that the host machine has
 
 1. From the main deepops directory, run the setup script.
 
-   This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](/docs/ANSIBLE.md).
+   This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](/docs/deepops/ansible.md).
 
    ```sh
    ./scripts/setup.sh
@@ -156,6 +156,15 @@ Next, shutdown the virtual cluster (if it is running) and startup vagrant + run 
 ## Other Customization
 
 The default Vagrantfiles create VMs that are very minimal in terms of resources to maximize where a virtual DeepOps cluster can be run. To run resource-intensive Kubernetes applications such as Kubeflow, it's necessary to increase some of the settings.
+
+### Specify the cluster Operating System
+
+By default, all virtual nodes will deploy with Ubuntu 18.04. This can be changed by overriding the environment variables `DEEPOPS_VAGRANT_OS` and `DEEPOPS_OS_VERSION`. Supported OS versions are Ubuntu 18.04, Ubuntu 20.04, CentOS 7, and CentOS 8.
+
+```sh
+export DEEPOPS_VAGRANT_OS=centos
+export DEEPOPS_OS_VERSION=8
+```
 
 ### Increase CPUs, memory, and GPUs
 

@@ -98,6 +98,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: "ES_JAVA_OPTS"
+          value: "-Dlog4j2.formatMsgNoLookups=true"
       volumes:
       - name: elasticsearch-logging
         persistentVolumeClaim:

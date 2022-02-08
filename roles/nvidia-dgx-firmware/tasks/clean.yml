@@ -21,6 +21,7 @@
 - name: Remove dump tarball
   shell: "rm /tmp/{{ nvsm_dump_file.stdout }}"
   ignore_errors: yes
+  when: nvsm_dump_file.stdout != ''
 
 - name: Remove diagnostic directory
   command: "rm -rf {{ fw_dir }}"

@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Source common libraries and env variables
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/../.."
+source ${ROOT_DIR}/scripts/common.sh
+
 DOCKER_COMPOSE_URL="${DOCKER_COMPOSE_URL:-https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m)}"
 
 type docker >/dev/null 2>&1

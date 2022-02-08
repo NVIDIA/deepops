@@ -13,10 +13,13 @@ ROOT_DIR="${SCRIPT_DIR}/../.."
 # Move working directory to root of DeepOps repo
 cd "${ROOT_DIR}" || exit 1
 
-DEEPOPS_OFFLINE="${DEEPOPS_OFFLINE:-0}"
 ansible_extra_args=""
-if [ "${DEEPOPS_OFFLINE}" -ne 0 ]; then
-	ansible_extra_args="-e "@${VIRT_DIR}/config/airgap/offline_repo_vars.yml" --skip-tags configure_docker_repo -vv"
+
+# Extra vars file
+if [ ${DEEPOPS_LARGE_SLURM} ]; then
+  SLURM_EXTRA_VARS="${SLURM_EXTRA_VARS:-${VIRT_DIR}/vars_files/virt_large_slurm.yml}"
+else
+  SLURM_EXTRA_VARS="${SLURM_EXTRA_VARS:-${VIRT_DIR}/vars_files/virt_slurm.yml}"
 fi
 
 # Use ansible install in virtualenv
@@ -28,10 +31,11 @@ else
 fi
 
 # Configure Slurm cluster
-ansible-playbook \
+ansible-playbook -vv \
 	-i "${VIRT_DIR}/config/inventory" \
 	-l slurm-cluster \
-	-e "@${VIRT_DIR}/vars_files/virt_slurm.yml" ${ansible_extra_args} \
+	--forks 16 \
+	-e "@${SLURM_EXTRA_VARS}" ${ansible_extra_args} \
 	"${ROOT_DIR}/playbooks/slurm-cluster.yml"
 
 # Un-drain nodes

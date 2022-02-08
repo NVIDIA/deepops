@@ -19,6 +19,8 @@ slurm_pmix_deps:
   - "@Development Tools"
   - libev-devel
   - libevent-devel
+  - zlib
+  - zlib-devel
 
 slurm_hwloc_deps:
   - "@Development Tools"

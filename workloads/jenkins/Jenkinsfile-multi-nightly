@@ -2,7 +2,6 @@ pipeline {
   agent any
   environment {
     DEEPOPS_FULL_INSTALL = 'true'
-    DEEPOPS_VAGRANT_OS = 'ubuntu'
   }
   stages {
     stage('Stop Any Old Builds') {
@@ -12,6 +11,10 @@ pipeline {
       }
     }
     stage('Cluster Up - Ubuntu') {
+      environment {
+        DEEPOPS_VAGRANT_OS = 'ubuntu'
+        DEEPOPS_OS_VERSION = '18.04'
+      }
       steps {
         // TODO: ideally lock should work with declared stages
         lock(resource: null, label: 'gpu', quantity: 2, variable: 'GPUDATA') {
@@ -24,6 +27,12 @@ pipeline {
           echo "Munge files for testing"
           sh '''
             bash -x ./workloads/jenkins/scripts/munge-files.sh
+          '''
+
+          echo "Tear down any Vagrant that was not cleaned up"
+          sh '''
+	    pwd
+	    cd virtual && ./vagrant_shutdown.sh || true
           '''
 
           echo "Vagrant Up"
@@ -114,6 +123,11 @@ pipeline {
             bash -x ./workloads/jenkins/scripts/test-setup-slurm.sh
           '''
 
+          echo "Get Slurm Cluster Status"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/get-slurm-debug.sh
+          '''
+
           echo "Test Slurm"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-job.sh
@@ -144,6 +158,11 @@ pipeline {
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
           '''
 
+          echo "Test DCGM metrics"
+          sh '''
+             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
+          '''
+
           echo "Reset repo and unmunge files"
           sh '''
             git reset --hard
@@ -161,6 +180,7 @@ pipeline {
     stage('Cluster Up - CentOS') {
       environment {
         DEEPOPS_VAGRANT_OS = 'centos'
+        DEEPOPS_OS_VERSION = '7'
       }
       steps {
         // TODO: ideally lock should work with declared stages
@@ -230,6 +250,11 @@ pipeline {
             bash -x ./workloads/jenkins/scripts/test-setup-slurm.sh
           '''
 
+          echo "Get Slurm Cluster Status"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/get-slurm-debug.sh
+          '''
+
           echo "Test Slurm"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-job.sh
@@ -258,6 +283,11 @@ pipeline {
           echo "Test GPU job"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+          '''
+
+          echo "Test DCGM metrics"
+          sh '''
+             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
           '''
 
           echo "Reset repo and unmunge files"
@@ -358,6 +388,11 @@ pipeline {
             bash -x ./workloads/jenkins/scripts/test-setup-slurm.sh
           '''
 
+          echo "Get Slurm Cluster Status"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/get-slurm-debug.sh
+          '''
+
           echo "Test Slurm"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-job.sh
@@ -386,6 +421,11 @@ pipeline {
           echo "Test GPU job"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+          '''
+
+          echo "Test DCGM metrics"
+          sh '''
+             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
           '''
 
           echo "Reset repo and unmunge files"
@@ -475,6 +515,11 @@ pipeline {
             bash -x ./workloads/jenkins/scripts/test-setup-slurm.sh
           '''
 
+          echo "Get Slurm Cluster Status"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/get-slurm-debug.sh
+          '''
+
           echo "Test Slurm"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-job.sh
@@ -503,6 +548,11 @@ pipeline {
           echo "Test GPU job"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
+          '''
+
+          echo "Test DCGM metrics"
+          sh '''
+             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
           '''
         }
       }

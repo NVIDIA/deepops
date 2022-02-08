@@ -1,9 +1,13 @@
 nvidia_dgx_rhel_baseurl: "https://international.download.nvidia.com/dgx/repos/{{ dgx_repo_dir }}/"
 nvidia_dgx_rhel_gpgkey: "https://international.download.nvidia.com/dgx/repos/RPM-GPG-KEY-dgx-cosmos-support"
 epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+epel_key_url: "https://getfedora.org/static/fedora.gpg"
 
 nvidia_dgx_ubuntu_baseurl: "http://international.download.nvidia.com/dgx/repos"
 nvidia_dgx_ubuntu_gpgkey: "https://international.download.nvidia.com/dgx/repos/bionic/pool/multiverse/d/dgx-repo-keys/dgx-repo-keys_2.0_amd64.deb"
+
+nvidia_dgx_os5_ubuntu_gpgkey: "https://repo.download.nvidia.com/baseos/GPG-KEY-dgx-cosmos-support"
+nvidia_dgx_os5_ubuntu_baseurl: "https://repo.download.nvidia.com/baseos/ubuntu"
 
 dgx_configure_raid_array: false
 nvidia_driver_skip_reboot: false

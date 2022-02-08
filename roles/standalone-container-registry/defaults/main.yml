@@ -1,5 +1,6 @@
 ---
 epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+epel_key_url: "https://getfedora.org/static/fedora.gpg"
 
 standalone_container_registry_image: "registry:2.7"
 standalone_container_registry_port: "5000"
