@@ -130,9 +130,9 @@ Poll the Ceph status by running (this script will return when Ceph initializatio
 ./scripts/k8s/deploy_rook.sh -w
 ```
 
-#### NetApp Trident
+#### NetApp Astra Trident
 
-Deploy NetApp Trident for services that require persistent storage (such as Kubeflow). Note that you must have a NetApp storage system/instance in order to use Trident to provision persistent storage.
+Deploy NetApp Astra Trident for services that require persistent storage (such as Kubeflow). Note that you must have a supported NetApp storage system/instance/service in order to use Astra Trident to provision persistent storage.
 
 1. Set configuration parameters.
 
@@ -140,7 +140,7 @@ Deploy NetApp Trident for services that require persistent storage (such as Kube
    vi config/group_vars/netapp-trident.yml
    ```
 
-2. Deploy Trident using Ansible.
+2. Deploy Astra Trident using Ansible.
 
    ```sh
    # NOTE: If SSH requires a password, add: `-k`
@@ -149,7 +149,7 @@ Deploy NetApp Trident for services that require persistent storage (such as Kube
    ansible-playbook -l k8s-cluster playbooks/k8s-cluster/netapp-trident.yml
    ```
 
-3. Verify that Trident is running.
+3. Verify that Astra Trident is running.
 
    ```sh
    ./tridentctl -n deepops-trident version
@@ -161,9 +161,11 @@ Deploy NetApp Trident for services that require persistent storage (such as Kube
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 21.01.2        | 21.01.2        |
+   | 22.01.0        | 22.01.0        |
    +----------------+----------------+
    ```
+
+For more information on Astra Trident, please refer to the [official documentation](https://docs.netapp.com/us-en/trident/index.html).
 
 ### Monitoring
 
