@@ -88,7 +88,7 @@ Instructions for deploying a GPU cluster with Kubernetes
 
 ## Using Kubernetes
 
-Now that Kubernetes is installed, consult the [Kubernetes Usage Guide](kubernetes-usage.md) for examples of how to use Kubernetes.
+Now that Kubernetes is installed, consult the [Kubernetes Usage Guide](kubernetes-usage.md) for examples of how to use Kubernetes or see the [example workloads](../../workloads/examples/k8s/README.md).
 
 ## Optional Components
 
