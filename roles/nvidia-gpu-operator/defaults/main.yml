@@ -12,7 +12,7 @@ gpu_operator_nvaie_helm_repo: "https://helm.ngc.nvidia.com/nvaie"
 gpu_operator_nvaie_chart_name: "nvaie/gpu-operator"
 
 # NVAIE GPU Operator may require different version, check NGC enterprise collection.
-gpu_operator_chart_version: "1.9.0"
+gpu_operator_chart_version: "1.9.1"
 
 k8s_gpu_mig_strategy: "mixed"
 
