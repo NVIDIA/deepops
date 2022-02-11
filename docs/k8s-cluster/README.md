@@ -37,12 +37,16 @@ Instructions for deploying a GPU cluster with Kubernetes
    # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
    ```
 
-   Note that as part of the kubernetes deployment process, the default behavior is to also deploy the [NVIDIA k8s-device-plugin](https://github.com/NVIDIA/k8s-device-plugin) for GPU support. The [GPU Operator](https://github.com/NVIDIA/gpu-operator) is an alternative deployment method, which will deploy the device plugin and leverage driver containers within kubernetes. To enable the GPU Operator in DeepOps...
+   Note that as part of the kubernetes deployment process, the default behavior is to also deploy the [NVIDIA k8s-device-plugin](https://github.com/NVIDIA/k8s-device-plugin) for GPU support. The [GPU Operator](https://github.com/NVIDIA/gpu-operator) is an alternative deployment method, which will deploy the [device plugin](https://github.com/NVIDIA/k8s-device-plugin), leverage driver containers within kubernetes, and includes GPU tooling such as [GPU Feature Discovery](https://github.com/NVIDIA/gpu-feature-discovery),  [DCGM-Exporter](https://github.com/NVIDIA/dcgm-exporter) and [MIG Manager](https://github.com/NVIDIA/mig-parted). The [GPU Operator](https://github.com/NVIDIA/gpu-operator) can be deployed on systems with pre-existing drivers and NVIDIA software such a a DGX by enabling the `gpu_operator_preinstalled_nvidia_software` flag. To enable the GPU Operator in DeepOps...
 
    ```sh
    vi config/group_vars/k8s-cluster.yml
 
+   # Enable GPU Operator
    # set: deepops_gpu_operator_enabled: true
+
+   # Required for clusters with pre-installed NVIDIA drivers or DGX systems
+   # set: gpu_operator_preinstalled_nvidia_software: true
    ```
 
 4. Verify the configuration
