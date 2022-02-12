@@ -282,6 +282,10 @@ openmpi_version: 4.0.3
 # Disable cloud-init
 deepops_disable_cloud_init: true
 
+# Default profile when using NVIDIA MIG Manager: https://github.com/NVIDIA/mig-parted
+deepops_mig_profile: all-disabled
+deepops_mig_config: /etc/nvidia-mig-manager/config.yml
+
 ################################################################################
 # Container registry                                                           #
 ################################################################################
