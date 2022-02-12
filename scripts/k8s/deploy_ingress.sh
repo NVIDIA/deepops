@@ -9,10 +9,10 @@ ROOT_DIR="${SCRIPT_DIR}/../.."
 source ${ROOT_DIR}/scripts/common.sh
 
 HELM_CHARTS_REPO_INGRESS="${HELM_CHARTS_REPO_INGRESS:-https://kubernetes.github.io/ingress-nginx}"
-HELM_INGRESS_CHART_VERSION="${HELM_INGRESS_CHART_VERSION:-3.5.1}"
+HELM_INGRESS_CHART_VERSION="${HELM_INGRESS_CHART_VERSION:-4.0.17}"
 # HELM_INGRESS_CONFIG, defaults below based on presence of metallb
 
-${SCRIPT_DIR}/install_helm.sh
+${SCRIPT_DIR}/k8s/install_helm.sh
 
 # Allow overriding the app name with an env var
 app_name="${NGINX_INGRESS_APP_NAME:-ingress-nginx}"
