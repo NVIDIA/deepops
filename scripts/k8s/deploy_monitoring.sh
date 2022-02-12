@@ -31,6 +31,8 @@ PROMETHEUS_YAML_CONFIG="${PROMETHEUS_YAML_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/mon
 PROMETHEUS_YAML_NO_PERSIST_CONFIG="${PROMETHEUS_YAML_NO_PERSIST_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/monitoring-no-persist.yml}"
 DCGM_CONFIG_CSV="${DCGM_CONFIG_CSV:-${DEEPOPS_CONFIG_DIR}/files/k8s-cluster/dcgm-custom-metrics.csv}"
 
+GPU_OPERATOR_NAMESPACE="${GPU_OPERATOR_NAMESPACE:-gpu-operator-resources}"
+
 function help_me() {
     echo "This script installs the DCGM exporter, Prometheus, Grafana, and configures a GPU Grafana dashboard."
     echo "Default credentials are username: 'admin', password: 'deepops'."
@@ -155,13 +157,15 @@ function setup_prom_monitoring() {
     fi
 }
 
-function setup_gpu_monitoring() {
+function setup_gpu_monitoring_dashboard() {
     # Create GPU Dashboard config map
     if ! kubectl -n monitoring get configmap kube-prometheus-grafana-gpu >/dev/null 2>&1 ; then
         kubectl create configmap kube-prometheus-grafana-gpu --from-file=${ROOT_DIR}/src/dashboards/gpu-dashboard.json -n monitoring
         kubectl -n monitoring label configmap kube-prometheus-grafana-gpu grafana_dashboard=1
     fi
+}
 
+function setup_gpu_monitoring() {
     # Create DCGM metrics config map
     if ! kubectl -n monitoring get configmap dcgm-custom-metrics >/dev/null 2>&1 ; then
         kubectl create configmap dcgm-custom-metrics --from-file=${DCGM_CONFIG_CSV} -n monitoring
@@ -265,8 +269,21 @@ function poll_monitoring_url() {
 
 get_opts ${@}
 
+# Install deps
 install_dependencies
 
+# Install Prom
 setup_prom_monitoring
-setup_gpu_monitoring
+
+# Install DCGM-Exporter and setup custom metrics, if needed
+kubectl get daemonsets -A | grep nvidia-dcgm-exporter | grep nvidia.com/gpu.deploy.dcgm-exporter=true
+if [ $? -ne 0 ] ; then
+    # No GPU Operator DCGM-Exporter Stack
+    setup_gpu_monitoring
+fi
+
+# Install custom gpu dashboards
+setup_gpu_monitoring_dashboard
+
+# Print URL outputs
 print_monitoring
