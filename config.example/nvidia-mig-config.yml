@@ -15,11 +15,23 @@ mig-configs:
       mig-devices:
         "1g.5gb": 7
 
+  all-1g.10gb:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "1g.10gb": 7
+
   all-2g.10gb:
     - devices: all
       mig-enabled: true
       mig-devices:
         "2g.10gb": 3
+  
+  all-2g.20gb:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "2g.20gb": 3
 
   all-3g.20gb:
     - devices: all
@@ -27,7 +39,25 @@ mig-configs:
       mig-devices:
         "3g.20gb": 2
 
-  all-balanced:
+  all-3g.40gb:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "3g.40gb": 2
+  
+  all-7g.80gb:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "7g.80gb": 2
+
+  all-7g.80gb:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "7g.80gb": 2
+
+  all-balanced-a100-40:
     - devices: all
       mig-enabled: true
       mig-devices:
@@ -35,7 +65,15 @@ mig-configs:
         "2g.10gb": 1
         "3g.20gb": 1
 
-  custom-config:
+  all-balanced-a100-80:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "1g.10gb": 2
+        "2g.20gb": 1
+        "3g.40gb": 1
+
+  custom-config-a100-40:
     - devices: [0,1,2,3]
       mig-enabled: false
     - devices: [4]
@@ -56,6 +94,28 @@ mig-configs:
         "1g.5gb": 2
         "2g.10gb": 1
         "3g.20gb": 1
+
+  custom-config-a100-80:
+    - devices: [0,1,2,3]
+      mig-enabled: false
+    - devices: [4]
+      mig-enabled: true
+      mig-devices:
+        "1g.10gb": 7
+    - devices: [5]
+      mig-enabled: true
+      mig-devices:
+        "2g.20gb": 3
+    - devices: [6]
+      mig-enabled: true
+      mig-devices:
+        "3g.40gb": 2
+    - devices: [7]
+      mig-enabled: true
+      mig-devices:
+        "1g.10gb": 2
+        "2g.20gb": 1
+        "3g.40gb": 1
 
   all-disabled-dgx-station-80:
     - device-filter: "0x20B210DE"
