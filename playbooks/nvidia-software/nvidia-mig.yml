@@ -1,52 +1,33 @@
 ---
 # Install the NVIDIA MIG Manager tooling on all MIG-capable nodes
 # Copy over the custom MIG config to all nodes and apply them
-# Cluster-wide config is set in group_vars/config.yml by deepops_mig_profile
+# Cluster-wide config is set in group_vars/config.yml by mig_manager_profile
 # Per-node config can be configured in the inventory file
 
 # Check if MIG capabilities and software on nodes
 - hosts: all
+  vars:
+    mig_manager_reboot_timeout: 900
   tasks:
     - name: check for MIG capable devices
       shell: nvidia-smi --query-gpu=mig.mode.current --format=csv,noheader | grep -v 'N/A'
       register: has_mig
       failed_when: false
-    # TODO: End if MIG capabilities not detected
-    - name: check for NVIDIA MIG parted
-      shell: which nvidia-mig-parted
-      register: has_mig_parted
-      failed_when: false
 
-# Install NVIDIA MIG Manager Systemd service
-## Ensure Docker is present to install MIG manager
-- include: ../container/docker.yml
-  when:
-    - has_mig.rc == 0
-    - has_mig_parted.rc != 0
-- hosts: all
-  become: yes
-  vars:
-    reboot_timeout: 900
-  tasks:
-    - name: Git clone mig-parted repo
-      command: git clone git@github.com:NVIDIA/mig-parted.git
+    - name: Install MIG Manager
+      include_role:
+        name: nvidia-mig-manager
       when:
         - has_mig.rc == 0
-        - has_mig_parted.rc != 0
-    - name: Git clone mig-parted repo
-      command: cd mig-parted/deployments/systemd && ./install.sh; cd - && rm -rf mig-parted
-      when:
-        - has_mig.rc == 0
-        - has_mig_parted.rc != 0
-
+    
     - name: copy cluster-wide mig config file
       copy:
         src: "../../config/nvidia-mig-config.yml"
-        dest: "{{ deepops_mig_config }}"
+        dest: "{{ mig_manager_config }}"
       when: has_mig.rc == 0
 
     - name: Apply MIG configuration
-      command: nvidia-mig-parted apply -f {{ deepops_mig_config }} -c {{ deepops_mig_profile }}
+      command: nvidia-mig-parted apply -f {{ mig_manager_config }} -c {{ mig_manager_profile }}
       when: has_mig.rc == 0
 
     # Reboot nodes if necessary and poll for them to come up
@@ -64,7 +45,8 @@
       when:
         - reboot_required is defined
         - reboot_required | default(false)
+        - has_mig.rc == 0
 
     - name: Assert MIG configuration was applied
-      command: nvidia-mig-parted assert -f {{ deepops_mig_config }} -c {{ deepops_mig_profile }}
+      command: nvidia-mig-parted assert -f {{ mig_manager_config }} -c {{ mig_manager_profile }}
       when: has_mig.rc == 0
