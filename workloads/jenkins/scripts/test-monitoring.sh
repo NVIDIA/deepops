@@ -36,6 +36,7 @@ fi
 set -e # The loop is done, and we got debug if it failed, re-enable fail on error
 
 # Validate DCGM metrics are in Prometheus
+curl "${prometheus_url}/api/v1/query?query=DCGM_FI_DEV_GPU_UTIL" # Print output for debug
 curl "${prometheus_url}/api/v1/query?query=DCGM_FI_DEV_GPU_UTIL" | grep Hostname
 
 # Verify that the polling option agrees that things are up
@@ -82,6 +83,7 @@ fi
 set -e # The loop is done, and we got debug if it failed, re-enable fail on error
 
 # Validate DCGM metrics are in Prometheus
+curl "${prometheus_url}/api/v1/query?query=DCGM_FI_DEV_GPU_UTIL" # Print output for debug
 curl "${prometheus_url}/api/v1/query?query=DCGM_FI_DEV_GPU_UTIL" | grep Hostname
 
 # Get some debug for Pods that did/didn't come up and verify DCGM metrics
