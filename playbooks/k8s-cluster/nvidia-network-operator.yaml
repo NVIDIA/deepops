@@ -4,8 +4,6 @@
 - hosts: kube-master[0]
   become: true
   become_method: sudo
-  vars:
-    my_path: "{{ lookup('env','PATH') }}"
   tasks:
     - include_role:
         name: nvidia-network-operator

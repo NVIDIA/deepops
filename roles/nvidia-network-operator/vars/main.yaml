@@ -1,10 +1,14 @@
 ---
 #
-# variables for VFs, resource names and interface names
+# variables for VFs, resource names,interface names and software versions.
 # pf_name is the physical interface with sriov enabled
 # res_name must match container's network resources in job file 
 # if_name must match k8s network annotation name
 #
+
+nvidia_network_operator_version: "1.1.0"
+mpi_operator_version: "v2beta1"
+
 num_vf: 8
 vendor_id: "15b3"
 link_type: "ib"
