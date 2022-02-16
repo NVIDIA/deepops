@@ -36,8 +36,8 @@ fi
 set -e # The loop is done, and we got debug if it failed, re-enable fail on error
 
 # Validate DCGM metrics are in Prometheus
-curl -L "${prometheus_url}/api/v1/query?query=DCGM_FI_DEV_GPU_UTIL" # Print output for debug
-curl -L "${prometheus_url}/api/v1/query?query=DCGM_FI_DEV_GPU_UTIL" | grep Hostname
+curl -L "${prometheus_url}/api/v1/label/__name__/values" # Print output for debug
+curl -L "${prometheus_url}/api/v1/label/__name__/values" | grep DCGM_
 
 # Verify that the polling option agrees that things are up
 ./scripts/k8s/deploy_monitoring.sh -w
@@ -83,8 +83,8 @@ fi
 set -e # The loop is done, and we got debug if it failed, re-enable fail on error
 
 # Validate DCGM metrics are in Prometheus
-curl -L "${prometheus_url}/api/v1/query?query=DCGM_FI_DEV_GPU_UTIL" # Print output for debug
-curl -L "${prometheus_url}/api/v1/query?query=DCGM_FI_DEV_GPU_UTIL" | grep Hostname
+curl -L "${prometheus_url}/api/v1/label/__name__/values" # Print output for debug
+curl -L "${prometheus_url}/api/v1/label/__name__/values" | grep DCGM_
 
 # Get some debug for Pods that did/didn't come up and verify DCGM metrics
 kubectl get all -n monitoring
