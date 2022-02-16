@@ -1,0 +1,40 @@
+---
+# Deploy network operator related tasks on master node
+#
+
+- name: label the nodes
+  shell: kubectl label --overwrite nodes {{ item }} node-role.kubernetes.io/worker=
+  with_items: "{{ groups['kube-node']}}"
+
+- name: Install openshift
+  shell: pip3 install openshift
+
+- name: Add helm repo for network operator
+  kubernetes.core.helm_repository:
+    name: mellanox
+    repo_url: "https://mellanox.github.io/network-operator"
+
+- name: Deploy network operator helm chart
+  kubernetes.core.helm:
+    name: network-operator
+    release_namespace: network-operator
+    chart_version: 1.1.0
+    chart_ref: mellanox/network-operator
+    create_namespace: true
+    update_repo_cache: true
+    wait: true
+    values: "{{ lookup('template', 'values.yaml') | from_yaml }}"
+
+- name: Create network node poliy
+  include_tasks: sriovnetworknodepolicy.yaml
+  with_items: "{{ intf_resources }}"
+
+- name: Create IB network attachment definition
+  include_tasks: sriovibnetwork.yaml
+  with_items: "{{ intf_resources }}"
+
+- name: Install Kubeflow MPI-Operator version v2beta1
+  k8s:
+    state: present
+    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/kubeflow/mpi-operator/master/deploy/v2beta1/mpi-operator.yaml', split_lines=False) }}"
+  run_once: true

@@ -1,0 +1,28 @@
+---
+## This example configures SriovNetworkNodePolicy for IB interfaces
+##
+- name: Create sriovnetwork node policy
+  vars:
+    spec_yaml: |-
+      deviceType: netdevice
+      mtu: {{ mtu |int }}
+      nodeSelector:
+        feature.node.kubernetes.io/network-sriov.capable: "true"
+      nicSelector:
+        vendor: "{{ vendor_id }}"
+        pfNames: ["{{ item.pf_name }}"]
+      linkType: "{{ link_type }}"
+      isRdma: true
+      numVfs: {{ num_vf |int }}
+      priority: 90
+      resourceName: "{{ item.res_name }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: sriovnetwork.openshift.io/v1
+      kind: SriovNetworkNodePolicy
+      metadata:
+        name: "{{ item.if_name }}"
+        namespace: network-operator
+      spec: "{{ spec_yaml | from_yaml }}"
+  run_once: true
