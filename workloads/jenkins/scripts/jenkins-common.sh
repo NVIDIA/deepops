@@ -22,8 +22,10 @@ if [ -z "${GPUDATA+x}" ]; then
         exit 1
 fi
 
-# No-op if DEEPOPS_FULL_INSTALL is not set, this is here for debug
-export DEEPOPS_FULL_INSTALL=${DEEPOPS_FULL_INSTALL:-}
+# No-op if DEEPOPS_* is not set, this is here for debug
+export DEEPOPS_FULL_INSTALL="${DEEPOPS_FULL_INSTALL:-}"
+export DEEPOPS_VAGRANT_OS="${DEEPOPS_VAGRANT_OS:-}"
+export DEEPOPS_OS_VERSION="${DEEPOPS_OS_VERSION:-}"
 
 # Get BUS values of GPU01
 GPU01="$(echo "${GPUDATA}" | cut -d"," -f1 | cut -d"-" -f1)"
