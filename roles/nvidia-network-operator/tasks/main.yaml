@@ -18,7 +18,7 @@
   kubernetes.core.helm:
     name: network-operator
     release_namespace: network-operator
-    chart_version: 1.1.0
+    chart_version: "{{ nvidia_network_operator_version }}"
     chart_ref: mellanox/network-operator
     create_namespace: true
     update_repo_cache: true
@@ -33,8 +33,8 @@
   include_tasks: sriovibnetwork.yaml
   with_items: "{{ intf_resources }}"
 
-- name: Install Kubeflow MPI-Operator version v2beta1
+- name: Install latest Kubeflow MPI-Operator 
   k8s:
     state: present
-    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/kubeflow/mpi-operator/master/deploy/v2beta1/mpi-operator.yaml', split_lines=False) }}"
+    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/kubeflow/mpi-operator/master/deploy/{{mpi_operator_version}}/mpi-operator.yaml', split_lines=False) }}"
   run_once: true
