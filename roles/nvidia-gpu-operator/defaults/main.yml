@@ -26,7 +26,7 @@ gpu_operator_enable_migmanager: true
 # In an upcoming GPU Operator release, components can be enabled/disabled per-node
 # In the current version, the cluster is expected to be more homogeneous
 # TODO: Remove this flag and make detection dynamic per-node in this new release
-gpu_operator_preinstalled_nvidia_software: false
+gpu_operator_preinstalled_nvidia_software: true
 
 # Configuration customization
 gpu_operator_namespace: "gpu-operator-resources"
