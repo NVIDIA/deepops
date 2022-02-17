@@ -35,10 +35,10 @@ This playbook is developed and tested in following environments:
 
 1. Make sure underlying Infiniband network works properly between Kubernetes nodes. It's recommended to run some bare metal micro benchmark testing to verify the IB network is working as expected.
 
-2. Check IB port virtualization is enabled on IB opensm:
+2. Enabling IB port virtualization on IB opensm. This is done in an IB switch in our lab:
 
    ```sh
-   ib sm virt enable
+   IB_Switch (config) # ib sm virt enable
    ```
 
 3. Verify SRIOV is enabled in BIOS and HCAs.
@@ -145,7 +145,6 @@ This playbook is developed and tested in following environments:
    Run the playbook:
     ```sh
    ansible-playbook playbooks/k8s-cluster/nvidia-network-operator.yaml
-   vendor_i
    ```
    
 ## Running the Workload
@@ -231,3 +230,4 @@ Below is a NCCL allreduce test result run on a DGX-1 cluster with 4 x 100G HCA i
    Enjoy!
 
    > Note: This is not a performance benchmark testing so we don't fine tune any hardware and software stack parameters. The results are considered as an out-of-box number that can be observed in regular customer environments with the solution we documented here. For more information about NCCL, see the following [blog post](https://devblogs.nvidia.com/scaling-deep-learning-training-nccl/).
+
