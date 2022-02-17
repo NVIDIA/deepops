@@ -101,14 +101,14 @@ function install_dependencies() {
           ;;
   esac
 
-  # StorageClasse (for volumes and MySQL DB)
-#  kubectl get storageclass 2>&1 | grep "(default)" >/dev/null 2>&1
-#  if [ $? -ne 0 ] ; then
-#      echo "No storageclass found"
-#      echo "To setup the nfs-client-provisioner (preferred), run: ansible-playbook playbooks/k8s-cluster/nfs-client-provisioner.yml"
-#      echo "To provision Ceph storage, run: ./scripts/k8s/deploy_rook.sh"
-#      exit 1
-#  fi
+  # StorageClass (for volumes and MySQL DB)
+  kubectl get storageclass 2>&1 | grep "(default)" >/dev/null 2>&1
+  if [ $? -ne 0 ] ; then
+      echo "No storageclass found"
+      echo "To setup the nfs-client-provisioner (preferred), run: ansible-playbook playbooks/k8s-cluster/nfs-client-provisioner.yml"
+      echo "To provision Ceph storage, run: ./scripts/k8s/deploy_rook.sh"
+      exit 1
+  fi
   
   # Proxies
   if [ ${http_proxy} -o ${https_proxy} -o ${no_proxy} ]; then
