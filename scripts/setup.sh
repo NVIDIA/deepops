@@ -114,6 +114,7 @@ if command -v virtualenv &> /dev/null ; then
         ruamel.yaml \
         PyMySQL \
         paramiko \
+        MarkupSafe==2.0.1
         selinux"
 else
     echo "ERROR: Unable to create Python virtual environment, 'virtualenv' command not found"
