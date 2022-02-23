@@ -31,15 +31,15 @@ platforms:
     - /run
     - /tmp
     pre_build_image: true
-  - name: facts-centos-8
-    image: geerlingguy/docker-centos8-ansible
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    command: /sbin/init
-    tmpfs:
-    - /run
-    - /tmp
-    pre_build_image: true
+#  - name: facts-centos-8
+#    image: geerlingguy/docker-centos8-ansible
+#    volumes:
+#      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+#    command: /sbin/init
+#    tmpfs:
+#    - /run
+#    - /tmp
+#    pre_build_image: true
 provisioner:
   name: ansible
   ansible_args:
