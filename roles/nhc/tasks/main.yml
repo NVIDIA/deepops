@@ -33,6 +33,9 @@
     state: present
   with_items: "{{ nhc_build_deps }}"
 
+- name: re-gather facts so we can generate config
+  gather_facts:
+
 - name: ensure build dir exists
   file:
     path: "{{ nhc_build_dir }}"

@@ -25,8 +25,8 @@ platforms:
     command: /sbin/init
     pre_build_image: true
     privileged: true
-  - name: mofed-centos-8
-    image: geerlingguy/docker-centos8-ansible
+  - name: mofed-rockylinux-8
+    image: geerlingguy/docker-rockylinux8-ansible
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     command: /sbin/init

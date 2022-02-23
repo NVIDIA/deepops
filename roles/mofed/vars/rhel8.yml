@@ -8,3 +8,6 @@ mofed_pkg_prereqs:
 - tcl
 - tk
 - fuse-libs
+- pciutils-libs
+- libnl3
+- libmnl

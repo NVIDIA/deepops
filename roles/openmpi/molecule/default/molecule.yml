@@ -13,9 +13,9 @@ platforms:
   - name: openmpi-centos-7
     image: geerlingguy/docker-centos7-ansible
     pre_build_image: true
-#  - name: openmpi-centos-8
-#    image: geerlingguy/docker-centos8-ansible
-#    pre_build_image: true
+  - name: openmpi-rockylinux-8
+    image: geerlingguy/docker-rockylinux8-ansible
+    pre_build_image: true
 provisioner:
   name: ansible
   ansible_args:
