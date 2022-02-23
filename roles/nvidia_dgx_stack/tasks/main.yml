@@ -2,9 +2,21 @@
 - name: Check for DGX
   fail:
     msg: "Role supports DGX systems only"
-  when: ansible_product_name is not search("DGX")
+  when: (ansible_product_name is not search("DGX")) and (not dgx_override_install)
 
-- name: Ubuntu tasks for DGX OS 4/5
+- name: include DGX-1 specific variables
+  include_vars: dgx1.yml
+  when: ansible_product_name is search("DGX-1")
+
+- name: include DGX-2 specific variables
+  include_vars: dgx2.yml
+  when: ansible_product_name is search("DGX-2")
+
+- name: include DGX A100 specific variables
+  include_vars: dgxa100.yml
+  when: ansible_product_name is search("DGXA100")
+
+- name: Ubuntu tasks for DGX OS 5
   include_tasks: ubuntu.yml
   when:
     - ansible_distribution == 'Ubuntu'
@@ -13,9 +25,12 @@
   include_tasks: redhat.yml
   when: ansible_os_family == 'RedHat'
 
-- name: configure raid array
+# DGX-1 uses hardware RAID
+- name: configure raid array on DGX-2 or DGX A100
   include_tasks: configure-raid.yml
-  when: dgx_configure_raid_array
+  when: 
+    - dgx_configure_raid_array
+    - (ansible_product_name is search("DGX-2")) or (ansible_product_name is search("DGXA100"))
 
 - name: perform full OS upgrade on Ubuntu
   include_tasks: ubuntu-upgrade.yml

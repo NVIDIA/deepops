@@ -3,13 +3,15 @@ nvidia_dgx_rhel_gpgkey: "https://international.download.nvidia.com/dgx/repos/RPM
 epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
 epel_key_url: "https://download.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
 
-nvidia_dgx_ubuntu_baseurl: "http://international.download.nvidia.com/dgx/repos"
-nvidia_dgx_ubuntu_gpgkey: "https://international.download.nvidia.com/dgx/repos/bionic/pool/multiverse/d/dgx-repo-keys/dgx-repo-keys_2.0_amd64.deb"
+# Download URL for the Ubuntu repo files
+nvidia_dgx_ubuntu_dgx_repo_download: "https://repo.download.nvidia.com/baseos/ubuntu/focal/dgx-repo-files.tgz"
 
-nvidia_dgx_os5_ubuntu_gpgkey: "https://repo.download.nvidia.com/baseos/GPG-KEY-dgx-cosmos-support"
-nvidia_dgx_os5_ubuntu_baseurl: "https://repo.download.nvidia.com/baseos/ubuntu"
-
+# Configure the RAID array on the DGX
 dgx_configure_raid_array: false
+
+# Force configuring the RAID array, even if it's already present
+dgx_force_raid_config: false
+
 nvidia_driver_skip_reboot: false
 dgx_raid_mount_path: /raid
 cachefilesd_cache_dir: /raid
@@ -18,11 +20,24 @@ cachefilesd_cache_brun: 25%
 cachefilesd_cache_bcull: 10%
 cachefilesd_cache_dir_mode: 1775
 
-dgx_full_upgrade: false
+# Perform install even when DGX hardware is not detected
+# Use mostly for testing
+dgx_override_install: false
+dgx_override_product_type: ""
 
-dgx_default_ubuntu_repos: |
-  deb http://security.ubuntu.com/ubuntu bionic-security main
-  deb http://security.ubuntu.com/ubuntu bionic-security universe
-  deb http://security.ubuntu.com/ubuntu bionic-security multiverse
-  deb http://archive.ubuntu.com/ubuntu/ bionic main multiverse universe
-  deb http://archive.ubuntu.com/ubuntu/ bionic-updates main multiverse universe
+# Optional features
+dgx_full_upgrade: false
+dgx_disable_unattended_upgrades: true
+dgx_enable_sol: true
+dgx_enable_logrotate: true
+dgx_install_ofed: true
+dgx_install_docker: true
+dgx_install_nvsm: true
+dgx_install_optional: true
+dgx_enable_mlnx_pxe: true
+dgx_disable_srp: true
+dgx_configure_cachefilesd: true
+
+# NVIDIA CUDA driver branch
+dgx_cuda_driver_branch: "470"
+

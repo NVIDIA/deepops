@@ -4,13 +4,34 @@
     path: "{{ dgx_raid_mount_path }}"
     state: directory
 
+- name: populate service facts
+  service_facts:
+
 - name: Stop cachefilesd when reconfiguring RAID array
   service:
     name: cachefilesd
     state: stopped
+  when: '"cachefilesd.service" in services'
 
 - name: Configure RAID array
-  command: /usr/bin/configure_raid_array.py -c -f
+  shell: "yes | /usr/bin/configure_raid_array.py -c"
+  args:
+    creates: "{{ dgx_raid_array }}"
+  notify:
+    - restart cachefilesd
+
+- name: Force configuration of RAID array
+  shell: "yes | /usr/bin/configure_raid_array.py -c -f"
+  notify:
+    - restart cachefilesd
+  when: dgx_force_raid_config
+
+- name: Ensure RAID array is mounted
+  mount:
+    path: "/raid"
+    src: "{{ dgx_raid_array }}"
+    state: "mounted"
+    fstype: "ext4"
 
 - name: Restore SELinux label on RAID array
   command: restorecon /raid
