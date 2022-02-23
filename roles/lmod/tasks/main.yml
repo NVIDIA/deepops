@@ -20,6 +20,7 @@
 - name: "install packages"
   become: yes
   apt:
+    update_cache: yes
     name:
     - bash
     - tcsh
@@ -79,6 +80,7 @@
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=891541
 - name: "bugfix for lmod posix_c"
   become: yes
+  register: lmod_bugfix_posix
   shell: |
     ln -s -f /usr/lib/x86_64-linux-gnu/lua/5.1/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.1/posix.so
     ln -s -f /usr/lib/x86_64-linux-gnu/lua/5.2/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.2/posix.so
@@ -86,23 +88,32 @@
   when: 
     - ansible_distribution == 'Ubuntu'
     - ansible_distribution_version == '18.04'
+  changed_when: lmod_bugfix_posix.rc != 0
 
 - name: "unset previous lmod setup"
   shell: unset MODULEPATH_ROOT
+  register: unset_lmod_bash
   args:
     executable: /bin/bash
+  changed_when: unset_lmod_bash.rc != 0
 
 - name: "unset previous lmod setup"
   shell: unsetenv MODULEPATH_ROOT
+  register: unset_lmod_csh
   args:
     executable: /bin/csh
+  changed_when: unset_lmod_csh.rc != 0
 
 - name: "auto load lmod"
   shell: . /etc/profile.d/z00_lmod.sh
+  register: load_lmod_bash
   args:
     executable: /bin/bash
+  changed_when: load_lmod_bash.rc != 0
 
 - name: "auto load lmod "
   shell: source /etc/profile.d/z00_lmod.csh
+  register: load_lmod_csh
   args:
     executable: /bin/csh
+  changed_when: load_lmod_csh.rc != 0

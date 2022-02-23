@@ -10,7 +10,21 @@ jobs:
       max-parallel: 4
       matrix:
         deepops-role:
+          - cachefilesd
+          - facts
+          - kerberos_client
+          - lmod
+          - nis_client
+          - nfs
+          - nhc
+          - nvidia_dcgm
+          - openmpi
+          - openshift
+          - rsyslog_client
+          - rsyslog_server
           - singularity_wrapper
+          - slurm
+          - spack
     steps:
       - name: check out repo
         uses: actions/checkout@v2

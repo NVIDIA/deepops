@@ -1,0 +1,45 @@
+---
+- name: Check for DGX
+  when: ansible_product_name is search("DGX")
+  set_fact:
+    dcgm_is_dgx: true
+
+- name: DGX tasks
+  when: dcgm_is_dgx
+  include: install-dgx.yml
+
+- name: Ubuntu tasks
+  when: (ansible_distribution == "Ubuntu") and not dcgm_is_dgx
+  include: install-ubuntu.yml
+
+- name: Red Hat family tasks
+  when: (ansible_os_family == "RedHat") and not dcgm_is_dgx
+  include: install-redhat.yml
+
+# We don't test service start in Molecule, because the dcgm service will fail
+# if the CUDA driver isn't installed and working.
+
+- name: Populate service facts
+  tags:
+  - molecule-notest
+  service_facts:
+
+- name: Start the nvidia-dcgm service when present (preferred)
+  systemd:
+    daemon_reload: yes
+    name: "nvidia-dcgm.service"
+    state: "started"
+    enabled: true
+  when: '"nvidia-dcgm.service" in services'
+  tags:
+  - molecule-notest
+
+- name: Start the dcgm service otherwise
+  systemd:
+    daemon_reload: yes
+    name: "dcgm.service"
+    state: "started"
+    enabled: true
+  when: '"nvidia-dcgm.service" not in services'
+  tags:
+  - molecule-notest

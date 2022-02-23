@@ -14,7 +14,7 @@ spack_ubuntu_deps:
 spack_redhat_deps:
 - "gcc"
 - "gcc-c++"
-- "gcc-fortran"
+- "gcc-gfortran"
 - "make"
 - "git"
 

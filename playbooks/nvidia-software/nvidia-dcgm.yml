@@ -2,4 +2,4 @@
 - hosts: "{{ hostlist | default('all') }}"
   become: true
   roles:
-  - nvidia-dcgm
+  - nvidia_dcgm

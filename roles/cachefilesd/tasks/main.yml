@@ -14,8 +14,11 @@
     src: cachefilesd_config.j2
     dest: /etc/cachefilesd.conf
 
+# Service start not tested in molecule as we require a kernel module
 - name: start
   service:
     name: cachefilesd
     state: restarted
     enabled: yes
+  tags:
+  - molecule-notest

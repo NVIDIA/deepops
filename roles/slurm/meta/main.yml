@@ -1,0 +1,8 @@
+---
+dependencies:
+- role: facts
+- role: rsyslog_client
+
+galaxy_info:
+  namespace: deepops
+  role_name: slurm

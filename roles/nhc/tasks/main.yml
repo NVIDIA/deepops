@@ -20,6 +20,7 @@
   command: ls -l {{ nhc_install_dir }}/sbin/nhc
   register: nhc_check
   ignore_errors: yes
+  changed_when: nhc_check.rc != 0
 
 - name: don't build if installed unless we force
   set_fact:

@@ -1,6 +1,7 @@
 ---
 - name: ensure development tools are installed (Ubuntu)
   apt:
+    update_cache: yes
     name: "{{ item }}"
     state: "present"
   with_items: "{{ spack_ubuntu_deps }}"
@@ -41,6 +42,8 @@
 - name: source spack environment once for initialization
   shell: |
       . /etc/profile.d/z00_spack.sh
+  register: source_spack_env
+  changed_when: source_spack_env.rc != 0
 
 - name: build spack packages
   shell: |

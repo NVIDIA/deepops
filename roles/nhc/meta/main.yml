@@ -1,0 +1,7 @@
+---
+dependencies:
+- role: facts
+
+galaxy_info:
+  namespace: deepops
+  role_name: nhc

@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include nis_client"
+      include_role:
+        name: "nis_client"
