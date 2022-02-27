@@ -1,6 +1,6 @@
 FROM golang:latest AS builder
 WORKDIR /go
-RUN go get github.com/vpenso/prometheus-slurm-exporter 
+RUN go get github.com/itzsimpl/prometheus-slurm-exporter 
 
 FROM ubuntu:20.04
 RUN apt-get update \
