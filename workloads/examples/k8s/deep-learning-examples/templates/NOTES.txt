@@ -1,0 +1,18 @@
+
+--------------------------------------------------------------------------------
+Installation Complete!
+    App:             {{ .Values.exampleName }} 
+    registryName:    {{ .Values.registryName }}
+    registryPort:    {{ .Values.registryPort }}
+    jupyterNodePort: {{ .Values.jupyterNodePort }}
+    resources:       {{- toYaml .Values.resources | nindent 12 }}
+
+1. Monitor build progress of the InitContainer:
+    kubectl logs pod/{{ .Values.exampleName }}-0 -c {{ .Values.exampleName }}-init -f
+
+2. Monitor the complete application:
+    kubectl get all -l app={{ .Values.exampleName }} -o wide
+
+3. Capture the hostname of the JupyterLab Service on port {{ .Values.jupyterNodePort }}
+    kubectl get pod/{{ .Values.exampleName }}-0 -o jsonpath='{.spec.nodeName}'
+--------------------------------------------------------------------------------
