@@ -9,7 +9,7 @@ This repository provides NVIDIA's State-of-the-Art Deep Learning examples that a
 Once the cluster, and a [local docker registry](../../playbooks/k8s-cluster/container-registry.yml) are accessible by all nodes (default is port `registry.local:31500`, use helm to deploy a jupyter lab session which will be exposed via NodePort (default port is `30888`).
 
 ```bash
-helm install <DEPLOYMENT_EXAMPLE_NAME> workloads/examples/k8s/deep-learning-examples
+helm install <DEPLOYMENT_EXAMPLE_NAME> workloads/examples/k8s/deep-learning-examples --set exampleName=<DEPLOYMENT_EXAMPLE_NAME>
 ```
 
 Deployment modifications may be made using the `--set` flag or directly in the values.yaml.
