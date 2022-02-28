@@ -29,7 +29,7 @@
       register: deployment_information
       shell:
         chdir: "{{ playbook_dir | dirname | dirname }}"
-        cmd: bash scripts/k8s/deep-learning-examples/deploy-deeep-learning-example.sh -"{{ action | default('c')}}" "{{ nvdle | default('tensorflow-recommendation-wideanddeep') }}"
+        cmd: bash scripts/k8s/deep-learning-examples/deploy-deep-learning-example.sh -"{{ action | default('c')}}" "{{ nvdle | default('tensorflow-recommendation-wideanddeep') }}"
        
     - debug:
         msg: "{{ deployment_information.stdout }}"

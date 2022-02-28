@@ -20,7 +20,7 @@ function help_me() {
     echo "This script creates a deployment of one of NVIDIA's DeepLearningExamples."
     echo "  (https://github.com/NVIDIA/DeepLearningExamples)"
     echo "Example:"
-    echo "  ./scripts/k8s/deep-learning-examples/deploy-deeep-learning-example.sh -c tensorflow2-recommendation-wideanddeep"
+    echo "  ./scripts/k8s/deep-learning-examples/deploy-deep-learning-example.sh -c tensorflow2-recommendation-wideanddeep"
     echo ""
     echo "Usage:"
     echo "-(d)elete      Delete a named deployment, if it exists."
