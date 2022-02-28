@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow-recommendation-vaecf
-          image: registry.local/tensorflow-recommendation-vaecf
+          image: registry.local:31500/tensorflow-recommendation-vaecf
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

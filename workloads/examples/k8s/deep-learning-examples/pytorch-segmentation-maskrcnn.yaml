@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-segmentation-maskrcnn
-          image: registry.local/pytorch-segmentation-maskrcnn
+          image: registry.local:31500/pytorch-segmentation-maskrcnn
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

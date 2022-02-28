@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow-translation-gnmt
-          image: registry.local/tensorflow-translation-gnmt
+          image: registry.local:31500/tensorflow-translation-gnmt
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

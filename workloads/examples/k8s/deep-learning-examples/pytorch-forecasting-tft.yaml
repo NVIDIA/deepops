@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-forecasting-tft
-          image: registry.local/pytorch-forecasting-tft
+          image: registry.local:31500/pytorch-forecasting-tft
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

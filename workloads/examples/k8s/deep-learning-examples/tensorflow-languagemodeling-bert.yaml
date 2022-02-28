@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow-languagemodeling-bert
-          image: registry.local/tensorflow-languagemodeling-bert
+          image: registry.local:31500/tensorflow-languagemodeling-bert
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

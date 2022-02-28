@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: cuda-optimized-fastspeech
-          image: registry.local/cuda-optimized-fastspeech
+          image: registry.local:31500/cuda-optimized-fastspeech
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

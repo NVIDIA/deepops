@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-speechsynthesis-tacotron2
-          image: registry.local/pytorch-speechsynthesis-tacotron2
+          image: registry.local:31500/pytorch-speechsynthesis-tacotron2
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

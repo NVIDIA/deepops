@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-languagemodeling-bart
-          image: registry.local/pytorch-languagemodeling-bart
+          image: registry.local:31500/pytorch-languagemodeling-bart
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

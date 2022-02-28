@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow2-recommendation-wideanddeep
-          image: registry.local/tensorflow2-recommendation-wideanddeep
+          image: registry.local:31500/tensorflow2-recommendation-wideanddeep
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

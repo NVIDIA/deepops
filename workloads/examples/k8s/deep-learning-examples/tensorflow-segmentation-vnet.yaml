@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow-segmentation-vnet
-          image: registry.local/tensorflow-segmentation-vnet
+          image: registry.local:31500/tensorflow-segmentation-vnet
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

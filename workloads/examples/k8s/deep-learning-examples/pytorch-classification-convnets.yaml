@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-classification-convnets
-          image: registry.local/pytorch-classification-convnets
+          image: registry.local:31500/pytorch-classification-convnets
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

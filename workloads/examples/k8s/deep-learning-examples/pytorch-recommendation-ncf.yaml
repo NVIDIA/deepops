@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-recommendation-ncf
-          image: registry.local/pytorch-recommendation-ncf
+          image: registry.local:31500/pytorch-recommendation-ncf
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

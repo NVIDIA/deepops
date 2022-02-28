@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow-languagemodeling-transformerxl
-          image: registry.local/tensorflow-languagemodeling-transformerxl
+          image: registry.local:31500/tensorflow-languagemodeling-transformerxl
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

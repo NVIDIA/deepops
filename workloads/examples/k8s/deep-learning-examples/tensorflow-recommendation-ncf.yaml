@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow-recommendation-ncf
-          image: registry.local/tensorflow-recommendation-ncf
+          image: registry.local:31500/tensorflow-recommendation-ncf
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: kaldi-speechrecognition
-          image: registry.local/kaldi-speechrecognition
+          image: registry.local:31500/kaldi-speechrecognition
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888
@@ -47,7 +47,7 @@ spec:
             - mountPath: /Kaldi/data
               name: data
         - name: kaldi-speechrecognition-server
-          image: registry.local/kaldi-speechrecognition-server
+          image: registry.local:31500/kaldi-speechrecognition-server
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
@@ -69,7 +69,7 @@ spec:
               name: dshm
       initContainers:
         - name: data-setup
-          image: registry.local/kaldi-speechrecognition-server
+          image: registry.local:31500/kaldi-speechrecognition-server
           imagePullPolicy: IfNotPresent
           command:
             - /workspace/scripts/docker/dataset_setup.sh

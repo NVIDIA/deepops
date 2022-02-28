@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow-segmentation-unetindustrialet
-          image: registry.local/tensorflow-segmentation-unetindustrialet
+          image: registry.local:31500/tensorflow-segmentation-unetindustrialet
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

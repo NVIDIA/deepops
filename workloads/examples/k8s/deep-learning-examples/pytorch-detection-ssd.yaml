@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-detection-ssd
-          image: registry.local/pytorch-detection-ssd
+          image: registry.local:31500/pytorch-detection-ssd
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

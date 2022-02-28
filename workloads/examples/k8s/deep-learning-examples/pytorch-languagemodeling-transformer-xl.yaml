@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-languagemodeling-transformer-xl
-          image: registry.local/pytorch-languagemodeling-transformer-xl
+          image: registry.local:31500/pytorch-languagemodeling-transformer-xl
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow-classification-convnets
-          image: registry.local/tensorflow-classification-convnets
+          image: registry.local:31500/tensorflow-classification-convnets
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

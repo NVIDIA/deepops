@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-translation-transformer
-          image: registry.local/pytorch-translation-transformer
+          image: registry.local:31500/pytorch-translation-transformer
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

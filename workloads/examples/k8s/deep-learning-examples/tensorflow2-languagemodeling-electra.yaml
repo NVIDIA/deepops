@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow2-languagemodeling-electra
-          image: registry.local/tensorflow2-languagemodeling-electra
+          image: registry.local:31500/tensorflow2-languagemodeling-electra
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

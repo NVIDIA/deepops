@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow-segmentation-unetmedical
-          image: registry.local/tensorflow-segmentation-unetmedical
+          image: registry.local:31500/tensorflow-segmentation-unetmedical
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: dglpytorch-drugdiscovery-se3transformer
-          image: registry.local/dglpytorch-drugdiscovery-se3transformer
+          image: registry.local:31500/dglpytorch-drugdiscovery-se3transformer
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

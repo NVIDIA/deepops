@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: mxnet-classification
-          image: registry.local/mxnet-classification
+          image: registry.local:31500/mxnet-classification
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

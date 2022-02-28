@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-detection-efficientdet
-          image: registry.local/pytorch-detection-efficientdet
+          image: registry.local:31500/pytorch-detection-efficientdet
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

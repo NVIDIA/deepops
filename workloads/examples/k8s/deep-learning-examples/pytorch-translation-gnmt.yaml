@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: pytorch-translation-gnmt
-          image: registry.local/pytorch-translation-gnmt
+          image: registry.local:31500/pytorch-translation-gnmt
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888

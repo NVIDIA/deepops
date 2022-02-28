@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: tensorflow-detection-ssd
-          image: registry.local/tensorflow-detection-ssd
+          image: registry.local:31500/tensorflow-detection-ssd
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8888
