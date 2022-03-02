@@ -20,6 +20,7 @@
       when:
         - has_mig.rc == 0
     
+    # TODO: Consider storing a custom copy of the hooks.yaml configuration alongside the config.yaml
     - name: copy cluster-wide mig config file
       copy:
         src: "../../config/nvidia-mig-config.yml"
@@ -27,7 +28,7 @@
       when: has_mig.rc == 0
 
     - name: Apply MIG configuration
-      command: nvidia-mig-parted apply -f {{ mig_manager_config }} -c {{ mig_manager_profile }}
+      command: nvidia-mig-parted apply -f {{ mig_manager_config }} -c {{ mig_manager_profile }} -k {{ mig_manager_hooks }}
       when: has_mig.rc == 0
 
     # Reboot nodes if necessary and poll for them to come up

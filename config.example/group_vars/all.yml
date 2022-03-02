@@ -285,6 +285,7 @@ deepops_disable_cloud_init: true
 # Default profile when using NVIDIA MIG Manager: https://github.com/NVIDIA/mig-parted
 mig_manager_profile: all-disabled
 mig_manager_config: /etc/nvidia-mig-manager/config.yml
+mig_manager_hooks: /etc/nvidia-mig-manager/hooks.yaml
 
 ################################################################################
 # Container registry                                                           #
