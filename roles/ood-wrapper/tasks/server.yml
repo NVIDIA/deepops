@@ -212,10 +212,3 @@
     mode: 0755
   tags:
     - configure
-
-- name: fix permissions on regex file
-  file:
-    path: "{{ ood_base_dir }}/ood_auth_map/bin/ood_auth_map.regex"
-    mode: 0755
-  tags:
-    - configure

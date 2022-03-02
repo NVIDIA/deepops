@@ -3,8 +3,6 @@ install_from_src: true
 ood_apache_service_name: apache2
 ood_htpasswd_file: /etc/apache2/.htpasswd
 
-ood_portal_generator: false
-
 ood_url_turbovnc_pkg: https://downloads.sourceforge.net/project/turbovnc/2.2.4/turbovnc_2.2.4_amd64.deb
 
 ood_master_sw_deps:
