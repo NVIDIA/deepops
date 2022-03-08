@@ -115,6 +115,34 @@ pipeline {
             timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
           '''
 
+          echo "Start new virtual environment pre-GPU Operator with existing software checks"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
+          '''
+
+          echo "Cluster Up - MGMT Nodes"
+          sh '''
+            export DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE=true
+            bash -x ./workloads/jenkins/scripts/test-cluster-up.sh
+          '''
+
+          echo "Get K8S Cluster Status"
+          sh '''
+            export DEEPOPS_K8S_OPERATOR=true
+            bash -x ./workloads/jenkins/scripts/get-k8s-debug.sh
+          '''
+
+          echo "Verify we can run a GPU job"
+          sh '''
+            export DEEPOPS_K8S_OPERATOR=true
+            timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
+          '''
+
+          echo "Start new virtual environment pre-Slurm checks"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
+          '''
+
           echo "Start new virtual environment pre-Slurm checks"
           sh '''
             bash -x ./workloads/jenkins/scripts/vagrant-startup.sh

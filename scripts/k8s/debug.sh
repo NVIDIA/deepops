@@ -56,7 +56,12 @@ done
 for pod in $(kubectl get pods -n gpu-operator-resources  | grep driver | awk '{print $1}'); do
   kubectl -n gpu-operator-resources  logs ${pod} > ${logdir}/get-plugin-logs-${pod}.log
 done
+for pod in $(kubectl get pods -n gpu-operator-resources  | grep mig | awk '{print $1}'); do
+  kubectl -n gpu-operator-resources  logs ${pod} > ${logdir}/get-plugin-logs-${pod}.log
+done
 kubectl describe pods -n gpu-operator-resources > ${logdir}/describe-gpu-operator-resources-pods.log
+kubectl describe configmap -n gpu-operator-resources default-mig-parted-config > ${logdir}/default-mig-parted-config.log
+
 
 # Helm
 helm list -aA > ${logdir}/helm-list.log

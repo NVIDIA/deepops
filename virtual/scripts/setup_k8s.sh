@@ -17,7 +17,9 @@ cd "${ROOT_DIR}" || exit 1
 K8S_CONFIG_DIR="${VIRT_DIR}/config"
 
 ansible_extra_args=""
-if [ ${DEEPOPS_K8S_OPERATOR} ]; then
+if [ ${DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE} ]; then
+	ansible_extra_args="${ansible_extra_args} -e deepops_gpu_operator_enabled=true -e gpu_operator_preinstalled_nvidia_software=true"
+elif [ ${DEEPOPS_K8S_OPERATOR} ]; then
 	ansible_extra_args="${ansible_extra_args} -e deepops_gpu_operator_enabled=true"
 fi
 

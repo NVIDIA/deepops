@@ -125,15 +125,19 @@
 
 # Install NVIDIA driver on GPU servers
 - include: nvidia-software/nvidia-driver.yml
+  vars:
+    hostlist: "k8s-cluster"
   tags:
     - nvidia
-  when: deepops_gpu_operator_enabled | default('false') | bool == false
+  when: deepops_gpu_operator_enabled | default('false') | bool == false or gpu_operator_preinstalled_nvidia_software
 
 # Install NVIDIA container runtime on GPU servers
 - include: container/nvidia-docker.yml
+  vars:
+    hostlist: "k8s-cluster"
   tags:
     - nvidia
-  when: deepops_gpu_operator_enabled | default('false') | bool == false
+  when: deepops_gpu_operator_enabled | default('false') | bool == false or gpu_operator_preinstalled_nvidia_software
 
 # Install k8s GPU feature discovery
 - include: k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml

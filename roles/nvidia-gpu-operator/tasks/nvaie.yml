@@ -1,6 +1,9 @@
 ---
 # vGPU support
-# 
+- name: Disable GPU Operator MIG Manager on NVIDIA AI Enterprise
+  set_fact:
+    gpu_operator_enable_migmanager: false
+
 - name: Create namespace for GPU Operator resources
   shell: kubectl create namespace {{ gpu_operator_namespace }} -o yaml --dry-run=client | kubectl apply -f -
 
@@ -44,7 +47,7 @@
 - name: update helm repos
   command: /usr/local/bin/helm repo update
 
-# XXX: This currently installs into the default namespace, as per the GPU Operator docs
+# TODO: This is no longer the cae # XXX: This currently installs into the default namespace, as per the GPU Operator docs
 # https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html
 - name: install nvidia gpu operator
-  command: /usr/local/bin/helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_nvaie_chart_name }}" --version "{{ gpu_operator_chart_version }}" --namespace "{{ gpu_operator_namespace }}" --create-namespace --set operator.defaultRuntime="{{ gpu_operator_default_runtime }}" --set driver.licensingConfig.configMapName=licensing-config --set driver.licensingConfig.nlsEnabled="{{ gpu_operator_nvaie_nls_enabled }}"  --set driver.imagePullSecrets[0]="registry-secret" --set operator.imagePullSecrets[0]="registry-secret" --set driver.repository="{{ gpu_operator_driver_registry }}" --set driver.version="{{ gpu_operator_driver_version }}"  --set mig.strategy="{{ k8s_gpu_mig_strategy }}" --wait
+  command: /usr/local/bin/helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_nvaie_chart_name }}" --version "{{ gpu_operator_chart_version }}" --namespace "{{ gpu_operator_namespace }}" --create-namespace --set driver.licensingConfig.configMapName=licensing-config --set driver.licensingConfig.nlsEnabled="{{ gpu_operator_nvaie_nls_enabled }}"  --set driver.imagePullSecrets[0]="registry-secret" --set operator.imagePullSecrets[0]="registry-secret" --set driver.repository="{{ gpu_operator_driver_registry }}" --set driver.version="{{ gpu_operator_driver_version }}"  --set mig.strategy="{{ k8s_gpu_mig_strategy }}"  --set driver.enabled="{{ gpu_operator_enable_driver }}" --set toolkit.enabled="{{ gpu_operator_enable_toolkit }}" --set dcgm.enabled="{{ gpu_operator_enable_dcgm }}" --set migManager.enabled="{{ gpu_operator_enable_migmanager }}" --wait

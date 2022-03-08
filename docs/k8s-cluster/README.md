@@ -37,12 +37,16 @@ Instructions for deploying a GPU cluster with Kubernetes
    # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
    ```
 
-   Note that as part of the kubernetes deployment process, the default behavior is to also deploy the [NVIDIA k8s-device-plugin](https://github.com/NVIDIA/k8s-device-plugin) for GPU support. The [GPU Operator](https://github.com/NVIDIA/gpu-operator) is an alternative deployment method, which will deploy the device plugin and leverage driver containers within kubernetes. To enable the GPU Operator in DeepOps...
+   Note that as part of the kubernetes deployment process, the default behavior is to also deploy the [NVIDIA k8s-device-plugin](https://github.com/NVIDIA/k8s-device-plugin) for GPU support. The [GPU Operator](https://github.com/NVIDIA/gpu-operator) is an alternative all-in-one deployment method, which will deploy the [device plugin](https://github.com/NVIDIA/k8s-device-plugin) and optionally includes GPU tooling such as driver containers, [GPU Feature Discovery](https://github.com/NVIDIA/gpu-feature-discovery),  [DCGM-Exporter](https://github.com/NVIDIA/dcgm-exporter) and [MIG Manager](https://github.com/NVIDIA/mig-parted). The default behavior of the [GPU Operator](https://github.com/NVIDIA/gpu-operator) in DeepOps is to deploy host-level drivers and NVIDIA software. To leverage driver containers as part of the GPU Operator, disable the `gpu_operator_preinstalled_nvidia_software` flag. To enable the GPU Operator in DeepOps...
 
    ```sh
    vi config/group_vars/k8s-cluster.yml
 
+   # Enable GPU Operator
    # set: deepops_gpu_operator_enabled: true
+
+   # Enable host-level drivers (must be 'true' for clusters with pre-installed NVIDIA drivers or DGX systems)
+   # set: gpu_operator_preinstalled_nvidia_software: true
    ```
 
 4. Verify the configuration
@@ -84,7 +88,7 @@ Instructions for deploying a GPU cluster with Kubernetes
 
 ## Using Kubernetes
 
-Now that Kubernetes is installed, consult the [Kubernetes Usage Guide](kubernetes-usage.md) for examples of how to use Kubernetes.
+Now that Kubernetes is installed, consult the [Kubernetes Usage Guide](kubernetes-usage.md) for examples of how to use Kubernetes or see the [example workloads](../../workloads/examples/k8s/README.md).
 
 ## Optional Components
 
