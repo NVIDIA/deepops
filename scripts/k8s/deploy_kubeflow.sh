@@ -176,7 +176,15 @@ function tear_down() {
   # TODO allow limiting namespace list
   namespaces="kubeflow knative-eventing knative-serving"
 
+  echo "Tearing down Kubeflow installation!"
   echo "Removing all objects in Kubernetes namespaces: ${namespaces}"
+  echo
+  echo "WARNING: This script does not delete the istio-system or cert-manager namespaces,"
+  echo "because these are commonly used by other applications."
+  echo
+  echo "If you want to remove these namespaces, please do so manually by running:"
+  echo "  kubectl delete namespace istio-system cert-manager"
+  echo
 
   for ns in $(echo "${namespaces}"); do
     kubectl delete namespace "${ns}"
