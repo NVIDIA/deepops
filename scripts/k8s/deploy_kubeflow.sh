@@ -123,6 +123,11 @@ function install_dependencies() {
 
 function clone_repo() {
   pushd .
+  if [ -d "${KUBEFLOW_MANIFESTS_DEST}" ]; then
+    echo "Kubeflow manifests directory already exists at: ${KUBEFLOW_MANIFESTS_DEST}"
+    echo "Exiting script! Please delete this directory before re-deploying."
+    exit 1
+  fi
   mkdir -p "${KUBEFLOW_MANIFESTS_DEST}"
   pushd "${KUBEFLOW_MANIFESTS_DEST}"
   git clone -b "${KUBEFLOW_MANIFESTS_VERSION}" "${KUBEFLOW_MANIFESTS_URL}" .
