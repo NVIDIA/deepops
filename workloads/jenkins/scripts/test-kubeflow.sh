@@ -10,6 +10,9 @@ export KF_DIR=${ROOT_DIR}/config/kubeflow
 export KFCTL=${ROOT_DIR}/config/kfctl
 export KUBEFLOW_DEPLOYMENTS="profiles-deployment centraldashboard ml-pipeline minio mysql metadata-db" # TODO: We will only poll for these, because other services currently fail to come up in Jenkins due to low disk space
 
+# Before deploying Kubeflow, clean up any unused Docker images to ensure we have sufficient space
+ansible k8s-cluster -b -m shell -a "docker image prune -a --force"
+
 # Deploy Kubflow with Dex
 source ./scripts/k8s/deploy_kubeflow.sh -x
 
