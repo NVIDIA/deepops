@@ -22,7 +22,7 @@ gpu_operator_enable_toolkit: true
 gpu_operator_enable_dcgm: false
 gpu_operator_enable_migmanager: true
 
-# Set to true fo DGX and other systems with pre-installed drivers
+# Set to true for DGX and other systems with pre-installed drivers
 # In an upcoming GPU Operator release, components can be enabled/disabled per-node
 # In the current version, the cluster is expected to be more homogeneous
 # TODO: Remove this flag and make detection dynamic per-node in this new release
