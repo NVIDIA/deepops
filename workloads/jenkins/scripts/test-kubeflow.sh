@@ -6,38 +6,16 @@ source workloads/jenkins/scripts/jenkins-common.sh
 # Ensure working directory is root
 cd "${ROOT_DIR}"
 
-export KF_DIR=${ROOT_DIR}/config/kubeflow
-export KFCTL=${ROOT_DIR}/config/kfctl
 export KUBEFLOW_DEPLOYMENTS="profiles-deployment centraldashboard ml-pipeline minio mysql metadata-db" # TODO: We will only poll for these, because other services currently fail to come up in Jenkins due to low disk space
 
 # Before deploying Kubeflow, clean up any unused Docker images to ensure we have sufficient space
-ansible k8s-cluster -b -m shell -a "docker image prune -a --force"
-
-# Deploy Kubflow with Dex
-source ./scripts/k8s/deploy_kubeflow.sh -x
-
-# The deployment script exports the http endpoints, verify it returns a 200
-# It typically takes ~5 minutes for all pods and services to start, so we poll
-timeout=600
-time=0
-while [ ${time} -lt ${timeout} ]; do
-  curl -s --raw -L "${kf_url}" && \
-    echo "Kubeflow is homepage is up " && break
-  let time=$time+15
-  sleep 15
-done
-curl -s --raw -L "${kf_url}" || exit 1 # If Kubeflow didn't come up in 600 seconds, fail
-
-# Wait for it to come up and view pods
-./scripts/k8s/deploy_kubeflow.sh -w
-kubectl get pods -n kubeflow
-
-# Delete Kubflow and view namespaces
-./scripts/k8s/deploy_kubeflow.sh -d
-kubectl get ns
+ansible k8s-cluster -i "${VIRT_DIR}/config/inventory" -b -m shell -a "docker image prune -a --force"
 
 # Deploy Kubflow
-source ./scripts/k8s/deploy_kubeflow.sh
+bash -x ./scripts/k8s/deploy_kubeflow.sh
+
+# Wait for Kubeflow to be up
+bash -x ./scripts/k8s/deploy_kubeflow.sh -w
 
 # The deployment script exports the http endpoints, verify it returns a 200
 # It typically takes ~5 minutes for all pods and services to start, so we poll
