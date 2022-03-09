@@ -80,7 +80,7 @@ pipeline {
 
           echo "Test Monitoring installation"
           sh '''
-             timeout 800 bash -x ./workloads/jenkins/scripts/test-monitoring.sh
+             timeout 2000 bash -x ./workloads/jenkins/scripts/test-monitoring.sh
           '''
 
           echo "Test Dashboard installation"
