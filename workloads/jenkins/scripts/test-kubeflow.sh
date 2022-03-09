@@ -13,7 +13,7 @@ ansible k8s-cluster -i "${VIRT_DIR}/config/inventory" -b -m shell -a "docker ima
 bash -x ./scripts/k8s/deploy_kubeflow.sh
 
 # Wait for Kubeflow to be up
-bash -x ./scripts/k8s/deploy_kubeflow.sh -w
+source ./scripts/k8s/deploy_kubeflow.sh -w
 
 # The deployment script exports the http endpoints, verify it returns a 200
 # It typically takes ~5 minutes for all pods and services to start, so we poll
