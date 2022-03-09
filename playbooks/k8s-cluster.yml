@@ -139,24 +139,6 @@
     - nvidia
   when: deepops_gpu_operator_enabled | default('false') | bool == false or gpu_operator_preinstalled_nvidia_software
 
-# Install k8s GPU feature discovery
-- include: k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml
-  tags:
-    - nvidia
-  when: deepops_gpu_operator_enabled | default('false') | bool == false
-
-# Install k8s GPU device plugin
-- include: k8s-cluster/nvidia-k8s-gpu-device-plugin.yml
-  tags:
-    - nvidia
-  when: deepops_gpu_operator_enabled | default('false') | bool == false
-
-# Install NVIDIA GPU Operator
-- include: k8s-cluster/nvidia-gpu-operator.yml
-  tags:
-    - nvidia
-  when: deepops_gpu_operator_enabled | default('false') | bool == true
-
 # Manage kubectl binary
 - hosts: kube-master
   gather_facts: false
@@ -244,6 +226,25 @@
       command: "{{ artifacts_dir }}/kubectl --kubeconfig {{ artifacts_dir }}/admin.conf taint node {{ inventory_hostname }} node-role.kubernetes.io/master:NoSchedule-"
       delegate_to: localhost
       failed_when: false # Taint will not be present if kube-master also under kube-node
+
+# Install k8s GPU feature discovery
+- include: k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml
+  tags:
+    - nvidia
+  when: deepops_gpu_operator_enabled | default('false') | bool == false
+
+# Install k8s GPU device plugin
+- include: k8s-cluster/nvidia-k8s-gpu-device-plugin.yml
+  tags:
+    - nvidia
+  when: deepops_gpu_operator_enabled | default('false') | bool == false
+
+# Install NVIDIA GPU Operator
+- include: k8s-cluster/nvidia-gpu-operator.yml
+  tags:
+    - nvidia
+  when: deepops_gpu_operator_enabled | default('false') | bool == true
+
 
 - include: k8s-cluster/nfs-client-provisioner.yml
   when: k8s_nfs_client_provisioner
