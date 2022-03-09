@@ -17,3 +17,7 @@ kubectl get pods -n kubeflow # Do this for debug purposes
 # For some reason the initial pipeline creation hangs sometime (and doesn't timeout or error out or provide any logging) so we run this twice until success or timeout
 python3 workloads/jenkins/scripts/test-kubeflow-pipeline.py
 kubectl get pods -n kubeflow # Do this for debug purposes
+
+# Delete Kubflow and view namespaces
+./scripts/k8s/deploy_kubeflow.sh -d
+kubectl get ns
