@@ -22,7 +22,12 @@
     - configuration
 
 - name: ensure mountpoint exists
-  file: path={{ autofs_mount }} state=directory
+  file: 
+    path: "{{ autofs_mount }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0755"
   when: autofs_mount is defined
 
 - name: make sure autofs is running
