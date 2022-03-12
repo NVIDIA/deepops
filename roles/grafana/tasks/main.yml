@@ -3,24 +3,30 @@
   file:
     path: "{{ grafana_config_dir }}"
     state: directory
+    owner: "root"
+    group: "root"
+    mode: "0755"
 
 - name: create data dir
   file:
     path: "{{ grafana_data_dir }}"
     state: directory
     owner: "{{ grafana_user_id }}"
+    mode: "0755"
 
 - name: create dashboard dir
   file:
     path: "{{ grafana_cfg_dashboard_path }}"
     state: directory
     owner: "{{ grafana_user_id }}"
+    mode: "0755"
 
 - name: create provisioning dirs
   file:
     path: "{{ grafana_config_dir }}/provisioning/{{ item }}"
     state: directory
     owner: "{{ grafana_user_id }}"
+    mode: "0755"
   with_items:
     - datasources
     - dashboards
@@ -30,6 +36,7 @@
     src: "{{ item }}"
     dest: "{{ grafana_cfg_dashboard_path }}"
     owner: "{{ grafana_user_id }}"
+    mode: "0644"
   with_items:
     - ../../../src/dashboards/gpu-dashboard.json
   notify: restart grafana
