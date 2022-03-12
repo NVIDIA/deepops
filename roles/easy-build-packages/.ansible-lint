@@ -1,0 +1,4 @@
+warn_list:  # or 'skip_list' to silence them completely
+  - meta-no-info  # meta/main.yml should contain relevant info
+  - no-changed-when  # Commands should not change things if nothing needs doing
+  - role-name
