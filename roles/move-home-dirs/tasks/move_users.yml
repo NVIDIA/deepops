@@ -5,6 +5,7 @@
 - name: create {{ move_home_dirs_new_root }}
   file:
     path: "{{ move_home_dirs_new_root }}"
+    mode: "0755"
     state: directory
 
 - name: set key path
@@ -40,6 +41,7 @@
   copy:
     content: "{{ tmp_user }} ALL=(ALL) NOPASSWD:ALL"
     dest: "/etc/sudoers.d/{{ tmp_user }}"
+    mode: "0700"
 
 # Useful for slurm clusters
 - name: grant SSH access to temporary user
@@ -47,6 +49,7 @@
     path: /etc/localusers
     line: "{{ tmp_user }}"
     create: yes
+    mode: "0644"
 
 - name: move each user
   include_tasks: move_user.yml
