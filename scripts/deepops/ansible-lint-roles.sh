@@ -8,7 +8,7 @@ ROOT_DIR="${SCRIPT_DIR}/../.."
 ANSIBLE_LINT_EXCLUDE="${ANSIBLE_LINT_EXCLUDE:-galaxy}"
 
 # Check for ansible-lint
-if ! which ansible-lint 2>&1 >/dev/null; then
+if ! command -v ansible-lint >/dev/null 2>&1; then
 	echo "ansible-lint not found in PATH"
 	exit 1
 fi
@@ -18,16 +18,16 @@ CHECK_FAILED=0;
 failedRoles=();
 
 # Lint each role
-cd "${ROOT_DIR}/roles"
+cd "${ROOT_DIR}/roles" || exit 1
 for r in $(find . -maxdepth 1 -mindepth 1 -type d | grep -v -E "${ANSIBLE_LINT_EXCLUDE}|galaxy"); do
 	echo "==============================================================="
 	echo "Linting ${r}"
-	cd "${r}"
+	cd "${r}" || exit 1
 	if ! ansible-lint --parseable-severity; then
 		CHECK_FAILED=1
 		failedRoles+=("${r}")
 	fi
-	cd "${ROOT_DIR}/roles"
+	cd "${ROOT_DIR}/roles" || exit 1
 done
 
 # Print summary of results
