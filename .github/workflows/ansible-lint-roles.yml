@@ -25,7 +25,7 @@ jobs:
 
       - name: run lint script
         env:
-          ANSIBLE_LINT_EXCLUDE: "nvidia-dgx|netapp|nvidia-gpu-tests"
+          ANSIBLE_LINT_EXCLUDE: "nvidia-dgx|nvidia-gpu-tests"
         run: |
           cd "${{ github.repository }}"
           bash ./scripts/deepops/ansible-lint-roles.sh
