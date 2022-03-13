@@ -6,9 +6,12 @@
 
 - name: install nvidia k8s gpu feature discovery helm repo
   command: /usr/local/bin/helm repo add nvgfd "{{ k8s_gpu_feature_discovery_helm_repo }}"
+  changed_when: false
 
 - name: update helm repos
   command: /usr/local/bin/helm repo update
+  changed_when: false
 
 - name: install nvidia k8s gpu feature discovery
   command: /usr/local/bin/helm upgrade --install "{{ k8s_gpu_feature_discovery_release_name }}" "{{ k8s_gpu_feature_discovery_chart_name }}" --version "{{ k8s_gpu_feature_discovery_chart_version }}" --set "migStrategy={{ k8s_gpu_mig_strategy }}" --wait
+  changed_when: false
