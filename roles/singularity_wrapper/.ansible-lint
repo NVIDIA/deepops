@@ -1,2 +1,2 @@
-warn_list:  # or 'skip_list' to silence them completely
+skip_list:
   - meta-no-info  # meta/main.yml should contain relevant info

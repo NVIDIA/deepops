@@ -1,2 +1,2 @@
-warn_list:
+skip_list:
 - meta-no-info
