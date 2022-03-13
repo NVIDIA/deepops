@@ -63,7 +63,7 @@
     name:
       - python3-pip
       - python3-setuptools
-    state: latest
+    state: present
     update_cache: true
   tags:
     - roce_host
