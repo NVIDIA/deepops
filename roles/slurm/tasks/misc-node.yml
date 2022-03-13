@@ -15,6 +15,7 @@
   template:
     src: "{{ slurm_conf_template }}"
     dest: "{{ slurm_config_dir }}/slurm.conf"
+    mode: "0644"
   tags:
   - config
 
@@ -27,4 +28,4 @@
   - slurmctld
   - slurmd
   - slurmdbd
-  ignore_errors: yes
+  failed_when: false

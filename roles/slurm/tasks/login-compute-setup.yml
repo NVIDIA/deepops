@@ -2,6 +2,7 @@
 
 - name: Hide GPUs for regular user logins via sshd.service.
   shell: |
+    set -o pipefail
     deviceprop=$(systemctl show sshd.service -p DeviceAllow | grep -i nvidiactl)
 
     if [ -z "$deviceprop" ] ; then

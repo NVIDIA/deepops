@@ -28,6 +28,8 @@
   block:
     - name: update grub
       command: update-grub
+      register: update_grub_cmd
+      changed_when: update_grub_cmd.rc == 0
     - name: reboot after updating grub config
       reboot:
         reboot_timeout: "{{ slurm_node_reboot_timeout }}"
@@ -37,6 +39,8 @@
   block:
     - name: update grub
       command: grub2-mkconfig -o /boot/grub2/grub.cfg
+      register: grub2_mkconfig_cmd
+      changed_when: grub2_mkconfig_cmd.rc == 0
     - name: reboot after updating grub config
       reboot:
         reboot_timeout: "{{ slurm_node_reboot_timeout }}"
@@ -69,6 +73,7 @@
   blockinfile:
     path: "{{ slurm_sysconf_dir }}/slurmd"
     create: yes
+    mode: "0644"
     block: |
       PMIX_MCA_ptl=^usock
       PMIX_MCA_psec=none
@@ -96,6 +101,7 @@
   template:
     src: "{{ slurm_conf_template }}"
     dest: "{{ slurm_config_dir }}/slurm.conf"
+    mode: "0644"
   notify:
   - restart slurmd
   tags:
@@ -105,6 +111,7 @@
   template:
     src: "{{ slurm_cgroup_conf_template }}"
     dest: "{{ slurm_config_dir }}/cgroup.conf"
+    mode: "0644"
   notify:
   - restart slurmd
   tags:
@@ -114,6 +121,7 @@
   template:
     src: "{{ slurm_gres_conf_template }}"
     dest: "{{ slurm_config_dir }}/gres.conf"
+    mode: "0644"
   notify:
   - restart slurmd
   tags:

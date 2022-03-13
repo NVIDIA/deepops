@@ -36,7 +36,7 @@
     - libhwloc-dev
     - libhwloc5
   when: ansible_distribution == 'Ubuntu'
-  ignore_errors: yes
+  failed_when: false
 
 - name: remove hwloc packages
   yum:
@@ -47,12 +47,13 @@
     - hwloc-libs
     - hwloc
   when: ansible_os_family == 'RedHat'
-  ignore_errors: yes
+  failed_when: false
 
 - name: make hwloc build directory
   file:
     path: "{{ hwloc_build_dir }}"
     state: directory
+    mode: "0755"
   when: hwloc_build
 
 - name: download hwloc source
@@ -62,14 +63,14 @@
     dest: "{{ hwloc_build_dir }}"
     extra_opts:
       - --strip-components=1
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
   when: hwloc_build
 
 - name: uninstall old hwloc version
   command: make -j uninstall
   args:
     chdir: "{{ hwloc_build_dir }}"
-  ignore_errors: yes
+  failed_when: false
   when: hwloc_build
   tags:
     - uninstall
@@ -78,7 +79,7 @@
   command: make distclean
   args:
     chdir: "{{ hwloc_build_dir }}"
-  ignore_errors: yes
+  failed_when: false
   when: hwloc_build
 
 - name: configure hwloc
