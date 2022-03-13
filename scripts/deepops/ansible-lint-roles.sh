@@ -35,5 +35,7 @@ echo
 echo "==============================================================="
 echo "Failed roles:"
 echo "  ${failedRoles[*]}"
+echo "Excluded role directories:"
+echo "  $(find . -maxdepth 1 -mindepth 1 -type d | grep -E "${ANSIBLE_LINT_EXCLUDE}|galaxy" | xargs)"
 echo "==============================================================="
 exit ${CHECK_FAILED}
