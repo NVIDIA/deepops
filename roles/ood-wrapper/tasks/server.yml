@@ -106,7 +106,7 @@
   systemd:
     service: "{{ ood_apache_service_name }}"
     state: restarted
-  when: mod_install.changed
+  when: mod_install.changed  # noqa no-handler
   tags:
     - configure
 
