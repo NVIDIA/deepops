@@ -7,19 +7,20 @@
     - "virtualenv"
     - "python3-setuptools"
   when: ansible_distribution == 'Ubuntu'
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
 
 - name: create location for deepops files
   file:
     path: "{{ deepops_dir }}"
     state: directory
+    mode: "0755"
 
 - name: install openshift python client for k8s_raw module
   pip:
     name: openshift
     virtualenv: "{{ deepops_venv }}"
   when: ansible_distribution == 'Ubuntu'
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
 
 - name: trust GPG key for EPEL
   rpm_key:
@@ -37,10 +38,10 @@
   yum:
     name: python2-openshift
   when: ansible_os_family == 'RedHat' and ansible_distribution_major_version == "7"
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
 
 - name: install openshift python client for k8s_raw module
   yum:
     name: python3-openshift
   when: ansible_os_family == 'RedHat' and ansible_distribution_major_version == "8"
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
