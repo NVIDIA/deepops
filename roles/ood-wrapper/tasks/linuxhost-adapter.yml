@@ -21,6 +21,7 @@
 - name: configure linuxhost-adapter
   blockinfile:
     path: "{{ ood_cluster_config_dir }}/linuxhost.yml"
+    mode: "0644"
     block: |
       {{ ood_linuxhost_adapter_config }}
     create: yes
@@ -31,6 +32,7 @@
 - name: create singularity image directory
   file:
     path: "{{ singularity_image_dir }}"
+    mode: "0755"
     state: directory
   tags:
     - linuxhost-adapter
