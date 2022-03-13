@@ -12,6 +12,7 @@ fi
 
 # Use a var to set script failure so we check all roles
 CHECK_FAILED=0;
+failedRoles=();
 
 # Lint each role
 cd "${ROOT_DIR}/roles"
@@ -19,10 +20,17 @@ for r in $(find . -maxdepth 1 -mindepth 1 -type d | grep -v galaxy); do
 	echo "==============================================================="
 	echo "Linting ${r}"
 	cd "${r}"
-	if ! ansible-lint ; then
+	if ! ansible-lint --parseable-severity; then
 		CHECK_FAILED=1
+		failedRoles+=("${r}")
 	fi
 	cd "${ROOT_DIR}/roles"
 done
 
+# Print summary of results
+echo
+echo "==============================================================="
+echo "Failed roles:"
+echo "  ${failedRoles[*]}"
+echo "==============================================================="
 exit ${CHECK_FAILED}
