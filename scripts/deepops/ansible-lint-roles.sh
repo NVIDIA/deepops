@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# ansible-lint-roles.sh
+# Runs ansible-lint against each of the subdirectories in roles/
+#
+# Roles can be excluded by setting the ANSIBLE_LINT_EXCLUDE variable to a
+# regex matching the roles to skip
+
 # Determine current directory and root directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../.."
