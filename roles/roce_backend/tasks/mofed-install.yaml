@@ -11,7 +11,7 @@
         path: /usr/bin/ofed_info
       register: ofed_installed
     - name: Check Mellanox OFED version
-      command: /usr/bin/ofed_info -n
+      shell: /usr/bin/ofed_info -n  # noqa command-instead-of-shell
       register: current_mofed_version
       when: ofed_installed.stat.exists
     - name: Mellanox OFED version

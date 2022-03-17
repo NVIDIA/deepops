@@ -9,7 +9,7 @@
   changed_when: false
 
 - name: check for NVIDIA MIG parted
-  command: which nvidia-mig-parted
+  shell: which nvidia-mig-parted  # noqa command-instead-of-shell
   register: has_mig_parted
   failed_when: false
   changed_when: false
