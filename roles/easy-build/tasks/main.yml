@@ -4,12 +4,12 @@
 ---
 - name: "install needed packages"
   become: yes
-  action: apt name=python3-setuptools state=latest
+  action: apt name=python3-setuptools state=present
   when: ansible_os_family == "Debian"
 
 - name: "install needed packages"
   become: yes
-  action: yum name=python3-setuptools state=latest
+  action: yum name=python3-setuptools state=present
   when: ansible_os_family == "RedHat"
 
 - name: "rm previous tmp folders"    
@@ -56,7 +56,7 @@
 
 - name: "get EasyBuild version"
   become: yes
-  shell: ls {{ eb_tmp_dir }}/software/EasyBuild/
+  command: ls {{ eb_tmp_dir }}/software/EasyBuild/
   args:
     executable: /bin/bash
   register: ebsw_version

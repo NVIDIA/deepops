@@ -17,11 +17,11 @@
   changed_when: false
 
 - name: install Ubuntu packages
-  apt: name=nis,rpcbind state=latest
+  apt: name=nis,rpcbind state=present
   when: ansible_os_family == "Debian"
 
 - name: install CentOS NIS packages
-  yum: name=ypbind state=latest
+  yum: name=ypbind state=present
   when: ansible_os_family == "RedHat"
 
 - name: ensure rpcbind is running

@@ -20,12 +20,15 @@
       owner: "root"
       group: "root"
       mode: "0644"
+    register: copy_ca_cert
   - name: add CA certificate to list
     lineinfile:
       path: "/etc/ca-certificates.conf"
       line: "{{ nginx_docker_cache_ca_client_name }}"
+    register: update_ca_cert_cfg
   - name: update CA cert bundle
     command: update-ca-certificates --fresh
+    when: copy_ca_cert.changed or update_ca_cert_cfg.changed
 
 - name: install CA certificate from live proxy
   when: nginx_docker_cache_ca is not defined
@@ -37,9 +40,12 @@
       owner: "root"
       group: "root"
       mode: "0644"
+    register: download_ca_cert
   - name: add CA certificate to list
     lineinfile:
       path: "/etc/ca-certificates.conf"
       line: "{{ nginx_docker_cache_ca_client_name }}"
+    register: update_ca_cert_cfg
   - name: update CA cert bundle
     command: update-ca-certificates --fresh
+    when: download_ca_cert.changed or update_ca_cert_cfg.changed

@@ -7,7 +7,7 @@
   modprobe:
     name: nouveau
     state: absent
-  ignore_errors: true
+  failed_when: false
 
 - name: blocklist nouveau
   copy:

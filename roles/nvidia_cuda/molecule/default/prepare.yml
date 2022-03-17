@@ -9,6 +9,7 @@
       owner: "root"
       group: "root"
       state: "directory"
+      mode: "0755"
     when: ansible_distribution == "Ubuntu"
 
   - name: Ensure dependencies are present for apt key management

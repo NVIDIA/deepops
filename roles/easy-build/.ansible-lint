@@ -1,0 +1,3 @@
+skip_list:  # or 'skip_list' to silence them completely
+  - meta-no-info
+  - role-name

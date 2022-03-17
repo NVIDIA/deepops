@@ -47,7 +47,7 @@
     url: "{{ nhc_src_url }}"
     dest: "{{ nhc_build_dir }}/nhc-{{ nhc_version }}.tar.xz"
     mode: "0644"
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
   when: nhc_build
 
 - name: extract nhc src

@@ -8,11 +8,17 @@
   template:
     src: cachefilesd.j2
     dest: /etc/default/cachefilesd
+    owner: "root"
+    group: "root"
+    mode: "0644"
 
 - name: configure
   template:
     src: cachefilesd_config.j2
     dest: /etc/cachefilesd.conf
+    owner: "root"
+    group: "root"
+    mode: "0644"
 
 # Service start not tested in molecule as we require a kernel module
 - name: start

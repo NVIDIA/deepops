@@ -6,7 +6,7 @@
         name: "dnf-plugins-core"
         state: "present"
     - name: enable powertools
-      command: "yum config-manager --set-enabled powertools"
+      command: "yum config-manager --set-enabled powertools" # noqa command-instead-of-module
       register: enable_powertools
       changed_when: enable_powertools.rc != 0
   when: (ansible_distribution == "CentOS") and (ansible_distribution_major_version == "8")

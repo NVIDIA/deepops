@@ -20,7 +20,7 @@
 
 - name: update ld cache
   command: ldconfig
-  when: updated_openmpi_ld.changed
+  when: updated_openmpi_ld.changed  # noqa no-handler
 
 - name: default to building openmpi
   set_fact:
@@ -59,7 +59,7 @@
     - openmpi-common
     - libopenmpi-dev
   when: ansible_distribution == 'Ubuntu'
-  ignore_errors: yes
+  failed_when: false
 
 - name: remove openmpi packages
   yum:
@@ -69,12 +69,13 @@
     - openmpi
     - openmpi-devel
   when: ansible_os_family == 'RedHat'
-  ignore_errors: yes
+  failed_when: false
 
 - name: make openmpi build directory
   file:
     path: "{{ openmpi_build_dir }}"
     state: directory
+    mode: "0755"
   when: openmpi_build
 
 - name: download openmpi source
@@ -90,7 +91,7 @@
   command: make -j uninstall
   args:
     chdir: "{{ openmpi_build_dir }}"
-  ignore_errors: yes
+  failed_when: false
   when: openmpi_build
   tags:
     - uninstall
@@ -99,7 +100,7 @@
   command: make distclean
   args:
     chdir: "{{ openmpi_build_dir }}"
-  ignore_errors: yes
+  failed_when: false
   when: openmpi_build
 
 - name: configure openmpi

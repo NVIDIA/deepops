@@ -22,4 +22,5 @@
     enabled: yes
     state: started
 
-- meta: flush_handlers
+- name: flush handlers to ensure munge gets restarted now
+  meta: flush_handlers

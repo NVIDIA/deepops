@@ -61,8 +61,7 @@
 
 - name: Execute setup rootless docker script
   become: true
-  shell:
-    /tmp/rootless_docker_setup.sh
+  command: /tmp/rootless_docker_setup.sh
   args:
     executable: /bin/bash
     creates: '{{ rootlessdocker_install_dir }}/config/install_success'
@@ -82,3 +81,6 @@
     path: /etc/modules
     create: yes
     line: "br_netfilter"
+    owner: "root"
+    group: "root"
+    mode: "0644"
