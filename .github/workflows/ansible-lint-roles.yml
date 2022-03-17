@@ -21,7 +21,7 @@ jobs:
       - name: install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install ansible-lint ansible
+          python3 -m pip install ansible-lint==5.4.0
 
       - name: run lint script
         env:
