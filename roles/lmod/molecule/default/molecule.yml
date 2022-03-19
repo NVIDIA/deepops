@@ -1,0 +1,36 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: lmod-ubuntu-1804
+    image: geerlingguy/docker-ubuntu1804-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+    pre_build_image: true
+  - name: lmod-ubuntu-2004
+    image: geerlingguy/docker-ubuntu2004-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+    pre_build_image: true
+  - name: lmod-centos-7
+    image: geerlingguy/docker-centos7-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+    pre_build_image: true
+#  - name: lmod-centos-8
+#    image: geerlingguy/docker-centos8-ansible
+#    volumes:
+#      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+#    privileged: true
+#    pre_build_image: true
+provisioner:
+  name: ansible
+  ansible_args:
+  - -vv
+verifier:
+  name: ansible

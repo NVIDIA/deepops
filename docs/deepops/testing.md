@@ -1,11 +1,24 @@
 # DeepOps Testing, CI/CD, and Validation
 
+## Linting
+
+`ansible-lint` is automatically run for each role in the `roles/` directory using a [Github action](../../.github/workflows/ansible-lint-roles.yml).
+This action runs `ansible-lint` for each role, and provides both the full output and a list of roles that failed linting.
+If the Github action reports success, all roles should have passed linting.
+
+The linting process can also be executed manually in a checkout of the DeepOps repo,
+by running `./scripts/deepops/ansible-lint-roles.sh`.
+
+Note that the linting script can be configured to skip a subset of roles,
+by providing a regex of roles to skip in the envionment variable `ANSIBLE_LINT_EXCLUDE`.
+(For example, `ANSIBLE_LINT_EXCLUDE='role-1|role-2|role-3'`.)
+This can be useful for excluding specific roles that have known issues or are still in development.
 
 ## DeepOps end-to-end testing
 
-The DeepOps project leverages a private Jenkins server to run continuous integration tests. Testing is done using the [virtual](../../virtual) deployment mechanism. Several Vagrant VMs are created, the cluster is deployed, tests are executed, and then the VMs are destroyed. 
+The DeepOps project leverages a private Jenkins server to run continuous integration tests. Testing is done using the [virtual](../../virtual) deployment mechanism. Several Vagrant VMs are created, the cluster is deployed, tests are executed, and then the VMs are destroyed.
 
-The goal of the DeepOps CI is to prevent bugs from being introduced into the code base and to identify when changes in 3rd party platforms have occurred or impacted the DeepOps deployment mechanisms. In general, K8s and Slurm deployment issues are detected and resolved with urgency. Many components of DeepOps are 3rd party open source tools that may silently fail or suddenly change without notice. The team will make a best-effort to resolve these issues and include regression tests, however there may be times where a fix is unavailable. Historically, this has been an issue with Rook-Ceph and Kubeflow, and those GitHub communities are best equipped to help with resolutions. 
+The goal of the DeepOps CI is to prevent bugs from being introduced into the code base and to identify when changes in 3rd party platforms have occurred or impacted the DeepOps deployment mechanisms. In general, K8s and Slurm deployment issues are detected and resolved with urgency. Many components of DeepOps are 3rd party open source tools that may silently fail or suddenly change without notice. The team will make a best-effort to resolve these issues and include regression tests, however there may be times where a fix is unavailable. Historically, this has been an issue with Rook-Ceph and Kubeflow, and those GitHub communities are best equipped to help with resolutions.
 
 ### Testing Method
 

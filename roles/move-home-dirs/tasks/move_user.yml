@@ -1,7 +1,9 @@
 ---
 - name: kill user processes for {{ user }}
   command: killall -u {{ user }}
-  ignore_errors: true
+  register: kill_user_procs
+  failed_when: false
+  changed_when: kill_user_procs.rc == 0
 
 - name: move home directory for {{ user }}
   user:

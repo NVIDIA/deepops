@@ -1,0 +1,7 @@
+exampleName: pytorch-detection-efficientdet
+registryName: registry.local
+registryPort: 31500
+jupyterNodePort: 30888
+resources:
+  limits:
+    nvidia.com/gpu: 1

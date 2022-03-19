@@ -3,7 +3,7 @@
   command: make clean
   args:
     chdir: "{{ slurm_build_dir }}"
-  ignore_errors: yes
+  failed_when: false
   when: slurm_build_make_clean
 
 - name: remove build directory

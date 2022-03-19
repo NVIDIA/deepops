@@ -39,8 +39,17 @@ slurm_ha_state_save_location: "/sw/slurm"
 ################################################################################
 # Login on compute
 ################################################################################
+# Restrict user SSH access to only allow users with a running job
+slurm_restrict_node_access: true
+
+# List users who should always be able to SSH, even without a running job
 slurm_allow_ssh_user: []
+
+# Enable a Slurm compute node to also function as a login node.
+# This is needed for the "single node Slurm cluster" configuration.
+# See docs/slurm-cluster/slurm-single-node.md
 slurm_login_on_compute: false
+
 
 ################################################################################
 # Optional installs                                                            #

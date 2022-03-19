@@ -8,7 +8,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.define "virtual-mgmt01" do |mgmt|
     mgmt.vm.provider "libvirt" do |v|
-      v.memory = 2048
+      v.memory = 8192
       v.cpus = 2
     end
     mgmt.vm.box = BOX_IMAGE
@@ -17,7 +17,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.define "virtual-mgmt02" do |mgmt|
     mgmt.vm.provider "libvirt" do |v|
-      v.memory = 2048
+      v.memory = 8192
       v.cpus = 2
     end
     mgmt.vm.box = BOX_IMAGE
@@ -26,7 +26,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.define "virtual-mgmt03" do |mgmt|
     mgmt.vm.provider "libvirt" do |v|
-      v.memory = 2048
+      v.memory = 8192
       v.cpus = 2
     end
     mgmt.vm.box = BOX_IMAGE
@@ -45,7 +45,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "virtual-gpu01" do |gpu|
     gpu.vm.provider "libvirt" do |v|
       v.memory = 16384
-      v.cpus = 2
+      v.cpus = 4
       v.machine_type = "q35"
       v.cpu_mode = "host-passthrough"
       # comment in for pci passthrough (and change bus according
@@ -60,7 +60,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "virtual-gpu02" do |gpu|
     gpu.vm.provider "libvirt" do |v|
       v.memory = 16384
-      v.cpus = 2
+      v.cpus = 4
       v.machine_type = "q35"
       v.cpu_mode = "host-passthrough"
       # comment in for pci passthrough (and change bus according

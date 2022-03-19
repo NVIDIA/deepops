@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.exampleName }}
+  labels:
+    app: {{ .Values.exampleName }}
+spec:
+  type: NodePort
+  ports:
+    - name: jupyterlab
+      nodePort: {{ .Values.jupyterNodePort }}
+      port: 8888
+      targetPort: 8888
+  selector:
+    app: {{ .Values.exampleName }}

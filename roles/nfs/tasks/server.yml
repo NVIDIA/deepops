@@ -2,13 +2,16 @@
 - name: install ubuntu packages
   apt:
     name: nfs-kernel-server
-    state: latest
+    state: present
   when: ansible_os_family == "Debian"
   tags:
     - nfs
 
 - name: ensure export path exists
-  file: path={{ item.path }} state=directory
+  file:
+    path: "{{ item.path }}"
+    state: "directory"
+    mode: "0755"
   with_items: '{{ nfs_exports }}'
   notify: restart nfs
   tags:

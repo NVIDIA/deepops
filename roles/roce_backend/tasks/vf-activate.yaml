@@ -1,8 +1,9 @@
 ---
 - name: Check activation
   register: result
-  shell: "grep -i {{ item.pf_name }} /etc/rc.local"
+  command: "grep -i {{ item.pf_name }} /etc/rc.local"
   failed_when: result.rc == 2
+  changed_when: result.rc == 1 
   tags: roce_host
 
 - name: VF activation

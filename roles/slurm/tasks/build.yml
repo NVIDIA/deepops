@@ -14,7 +14,7 @@
 
 - name: update ld cache
   command: ldconfig
-  when: updated_slurm_ld.changed
+  when: updated_slurm_ld.changed # noqa no-handler
 
 - include: munge.yml
 
@@ -39,6 +39,7 @@
   shell: "{{ slurm_install_prefix }}/sbin/slurmd --version | awk '{print $2}'"
   register: slurmd_reported_version
   ignore_errors: yes
+  changed_when: slurmd_reported_version.rc != 0
 
 - name: don't build slurm if it's already installed, unless forced
   set_fact:
@@ -94,7 +95,7 @@
     - slurmdbd
     - slurmd
   when: ansible_distribution == 'Ubuntu'
-  ignore_errors: yes
+  failed_when: false
 
 - name: remove slurm packages
   yum:
@@ -103,7 +104,7 @@
   with_items:
     - slurm
   when: ansible_os_family == 'RedHat'
-  ignore_errors: yes
+  failed_when: false
 
 - name: when building, try to uninstall first before downloading source
   when: slurm_build
@@ -130,6 +131,7 @@
   file:
     path: "{{ slurm_build_dir }}"
     state: directory
+    mode: "0755"
   when: slurm_build
 
 - name: download source
@@ -139,14 +141,14 @@
     dest: "{{ slurm_build_dir }}"
     extra_opts:
       - --strip-components=1
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
   when: slurm_build
 
 - name: clean src dir
   command: make distclean
   args:
     chdir: "{{ slurm_build_dir }}"
-  ignore_errors: yes
+  failed_when: false
   when: slurm_build
 
 - name: configure

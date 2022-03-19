@@ -8,54 +8,41 @@ CONFIG_DIR="${ROOT_DIR}/config"
 # Source common libraries and env variables
 source ${ROOT_DIR}/scripts/common.sh
 
-# Specify credentials for the default user.
-# TODO: Dynamically sed/hash these value into the CONFIG, these are currently not used
-export KUBEFLOW_USER_EMAIL="${KUBEFLOW_USER_EMAIL:-admin@kubeflow.org}"
-export KUBEFLOW_PASSWORD="${KUBEFLOW_PASSWORD:-12341234}"
-
 # Poll for these to be available with the -w flag
-KUBEFLOW_POLL_DEPLOYMENTS="${KUBEFLOW_DEPLOYMENTS:-profiles-deployment notebook-controller-deployment centraldashboard ml-pipeline minio mysql metadata-db jupyter-web-app-deployment katib-mysql}"
+KUBEFLOW_POLL_DEPLOYMENTS="${KUBEFLOW_DEPLOYMENTS:-profiles-deployment notebook-controller-deployment centraldashboard ml-pipeline minio mysql jupyter-web-app-deployment katib-mysql}"
 
-# Speificy how long to poll for Kubeflow to start
+# Specify how long to poll for Kubeflow to start
 export KUBEFLOW_TIMEOUT="${KUBEFLOW_TIMEOUT:-600}"
+export KUBEFLOW_DEPLOY_TIMEOUT="${KUBEFLOW_DEPLOY_TIMEOUT:-1200}"
 
-# Local files/directories to create and place scripts
-export KF_DIR="${KF_DIR:-${CONFIG_DIR}/kubeflow-install}"
-export KFCTL="${KFCTL:-${CONFIG_DIR}/kfctl}"
+# Define Kubeflow manifests location
+export KUBEFLOW_MANIFESTS_DEST="${KUBEFLOW_MANIFESTS_DEST:-${CONFIG_DIR}/kubeflow-install/manifests}"
+export KUBEFLOW_MANIFESTS_URL="${KUBEFLOW_MANIFESTS_URL:-https://github.com/kubeflow/manifests}"
+export KUBEFLOW_MANIFESTS_VERSION="${KUBEFLOW_MANIFESTS_VERSION:-v1.4.1}"
+
+# Define configuration we're injecting into the manifests location
+export KUBEFLOW_DEEPOPS_CONFIG_DIR="${KUBEFLOW_DEEPOPS_CONFIG_DIR:-${CONFIG_DIR}/files/kubeflow}"
+export KUBEFLOW_DEEPOPS_DEX_CONFIG="${KUBEFLOW_DEEPOPS_DEX_CONFIG:-${KUBEFLOW_DEEPOPS_CONFIG_DIR}/dex-config-map.yaml}"
+export KUBEFLOW_DEEPOPS_USERNS_PARAMS="${KUBEFLOW_DEEPOPS_USERNS_PARAMS:-${KUBEFLOW_DEEPOPS_CONFIG_DIR}/user-namespace-params.env}"
+
+# Define Kustomize location
+export KUSTOMIZE_URL="${KUSTOMIZE_URL:-https://github.com/kubernetes-sigs/kustomize/releases/download/v3.2.0/kustomize_3.2.0_linux_amd64}"
 export KUSTOMIZE="${KUSTOMIZE:-${CONFIG_DIR}/kustomize}"
-export KUBEFLOW_DEL_SCRIPT="${KF_DIR}/deepops-delete-kubeflow.sh"
-
-export KUBEFLOW_MPI_DIR="${KUBEFLOW_MPI_DIR:-${KF_DIR}/mpi}"
-export KUBEFLOW_MPI_MANIFESTS_REPO="${KUBEFLOW_MPI_MANIFESTS_REPO:-https://github.com/kubeflow/manifests}"
-
-# Download URLs and versions, note the kfctl version does not always match the manifest/config version, but best-effort should be made to keep their versions close
-export KFCTL_FILE=kfctl_v1.2.0-0-gbc038f9_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.2.0
-export KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.2.0/${KFCTL_FILE}"
-export AUTH_KFCTL_FILE=kfctl_v1.2.0-0-gbc038f9_linux.tar.gz # https://github.com/kubeflow/kfctl/releases/tag/v1.2.0
-export AUTH_KFCTL_URL="https://github.com/kubeflow/kfctl/releases/download/v1.2.0/${KFCTL_FILE}"
-
-# Config 1: https://www.kubeflow.org/docs/started/k8s/kfctl-existing-arrikto/
-export AUTH_CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/v1.2-branch/kfdef/kfctl_istio_dex.v1.2.0.yaml"
-export AUTH_CONFIG_FILE="${KF_DIR}/kfctl_istio_dex.v1.2.0.yaml"
-
-# Config 2: https://www.kubeflow.org/docs/started/k8s/kfctl-k8s-istio/
-export CONFIG_URI="https://raw.githubusercontent.com/kubeflow/manifests/v1.2-branch/kfdef/kfctl_k8s_istio.v1.2.0.yaml"
-export CONFIG_FILE="${KF_DIR}/kfctl_k8s_istio.v1.2.0.yaml"
-
 
 function help_me() {
   echo "Usage:"
   echo "-h    This message."
   echo "-p    Print out the connection info for Kubeflow."
+  echo "-c    Only clone the Kubeflow manifests repo, but do not deploy Kubeflow."
   echo "-d    Delete Kubeflow from your system (skipping the CRDs and istio-system namespace that may have been installed with Kubeflow."
   echo "-D    Deprecated, same as -d. Previously 'Fully Delete Kubeflow from your system along with all Kubeflow CRDs the istio-system namespace. WARNING, do not use this option if other components depend on istio.'"
-  echo "-x    Install Kubeflow with multi-user auth (this utilizes Dex, the default is no multi-user auth)."
+  echo "-x    Deprecated, multi-user auth is now the default." 
   echo "-w    Wait for Kubeflow homepage to respond (also polls for various Kubeflow Deployments to have an available status)."
 }
 
 
 function get_opts() {
-  while getopts "hpwxdDZ" option; do
+  while getopts "chpwxdDZ" option; do
     case $option in
       p)
         KUBEFLOW_PRINT=true
@@ -63,11 +50,10 @@ function get_opts() {
       w)
         KUBEFLOW_WAIT=true
         ;;
+      c)
+	KUBEFLOW_CLONE=true
+	;;
       x)
-	CONFIG_URI=${AUTH_CONFIG_URI}
-	CONFIG_FILE=${AUTH_CONFIG_FILE}
-        KFCTL_FILE="${AUTH_KFCTL_FILE}"
-        KFCTL_URL="${AUTH_KFCTL_URL}"
         ;;
       d)
         KUBEFLOW_DELETE=true
@@ -115,7 +101,7 @@ function install_dependencies() {
           ;;
   esac
 
-  # StorageClasse (for volumes and MySQL DB)
+  # StorageClass (for volumes and MySQL DB)
   kubectl get storageclass 2>&1 | grep "(default)" >/dev/null 2>&1
   if [ $? -ne 0 ] ; then
       echo "No storageclass found"
@@ -135,73 +121,42 @@ function install_dependencies() {
   fi
 }
 
-
-function install_mpi_operator() {
-
-  # Download kustomize, as required by mpi
+function clone_repo() {
   pushd .
-  cd ${CONFIG_DIR}
-  curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases |\
-    grep browser_download |\
-    grep linux |\
-    cut -d '"' -f 4 |\
-    grep /kustomize/v |\
-    sort | tail -n 1 |\
-    xargs curl -s -O -L
-  tar xzf ./kustomize_v*_linux_*.tar.gz
-  mv kustomize ${KUSTOMIZE}
+  if [ -d "${KUBEFLOW_MANIFESTS_DEST}" ]; then
+    echo "Kubeflow manifests directory already exists at: ${KUBEFLOW_MANIFESTS_DEST}"
+    echo "Exiting script! Please delete this directory before re-deploying."
+    exit 1
+  fi
+  mkdir -p "${KUBEFLOW_MANIFESTS_DEST}"
+  pushd "${KUBEFLOW_MANIFESTS_DEST}"
+  git clone -b "${KUBEFLOW_MANIFESTS_VERSION}" "${KUBEFLOW_MANIFESTS_URL}" .
 
-  mkdir -p ${KUBEFLOW_MPI_DIR}
-  cd ${KUBEFLOW_MPI_DIR}
-  git clone ${KUBEFLOW_MPI_MANIFESTS_REPO}
-  cd manifests/mpi-job/mpi-operator
-  ${KUSTOMIZE} build base | kubectl apply -f -
+  # Inject custom dex config
+  cp -v "${KUBEFLOW_DEEPOPS_DEX_CONFIG}" "${KUBEFLOW_MANIFESTS_DEST}/common/dex/base/config-map.yaml"
+  cp -v "${KUBEFLOW_DEEPOPS_USERNS_PARAMS}" "${KUBEFLOW_MANIFESTS_DEST}/common/user-namespace/base/params.env"
 
-  popd # Go back to the original dir
+  popd
+  echo "Kubeflow manifests repo:"
+  echo "- Cloned from: ${KUBEFLOW_MANIFESTS_URL}"
+  echo "- Git branch or tag: ${KUBEFLOW_MANIFESTS_VERSION}"
+  echo "- Local path: ${KUBEFLOW_MANIFESTS_DEST}"
 }
 
-
 function stand_up() {
-  # Download the kfctl binary and move it to the default location
   pushd .
-  mkdir ${CONFIG_DIR}/tmp-kf-download
-  cd ${CONFIG_DIR}/tmp-kf-download
-  curl -O -L ${KFCTL_URL}
-  tar -xvf ${KFCTL_FILE}
-  mv kfctl ${KFCTL}
-  popd
-  rm -rf ${CONFIG_DIR}/tmp-kf-download
+  pushd "${KUBEFLOW_MANIFESTS_DEST}"
 
-  # Create directory for KF files
-  mkdir ${KF_DIR}
+  wget -O "${KUSTOMIZE}" "${KUSTOMIZE_URL}"
+  chmod +x "${KUSTOMIZE}"
 
-  # Make cleanup scripts first in case deployment fails
-  # TODO: This kfctl delete seems to be failing occasionally with the cert-manager ns (due to a Kubeflow config bug)
-  # XXX: We manually delete the mpijobs crd because this is currently installed outside of the kfctl apply
-  echo "kubectl delete crd mpijobs.kubeflow.org; cd ${KF_DIR} && ${KFCTL} delete -V -f ${CONFIG_FILE} --force-deletion --delete_storage; cd && sudo rm -rf ${KF_DIR}" > ${KUBEFLOW_DEL_SCRIPT}
-  chmod +x ${KUBEFLOW_DEL_SCRIPT}
-
-  # Initialize and apply the Kubeflow project using the specified config. We do this in two steps to allow a chance to customize the config
-  pushd .
-  cd ${KF_DIR}
-  ${KFCTL} build -V -f ${CONFIG_URI}
-
-  # Occassionally the kfctl will fail, if this occurs halt all installation
-  if [ $? != 0 ]; then
-    echo -e "\nDeepOps ERROR: Failure building Kubeflow Manifest at ${CONFIG_URI} in ${KF_DIR}"
-     exit 1
+  echo "Beginning Kubeflow deployment"
+  timeout "${KUBEFLOW_DEPLOY_TIMEOUT}" bash -c -- "while ! ${KUSTOMIZE} build example | kubectl apply -f -; do sleep 10; done"
+  if [ $? -eq 124 ]; then
+    echo "Timed out attempt to deploy Kubeflow"
+    popd
+    exit 1
   fi
-
-  # Copy over DeepOps custom configurations & bugfixes
-  cp -r ${ROOT_DIR}/workloads/services/k8s/kubeflow-install/ ${CONFIG_DIR}
-  sed -i '/metadata:.*/a\  ClusterName: cluster.local' ${CONFIG_FILE} # BUGFIX: Need to add the ClusterName for proper deletion:https://github.com/kubeflow/kubeflow/issues/4815
-
-  # Update Kubeflow with the NGC containers and NVIDIA configurations
-  # BUG: Commented out until NGC containers add Kubeflow support, see https://github.com/NVIDIA/deepops/tree/master/src/containers/ngc
-  # ${SCRIPT_DIR}/update_kubeflow_config.py
-
-  # XXX: Add potential CONFIG customizations here before applying (these can be checked in to workloads/services/k8s/kubeflow-install/)
-  ${KFCTL} apply -V -f ${CONFIG_FILE}
   popd
 }
 
@@ -217,19 +172,29 @@ function fix_terminating_ns() {
 
 
 function tear_down() {
-  # Kubeflow use leads to some user created namespaces that are not torn down during kfctl delete
-  namespaces="kubeflow"
+  # TODO add a confirmation dialog
+  # TODO allow limiting namespace list
+  namespaces="kubeflow knative-eventing knative-serving"
 
-  # This runs kfctl delete pointing to the CONFIG that was used at install
-  bash ${KUBEFLOW_DEL_SCRIPT}
+  echo "Tearing down Kubeflow installation!"
+  echo "Removing all objects in Kubernetes namespaces: ${namespaces}"
+  echo
+  echo "WARNING: This script does not delete the istio-system or cert-manager namespaces,"
+  echo "because these are commonly used by other applications."
+  echo
+  echo "If you want to remove these namespaces, please do so manually by running:"
+  echo "  kubectl delete namespace istio-system cert-manager"
+  echo
+
+  for ns in $(echo "${namespaces}"); do
+    kubectl delete namespace "${ns}"
+  done
 
   # There is an issues in the kfctl delete command that does not properly clean up and leaves NSs in a terminating state, this is a bit hacky but resolves it
   if [ "${KUBEFLOW_EXTRA_FULL_DELETE}" == "true" ]; then
     echo "Removing finalizers from all namespaces: ${namespaces}"
     fix_terminating_ns ${namespaces}
   fi
-
-  rm ${KFCTL}
 }
 
 
@@ -296,8 +261,11 @@ elif [ ${KUBEFLOW_WAIT} ]; then
   get_url
   print_info
   poll_url
+elif [ ${KUBEFLOW_CLONE} ]; then
+  clone_repo
 else
   install_dependencies
+  clone_repo
   stand_up
   # install_mpi_operator # BUG: https://github.com/NVIDIA/deepops/issues/737
   get_url

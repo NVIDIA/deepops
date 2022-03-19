@@ -1,0 +1,3 @@
+skip_list:
+  - meta-no-info  # meta/main.yml should contain relevant info
+  - meta-no-tags  # Tags must contain lowercase letters and digits only

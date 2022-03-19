@@ -1,120 +1,53 @@
 ---
-# Enable/disable MIG mode
-# run with tags --enable or --disable
+# Install the NVIDIA MIG Manager tooling on all MIG-capable nodes
+# Copy over the custom MIG config to all nodes and apply them
+# Cluster-wide config is set in group_vars/config.yml by mig_manager_profile
+# Per-node config can be configured in the inventory file
+
+# Check if MIG capabilities and software on nodes
 - hosts: all
-  become: yes
-
   vars:
-    deepops_mig_devices: "all"
-    nv_services:
-      - nvsm
-      - nvidia-persistenced
-      - nvidia-fabricmanager
-      - nv_peer_mem
-      - dcgm
-      - docker
-    nv_modules:
-      - nv_peer_mem
-      - nvidia_uvm
-      - nvidia_drm
-      - nvidia_modeset
-      - nvidia
-
+    mig_manager_reboot_timeout: 900
   tasks:
-    # Check for MIG-capable devices
     - name: check for MIG capable devices
-      command: nvidia-smi --query-gpu=pci.bus_id,mig.mode.current --format=csv,noheader
+      shell: nvidia-smi --query-gpu=mig.mode.current --format=csv,noheader | grep -v 'N/A'
       register: has_mig
+      failed_when: false
 
-    # Pre-tasks
-    - name: stop system services
-      systemd:
-        state: stopped
-        enabled: no
-        name: "{{ item }}"
-      with_items: "{{ nv_services }}"
-      tags: enable, disable, never
-    - name: unload drivers
-      modprobe:
-        state: absent
-        name: "{{ item }}"
-      with_items: "{{ nv_modules }}"
-      tags: enable, disable, never
+    - name: Install MIG Manager
+      include_role:
+        name: nvidia-mig-manager
+      when:
+        - has_mig.rc == 0
+    
+    # TODO: Consider storing a custom copy of the hooks.yaml configuration alongside the config.yaml
+    - name: copy cluster-wide mig config file
+      copy:
+        src: "../../config/nvidia-mig-config.yml"
+        dest: "{{ mig_manager_config }}"
+      when: has_mig.rc == 0
 
-    # Manage MIG
-    - name: enable MIG mode (all devices)
-      command: nvidia-smi -mig 1
-      tags: enable, never
-      when: deepops_mig_devices | default("") == "all"
-    - name: enable MIG mode (per device)
-      command: nvidia-smi -mig 1 -i "{{ deepops_mig_devices }}"
-      tags: enable, never
-      when: deepops_mig_devices | default("") != "" and  deepops_mig_devices | default("") != "all"
+    - name: Apply MIG configuration
+      command: nvidia-mig-parted apply -f {{ mig_manager_config }} -c {{ mig_manager_profile }} -k {{ mig_manager_hooks }}
+      when: has_mig.rc == 0
 
-    - name: disable MIG mode (all devices)
-      command: nvidia-smi -mig 0
-      tags: disable, never
-      when: deepops_mig_devices | default("") == "all"
-    - name: disable MIG mode (per device)
-      command: nvidia-smi -mig 0 -i "{{ deepops_mig_devices }}"
-      tags: disable, never
-      when: deepops_mig_devices | default("") != "" and  deepops_mig_devices | default("") != "all"
+    # Reboot nodes if necessary and poll for them to come up
+    - name: Reboot if necessary
+      shell: sleep 2 && /sbin/shutdown -r now "Reboot required"
+      async: 1
+      poll: 0
+      when:
+        - reboot_required is defined
+        - reboot_required | default(false)
+    - name: Wait for server to reboot (if required)
+      wait_for_connection:
+        delay=15
+        timeout={{ reboot_timeout }}
+      when:
+        - reboot_required is defined
+        - reboot_required | default(false)
+        - has_mig.rc == 0
 
-    # Post-tasks
-    - name: wait for MIG stuff to settle down and nvidia-persistenced to start again
-      pause:
-        seconds: 20
-      tags: enable, disable, never
-    - name: stop system services
-      systemd:
-        state: stopped
-        enabled: no
-        name: "{{ item }}"
-      with_items: "{{ nv_services }}"
-      tags: enable, disable, never
-    - name: unload drivers
-      modprobe:
-        state: absent
-        name: "{{ item }}"
-      with_items: "{{ nv_modules }}"
-      tags: enable, disable, never
-    - name: start fabric manager
-      systemd:
-        state: started
-        name: nvidia-fabricmanager
-      tags: enable, disable, never
-    - name: stop nvidia-persistenced again
-      systemd:
-        state: stopped
-        name: nvidia-persistenced
-      tags: enable, disable, never
-    - name: reset GPUs
-      command: nvidia-smi --gpu-reset
-      tags: enable, disable, never
-    - name: load drivers
-      modprobe:
-        state: present
-        name: "{{ item }}"
-      with_items: "{{ nv_modules }}"
-      ignore_errors: true
-      tags: enable, disable, never
-    - name: start system services
-      systemd:
-        state: started
-        enabled: yes
-        name: "{{ item }}"
-      with_items: "{{ nv_services }}"
-      ignore_errors: true
-      tags: enable, disable, never
-
-    # Permissions
-    - name: grant user permissions to manage MIG instances
-      file:
-        path: "{{ item }}"
-        owner: root
-        group: root
-        mode: '0444'
-      with_items:
-        - /proc/driver/nvidia/capabilities/mig/config
-        - /proc/driver/nvidia/capabilities/mig/monitor
-      tags: enable, never
+    - name: Assert MIG configuration was applied
+      command: nvidia-mig-parted assert -f {{ mig_manager_config }} -c {{ mig_manager_profile }}
+      when: has_mig.rc == 0

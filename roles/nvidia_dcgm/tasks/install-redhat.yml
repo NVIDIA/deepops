@@ -1,0 +1,26 @@
+---
+- name: RedHat | trust GPG key for EPEL
+  rpm_key:
+    key: "{{ epel_key_url }}"
+    state: present
+
+- name: RedHat | add epel repo
+  become: yes
+  yum:
+    name:
+      - "{{ epel_package }}"
+    state: present
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
+
+- name: RedHat | add CUDA repo
+  yum_repository:
+    name: cuda
+    description: NVIDIA CUDA YUM Repo
+    baseurl: "{{ nvidia_driver_rhel_cuda_repo_baseurl }}"
+    gpgkey: "{{ nvidia_driver_rhel_cuda_repo_gpgkey }}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
+
+- name: RedHat | install package
+  package:
+    name: "{{ dcgm_pkg_name }}"
+    state: "present"

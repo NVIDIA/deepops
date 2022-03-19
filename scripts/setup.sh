@@ -14,6 +14,8 @@ ROOT_DIR="${SCRIPT_DIR}/.."
 # Configuration
 ANSIBLE_VERSION="${ANSIBLE_VERSION:-2.9.27}"     # Ansible version to install
 ANSIBLE_TOO_NEW="${ANSIBLE_TOO_NEW:-2.10.0}"    # Ansible version too new
+ANSIBLE_LINT_VERSION="${ANSIBLE_LINT_VERSION:-5.4.0}"
+ANSIBLE_LINT_TOO_NEW="${ANSIBLE_LINT_TOO_NEW:-6.0.0}"  # Dropped support for Ansible 2.9.x
 CONFIG_DIR="${CONFIG_DIR:-${ROOT_DIR}/config}"            # Default configuration directory location
 DEEPOPS_TAG="${1:-master}"                      # DeepOps branch to set up
 JINJA2_VERSION="${JINJA2_VERSION:-2.11.1}"      # Jinja2 required version
@@ -109,11 +111,13 @@ if command -v virtualenv &> /dev/null ; then
 
     as_user "${PIP} install -q --upgrade \
         ansible==${ANSIBLE_VERSION} \
+	ansible-lint==${ANSIBLE_LINT_VERSION} \
         Jinja2==${JINJA2_VERSION} \
         netaddr \
         ruamel.yaml \
         PyMySQL \
         paramiko \
+        MarkupSafe==2.0.1
         selinux"
 else
     echo "ERROR: Unable to create Python virtual environment, 'virtualenv' command not found"

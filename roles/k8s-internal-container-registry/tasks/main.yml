@@ -6,9 +6,11 @@
 
 - name: install stable helm repository
   command: "{{ helm_cmd }} repo add {{ container_registry_repo_name }} {{ container_registry_chart_location }}"
+  changed_when: false
 
 - name: update helm repos
   command: "{{ helm_cmd }} repo update"
+  changed_when: false
 
 - name: copy values.yaml into place
   template:
@@ -20,3 +22,4 @@
 
 - name: install container-registry
   command: "{{ helm_cmd }} upgrade --install -f {{ container_registry_values_path }} --version {{ container_registry_version }} --create-namespace --namespace {{ container_registry_namespace }} {{ container_registry_installed_name }} {{ container_registry_chart_name }}" 
+  changed_when: false

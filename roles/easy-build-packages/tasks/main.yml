@@ -15,6 +15,7 @@
     repo: "{{ sm_files_url }}"
     dest: "{{ sm_files_path }}"
     update: yes
+    version: "{{ sm_files_repo_version }}"
   when: sm_install_default
 
 - name: "check the sm_files_path is reachable"

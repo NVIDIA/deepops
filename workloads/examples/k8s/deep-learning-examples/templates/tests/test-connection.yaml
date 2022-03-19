@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "deep-learning-examples.fullname" . }}-test-connection"
+  labels:
+    {{- include "deep-learning-examples.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "deep-learning-examples.fullname" . }}:{{ .Values.jupyterNodePort }}']
+  restartPolicy: Never
