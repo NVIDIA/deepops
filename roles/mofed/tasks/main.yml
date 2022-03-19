@@ -18,7 +18,7 @@
     state: present
   when: ansible_os_family == "RedHat"
 
-- name: attempt to get installed ofed version
+- name: attempt to get installed ofed version  # noqa risky-shell-pipe
   shell: ofed_info | head -n1
   register: ofed_info
   changed_when: ofed_info.rc != 0
@@ -27,7 +27,7 @@
   set_fact:
     mofed_do_install: false
 
-- name: check ofed version against desired version
+- name: check ofed version against desired version  # noqa no-handler
   set_fact:
     mofed_do_install: true
   when: ofed_info.changed or (mofed_version not in ofed_info.stdout)
@@ -38,6 +38,7 @@
     state: "directory"
     owner: "root"
     group: "root"
+    mode: "0755"
   when: mofed_do_install
 
 - name: download mofed distribution
