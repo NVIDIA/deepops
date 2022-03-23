@@ -247,7 +247,7 @@
 
 # Setup a volume for NFS, install nfs_utils, and install NFS Helm chart
 - include: k8s-cluster/nfs-client-provisioner.yml
-  when: k8s_nfs_client_provisioner
+  when: k8s_nfs_client_provisioner | default('false')
 
 - include: generic/rsyslog-server.yml
   vars:
