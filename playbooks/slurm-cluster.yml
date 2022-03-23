@@ -20,7 +20,7 @@
 
 # Configure Chrony (NTP) sync
 - include: generic/chrony-client.yml
-  when: chrony_install
+  when: chrony_install|default(true)
 
 # Set up a local cluster container registry
 - include: container/standalone-container-registry.yml hostlist=slurm-master

@@ -32,11 +32,11 @@
 
 # Disable cloud-init
 - include: generic/disable-cloud-init.yml
-  when: deepops_disable_cloud_init
+  when: deepops_disable_cloud_init|default(true)
 
 # Configure Chrony (NTP) sync
 - include: generic/chrony-client.yml
-  when: chrony_install
+  when: chrony_install|default(true)
 
 # Install the OpenShift API libraries required by the GPU plugin
 - include: bootstrap/bootstrap-openshift.yml

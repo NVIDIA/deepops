@@ -63,6 +63,27 @@
   when: ansible_os_family == 'RedHat'
   failed_when: false
 
+- name: when building, try to uninstall first before downloading source
+  when: pmix_build
+  block:
+
+  - name: check that we have an old build dir
+    stat:
+      path: "{{ pmix_build_dir }}"
+    register: pmix_old_build_dir
+
+  - name: uninstall old verson
+    command: make -j uninstall
+    args:
+      chdir: "{{ pmix_build_dir }}"
+    ignore_errors: yes
+    when: pmix_old_build_dir.stat.exists
+
+  - name: remove old build dir
+    file:
+      path: "{{ pmix_build_dir }}"
+      state: absent
+
 - name: make pmix build directory
   file:
     path: "{{ pmix_build_dir }}"
@@ -79,15 +100,6 @@
       - --strip-components=1
   environment: "{{ proxy_env if proxy_env is defined else {} }}"
   when: pmix_build
-
-- name: uninstall old pmix version
-  command: make -j uninstall
-  args:
-    chdir: "{{ pmix_build_dir }}"
-  failed_when: false
-  when: pmix_build
-  tags:
-    - uninstall
 
 - name: clean pmix src dir
   command: make distclean

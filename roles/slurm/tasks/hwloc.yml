@@ -49,6 +49,27 @@
   when: ansible_os_family == 'RedHat'
   failed_when: false
 
+- name: when building, try to uninstall first before downloading source
+  when: hwloc_build
+  block:
+
+  - name: check that we have an old build dir
+    stat:
+      path: "{{ hwloc_build_dir }}"
+    register: hwloc_old_build_dir
+
+  - name: uninstall old verson
+    command: make -j uninstall
+    args:
+      chdir: "{{ hwloc_build_dir }}"
+    ignore_errors: yes
+    when: hwloc_old_build_dir.stat.exists
+
+  - name: remove old build dir
+    file:
+      path: "{{ hwloc_build_dir }}"
+      state: absent
+
 - name: make hwloc build directory
   file:
     path: "{{ hwloc_build_dir }}"
@@ -65,15 +86,6 @@
       - --strip-components=1
   environment: "{{ proxy_env if proxy_env is defined else {} }}"
   when: hwloc_build
-
-- name: uninstall old hwloc version
-  command: make -j uninstall
-  args:
-    chdir: "{{ hwloc_build_dir }}"
-  failed_when: false
-  when: hwloc_build
-  tags:
-    - uninstall
 
 - name: clean hwloc src dir
   command: make distclean
