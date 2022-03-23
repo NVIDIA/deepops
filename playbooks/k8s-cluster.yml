@@ -149,9 +149,8 @@
     hostlist: "k8s-cluster"
   tags:
     - nvidia
-  when:
-    - deepops_gpu_operator_enabled | default('false') | bool == false
-    - gpu_operator_preinstalled_nvidia_software | default('false') | bool == false
+  when: deepops_gpu_operator_enabled|default(true) | bool == false or
+        gpu_operator_preinstalled_nvidia_software|default(true)
 
 # Install NVIDIA container runtime on GPU servers
 - include: container/nvidia-docker.yml
@@ -160,27 +159,27 @@
   tags:
     - nvidia
   when:
-    - deepops_gpu_operator_enabled | default('false') | bool == false
+    - deepops_gpu_operator_enabled|default(true) | bool == false or
+      gpu_operator_preinstalled_nvidia_software|default(true)
     - container_manager is defined and container_manager == "docker"
-    - gpu_operator_preinstalled_nvidia_software | default('false') | bool == false
 
 # Install k8s GPU feature discovery
 - include: k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml
   tags:
     - nvidia
-  when: deepops_gpu_operator_enabled | default('false') | bool == false
+  when: deepops_gpu_operator_enabled|default(true) | bool == false
 
 # Install k8s GPU device plugin
 - include: k8s-cluster/nvidia-k8s-gpu-device-plugin.yml
   tags:
     - nvidia
-  when: deepops_gpu_operator_enabled | default('false') | bool == false
+  when: deepops_gpu_operator_enabled|default(true) | bool == false
 
 # Install NVIDIA GPU Operator
 - include: k8s-cluster/nvidia-gpu-operator.yml
   tags:
     - nvidia
-  when: deepops_gpu_operator_enabled | default('false') | bool == true
+  when: deepops_gpu_operator_enabled|default(true) | bool == true
 
 # Manage kubectl binary
 - hosts: kube-master
