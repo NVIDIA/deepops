@@ -3,12 +3,9 @@
 
 - name: install nfs-client-provisioner helm repo
   command: /usr/local/bin/helm repo add --force-update "{{k8s_nfs_client_repo_name}}" "{{ k8s_nfs_client_helm_repo }}"
-  delegate_to: localhost
 
 - name: update helm repos
   command: /usr/local/bin/helm repo update
-  delegate_to: localhost
 
 - name: install nfs-client-provisioner
-  command: /usr/local/bin/helm upgrade --kubeconfig {{ artifacts_dir }}/admin.conf --install "{{ k8s_nfs_client_release_name }}" "{{ k8s_nfs_client_chart_name }}" --create-namespace --namespace deepops-nfs-client-provisioner --version "{{ k8s_nfs_client_chart_version }}" --set nfs.server="{{ k8s_nfs_server }}" --set nfs.path="{{ k8s_nfs_export_path }}" --set storageClass.defaultClass="{{ k8s_nfs_default_sc }}" --wait
-  delegate_to: localhost
+  command: /usr/local/bin/helm upgrade --kubeconfig --install "{{ k8s_nfs_client_release_name }}" "{{ k8s_nfs_client_chart_name }}" --create-namespace --namespace deepops-nfs-client-provisioner --version "{{ k8s_nfs_client_chart_version }}" --set nfs.server="{{ k8s_nfs_server }}" --set nfs.path="{{ k8s_nfs_export_path }}" --set storageClass.defaultClass="{{ k8s_nfs_default_sc }}" --wait
