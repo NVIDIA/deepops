@@ -33,6 +33,7 @@ if [ "${pass}" != "true" ]; then
   curl -s --raw -L "${alertmanager_url}"
   exit 1
 fi
+pass=""
 set -e # The loop is done, and we got debug if it failed, re-enable fail on error
 
 # Validate DCGM metrics are in Prometheus
@@ -52,6 +53,7 @@ if [ "${pass}" != "true" ]; then
   curl -L "${prometheus_url}/api/v1/label/__name__/values" # Print output for debug
   exit 1
 fi
+pass=""
 set -e # The loop is done, and we got debug if it failed, re-enable fail on error
 
 
@@ -96,6 +98,7 @@ if [ "${pass}" != "true" ]; then
   curl -s --raw -L "${alertmanager_url}"
   exit 1
 fi
+pass=""
 set -e # The loop is done, and we got debug if it failed, re-enable fail on error
 
 # Validate DCGM metrics are in Prometheus
@@ -115,6 +118,7 @@ if [ "${pass}" != "true" ]; then
   curl -L "${prometheus_url}/api/v1/label/__name__/values" # Print output for debug
   exit 1
 fi
+pass=""
 set -e # The loop is done, and we got debug if it failed, re-enable fail on error
 
 # Get some debug for Pods that did/didn't come up and verify DCGM metrics
