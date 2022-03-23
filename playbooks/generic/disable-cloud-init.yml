@@ -14,22 +14,21 @@
   tasks:
 
   - name: check if /etc/cloud is present
-    when: deepops_disable_cloud_init
     stat:
       path: "/etc/cloud"
+    when: deepops_disable_cloud_init|default(true)
     register: etc_cloud
 
   - name: disable generator for setting cloud-init target
-    when: deepops_disable_cloud_init and etc_cloud.stat.exists
     file:
       path: "/etc/cloud/cloud-init.disabled"
       owner: "root"
       group: "root"
       mode: "0644"
       state: "touch"
+    when: deepops_disable_cloud_init|default(true) and etc_cloud.stat.exists
 
   - name: disable all systemd services
-    when: deepops_disable_cloud_init
     ignore_errors: yes
     service:
       name: "{{ item }}"
@@ -39,3 +38,4 @@
     - "cloud-init"
     - "cloud-config"
     - "cloud-final"
+    when: deepops_disable_cloud_init|default(true)
