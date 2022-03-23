@@ -1,7 +1,10 @@
 pipeline {
   agent any
   environment {
-    DEEPOPS_FULL_INSTALL = ''
+    DEEPOPS_NIGHTLY = 'true'
+    // DEEPOPS_FULL_INSTALL = ''
+    // DEEPOPS_VAGRANT_OS = 'ubuntu'
+    // DEEPOPS_OS_VERSION = '18.04'
   }
   stages {
     stage('Stop Any Old Builds') {
@@ -12,8 +15,7 @@ pipeline {
     }
     stage('Cluster Up - Ubuntu') {
       environment {
-        DEEPOPS_VAGRANT_OS = 'ubuntu'
-        DEEPOPS_OS_VERSION = '18.04'
+        DEEPOPS_NIGHTLY = 'true'
       }
       steps {
         // TODO: ideally lock should work with declared stages
@@ -113,263 +115,20 @@ pipeline {
             timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
           '''
 
-          echo "Start new virtual environment pre-Slurm checks"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
-          '''
-
-          echo "Set up Slurm"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/test-setup-slurm.sh
-          '''
-
-          echo "Get Slurm Cluster Status"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/get-slurm-debug.sh
-          '''
-
-          echo "Test Slurm"
-          sh '''
-            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-job.sh
-          '''
-
-          echo "Test NFS"
-          sh '''
-            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-nfs-mount.sh
-          '''
-
-          echo "Test MPI"
-          sh '''
-            timeout 60 bash -x ./workloads/jenkins/scripts/test-mpi-job.sh
-          '''
-          
-          echo "Test Enroot"
-          sh '''
-            timeout 120 bash -x ./workloads/jenkins/scripts/test-slurm-enroot-job.sh
-          '''
-
-          echo "Verify rsyslog forwarding is working for the slurm cluster"
-          sh '''
-             bash -x ./workloads/jenkins/scripts/test-rsyslog-slurm.sh
-          '''
-
-          echo "Test GPU job"
-          sh '''
-            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
-          '''
-
-          echo "Test DCGM metrics"
-          sh '''
-             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
-          '''
-
-          echo "Reset repo and unmunge files"
-          sh '''
-            git reset --hard
-            rm -rf config
-          '''
-
-          echo "Tear down Vagrant before next cluster-up"
-          sh '''
-            pwd
-            cd virtual && ./vagrant_shutdown.sh
-          '''
-        }
-      }
-    }
-    stage('Cluster Up - CentOS') {
-      environment {
-        DEEPOPS_VAGRANT_OS = 'centos'
-        DEEPOPS_OS_VERSION = '7'
-      }
-      steps {
-        // TODO: ideally lock should work with declared stages
-        lock(resource: null, label: 'gpu', quantity: 1, variable: 'GPUDATA') {
-          echo "Munge files for testing"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/munge-files.sh
-          '''
-
-          echo "Vagrant Up"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
-          '''
-
-          echo "Cluster Up"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/test-cluster-up.sh
-          '''
-
-          echo "Get K8S Cluster Status"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/get-k8s-debug.sh
-          '''
-
-          echo "Verify we can run a GPU job"
-          sh '''
-            timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
-          '''
-
-          echo "Verify ingress config"
-          sh '''
-             bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
-          '''
-
-          echo "Verify rsyslog forwarding is working for the k8s cluster"
-          sh '''
-             bash -x ./workloads/jenkins/scripts/test-rsyslog-k8s.sh
-          '''
-
-          echo "Test Kubeflow installation"
-          sh '''
-             timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
-          '''
-
-          echo "Test Monitoring installation"
-          sh '''
-             timeout 800 bash -x ./workloads/jenkins/scripts/test-monitoring.sh
-          '''
-
-          echo "Test Dashboard installation"
-          sh '''
-             timeout 180 bash -x ./workloads/jenkins/scripts/test-dashboard.sh
-          '''
-
-          echo "Test Kubeflow pipeline"
-          sh '''
-             timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
-          '''
-
-          echo "Start new virtual environment pre-Slurm checks"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
-          '''
-
-          echo "Set up Slurm"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/test-setup-slurm.sh
-          '''
-
-          echo "Get Slurm Cluster Status"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/get-slurm-debug.sh
-          '''
-
-          echo "Test Slurm"
-          sh '''
-            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-job.sh
-          '''
-
-          echo "Test NFS"
-          sh '''
-            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-nfs-mount.sh
-          '''
-
-          echo "Test MPI"
-          sh '''
-            timeout 60 bash -x ./workloads/jenkins/scripts/test-mpi-job.sh
-          '''
-
-          echo "Test GPU job"
-          sh '''
-            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
-          '''
-
-          echo "Test DCGM metrics"
-          sh '''
-             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
-          '''
-          
-          echo "Test Enroot"
-          sh '''
-            timeout 120 bash -x ./workloads/jenkins/scripts/test-slurm-enroot-job.sh
-          '''
-
-          echo "Reset repo and unmunge files"
-          sh '''
-            git reset --hard
-            rm -rf config
-          '''
-
-          echo "Tear down Vagrant before next cluster-up"
-          sh '''
-            pwd
-            cd virtual && ./vagrant_shutdown.sh
-          '''
-        }
-      }
-    }
-    stage('Cluster Up - Ubuntu 20.04') {
-      environment {
-        DEEPOPS_VAGRANT_OS = 'ubuntu'
-        DEEPOPS_OS_VERSION = '20.04'
-      }
-      steps {
-        // TODO: ideally lock should work with declared stages
-        lock(resource: null, label: 'gpu', quantity: 1, variable: 'GPUDATA') {
-          echo "Munge files for testing"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/munge-files.sh
-          '''
-
-          echo "Vagrant Up"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
-          '''
-
-          echo "Cluster Up"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/test-cluster-up.sh
-          '''
-
-          echo "Get K8S Cluster Status"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/get-k8s-debug.sh
-          '''
-
-          echo "Verify we can run a GPU job"
-          sh '''
-            timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
-          '''
-
-          echo "Verify ingress config"
-          sh '''
-             bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
-          '''
-
-          echo "Test Kubeflow installation"
-          sh '''
-             timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
-          '''
-
-          echo "Test Monitoring installation"
-          sh '''
-             timeout 800 bash -x ./workloads/jenkins/scripts/test-monitoring.sh
-          '''
-
-          echo "Test Dashboard installation"
-          sh '''
-             timeout 180 bash -x ./workloads/jenkins/scripts/test-dashboard.sh
-          '''
-
-          echo "Test Kubeflow pipeline"
-          sh '''
-             timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
-          '''
-
-          echo "Start new virtual environment pre-GPU Operator checks"
+          echo "Start new virtual environment pre-GPU Operator with existing software checks"
           sh '''
             bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
           '''
 
           echo "Cluster Up - MGMT Nodes"
           sh '''
-            export DEEPOPS_K8S_OPERATOR=true
+            export DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE=true
             bash -x ./workloads/jenkins/scripts/test-cluster-up.sh
           '''
 
           echo "Get K8S Cluster Status"
           sh '''
+            export DEEPOPS_K8S_OPERATOR=true
             bash -x ./workloads/jenkins/scripts/get-k8s-debug.sh
           '''
 
@@ -377,6 +136,11 @@ pipeline {
           sh '''
             export DEEPOPS_K8S_OPERATOR=true
             timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
+          '''
+
+          echo "Start new virtual environment pre-Slurm checks"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
           '''
 
           echo "Start new virtual environment pre-Slurm checks"
@@ -407,125 +171,8 @@ pipeline {
           echo "Test MPI"
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-mpi-job.sh
-          '''
-
-          echo "Test GPU job"
-          sh '''
-            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
-          '''
-
-          echo "Test DCGM metrics"
-          sh '''
-             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
           '''
           
-          echo "Test Enroot"
-          sh '''
-            timeout 120 bash -x ./workloads/jenkins/scripts/test-slurm-enroot-job.sh
-          '''
-
-          echo "Reset repo and unmunge files"
-          sh '''
-            git reset --hard
-            rm -rf config
-          '''
-
-          echo "Tear down Vagrant before next cluster-up"
-          sh '''
-            pwd
-            cd virtual && ./vagrant_shutdown.sh
-          '''
-        }
-      }
-    }
-    stage('Cluster Up - CentOS 8') {
-      environment {
-        DEEPOPS_VAGRANT_OS = 'centos'
-        DEEPOPS_OS_VERSION = '8'
-      }
-      steps {
-        // TODO: ideally lock should work with declared stages
-        lock(resource: null, label: 'gpu', quantity: 1, variable: 'GPUDATA') {
-          echo "Munge files for testing"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/munge-files.sh
-          '''
-
-          echo "Vagrant Up"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
-          '''
-
-          echo "Cluster Up"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/test-cluster-up.sh
-          '''
-
-          echo "Get K8S Cluster Status"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/get-k8s-debug.sh
-          '''
-
-          echo "Verify we can run a GPU job"
-          sh '''
-            timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
-          '''
-
-          echo "Verify ingress config"
-          sh '''
-             bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
-          '''
-
-          echo "Test Kubeflow installation"
-          sh '''
-             timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
-          '''
-
-          echo "Test Monitoring installation"
-          sh '''
-             timeout 800 bash -x ./workloads/jenkins/scripts/test-monitoring.sh
-          '''
-
-          echo "Test Dashboard installation"
-          sh '''
-             timeout 180 bash -x ./workloads/jenkins/scripts/test-dashboard.sh
-          '''
-
-          echo "Test Kubeflow pipeline"
-          sh '''
-             timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
-          '''
-
-          echo "Start new virtual environment pre-Slurm checks"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
-          '''
-
-          echo "Set up Slurm"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/test-setup-slurm.sh
-          '''
-
-          echo "Get Slurm Cluster Status"
-          sh '''
-            bash -x ./workloads/jenkins/scripts/get-slurm-debug.sh
-          '''
-
-          echo "Test Slurm"
-          sh '''
-            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-job.sh
-          '''
-
-          echo "Test NFS"
-          sh '''
-            timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-nfs-mount.sh
-          '''
-
-          echo "Test MPI"
-          sh '''
-            timeout 60 bash -x ./workloads/jenkins/scripts/test-mpi-job.sh
-          '''
-
           echo "Test Enroot"
           sh '''
             timeout 120 bash -x ./workloads/jenkins/scripts/test-slurm-enroot-job.sh
@@ -544,6 +191,18 @@ pipeline {
           echo "Test DCGM metrics"
           sh '''
              timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
+          '''
+
+          echo "Reset repo and unmunge files"
+          sh '''
+            git reset --hard
+            rm -rf config
+          '''
+
+          echo "Tear down Vagrant before next cluster-up"
+          sh '''
+            pwd
+            cd virtual && ./vagrant_shutdown.sh
           '''
         }
       }

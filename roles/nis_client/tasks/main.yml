@@ -1,0 +1,84 @@
+---
+- name: assert that variables are defined
+  fail:
+    msg: "Variable '{{ item }}' is not defined"
+  when: item not in vars
+  with_items:
+    - nis_domain
+    - nis_server
+
+- name: prevent daemons from starting when installing packages, particularly ypbind
+  copy:
+    src: policy-rc.d
+    dest: /usr/sbin/policy-rc.d
+    owner: root
+    group: root
+    mode: 0700
+  changed_when: false
+
+- name: install Ubuntu packages
+  apt: name=nis,rpcbind state=present
+  when: ansible_os_family == "Debian"
+
+- name: install CentOS NIS packages
+  yum: name=ypbind state=present
+  when: ansible_os_family == "RedHat"
+
+- name: ensure rpcbind is running
+  service: name=rpcbind state=started enabled=yes
+
+- name: set server
+  lineinfile:
+    dest: /etc/yp.conf
+    regexp: '^domain'
+    line: 'domain {{ nis_domain }} server {{ nis_server }}'
+  notify: "restart nis"
+
+- name: create default domain name file
+  file:
+    path: /etc/defaultdomain
+    owner: root
+    group: root
+    mode: "0644"
+    state: touch
+  changed_when: false
+
+- name: configure yp domainname
+  lineinfile:
+    dest: /etc/defaultdomain
+    regexp: '^'
+    line: '{{ nis_domain }}'
+  notify: "restart nis"
+
+- name: configure nsswitch.conf
+  lineinfile:
+    dest: /etc/nsswitch.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: '^passwd', line: 'passwd: files nis' }
+    - { regexp: '^group', line: 'group: files nis' }
+    - { regexp: '^shadow', line: 'shadow: files nis' }
+    - { regexp: '^automount', line: 'automount: files nis' }
+  notify: "restart nis"
+
+- name: make sure rpcbind is running
+  service: name=rpcbind state=started enabled=yes
+
+- name: Debian - make sure ypbind is running
+  service: name=nis state=started enabled=yes
+  when: ansible_os_family == "Debian"
+
+# ypbind will not successfull start on RedHat if there's no NIS server to
+# bind to, so we skip this in Molecule tests
+- name: RedHat - make sure ypbind is running
+  service: name=ypbind state=started enabled=yes
+  when: ansible_os_family == "RedHat"
+  tags:
+  - molecule-notest
+
+- name: remove file to prevent starting services at install time
+  file:
+    path: /usr/sbin/policy-rc.d
+    state: absent
+  changed_when: false

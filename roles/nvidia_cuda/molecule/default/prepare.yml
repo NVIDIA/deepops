@@ -1,0 +1,20 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+
+  - name: ensure man directories exist in minimal ubuntu image
+    file:
+      path: "/usr/share/man/man1"
+      owner: "root"
+      group: "root"
+      state: "directory"
+      mode: "0755"
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Ensure dependencies are present for apt key management
+    apt:
+      update_cache: yes
+      name: "gpg-agent"
+      state: present
+    when: ansible_distribution == "Ubuntu"

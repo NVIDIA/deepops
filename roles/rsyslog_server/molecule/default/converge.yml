@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include rsyslog_server"
+      include_role:
+        name: "rsyslog_server"

@@ -78,12 +78,13 @@
     state: directory
     owner: slurm
     mode: 0755
-  when: "{{ slurm_enable_ha }}"
+  when: slurm_enable_ha
 
 - name: configure slurm.conf
   template:
     src: "{{ slurm_conf_template }}"
     dest: "{{ slurm_config_dir }}/slurm.conf"
+    mode: "0644"
   notify:
   - restart slurmctld
   tags:
@@ -152,7 +153,7 @@
 
 - name: kill slurmctld
   command: killall slurmctld
-  ignore_errors: yes
+  failed_when: false
   when: slurm_downgrade
 
 - name: restart slurmctld

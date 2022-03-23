@@ -1,0 +1,36 @@
+---
+- name: centos 8 - ensure powertools installed
+  block:
+    - name: ensure prereq packages installed
+      yum:
+        name: "dnf-plugins-core"
+        state: "present"
+    - name: enable powertools
+      command: "yum config-manager --set-enabled powertools" # noqa command-instead-of-module
+      register: enable_powertools
+      changed_when: enable_powertools.rc != 0
+  when: (ansible_distribution == "CentOS") and (ansible_distribution_major_version == "8")
+
+- name: rhel 8 - ensure CRB repository is enabled
+  rhsm_repository:
+    name: "codeready-builder-for-rhel-8-x86_64-rpms"
+  when: (ansible_distribution == "Red Hat Enterprise Linux") and (ansible_distribution_major_version == "8")
+
+- name: debian - ensure apt cache is up to date
+  apt:
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+  changed_when: false
+
+- name: create a folder for go
+  file:
+    path: "{{ golang_install_dir }}"
+    recurse: yes
+
+- name: install golang explicitly
+  include_role:
+    name: gantsign.golang
+
+- name: install singularity
+  include_role:
+    name: abims_sbr.singularity

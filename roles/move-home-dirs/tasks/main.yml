@@ -1,6 +1,6 @@
 ---
 - name: find non-system users who need moving
-  shell: awk '-F:' '($1!="nobody")&&($1!="{{ tmp_user }}")&&($3>=1000){print $6,$1}' /etc/passwd | grep -v "^{{ move_home_dirs_new_root }}" | awk '{print $2}'
+  shell: set -o pipefail && awk '-F:' '($1!="nobody")&&($1!="{{ tmp_user }}")&&($3>=1000){print $6,$1}' /etc/passwd | grep -v "^{{ move_home_dirs_new_root }}" | awk '{print $2}'
   changed_when: false
   register: user_list
 

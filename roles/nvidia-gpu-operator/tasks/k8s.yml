@@ -1,0 +1,20 @@
+---
+# While we would prefer to use the Ansible helm module, it's broken! :-(
+# See https://github.com/ansible/ansible/pull/57897
+# Unfortunately this will not be fixed until Ansible 2.10 which is not yet released.
+# So for now we will run /usr/local/bin/helm commands directly...
+- name: install gpu-operator helm repo
+  command: /usr/local/bin/helm repo add nvidia "{{ gpu_operator_helm_repo }}"
+  changed_when: false
+
+- name: update helm repos
+  command: /usr/local/bin/helm repo update
+  changed_when: false
+
+- name: Remove existing GPU Operator labels to accommodate potenial configuration changes
+  command: kubectl label node --all nvidia.com/gpu.deploy.container-toolkit-  nvidia.com/gpu.deploy.dcgm- nvidia.com/gpu.deploy.dcgm-exporter- nvidia.com/gpu.deploy.device-plugin- nvidia.com/gpu.deploy.driver- nvidia.com/gpu.deploy.gpu-feature-discovery- nvidia.com/gpu.deploy.node-status-exporter- nvidia.com/gpu.deploy.operator-validator-
+  changed_when: false
+
+- name: install nvidia gpu operator
+  command: /usr/local/bin/helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --create-namespace --namespace {{ gpu_operator_namespace }} --set driver.version="{{ gpu_operator_driver_version }}" --set mig.strategy="{{ k8s_gpu_mig_strategy |lower }}" --set driver.enabled="{{ gpu_operator_enable_driver |lower }}" --set toolkit.enabled="{{ gpu_operator_enable_toolkit |lower }}" --set dcgm.enabled="{{ gpu_operator_enable_dcgm |lower }}" --set migManager.enabled="{{ gpu_operator_enable_migmanager |lower }}" --wait
+  changed_when: false

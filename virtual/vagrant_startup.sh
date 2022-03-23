@@ -8,7 +8,7 @@ VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # The default Vagrant Operating System is Ubuntu 18.04
 # To override thise, change these variables to a supported OS
 DEEPOPS_VAGRANT_OS=${DEEPOPS_VAGRANT_OS:-ubuntu}
-DEEPOPS_OS_VERSION=${DEEPOPS_OS_VERSION:-18.04}
+DEEPOPS_OS_VERSION=${DEEPOPS_OS_VERSION:-20.04}
 
 # Startup the specified VM OS, defaulting to Ubuntu
 
@@ -73,8 +73,12 @@ case "$ID" in
     export DEBIAN_FRONTEND=noninteractive
     # Install Vagrant & Dependencies for Debian Systems
 
-    export APT_DEPENDENCIES="build-essential sshpass qemu-kvm libvirt-bin libvirt-dev bridge-utils \
+    APT_DEPENDENCIES="build-essential sshpass qemu-kvm libvirt-dev bridge-utils \
       libguestfs-tools qemu ovmf virt-manager firewalld"
+    if [[ ! ${VERSION_ID} =~ ^20\.* ]]; then
+      APT_DEPENDENCIES=${APT_DEPENDENCIES}" libvirt-bin"
+    fi
+    export APT_DEPENDENCIES
 
     # shellcheck disable=SC2086
     if ! (dpkg -s $APT_DEPENDENCIES) >/dev/null 2>&1; then
@@ -90,7 +94,7 @@ case "$ID" in
 
     # Ensure we have permissions to manage VMs
     case "${VERSION_ID}" in
-      18.*)
+      18.* | 20.*)
         export LIBVIRT_GROUP="libvirt"
 	;;
       *)

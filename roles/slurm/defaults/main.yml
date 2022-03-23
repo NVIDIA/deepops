@@ -1,12 +1,13 @@
 epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
 epel_key_url: "https://getfedora.org/static/fedora.gpg"
 
+deepops_dir: /opt/deepops
 slurm_build_dir: /opt/deepops/build/slurm
 hwloc_build_dir: /opt/deepops/build/hwloc
 pmix_build_dir: /opt/deepops/build/pmix
 
 slurm_workflow_build: yes
-slurm_version: 21.08.0
+slurm_version: 21.08.5
 slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
 slurm_build_make_clean: no
 slurm_build_dir_cleanup: no
@@ -85,6 +86,11 @@ epilog_fileglob:
 
 # Disable clearing of shared memory when user login shell exits
 slurm_fix_shm: true
+
+# Configure pam_slurm_adopt to adopt processes from user SSH into a job cgroup
+slurm_enable_pam_slurm_adopt: true
+# Restrict user SSH access to only allow users with a running job
+slurm_restrict_node_access: true
 
 slurm_include_hwloc: yes
 hwloc_version: 2.5.0

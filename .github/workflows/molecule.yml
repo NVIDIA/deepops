@@ -1,0 +1,47 @@
+---
+name: test ansible roles with molecule
+on:
+  - push
+  - pull_request
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      max-parallel: 4
+      matrix:
+        deepops-role:
+          - cachefilesd
+          - facts
+          - kerberos_client
+          - lmod
+          - nis_client
+          - nfs
+          - nhc
+          - nvidia_dcgm
+          - openmpi
+          - openshift
+          - rsyslog_client
+          - rsyslog_server
+          - singularity_wrapper
+          - slurm
+          - spack
+    steps:
+      - name: check out repo
+        uses: actions/checkout@v2
+        with:
+          path: "${{ github.repository }}"
+      - name: set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install molecule[docker] docker ansible
+      - name: run molecule test
+        run: |
+          cd "${{ github.repository }}/roles"
+          ansible-galaxy role install --force -r ./requirements.yml
+          ansible-galaxy collection install --force -r ./requirements.yml
+          cd "${{ matrix.deepops-role }}"
+          molecule test

@@ -1,0 +1,24 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: openmpi-ubuntu-1804
+    image: geerlingguy/docker-ubuntu1804-ansible
+    pre_build_image: true
+  - name: openmpi-ubuntu-2004
+    image: geerlingguy/docker-ubuntu2004-ansible
+    pre_build_image: true
+  - name: openmpi-centos-7
+    image: geerlingguy/docker-centos7-ansible
+    pre_build_image: true
+#  - name: openmpi-centos-8
+#    image: geerlingguy/docker-centos8-ansible
+#    pre_build_image: true
+provisioner:
+  name: ansible
+  ansible_args:
+  - -vv
+verifier:
+  name: ansible

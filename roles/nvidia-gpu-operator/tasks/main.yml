@@ -1,50 +1,13 @@
 ---
-# vGPU support
-- block:
-  - name: Create namespace for GPU Operator resources
-    shell: kubectl create namespace {{ gpu_operator_namespace }} -o yaml --dry-run=client | kubectl apply -f -
-  - name: create local directory for gpu operator configuration
-    file:
-      path: "{{ gpu_operator_grid_config_dir }}"
-      state: directory
-      owner: "root"
-      group: "root"
-      mode: "0700"
-  - name: add gridd.conf config file from template
-    template:
-      src: "gridd.conf"
-      dest: "{{ gpu_operator_grid_config_dir }}/gridd.conf"
-      owner: "root"
-      group: "root"
-      mode: "0600"
-  - name: Create a docker gridd.conf license configmap
-    shell: kubectl create configmap licensing-config -n "{{ gpu_operator_namespace }}" --from-file="{{gpu_operator_grid_config_dir }}/gridd.conf" -o yaml --dry-run=client | kubectl apply -f -
-  - name: Create a docker secret for private GPU Operator containers
-    shell: kubectl create secret docker-registry registry-secret --docker-server='{{ gpu_operator_driver_registry }}' --docker-username='{{ gpu_operator_registry_username }}' --docker-password={{ gpu_operator_registry_password }} --docker-email={{ gpu_operator_registry_email }} -n {{ gpu_operator_namespace }} -o yaml --dry-run=client | kubectl apply -f -
-  - name: Set secret var for helm command line if specified
-    set_fact:
-      gpu_operator_registry_secret: --set driver.imagePullSecrets[0]="registry-secret"
-  - name: Set license config var for helm command line if specified
-    set_fact:
-      gpu_operator_license_var: --set driver.licensingConfig.configMapName=licensing-config
-  - name: Use NVAIE helm charts
-    set_fact:
-      gpu_operator_chart_name: "{{ gpu_operator_nvaie_chart_name }}"
-  - name: install NVAIE gpu-operator helm repo
-    command: /usr/local/bin/helm repo add nvaie "{{ gpu_operator_nvaie_helm_repo }}" --username='{{ gpu_operator_registry_username }}' --password="{{ gpu_operator_registry_password }}"
-  when: vgpu_grid_license_server != ""
+- name: Set GPU Operator flags for systems with preinstalled NVIDIA software (DGX, etc).
+  set_fact:
+    gpu_operator_enable_driver: false
+    gpu_operator_enable_toolkit: false
+  when: gpu_operator_preinstalled_nvidia_software
 
-# While we would prefer to use the Ansible helm module, it's broken! :-(
-# See https://github.com/ansible/ansible/pull/57897
-# Unfortunately this will not be fixed until Ansible 2.10 which is not yet released.
-# So for now we will run /usr/local/bin/helm commands directly...
-- name: install gpu-operator helm repo
-  command: /usr/local/bin/helm repo add nvidia "{{ gpu_operator_helm_repo }}"
+- include: k8s.yml
+  when: not gpu_operator_nvaie_enable
 
-- name: update helm repos
-  command: /usr/local/bin/helm repo update
+- include: nvaie.yml
+  when: gpu_operator_nvaie_enable
 
-# XXX: This currently installs into the default namespace, as per the GPU Operator docs
-# https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html
-- name: install nvidia gpu operator
-  command: /usr/local/bin/helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --set operator.defaultRuntime="{{ gpu_operator_default_runtime }}" --set driver.repository="{{ gpu_operator_driver_registry }}" --set driver.version="{{ gpu_operator_driver_version }}" {{ gpu_operator_registry_secret | default("") }} {{ gpu_operator_license_var | default("") }} --set mig.strategy="{{ k8s_gpu_mig_strategy }}" --wait

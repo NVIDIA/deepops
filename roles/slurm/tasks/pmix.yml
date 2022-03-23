@@ -8,6 +8,7 @@
   shell: "grep PMIX_NUMERIC_VERSION {{ pmix_install_prefix }}/include/pmix_version.h | awk '{print $3}' | tr -d 'x0'"
   register: pmix_info_version
   ignore_errors: yes
+  changed_when: pmix_info_version.rc != 0
 
 - name: don't build pmix if it's already installed, unless forced
   set_fact:
@@ -49,7 +50,7 @@
     - libpmix-dev
     - libpmix5
   when: ansible_distribution == 'Ubuntu'
-  ignore_errors: yes
+  failed_when: false
 
 - name: remove pmix packages
   yum:
@@ -60,12 +61,34 @@
     - pmix-libs
     - pmix
   when: ansible_os_family == 'RedHat'
-  ignore_errors: yes
+  failed_when: false
+
+- name: when building, try to uninstall first before downloading source
+  when: pmix_build
+  block:
+
+  - name: check that we have an old build dir
+    stat:
+      path: "{{ pmix_build_dir }}"
+    register: pmix_old_build_dir
+
+  - name: uninstall old verson
+    command: make -j uninstall
+    args:
+      chdir: "{{ pmix_build_dir }}"
+    ignore_errors: yes
+    when: pmix_old_build_dir.stat.exists
+
+  - name: remove old build dir
+    file:
+      path: "{{ pmix_build_dir }}"
+      state: absent
 
 - name: make pmix build directory
   file:
     path: "{{ pmix_build_dir }}"
     state: directory
+    mode: "0755"
   when: pmix_build
 
 - name: download pmix source
@@ -75,23 +98,14 @@
     dest: "{{ pmix_build_dir }}"
     extra_opts:
       - --strip-components=1
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
   when: pmix_build
-
-- name: uninstall old pmix version
-  command: make -j uninstall
-  args:
-    chdir: "{{ pmix_build_dir }}"
-  ignore_errors: yes
-  when: pmix_build
-  tags:
-    - uninstall
 
 - name: clean pmix src dir
   command: make distclean
   args:
     chdir: "{{ pmix_build_dir }}"
-  ignore_errors: yes
+  failed_when: false
   when: pmix_build
 
 - name: configure pmix

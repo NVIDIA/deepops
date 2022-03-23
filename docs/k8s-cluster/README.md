@@ -37,12 +37,16 @@ Instructions for deploying a GPU cluster with Kubernetes
    # (optional) Modify `config/group_vars/*.yml` to set configuration parameters
    ```
 
-   Note that as part of the kubernetes deployment process, the default behavior is to also deploy the [NVIDIA k8s-device-plugin](https://github.com/NVIDIA/k8s-device-plugin) for GPU support. The [GPU Operator](https://github.com/NVIDIA/gpu-operator) is an alternative deployment method, which will deploy the device plugin and leverage driver containers within kubernetes. To enable the GPU Operator in DeepOps...
+   Note that as part of the kubernetes deployment process, the default behavior is to also deploy the [NVIDIA k8s-device-plugin](https://github.com/NVIDIA/k8s-device-plugin) for GPU support. The [GPU Operator](https://github.com/NVIDIA/gpu-operator) is an alternative all-in-one deployment method, which will deploy the [device plugin](https://github.com/NVIDIA/k8s-device-plugin) and optionally includes GPU tooling such as driver containers, [GPU Feature Discovery](https://github.com/NVIDIA/gpu-feature-discovery),  [DCGM-Exporter](https://github.com/NVIDIA/dcgm-exporter) and [MIG Manager](https://github.com/NVIDIA/mig-parted). The default behavior of the [GPU Operator](https://github.com/NVIDIA/gpu-operator) in DeepOps is to deploy host-level drivers and NVIDIA software. To leverage driver containers as part of the GPU Operator, disable the `gpu_operator_preinstalled_nvidia_software` flag. To enable the GPU Operator in DeepOps...
 
    ```sh
    vi config/group_vars/k8s-cluster.yml
 
+   # Enable GPU Operator
    # set: deepops_gpu_operator_enabled: true
+
+   # Enable host-level drivers (must be 'true' for clusters with pre-installed NVIDIA drivers or DGX systems)
+   # set: gpu_operator_preinstalled_nvidia_software: true
    ```
 
 4. Verify the configuration
@@ -84,7 +88,7 @@ Instructions for deploying a GPU cluster with Kubernetes
 
 ## Using Kubernetes
 
-Now that Kubernetes is installed, consult the [Kubernetes Usage Guide](kubernetes-usage.md) for examples of how to use Kubernetes.
+Now that Kubernetes is installed, consult the [Kubernetes Usage Guide](kubernetes-usage.md) for examples of how to use Kubernetes or see the [example workloads](../../workloads/examples/k8s/README.md).
 
 ## Optional Components
 
@@ -130,9 +134,9 @@ Poll the Ceph status by running (this script will return when Ceph initializatio
 ./scripts/k8s/deploy_rook.sh -w
 ```
 
-#### NetApp Trident
+#### NetApp Astra Trident
 
-Deploy NetApp Trident for services that require persistent storage (such as Kubeflow). Note that you must have a NetApp storage system/instance in order to use Trident to provision persistent storage.
+Deploy NetApp Astra Trident for services that require persistent storage (such as Kubeflow). Note that you must have a supported NetApp storage system/instance/service in order to use Astra Trident to provision persistent storage.
 
 1. Set configuration parameters.
 
@@ -140,7 +144,7 @@ Deploy NetApp Trident for services that require persistent storage (such as Kube
    vi config/group_vars/netapp-trident.yml
    ```
 
-2. Deploy Trident using Ansible.
+2. Deploy Astra Trident using Ansible.
 
    ```sh
    # NOTE: If SSH requires a password, add: `-k`
@@ -149,7 +153,7 @@ Deploy NetApp Trident for services that require persistent storage (such as Kube
    ansible-playbook -l k8s-cluster playbooks/k8s-cluster/netapp-trident.yml
    ```
 
-3. Verify that Trident is running.
+3. Verify that Astra Trident is running.
 
    ```sh
    ./tridentctl -n deepops-trident version
@@ -161,9 +165,11 @@ Deploy NetApp Trident for services that require persistent storage (such as Kube
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 21.01.2        | 21.01.2        |
+   | 22.01.0        | 22.01.0        |
    +----------------+----------------+
    ```
+
+For more information on Astra Trident, please refer to the [official documentation](https://docs.netapp.com/us-en/trident/index.html).
 
 ### Monitoring
 

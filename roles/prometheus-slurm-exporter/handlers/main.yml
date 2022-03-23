@@ -8,4 +8,4 @@
   service:
     name: "{{ grafana_svc_name }}"
     state: restarted
-  ignore_errors: true
+  failed_when: false

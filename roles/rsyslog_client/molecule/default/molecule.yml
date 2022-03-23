@@ -1,0 +1,52 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: rsyslog-client-ubuntu-1804
+    image: geerlingguy/docker-ubuntu1804-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    tmpfs:
+    - /run
+    - /tmp
+    pre_build_image: true
+    privileged: true
+  - name: rsyslog-client-ubuntu-2004
+    image: geerlingguy/docker-ubuntu2004-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    tmpfs:
+    - /run
+    - /tmp
+    pre_build_image: true
+    privileged: true
+  - name: rsyslog-client-centos-7
+    image: geerlingguy/docker-centos7-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    tmpfs:
+    - /run
+    - /tmp
+    pre_build_image: true
+    privileged: true
+#  - name: rsyslog-client-centos-8
+#    image: geerlingguy/docker-centos8-ansible
+#    volumes:
+#      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+#    command: /sbin/init
+#    tmpfs:
+#    - /run
+#    - /tmp
+#    pre_build_image: true
+#    privileged: true
+provisioner:
+  name: ansible
+  ansible_args:
+  - -vv
+verifier:
+  name: ansible

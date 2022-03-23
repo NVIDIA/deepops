@@ -16,12 +16,12 @@
     - systemd-resolved
   when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == '16'
 
-- name: disable services (bionic)
+- name: disable services (bionic, focal)
   service:
     name: systemd-resolved
     state: stopped
     enabled: no
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == '18'
+  when: ansible_distribution == 'Ubuntu' and (ansible_distribution_major_version in ['18', '20'])
 
 - name: install /etc/resolv.conf
   template:

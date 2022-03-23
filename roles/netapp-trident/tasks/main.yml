@@ -11,6 +11,7 @@
   template:
     src: namespace.j2
     dest: '{{ deepops_dir }}/trident-installer/namespace.yaml'
+    mode: "0644"
   run_once: true
 
 - name: Create Trident namespace
@@ -24,13 +25,15 @@
 - name: Install Trident using Helm
   command: '/usr/local/bin/helm -n {{ trident_namespace }} install trident {{ deepops_dir }}/trident-installer/helm/trident-operator-{{ trident_version }}.tgz'
   run_once: true
+  changed_when: false
 
 - name: Copy backend config file(s) to control node
   template:
     src: backend.j2
     dest: '{{ deepops_dir }}/trident-installer/backend-{{ item.backendName }}.json'
+    mode: "0644"
   with_items: '{{ backends_to_create }}'
-  when: create_backends == true
+  when: create_backends
   run_once: true
 
 - name: Create Trident backend(s)
@@ -40,15 +43,16 @@
   delay: 30
   register: result
   until: result.rc == 0
-  when: create_backends == true
+  when: create_backends
   run_once: true
 
 - name: Copy StorageClass config file(s) to control node
   copy:
     content: '{{ item }}'
     dest: '{{ deepops_dir }}/trident-installer/sc-{{ item.metadata.name }}.yaml'
+    mode: "0644"
   with_items: '{{ storageClasses_to_create }}'
-  when: create_StorageClasses == true
+  when: create_StorageClasses
   run_once: true
 
 - name: Create StorageClasses
@@ -58,7 +62,7 @@
     name: '{{ item.metadata.name }}'
     filename: '{{ deepops_dir }}/trident-installer/sc-{{ item.metadata.name }}.yaml'
   with_items: '{{ storageClasses_to_create }}'
-  when: create_StorageClasses == true
+  when: create_StorageClasses
   run_once: true
 
 - name: Create volume snapshot CRDs
@@ -66,7 +70,7 @@
     state: present
     filename: '{{ item }}'
   with_items: '{{ volume_snapshot_CRD_manifest_URLs }}'
-  when: enable_volume_snapshots == true
+  when: enable_volume_snapshots
   run_once: true
 
 - name: Create snapshot controller
@@ -74,15 +78,16 @@
     state: present
     filename: '{{ item }}'
   with_items: '{{ snapshot_controller_manifest_URLs }}'
-  when: enable_volume_snapshots == true
+  when: enable_volume_snapshots
   run_once: true
 
 - name: Copy volume snapshot class config file(s) to control node
   copy:
     content: '{{ item }}'
     dest: '{{ deepops_dir }}/trident-installer/snapclass-{{ item.metadata.name }}.yaml'
+    mode: "0644"
   with_items: '{{ volume_snapshot_classes_to_create }}'
-  when: enable_volume_snapshots == true
+  when: enable_volume_snapshots
   run_once: true
 
 - name: Create volume snapshot classes
@@ -92,7 +97,7 @@
     name: '{{ item.metadata.name }}'
     filename: '{{ deepops_dir }}/trident-installer/snapclass-{{ item.metadata.name }}.yaml'
   with_items: '{{ volume_snapshot_classes_to_create }}'
-  when: enable_volume_snapshots == true
+  when: enable_volume_snapshots
   run_once: true
 
 - name: Fetch tridentctl from control node
@@ -100,7 +105,7 @@
     src: '{{ deepops_dir }}/trident-installer/tridentctl'
     dest: '{{ tridentctl_copy_to_directory }}'
     flat: yes
-  when: copy_tridentctl_to_localhost == true
+  when: copy_tridentctl_to_localhost
   run_once: true
 
 - name: Make tridentctl on localhost executable
@@ -109,4 +114,4 @@
   file:
     path: "{{ tridentctl_copy_to_directory }}/tridentctl"
     mode: '0755'
-  when: copy_tridentctl_to_localhost == true
+  when: copy_tridentctl_to_localhost

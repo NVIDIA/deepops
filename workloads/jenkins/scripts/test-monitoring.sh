@@ -35,6 +35,26 @@ if [ "${pass}" != "true" ]; then
 fi
 set -e # The loop is done, and we got debug if it failed, re-enable fail on error
 
+# Validate DCGM metrics are in Prometheus
+timeout=600
+time=0
+set +e # This polling is expected to fail, so remove the -e flag for the loop
+while [ ${time} -lt ${timeout} ]; do
+    curl -L "${prometheus_url}/api/v1/label/__name__/values" | grep DCGM_ && \
+    pass=true && break
+  let time=$time+15
+  sleep 15
+done
+
+# Fail if timed out
+if [ "${pass}" != "true" ]; then
+  echo "Timed out getting DCGM metrics in prometheus responses"
+  curl -L "${prometheus_url}/api/v1/label/__name__/values" # Print output for debug
+  exit 1
+fi
+set -e # The loop is done, and we got debug if it failed, re-enable fail on error
+
+
 # Verify that the polling option agrees that things are up
 ./scripts/k8s/deploy_monitoring.sh -w
 
@@ -74,6 +94,25 @@ if [ "${pass}" != "true" ]; then
   curl -s --raw -L "${prometheus_url}"
   curl -s --raw -L "${grafana_url}"
   curl -s --raw -L "${alertmanager_url}"
+  exit 1
+fi
+set -e # The loop is done, and we got debug if it failed, re-enable fail on error
+
+# Validate DCGM metrics are in Prometheus
+timeout=600
+time=0
+set +e # This polling is expected to fail, so remove the -e flag for the loop
+while [ ${time} -lt ${timeout} ]; do
+    curl -L "${prometheus_url}/api/v1/label/__name__/values" | grep DCGM_ && \
+    pass=true && break
+  let time=$time+15
+  sleep 15
+done
+
+# Fail if timed out
+if [ "${pass}" != "true" ]; then
+  echo "Timed out getting DCGM metrics in prometheus responses"
+  curl -L "${prometheus_url}/api/v1/label/__name__/values" # Print output for debug
   exit 1
 fi
 set -e # The loop is done, and we got debug if it failed, re-enable fail on error

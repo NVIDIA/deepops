@@ -1,0 +1,6 @@
+---
+rsyslog_server_tcp_port: 514
+rsyslog_server_udp_port: 514
+rsyslog_enable_journal: yes
+rsyslog_log_file_path: "/var/log/deepops-hosts"
+rsyslog_log_file_path_pattern: "{{ rsyslog_log_file_path }}/%HOSTNAME%/%$YEAR%-%$MONTH%-%$DAY%/syslog.log"

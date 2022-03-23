@@ -20,6 +20,7 @@
   command: ls -l {{ nhc_install_dir }}/sbin/nhc
   register: nhc_check
   ignore_errors: yes
+  changed_when: nhc_check.rc != 0
 
 - name: don't build if installed unless we force
   set_fact:
@@ -46,7 +47,7 @@
     url: "{{ nhc_src_url }}"
     dest: "{{ nhc_build_dir }}/nhc-{{ nhc_version }}.tar.xz"
     mode: "0644"
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
   when: nhc_build
 
 - name: extract nhc src

@@ -8,7 +8,7 @@
   yum:
     name: 
       - "{{ epel_package }}"
-    state: latest
+    state: present
 
 - name: add repo
   yum_repository:
