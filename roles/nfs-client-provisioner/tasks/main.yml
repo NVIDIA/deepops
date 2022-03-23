@@ -2,7 +2,7 @@
 # See the GitHub code repo: https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
 
 - name: install nfs-client-provisioner helm repo
-  command: /usr/local/bin/helm repo add --force-update "{{k8s_nfs_client_repo_name}}" "{{ k8s_nfs_client_helm_repo }}"
+  command: /usr/local/bin/helm repo add --force-update "{{ k8s_nfs_client_repo_name }}" "{{ k8s_nfs_client_helm_repo }}"
   changed_when: false
 
 - name: update helm repos
