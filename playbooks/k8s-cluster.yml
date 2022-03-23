@@ -87,6 +87,26 @@
   tags:
     - bootstrap
 
+# Un-hold container runtime packages on Ubuntu
+# In some cases, container runtime packages can be in the 'held' state, preventing
+# them from being removed and causing the install of the containerd runtime to fail
+- hosts: all
+  gather_facts: true
+  tasks:
+    - name: un-hold container runtime packages on Ubuntu
+      dpkg_selections:
+        name: "{{ item }}"
+        selection: purge
+      with_items:
+        - docker-ce
+        - docker-ce-cli
+        - docker-ce-rootless-extras
+        - containerd.io
+      when:
+        - container_manager is defined and container_manager != "docker"
+        - ansible_distribution == "Ubuntu"
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
 # Install Kubernetes
 # for configuration, see: config/group_vars/k8s-cluster.yml
 - include: ../submodules/kubespray/cluster.yml
