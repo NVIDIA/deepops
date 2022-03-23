@@ -40,4 +40,3 @@ dgx_configure_cachefilesd: true
 
 # NVIDIA CUDA driver branch
 dgx_cuda_driver_branch: "470"
-

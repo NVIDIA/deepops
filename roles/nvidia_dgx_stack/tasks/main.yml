@@ -28,7 +28,7 @@
 # DGX-1 uses hardware RAID
 - name: configure raid array on DGX-2 or DGX A100
   include_tasks: configure-raid.yml
-  when: 
+  when:
     - dgx_configure_raid_array
     - (ansible_product_name is search("DGX-2")) or (ansible_product_name is search("DGXA100"))
 

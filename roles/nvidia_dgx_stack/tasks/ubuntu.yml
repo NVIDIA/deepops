@@ -19,7 +19,7 @@
   apt:
     name: "{{ item }}"
     state: absent
-    purge: yes
+    purge: true
   with_items:
     - cuda-dcgm
     - cuda-driver
@@ -44,7 +44,7 @@
     - rdma_cm
     - qedr
   tags:
-  - molecule-notest
+    - molecule-notest
 
 - name: download and extract DGX OS repo files
   unarchive:
@@ -54,13 +54,13 @@
 
 - name: update apt cache
   apt:
-    update_cache: yes
+    update_cache: true
 
 - name: install DGX-1 packages for DGX OS 5
   apt:
     name: "{{ item }}"
     state: present
-    update_cache: yes
+    update_cache: true
   with_items:
     - "{{ G_DGX1_PKGS }}"
   when:
@@ -73,7 +73,7 @@
   apt:
     name: "{{ item }}"
     state: present
-    update_cache: yes
+    update_cache: true
   with_items:
     - "{{ G_DGX2_PKGS }}"
   when:
@@ -86,7 +86,7 @@
   apt:
     name: "{{ item }}"
     state: present
-    update_cache: yes
+    update_cache: true
   with_items:
     - "{{ G_DGX_A100_PKGS }}"
   when:
@@ -207,7 +207,7 @@
   systemd:
     name: "{{ item }}"
     state: stopped
-    enabled: no
+    enabled: false
   when:
     - dgx_disable_srp
   with_items:
@@ -239,6 +239,7 @@
   template:
     src: cachefilesd.conf.j2
     dest: /etc/cachefilesd.conf
+    mode: "0644"
   when: dgx_configure_cachefilesd
   notify:
     - restart cachefilesd
@@ -248,4 +249,4 @@
   systemd:
     name: docker
     state: restarted
-    enabled: yes
+    enabled: true

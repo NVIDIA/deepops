@@ -3,6 +3,7 @@
   file:
     path: "{{ dgx_raid_mount_path }}"
     state: directory
+    mode: "0755"
 
 - name: populate service facts
   service_facts:
@@ -13,14 +14,14 @@
     state: stopped
   when: '"cachefilesd.service" in services'
 
-- name: Configure RAID array
+- name: Configure RAID array  # noqa risky-shell-pipe
   shell: "yes | /usr/bin/configure_raid_array.py -c"
   args:
     creates: "{{ dgx_raid_array }}"
   notify:
     - restart cachefilesd
 
-- name: Force configuration of RAID array
+- name: Force configuration of RAID array  # noqa risky-shell-pipe
   shell: "yes | /usr/bin/configure_raid_array.py -c -f"
   notify:
     - restart cachefilesd

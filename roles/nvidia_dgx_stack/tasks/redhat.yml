@@ -9,9 +9,9 @@
 
 - name: Add epel repo
   yum:
-    name: 
+    name:
       - "{{ epel_package }}"
-    state: latest
+    state: present
 
 - name: Add DGX repo
   yum_repository:
@@ -24,21 +24,21 @@
   yum:
     name: "@DGX-1 Configurations"
     state: present
-    update_cache: yes
+    update_cache: true
   when: ansible_product_name is search("DGX-1")
 
 - name: Install packages
   yum:
     name: "@DGX-2 Configurations"
     state: present
-    update_cache: yes
+    update_cache: true
   when: ansible_product_name is search("DGX-2")
 
 - name: Install extra packages
   yum:
     name: "{{ dgx_extra_packages }}"
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: check kernel versions
   yum:
@@ -88,7 +88,7 @@
   yum:
     name: "{{ item }}"
     state: present
-    update_cache: yes
+    update_cache: true
   with_items:
     - docker
     - "@NVIDIA container runtime"
@@ -99,7 +99,7 @@
   yum:
     name: "{{ item }}"
     state: present
-    update_cache: yes
+    update_cache: true
   with_items:
     - python36
     - "@DGX System Management"
