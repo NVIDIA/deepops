@@ -3,7 +3,7 @@
 - include: ../bootstrap/bootstrap-openshift.yml
 
 # GPU operator
-- hosts: localhost
+- hosts: kube-master[0]
   become: yes
   tasks:
     - name: Install helm chart for GPU operator

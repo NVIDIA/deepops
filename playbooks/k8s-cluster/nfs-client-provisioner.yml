@@ -32,7 +32,7 @@
   tags:
     - nfs_software
 
-- hosts: localhost
+- hosts: kube-master[0]
   become: true
   tasks:
     - name: install nfs-client-provisioner
