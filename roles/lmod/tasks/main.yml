@@ -13,8 +13,8 @@
   yum:
     name: 
       - "{{ epel_package }}"
-    state: latest
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+    state: present
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
   when: ansible_os_family == "RedHat"
 
 - name: "install packages"
@@ -49,11 +49,17 @@
 
 - name: "mkdir software path"
   become: yes
-  file: path={{ sm_software_path }} state=directory
+  file:
+    path: "{{ sm_software_path }}"
+    state: directory
+    mode: "0755"
 
 - name: "mkdir module path"
   become: yes
-  file: path={{ sm_module_path }} state=directory 
+  file:
+    path: "{{ sm_module_path }}"
+    state: directory 
+    mode: 0755
 
 - name: "configure sh profile"
   become: yes
@@ -62,7 +68,7 @@
     dest: /etc/profile.d
     owner: root
     group: root
-    mode: 0777
+    mode: 0755
   tags:
     - configuration
 
@@ -73,7 +79,7 @@
     dest: /etc/profile.d
     owner: root
     group: root
-    mode: 0777
+    mode: 0755
   tags:
     - configuration
 
@@ -81,38 +87,44 @@
 - name: "bugfix for lmod posix_c"
   become: yes
   register: lmod_bugfix_posix
-  shell: |
-    ln -s -f /usr/lib/x86_64-linux-gnu/lua/5.1/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.1/posix.so
-    ln -s -f /usr/lib/x86_64-linux-gnu/lua/5.2/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.2/posix.so
-    ln -s -f /usr/lib/x86_64-linux-gnu/lua/5.3/posix_c.so /usr/lib/x86_64-linux-gnu/lua/5.3/posix.so
+  file:
+    src: "/usr/lib/x86_64-linux-gnu/lua/{{ item }}/posix_c.so"
+    dest: "/usr/lib/x86_64-linux-gnu/lua/{{ item }}/posix.so"
+    owner: "root"
+    group: "root"
+    state: "link"
+    force: true
   when: 
     - ansible_distribution == 'Ubuntu'
     - ansible_distribution_version == '18.04'
-  changed_when: lmod_bugfix_posix.rc != 0
+  with_items:
+    - "5.1"
+    - "5.2"
+    - "5.3"
 
 - name: "unset previous lmod setup"
-  shell: unset MODULEPATH_ROOT
+  shell: unset MODULEPATH_ROOT  # noqa command-instead-of-shell
   register: unset_lmod_bash
   args:
     executable: /bin/bash
   changed_when: unset_lmod_bash.rc != 0
 
 - name: "unset previous lmod setup"
-  shell: unsetenv MODULEPATH_ROOT
+  shell: unsetenv MODULEPATH_ROOT  # noqa command-instead-of-shell
   register: unset_lmod_csh
   args:
     executable: /bin/csh
   changed_when: unset_lmod_csh.rc != 0
 
 - name: "auto load lmod"
-  shell: . /etc/profile.d/z00_lmod.sh
+  shell: . /etc/profile.d/z00_lmod.sh  # noqa command-instead-of-shell
   register: load_lmod_bash
   args:
     executable: /bin/bash
   changed_when: load_lmod_bash.rc != 0
 
 - name: "auto load lmod "
-  shell: source /etc/profile.d/z00_lmod.csh
+  shell: source /etc/profile.d/z00_lmod.csh  # noqa command-instead-of-shell
   register: load_lmod_csh
   args:
     executable: /bin/csh

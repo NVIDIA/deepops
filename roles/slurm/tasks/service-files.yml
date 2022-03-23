@@ -4,18 +4,20 @@
     src: "{{ slurm_build_dir }}/etc/{{ item }}"
     dest: "/etc/systemd/system/{{ item }}"
     remote_src: yes
+    mode: "0644"
   with_items:
     - slurmctld.service
     - slurmdbd.service
   when: is_controller
-  ignore_errors: yes
+  failed_when: false
 
 - name: copy service files
   copy:
     src: "{{ slurm_build_dir }}/etc/{{ item }}"
     dest: "/etc/systemd/system/{{ item }}"
     remote_src: yes
+    mode: "0644"
   with_items:
     - slurmd.service
   when: is_compute
-  ignore_errors: yes
+  failed_when: false

@@ -1,1 +1,2 @@
 sm_files_path: "{{ sm_prefix }}/easybuild_files"
+sm_files_repo_version: "4ef7ae6cc2284f69412a8db5e10dddd92024eeab"

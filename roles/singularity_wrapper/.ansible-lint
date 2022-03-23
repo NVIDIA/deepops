@@ -1,0 +1,2 @@
+skip_list:
+  - meta-no-info  # meta/main.yml should contain relevant info

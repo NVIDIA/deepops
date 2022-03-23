@@ -8,7 +8,7 @@
   command: dkms autoinstall
   when:
     - ansible_local['gpus']['count']
-    - is_dgx.stat.exists == True
+    - is_dgx.stat.exists
 
 - name: Modprobe nv_peer_mem
   modprobe:
@@ -16,7 +16,7 @@
     state: present
   when:
     - ansible_local['gpus']['count']
-    - is_dgx.stat.exists == True
+    - is_dgx.stat.exists
 
 - name: Start nv_peer_mem service
   service:
@@ -24,4 +24,4 @@
     state: started
   when:
     - ansible_local['gpus']['count']
-    - is_dgx.stat.exists == True
+    - is_dgx.stat.exists

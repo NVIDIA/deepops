@@ -3,6 +3,7 @@
   file:
     path: /usr/local/src/pyxis
     state: directory
+    mode: "0755"
   tags: pyxis
 
 - name: copy pyxis source
@@ -20,7 +21,9 @@
     argv:
       - make
       - clean
-  ignore_errors: true
+  register: pyxis_make_clean
+  failed_when: false
+  changed_when: pyxis_make_clean.rc == 0
   tags: pyxis
 
 - name: build pyxis
@@ -43,6 +46,7 @@
   template:
     src: etc/slurm/plugstack.conf
     dest: "{{ slurm_config_dir }}/"
+    mode: "0644"
   notify:
     - restart slurmctld
     - restart slurmd
@@ -52,6 +56,7 @@
   template:
     src: etc/slurm/plugstack.conf.d/pyxis.conf
     dest: "{{ slurm_config_dir }}/plugstack.conf.d/"
+    mode: "0644"
   notify:
     - restart slurmctld
     - restart slurmd

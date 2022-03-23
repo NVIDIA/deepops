@@ -27,4 +27,7 @@
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "20"
 
 - name: Copy the client configuration file
-  template: src=krb5.conf.j2 dest=/etc/krb5.conf
+  template: 
+    src: "krb5.conf.j2"
+    dest: "/etc/krb5.conf"
+    mode: "0644"
