@@ -276,8 +276,8 @@ install_dependencies
 setup_prom_monitoring
 
 # Install DCGM-Exporter and setup custom metrics, if needed
-# # GPU Device Plugin is installed into kube-system, GPU Operator installs it into gpu-operator-resources
-plugin_namespace=$( kubectl get pods -A -l app.kubernetes.io/instance=nvidia-device-plugin  --no-headers   --no-headers -o custom-columns=NAMESPACE:.metadata.namespace)
+# # GPU Device Plugin is installed into kube-system, GPU Operator installs it into gpu-operator-resources, use uniq for HA K8s clusters
+plugin_namespace=$( kubectl get pods -A -l app.kubernetes.io/instance=nvidia-device-plugin  --no-headers   --no-headers -o custom-columns=NAMESPACE:.metadata.namespace | uniq)
 if [ "${plugin_namespace}" == "kube-system" ] ; then
     # No GPU Operator DCGM-Exporter Stack
     setup_gpu_monitoring
