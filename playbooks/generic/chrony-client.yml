@@ -8,4 +8,4 @@
         name: DeepOps.chrony
 
     - name: Set timezone
-      shell: "timedatectl set-timezone {{ chrony_timezone }}"
+      shell: "timedatectl set-timezone {{ chrony_timezone|default('Etc/UTC') }}"
