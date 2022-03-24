@@ -2,7 +2,7 @@
 - name: Set GPU Operator flags for systems with preinstalled NVIDIA software (DGX, etc).
   set_fact:
     gpu_operator_enable_driver: false
-    gpu_operator_enable_toolkit: false
+    gpu_operator_enable_toolkit: true
   when: gpu_operator_preinstalled_nvidia_software
 
 - include: k8s.yml
