@@ -163,7 +163,7 @@ pipeline {
 
           echo "Test DCGM metrics"
           sh '''
-             timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
+             timeout 600 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
           '''
 
           echo "Reset repo and unmunge files"
