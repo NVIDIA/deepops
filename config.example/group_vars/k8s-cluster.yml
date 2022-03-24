@@ -10,6 +10,10 @@ kubeconfig_localhost: true
 helm_enabled: true
 tiller_node_selectors: "node-role.kubernetes.io/master=''"
 
+## Container runtime
+## docker for docker, crio for cri-o and containerd for containerd.
+container_manager: containerd
+
 artifacts_dir: "{{ inventory_dir }}/artifacts"
 
 # Reset Flex Volume path to the default. Kubespray changes the path, which breaks Rook
@@ -18,7 +22,7 @@ kubelet_flexvolumes_plugins_dir: /usr/libexec/kubernetes/kubelet-plugins/volume/
 
 # Provide option to use GPU Operator instead of setting up NVIDIA driver and
 # Docker configuration.
-deepops_gpu_operator_enabled: false
+deepops_gpu_operator_enabled: true
 
 # Install NVIDIA Driver and nvidia-docker on node (true), not as part of GPU Operator (driver container, nvidia-toolkit) (false)
 gpu_operator_preinstalled_nvidia_software: true
@@ -62,6 +66,7 @@ nfs_exports:
 ################################################################################
 kube_enable_container_registry: true
 docker_insecure_registries: "{{ groups['kube-master']|map('regex_replace', '^(.*)$', '\\1:5000')|list + ['registry.local:31500']}}"
+crio_insecure_registries: "{{ groups['kube-master']|map('regex_replace', '^(.*)$', '\\1:5000')|list + ['registry.local:31500']}}"
 docker_registry_mirrors: "{{ groups['kube-master'] | map('regex_replace', '^(.*)$', 'http://\\1:5000') | list }}"
 
 ################################################################################
