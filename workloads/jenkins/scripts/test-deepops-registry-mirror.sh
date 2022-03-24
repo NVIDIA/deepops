@@ -6,6 +6,9 @@ source workloads/jenkins/scripts/jenkins-common.sh
 
 set -ex
 
+echo "Test disabled until registry is ported to containerd"
+exit 0
+
 # Check that deepops-registry container is running
 ssh \
 	-o "StrictHostKeyChecking no" \
