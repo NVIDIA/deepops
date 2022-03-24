@@ -35,12 +35,36 @@ kube-node
 [slurm-master]
 virtual-login01
 
+[slurm-nfs]
+virtual-login01
+
 [slurm-node]
 virtual-gpu01
 
+# The following groups are used to break out individual cluster services onto
+# different nodes. By default, we put all these functions on the cluster head
+# node. To break these out into different nodes, replace the
+# [group:children] section with [group], and list individual nodes.
+[slurm-cache:children]
+slurm-master
+
+[slurm-nfs-client:children]
+slurm-node
+
+[slurm-metric:children]
+slurm-master
+
+[slurm-login:children]
+slurm-master
+
+# Single group for the whole cluster
 [slurm-cluster:children]
 slurm-master
 slurm-node
+slurm-cache
+slurm-nfs
+slurm-metric
+slurm-login
 
 ######
 # SSH connection configuration

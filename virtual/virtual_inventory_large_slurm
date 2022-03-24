@@ -46,6 +46,9 @@ virtual-gpu02
 [slurm-nfs]
 virtual-nfs01
 
+[slurm-nfs-client:children]
+slurm-node
+
 [slurm-cluster:children]
 slurm-master
 slurm-node
