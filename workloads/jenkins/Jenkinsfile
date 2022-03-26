@@ -122,11 +122,6 @@ pipeline {
           sh '''
             timeout 60 bash -x ./workloads/jenkins/scripts/test-slurm-gpu.sh
           '''
-
-          echo "Test DCGM metrics"
-          sh '''
-            timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
-          '''
         }
       }
     }

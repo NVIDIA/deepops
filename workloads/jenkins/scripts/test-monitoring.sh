@@ -123,7 +123,15 @@ set -e # The loop is done, and we got debug if it failed, re-enable fail on erro
 
 # Get some debug for Pods that did/didn't come up and verify DCGM metrics
 kubectl get all -n monitoring
-bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node # We use slurm-node here because it is GPU only, kube-node includes the mgmt plane
+
+# Check for dcgm-exporter pods that are not running
+if kubectl get pods -n gpu-operator-resources -l app=nvidia-dcgm-exporter | grep nvidia-dcgm-exporter | grep -v Running; then
+  echo "Some nvidia-dcgm-exporter pods are not in state Running"
+  exit 1
+fi
+
+# Commented out test-dcgm-metrics test, as with gpu-operator we no longer expose port 9400 directly on the nodes
+#bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node # We use slurm-node here because it is GPU only, kube-node includes the mgmt plane
 
 # Delete Monitoring
 ./scripts/k8s/deploy_monitoring.sh -d
