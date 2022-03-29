@@ -24,7 +24,7 @@ if [ ! -d "${DEEPOPS_CONFIG_DIR}" ]; then
 fi
 
 HELM_CHARTS_REPO_PROMETHEUS="${HELM_CHARTS_REPO_PROMETHEUS:-https://prometheus-community.github.io/helm-charts}"
-HELM_PROMETHEUS_CHART_VERSION="${HELM_PROMETHEUS_CHART_VERSION:-15.2.0}"
+HELM_PROMETHEUS_CHART_VERSION="${HELM_PROMETHEUS_CHART_VERSION:-34.5.0}"
 ingress_name="ingress-nginx"
 
 PROMETHEUS_YAML_CONFIG="${PROMETHEUS_YAML_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/monitoring.yml}"
@@ -152,6 +152,7 @@ function setup_prom_monitoring() {
             --set alertmanager.ingress.hosts[0]="alertmanager-${ingress_ip_string}" \
             --set prometheus.ingress.hosts[0]="prometheus-${ingress_ip_string}" \
             --set grafana.ingress.hosts[0]="grafana-${ingress_ip_string}" \
+	    --timeout 1200s \
             ${helm_prom_oper_args} \
             ${helm_kube_prom_args}
     fi
