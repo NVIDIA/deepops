@@ -131,10 +131,10 @@ if kubectl get pods -n gpu-operator-resources -l app=nvidia-dcgm-exporter | grep
 fi
 
 # When deploying the GPU Operator, DCGM is not made available via port 9400 and is instead a K8s service
-if [ "${DEEPOPS_K8S_OPERATOR}" == "true" ]; then
-  kubectl get svc -A # TODO: Look into if there is a trivial way we can verify DCGM metrics, not high priority because we check Prometheus above
-else
+if [ "$(kubectl get pods -n gpu-operator-resources -l app=nvidia-dcgm-exporter  -o name)" == "" ]; then
   bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node # We use slurm-node here because it is GPU only, kube-node includes the mgmt plane
+else
+  kubectl get svc -A # TODO: Look into if there is a trivial way we can verify DCGM metrics, not high priority because we check Prometheus above
 fi
 
 # Delete Monitoring
