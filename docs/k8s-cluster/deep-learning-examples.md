@@ -13,6 +13,7 @@ helm install <DEPLOYMENT_EXAMPLE_NAME> workloads/examples/k8s/deep-learning-exam
 ```
 
 Deployment modifications may be made using the `--set` flag or directly in the values.yaml.
+See the [values.yaml](../../workloads/examples/k8s/deep-learning-examples/values.yaml) file for more detail on the available configuration.
 
 ### Deployment Example Name Options:
 
