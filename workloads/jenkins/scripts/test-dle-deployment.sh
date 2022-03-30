@@ -1,10 +1,10 @@
 #!/bin/bash
-#source workloads/jenkins/scripts/jenkins-common.sh
+source workloads/jenkins/scripts/jenkins-common.sh
 
 set -ex
 
 # Ensure working directory is root
-#cd "${ROOT_DIR}" || exit 1
+cd "${ROOT_DIR}" || exit 1
 
 # Deploy a Deep Learning Example
 JENKINS_DLE="${JENKINS_DLE:-pytorch-detection-ssd}"
