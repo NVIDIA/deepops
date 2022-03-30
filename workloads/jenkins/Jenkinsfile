@@ -83,6 +83,11 @@ pipeline {
             timeout 180 bash -x ./workloads/jenkins/scripts/test-dashboard.sh
           '''
 
+          echo "Test running a Deep Learning Example"
+          sh '''
+            timeout 1200 bash -x ./workloads/jenkins/scripts/test-dle-deployment.sh
+          '''
+
           echo "Set up Slurm"
           sh '''
             bash -x ./workloads/jenkins/scripts/test-setup-slurm.sh

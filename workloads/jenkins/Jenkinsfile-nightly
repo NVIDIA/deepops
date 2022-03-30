@@ -67,6 +67,11 @@ pipeline {
              bash -x ./workloads/jenkins/scripts/test-local-registry.sh
           '''
 
+          echo "Test running a Deep Learning Example"
+          sh '''
+            timeout 1200 bash -x ./workloads/jenkins/scripts/test-dle-deployment.sh
+          '''
+
           echo "Verify rsyslog forwarding is working for the k8s cluster"
           sh '''
              bash -x ./workloads/jenkins/scripts/test-rsyslog-k8s.sh

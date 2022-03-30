@@ -186,6 +186,11 @@ for(int i = 0; i < axes.size(); i++) {
                 bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
               '''
 
+              echo "Test running a Deep Learning Example"
+              sh '''
+                timeout 1200 bash -x ./workloads/jenkins/scripts/test-dle-deployment.sh
+              '''
+
               echo "Test Kubeflow installation"
               sh '''
                 timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
