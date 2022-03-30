@@ -2,7 +2,7 @@ pipeline {
   agent any
   environment {
     DEEPOPS_NIGHTLY = 'true'
-    // DEEPOPS_FULL_INSTALL = 'true'
+    // DEEPOPS_FULL_INSTALL = ''
     // DEEPOPS_VAGRANT_OS = 'ubuntu'
     // DEEPOPS_OS_VERSION = '18.04'
   }
@@ -18,8 +18,8 @@ pipeline {
         DEEPOPS_NIGHTLY = 'true'
       }
       steps {
+        // The only difference between the nightly and multi-nightly Jenkinsfiles should be changing GPU quantity from 1 to 2
         // TODO: ideally lock should work with declared stages
-        // TODO: determine how to pass a variable into quantity and merge this with the nightly jenkinsfile
         lock(resource: null, label: 'gpu', quantity: 2, variable: 'GPUDATA') {
           echo "Reset repo and unmunge files"
           sh '''
@@ -43,8 +43,10 @@ pipeline {
             bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
           '''
 
-          echo "Cluster Up - MGMT Nodes"
+          echo "Cluster Up - MGMT Nodes - device plugin + docker"
           sh '''
+            export DEEPOPS_K8S_OPERATOR=false
+            export DEEPOPS_K8S_CONTAINER_MANAGER=docker
             bash -x ./workloads/jenkins/scripts/test-cluster-up.sh
           '''
 
@@ -75,12 +77,12 @@ pipeline {
 
           echo "Test Kubeflow installation"
           sh '''
-             timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
+             # TODO: timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
           '''
 
           echo "Test Monitoring installation"
           sh '''
-             timeout 2000 bash -x ./workloads/jenkins/scripts/test-monitoring.sh
+             timeout 1200 bash -x ./workloads/jenkins/scripts/test-monitoring.sh
           '''
 
           echo "Test Dashboard installation"
@@ -90,17 +92,175 @@ pipeline {
 
           echo "Test Kubeflow pipeline"
           sh '''
-             timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
+             # TODO: timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
           '''
 
-          echo "Start new virtual environment pre-GPU Operator checks"
+          echo "Start new virtual environment"
           sh '''
             bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
           '''
 
-          echo "Cluster Up - MGMT Nodes"
+          echo "Cluster Up - MGMT Nodes gpu operator + docker"
           sh '''
             export DEEPOPS_K8S_OPERATOR=true
+            export DEEPOPS_K8S_CONTAINER_MANAGER=docker
+            bash -x ./workloads/jenkins/scripts/test-cluster-up.sh
+          '''
+
+          echo "Get K8S Cluster Status"
+          sh '''
+            export DEEPOPS_K8S_OPERATOR=true
+            bash -x ./workloads/jenkins/scripts/get-k8s-debug.sh
+          '''
+
+          echo "Verify we can run a GPU job"
+          sh '''
+            export DEEPOPS_K8S_OPERATOR=true
+            timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
+          '''
+
+          echo "Verify ingress config"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
+          '''
+
+          echo "Verify local docker registry"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/test-local-registry.sh
+          '''
+
+          echo "Verify rsyslog forwarding is working for the k8s cluster"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/test-rsyslog-k8s.sh
+          '''
+
+          echo "Test Monitoring installation"
+          sh '''
+             timeout 1200 bash -x ./workloads/jenkins/scripts/test-monitoring.sh
+          '''
+
+          echo "Test Dashboard installation"
+          sh '''
+             timeout 180 bash -x ./workloads/jenkins/scripts/test-dashboard.sh
+          '''
+
+          echo "Start new virtual environment"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
+          '''
+
+          echo "Cluster Up - MGMT Nodes gpu operator + containerd"
+          sh '''
+            export DEEPOPS_K8S_OPERATOR=true
+            export DEEPOPS_K8S_CONTAINER_MANAGER=containerd
+            bash -x ./workloads/jenkins/scripts/test-cluster-up.sh
+          '''
+
+          echo "Get K8S Cluster Status"
+          sh '''
+            export DEEPOPS_K8S_OPERATOR=true
+            bash -x ./workloads/jenkins/scripts/get-k8s-debug.sh
+          '''
+
+          echo "Verify we can run a GPU job"
+          sh '''
+            export DEEPOPS_K8S_OPERATOR=true
+            timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
+          '''
+
+          echo "Verify ingress config"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
+          '''
+
+          echo "Verify local docker registry"
+          sh '''
+             echo "unsupported configuration" # TODO bash -x ./workloads/jenkins/scripts/test-local-registry.sh
+          '''
+
+          echo "Verify rsyslog forwarding is working for the k8s cluster"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/test-rsyslog-k8s.sh
+          '''
+
+          echo "Test Kubeflow installation"
+          sh '''
+             # TODO: timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
+          '''
+
+          echo "Test Monitoring installation"
+          sh '''
+             timeout 1200 bash -x ./workloads/jenkins/scripts/test-monitoring.sh
+          '''
+
+          echo "Test Dashboard installation"
+          sh '''
+             timeout 180 bash -x ./workloads/jenkins/scripts/test-dashboard.sh
+          '''
+
+          echo "Test Kubeflow pipeline"
+          sh '''
+             # TODO: timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
+          '''
+
+          echo "Start new virtual environment pre-GPU Operator with existing software checks"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
+          '''
+
+          echo "Cluster Up - MGMT Nodes gpu operator + docker + drivers"
+          sh '''
+            export DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE=true
+            export DEEPOPS_K8S_CONTAINER_MANAGER=docker
+            bash -x ./workloads/jenkins/scripts/test-cluster-up.sh
+          '''
+
+          echo "Get K8S Cluster Status"
+          sh '''
+            export DEEPOPS_K8S_OPERATOR=true
+            bash -x ./workloads/jenkins/scripts/get-k8s-debug.sh
+          '''
+
+          echo "Verify we can run a GPU job"
+          sh '''
+            export DEEPOPS_K8S_OPERATOR=true
+            timeout 500 bash -x ./workloads/jenkins/scripts/run-gpu-job.sh
+          '''
+
+          echo "Verify ingress config"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
+          '''
+
+          echo "Verify local docker registry"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/test-local-registry.sh
+          '''
+
+          echo "Verify rsyslog forwarding is working for the k8s cluster"
+          sh '''
+             bash -x ./workloads/jenkins/scripts/test-rsyslog-k8s.sh
+          '''
+
+          echo "Test Monitoring installation"
+          sh '''
+             timeout 1200 bash -x ./workloads/jenkins/scripts/test-monitoring.sh
+          '''
+
+          echo "Test Dashboard installation"
+          sh '''
+             timeout 180 bash -x ./workloads/jenkins/scripts/test-dashboard.sh
+          '''
+
+          echo "Start new virtual environment"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
+          '''
+
+          echo "Cluster Up - MGMT Nodes gpu operator + containerd + drivers"
+          sh '''
+            export DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE=true
+            export DEEPOPS_K8S_CONTAINER_MANAGER=containerd
             bash -x ./workloads/jenkins/scripts/test-cluster-up.sh
           '''
 
