@@ -12,8 +12,7 @@ JENKINS_DLE_NODEPORT="30888"
 
 if ! which helm; then
 	echo "helm command not available"
-	echo "skipping this test (non-critical)"
-	exit 0
+	exit 1
 fi
 
 helm install \
@@ -25,8 +24,7 @@ helm install \
 
 if [ $? -ne 0 ]; then
 	echo "Failed to deploy DLE"
-	echo "skipping this test (non-critical)"
-	exit 0
+	exit 1
 fi
 
 sleep 60
@@ -34,13 +32,11 @@ sleep 60
 # Test that we can ping the endpoint
 if ! curl http://10.0.0.2${GPU01}:${JENKINS_DLE_NODEPORT}/ 2>&1 >/dev/null ; then
 	echo "Failed to ping Jupyter notebook"
-	echo "skipping this test (non-critical)"
-	exit 0
+	exit 1
 fi
 
 # Remove the DLE
 if ! helm uninstall "${JENKINS_DLE}"; then
 	echo "Failed to uninstall DLE"
-	echo "skipping this test (non-critical)"
-	exit 0
+	exit 1
 fi
