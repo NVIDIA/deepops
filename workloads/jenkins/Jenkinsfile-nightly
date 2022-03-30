@@ -77,7 +77,7 @@ pipeline {
 
           echo "Test Kubeflow installation"
           sh '''
-             timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
+             # TODO: timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
           '''
 
           echo "Test Monitoring installation"
@@ -92,7 +92,7 @@ pipeline {
 
           echo "Test Kubeflow pipeline"
           sh '''
-             timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
+             # TODO: timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
           '''
 
           echo "Start new virtual environment"
@@ -185,7 +185,7 @@ pipeline {
 
           echo "Test Kubeflow installation"
           sh '''
-             timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
+             # TODO: timeout 4000 bash -x ./workloads/jenkins/scripts/test-kubeflow.sh
           '''
 
           echo "Test Monitoring installation"
@@ -200,7 +200,7 @@ pipeline {
 
           echo "Test Kubeflow pipeline"
           sh '''
-             timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
+             # TODO: timeout 1500 bash -x ./workloads/jenkins/scripts/test-kubeflow-pipeline.sh
           '''
 
           echo "Start new virtual environment pre-GPU Operator with existing software checks"
