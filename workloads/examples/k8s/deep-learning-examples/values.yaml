@@ -1,6 +1,8 @@
 exampleName: pytorch-detection-efficientdet
 registryName: registry.local
 registryPort: 31500
+internalRegistryName: docker-registry.deepops-docker
+internalRegistryPort: 5000
 jupyterNodePort: 30888
 resources:
   limits:
