@@ -1,7 +1,27 @@
 exampleName: pytorch-detection-efficientdet
+
+# registryName/registryPort are the hostname and port for the container
+# registry, as seen from the kubernetes node context.
+#
+# It should be reachable so that kubernetes can use it to pull containers.
 registryName: registry.local
 registryPort: 31500
+
+# internalRegistryName/internalRegistryPort are the hostname and port for the
+# container registry, as seen from the Kubernetes pod context.
+#
+# These may be different from registryName/registryPort only if the registry
+# is hosted within the cluster itself, such as in the default case of a local
+# registry created by DeepOps.
+internalRegistryName: docker-registry.deepops-docker
+internalRegistryPort: 5000
+
+# NodePort for accessing Jupyter notebooks launched by the Deep Learning
+# Example you're launching. If you want to launch multiple examples
+# simultaenously, you should ensure each is using a unique port.
 jupyterNodePort: 30888
+
+# Resource request for the Deep Learning Example Pod (by default, 1 GPU)
 resources:
   limits:
     nvidia.com/gpu: 1

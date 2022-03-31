@@ -39,103 +39,94 @@ spec:
           resources: {{- toYaml .Values.resources | nindent 12 }}
       initContainers:
         - name: {{ .Values.exampleName }}-init
-          image: docker:20.10.12-git
-          command: ['sh', '-c', 'git clone https://github.com/NVIDIA/DeepLearningExamples.git; cd $DEEP_LEARNING_EXAMPLE; docker build -t={{ .Values.registryName }}:{{ .Values.registryPort }}/{{ .Values.exampleName }} .; docker push "{{ .Values.registryName }}:{{ .Values.registryPort }}/{{ .Values.exampleName }}"']
-          securityContext:
-            privileged: true 
-          volumeMounts: 
-            - name: docker-graph-storage 
-              mountPath: /var/run/docker.sock
-          env:
-            - name: DOCKER_BUILDKIT
-              value: "1"
-            - name: DEEP_LEARNING_EXAMPLE
-              {{ if eq .Values.exampleName "cuda-optimized-fastspeech" }}
-              value: "/DeepLearningExamples/CUDA-Optimized/FastSpeech"
-              {{ else if eq .Values.exampleName "dglpytorch-drugdiscovery-se3transformer" }}
-              value: "/DeepLearningExamples/DGLPyTorch/DrugDiscovery/SE3Transformer"
-              {{ else if eq .Values.exampleName "kaldi-speechrecognition" }}
-              value: "/DeepLearningExamples/Kaldi/SpeechRecognition"
-              {{ else if eq .Values.exampleName "mxnet-classification" }}
-              value: "/DeepLearningExamples/MxNet/Classification/RN50v1.5"
-              {{ else if eq .Values.exampleName "pytorch-classification-convnets" }}
-              value: "/DeepLearningExamples/PyTorch/Classification/ConvNets"
-              {{ else if eq .Values.exampleName "pytorch-detection-efficientdet" }}
-              value: "/DeepLearningExamples/PyTorch/Detection/Efficientdet"
-              {{ else if eq .Values.exampleName "pytorch-detection-ssd" }}
-              value: "/DeepLearningExamples/PyTorch/Detection/SSD"
-              {{ else if eq .Values.exampleName "pytorch-forecasting-tft" }}
-              value: "/DeepLearningExamples/PyTorch/Forecasting/TFT"
-              {{ else if eq .Values.exampleName "pytorch-languagemodeling-bart" }}
-              value: "/DeepLearningExamples/PyTorch/LanguageModeling/BART"
-              {{ else if eq .Values.exampleName "pytorch-languagemodeling-bert" }}
-              value: "/DeepLearningExamples/PyTorch/LanguageModeling/BERT"
-              {{ else if eq .Values.exampleName "pytorch-languagemodeling-transformer-xl" }}
-              value: "/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL"
-              {{ else if eq .Values.exampleName "pytorch-recommendation-dlrm" }}
-              value: "/DeepLearningExamples/PyTorch/Recommendation/DLRM"
-              {{ else if eq .Values.exampleName "pytorch-recommendation-ncf" }}
-              value: "/DeepLearningExamples/PyTorch/Recommendation/NCF"
-              {{ else if eq .Values.exampleName "pytorch-segmentation-maskrcnn" }}
-              value: "/DeepLearningExamples/PyTorch/Segmentation/MaskRCNN"
-              {{ else if eq .Values.exampleName "pytorch-segmentation-nnunet" }}
-              value: "/DeepLearningExamples/PyTorch/Segmentation/nnUNet"
-              {{ else if eq .Values.exampleName "pytorch-speechrecognition-jasper" }}
-              value: "/DeepLearningExamples/PyTorch/SpeechRecognition/Jasper"
-              {{ else if eq .Values.exampleName "pytorch-speechrecognition-quartznet" }}
-              value: "/DeepLearningExamples/PyTorch/SpeechRecognition/QuartzNet"
-              {{ else if eq .Values.exampleName "pytorch-speechsynthesis-fastpitch" }}
-              value: "/DeepLearningExamples/PyTorch/SpeechSynthesis/FastPitch"
-              {{ else if eq .Values.exampleName "pytorch-speechsynthesis-tacotron2" }}
-              value: "/DeepLearningExamples/PyTorch/SpeechSynthesis/Tacotron2"
-              {{ else if eq .Values.exampleName "pytorch-translation-gnmt" }}
-              value: "/DeepLearningExamples/PyTorch/Translation/GNMT"
-              {{ else if eq .Values.exampleName "pytorch-translation-transformer" }}
-              value: "/DeepLearningExamples/PyTorch/Translation/Transformer"
-              {{ else if eq .Values.exampleName "tensorflow-classification-convnets" }}
-              value: "/DeepLearningExamples/TensorFlow/Classification/ConvNets"
-              {{ else if eq .Values.exampleName "tensorflow-detection-ssd" }}
-              value: "/DeepLearningExamples/TensorFlow/Detection/SSD"
-              {{ else if eq .Values.exampleName "tensorflow-languagemodeling-bert" }}
-              value: "/DeepLearningExamples/TensorFlow/LanguageModeling/BERT"
-              {{ else if eq .Values.exampleName "tensorflow-languagemodeling-transformerxl" }}
-              value: "/DeepLearningExamples/TensorFlow/LanguageModeling/Transformer-XL"
-              {{ else if eq .Values.exampleName "tensorflow-recommendation-ncf" }}
-              value: "/DeepLearningExamples/TensorFlow/Recommendation/NCF"
-              {{ else if eq .Values.exampleName "tensorflow-recommendation-vaecf" }}
-              value: "/DeepLearningExamples/TensorFlow/Recommendation/VAE-CF"
-              {{ else if eq .Values.exampleName "tensorflow-recommendation-wideanddeep" }}
-              value: "/DeepLearningExamples/TensorFlow/Recommendation/WideAndDeep"
-              {{ else if eq .Values.exampleName "tensorflow-segmentation-unet3dmedical" }}
-              value: "/DeepLearningExamples/TensorFlow/Segmentation/UNet_3D_Medical"
-              {{ else if eq .Values.exampleName "tensorflow-segmentation-unetindustrial" }}
-              value: "/DeepLearningExamples/TensorFlow/Segmentation/UNet_Industrial"
-              {{ else if eq .Values.exampleName "tensorflow-segmentation-unetmedical" }}
-              value: "/DeepLearningExamples/TensorFlow/Segmentation/UNet_Medical"
-              {{ else if eq .Values.exampleName "tensorflow-segmentation-vnet" }}
-              value: "/DeepLearningExamples/TensorFlow/Segmentation/VNet"
-              {{ else if eq .Values.exampleName "tensorflow-translation-gnmt" }}
-              value: "/DeepLearningExamples/TensorFlow/Translation/GNMT"
-              {{ else if eq .Values.exampleName "tensorflow2-efficientnet" }}
-              value: "/DeepLearningExamples/TensorFlow2/Classification/ConvNets/efficientnet"
-              {{ else if eq .Values.exampleName "tensorflow2-languagemodeling-bert" }}
-              value: "/DeepLearningExamples/TensorFlow2/LanguageModeling/BERT"
-              {{ else if eq .Values.exampleName "tensorflow2-languagemodeling-electra" }}
-              value: "/DeepLearningExamples/TensorFlow2/LanguageModeling/ELECTRA"
-              {{ else if eq .Values.exampleName "tensorflow2-recommendation-dlrm" }}
-              value: "/DeepLearningExamples/TensorFlow2/Recommendation/DLRM"
-              {{ else if eq .Values.exampleName "tensorflow2-recommendation-wideanddeep" }}
-              value: "/DeepLearningExamples/TensorFlow2/Recommendation/WideAndDeep"
-              {{ else if eq .Values.exampleName "tensorflow2-segmentation-maskrcnn" }}
-              value: "/DeepLearningExamples/TensorFlow2/Segmentation/MaskRCNN"
-              {{ else }}
-              value: "/DeepLearningExamples/PyTorch/Detection/Efficientdet"
-              {{ end }}
+          image: gcr.io/kaniko-project/executor:debug
+          args:
+            - "--insecure"
+            - "--context=git://github.com/NVIDIA/DeepLearningExamples.git"
+            - "--destination={{ .Values.internalRegistryName }}:{{ .Values.internalRegistryPort }}/{{ .Values.exampleName }}"
+            - "--verbosity=debug"
+            {{ if eq .Values.exampleName "cuda-optimized-fastspeech" }}
+            - "--context-sub-path=CUDA-Optimized/FastSpeech"
+            {{ else if eq .Values.exampleName "dglpytorch-drugdiscovery-se3transformer" }}
+            - "--context-sub-path=DGLPyTorch/DrugDiscovery/SE3Transformer"
+            {{ else if eq .Values.exampleName "kaldi-speechrecognition" }}
+            - "--context-sub-path=Kaldi/SpeechRecognition"
+            {{ else if eq .Values.exampleName "mxnet-classification" }}
+            - "--context-sub-path=MxNet/Classification/RN50v1.5"
+            {{ else if eq .Values.exampleName "pytorch-classification-convnets" }}
+            - "--context-sub-path=PyTorch/Classification/ConvNets"
+            {{ else if eq .Values.exampleName "pytorch-detection-efficientdet" }}
+            - "--context-sub-path=PyTorch/Detection/Efficientdet"
+            {{ else if eq .Values.exampleName "pytorch-detection-ssd" }}
+            - "--context-sub-path=PyTorch/Detection/SSD"
+            {{ else if eq .Values.exampleName "pytorch-forecasting-tft" }}
+            - "--context-sub-path=PyTorch/Forecasting/TFT"
+            {{ else if eq .Values.exampleName "pytorch-languagemodeling-bart" }}
+            - "--context-sub-path=PyTorch/LanguageModeling/BART"
+            {{ else if eq .Values.exampleName "pytorch-languagemodeling-bert" }}
+            - "--context-sub-path=PyTorch/LanguageModeling/BERT"
+            {{ else if eq .Values.exampleName "pytorch-languagemodeling-transformer-xl" }}
+            - "--context-sub-path=PyTorch/LanguageModeling/Transformer-XL"
+            {{ else if eq .Values.exampleName "pytorch-recommendation-dlrm" }}
+            - "--context-sub-path=PyTorch/Recommendation/DLRM"
+            {{ else if eq .Values.exampleName "pytorch-recommendation-ncf" }}
+            - "--context-sub-path=PyTorch/Recommendation/NCF"
+            {{ else if eq .Values.exampleName "pytorch-segmentation-maskrcnn" }}
+            - "--context-sub-path=PyTorch/Segmentation/MaskRCNN"
+            {{ else if eq .Values.exampleName "pytorch-segmentation-nnunet" }}
+            - "--context-sub-path=PyTorch/Segmentation/nnUNet"
+            {{ else if eq .Values.exampleName "pytorch-speechrecognition-jasper" }}
+            - "--context-sub-path=PyTorch/SpeechRecognition/Jasper"
+            {{ else if eq .Values.exampleName "pytorch-speechrecognition-quartznet" }}
+            - "--context-sub-path=PyTorch/SpeechRecognition/QuartzNet"
+            {{ else if eq .Values.exampleName "pytorch-speechsynthesis-fastpitch" }}
+            - "--context-sub-path=PyTorch/SpeechSynthesis/FastPitch"
+            {{ else if eq .Values.exampleName "pytorch-speechsynthesis-tacotron2" }}
+            - "--context-sub-path=PyTorch/SpeechSynthesis/Tacotron2"
+            {{ else if eq .Values.exampleName "pytorch-translation-gnmt" }}
+            - "--context-sub-path=PyTorch/Translation/GNMT"
+            {{ else if eq .Values.exampleName "pytorch-translation-transformer" }}
+            - "--context-sub-path=PyTorch/Translation/Transformer"
+            {{ else if eq .Values.exampleName "tensorflow-classification-convnets" }}
+            - "--context-sub-path=TensorFlow/Classification/ConvNets"
+            {{ else if eq .Values.exampleName "tensorflow-detection-ssd" }}
+            - "--context-sub-path=TensorFlow/Detection/SSD"
+            {{ else if eq .Values.exampleName "tensorflow-languagemodeling-bert" }}
+            - "--context-sub-path=TensorFlow/LanguageModeling/BERT"
+            {{ else if eq .Values.exampleName "tensorflow-languagemodeling-transformerxl" }}
+            - "--context-sub-path=TensorFlow/LanguageModeling/Transformer-XL"
+            {{ else if eq .Values.exampleName "tensorflow-recommendation-ncf" }}
+            - "--context-sub-path=TensorFlow/Recommendation/NCF"
+            {{ else if eq .Values.exampleName "tensorflow-recommendation-vaecf" }}
+            - "--context-sub-path=TensorFlow/Recommendation/VAE-CF"
+            {{ else if eq .Values.exampleName "tensorflow-recommendation-wideanddeep" }}
+            - "--context-sub-path=TensorFlow/Recommendation/WideAndDeep"
+            {{ else if eq .Values.exampleName "tensorflow-segmentation-unet3dmedical" }}
+            - "--context-sub-path=TensorFlow/Segmentation/UNet_3D_Medical"
+            {{ else if eq .Values.exampleName "tensorflow-segmentation-unetindustrial" }}
+            - "--context-sub-path=TensorFlow/Segmentation/UNet_Industrial"
+            {{ else if eq .Values.exampleName "tensorflow-segmentation-unetmedical" }}
+            - "--context-sub-path=TensorFlow/Segmentation/UNet_Medical"
+            {{ else if eq .Values.exampleName "tensorflow-segmentation-vnet" }}
+            - "--context-sub-path=TensorFlow/Segmentation/VNet"
+            {{ else if eq .Values.exampleName "tensorflow-translation-gnmt" }}
+            - "--context-sub-path=TensorFlow/Translation/GNMT"
+            {{ else if eq .Values.exampleName "tensorflow2-efficientnet" }}
+            - "--context-sub-path=TensorFlow2/Classification/ConvNets/efficientnet"
+            {{ else if eq .Values.exampleName "tensorflow2-languagemodeling-bert" }}
+            - "--context-sub-path=TensorFlow2/LanguageModeling/BERT"
+            {{ else if eq .Values.exampleName "tensorflow2-languagemodeling-electra" }}
+            - "--context-sub-path=TensorFlow2/LanguageModeling/ELECTRA"
+            {{ else if eq .Values.exampleName "tensorflow2-recommendation-dlrm" }}
+            - "--context-sub-path=TensorFlow2/Recommendation/DLRM"
+            {{ else if eq .Values.exampleName "tensorflow2-recommendation-wideanddeep" }}
+            - "--context-sub-path=TensorFlow2/Recommendation/WideAndDeep"
+            {{ else if eq .Values.exampleName "tensorflow2-segmentation-maskrcnn" }}
+            - "--context-sub-path=TensorFlow2/Segmentation/MaskRCNN"
+            {{ else }}
+            - "--context-sub-path=PyTorch/Detection/Efficientdet"
+            {{ end }}
       volumes:
         - name: dshm
           emptyDir: {}
-        - name: docker-graph-storage
-          hostPath:
-            path: /var/run/docker.sock
-            type: Socket
  
