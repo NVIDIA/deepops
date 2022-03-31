@@ -16,7 +16,8 @@ Map matrix_axes = [
   DEEPOPS_DEPLOYMENT_PLATFORM: ['slurm', 'k8s'],
   DEEPOPS_BRANCH: ['master'],
   DEEPOPS_REPO: ['https://github.com/NVIDIA/deepops.git'],
-  DEEPOPS_K8S_OPERATOR: ['', 'true']
+  DEEPOPS_K8S_OPERATOR: ['', 'true'],
+  DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE: ['', 'true']
 ]
 
 // Override default values as specified by the manual builds with a special case for 'all'
@@ -34,6 +35,9 @@ if("$DEEPOPS_K8S_OPERATOR" != "all") {
 }
 if("$DEEPOPS_OS_VERSION" != "all") {
   matrix_axes['DEEPOPS_OS_VERSION'] = ["$DEEPOPS_OS_VERSION"]
+}
+if("$DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE" != "all") {
+  matrix_axes['DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE'] = ["$DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE"]
 }
 
 // Special case for branch and repo, these cannot be blank
