@@ -17,7 +17,8 @@ Map matrix_axes = [
   DEEPOPS_BRANCH: ['master'],
   DEEPOPS_REPO: ['https://github.com/NVIDIA/deepops.git'],
   DEEPOPS_K8S_OPERATOR: ['', 'true'],
-  DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE: ['', 'true']
+  DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE: ['', 'true'],
+  DEEPOPS_K8S_CONTAINER_MANAGER: ['containerd', 'docker'] 
 ]
 
 // Override default values as specified by the manual builds with a special case for 'all'
@@ -46,6 +47,10 @@ if("$DEEPOPS_BRANCH" != "") {
 }
 if("$DEEPOPS_REPO" != "") {
   matrix_axes['DEEPOPS_REPO'] = ["$DEEPOPS_REPO"]
+}
+
+if("$DEEPOPS_K8S_CONTAINER_MANAGER" != "all") {
+  matrix_axes['DEEPOPS_K8S_CONTAINER_MANAGER'] = ["$DEEPOPS_K8S_CONTAINER_MANAGER"]
 }
 
 // Default values
