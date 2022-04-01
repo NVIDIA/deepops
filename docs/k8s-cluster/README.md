@@ -226,6 +226,10 @@ Kubeflow is a popular way for multiple users to run ML workloads. It exposes a J
 
 For more information on Kubeflow, please refer to the [official documentation](https://www.kubeflow.org/docs/about/kubeflow/).
 
+### NVIDIA Network Operator
+
+NVIDIA Network Operator leverages Kubernetes CRDs and Operator SDK to manage networking related components in Kuberenets cluster. High performance networking in Kuberentes requires many components, such as multus-CNI, device drivers and plugins to be installed correctly, NVIDIA network operator aims to manage all those necessary components automatically under one operator frame work to simply the deployment, operation and management of NVIDIA networking for Kubernetes.  To deploy NVIDIA network operator, please refer to the [NVIDIA Network Operator Deployment Guide in DeepOps](nvidia-network-operator.md), for more information on NVIDIA network operator, please refer to its [github](https://github.com/Mellanox/network-operator) page and this [solution guide](https://docs.nvidia.com/networking/display/COKAN10/Network+Operator).
+
 ## Cluster Maintenance
 
 DeepOps uses [Kubespray](https://github.com/kubernetes-sigs/kubespray) to deploy Kubernetes and therefore common cluster actions (such as adding nodes, removing them, draining and upgrading the cluster) should be performed with it. Kubespray is included as a submodule in the submodules/kubespray directory.
