@@ -1,49 +1,49 @@
-Deploy Nvidia Network Operator with DeepOps
+Deploy NVIDIA Network Operator with DeepOps
 ===========================================
 
 ## Overview
 
-   Nvidia Network Operator leverages Kubernetes CRDs and Operator SDK to manage networking related components in Kuberenets cluster. One of the key components is SR-IOV, which partitions a single PCIe hardware into multiple Virtual Functions (VFs) and attach them directly to Kubernetes pods without going through the virtualization layer on the hosts, thus enables the high performance communication between workloads. High performance networking in Kuberentes also requires a few other components, such as multus-CNI, device drivers and plugins, etc, Nvidia network operator aims to manage all those necessary components automatically under one operator frame work to simply the deployment, operation and management of Nvidia networking for Kubernetes.
+NVIDIA Network Operator leverages Kubernetes CRDs and Operator SDK to manage networking related components in Kuberenets cluster. One of the key components is SR-IOV, which partitions a single PCIe hardware into multiple Virtual Functions (VFs) and attach them directly to Kubernetes pods without going through the virtualization layer on the hosts, thus enables the high performance communication between workloads. High performance networking in Kuberentes also requires a few other components, such as multus-CNI, device drivers and plugins, etc, NVIDIA network operator aims to manage all those necessary components automatically under one operator frame work to simply the deployment, operation and management of NVIDIA networking for Kubernetes.
 
-Here are the key components that Nvidia network operator try to deploy together:
+Here are the key components that NVIDIA network operator try to deploy together:
 
 * SR-IOV Virtual Function (VF) activation
 * Multus CNI
 * SR-IOV CNI for kubernetes
 * SR-IOV device plugin for kubernetes
 * Multus CNI
-* Helm chart for Nvidia network operator
+* Helm chart for NVIDIA network operator
 
-This playbook also install the latest Kubeflow/MPI-Operator for multi-node MPI jobs.
+This playbook also install the latest Kubeflow/MPI-Operator, currently version v2beta1, for multi-node MPI jobs.
 
-Currently only Infiniband networking is supported in this implementation, RoCE networking support will be added shortly.
+Currently only InfiniBand networking is supported in this implementation, RoCE networking support will be added shortly.
 
 
 ## Requirements and Tested Environment:
 
 This playbook is developed and tested in following environments:
 
-* Nvidia DGX servers with DGX OS 5.1
+* NVIDIA DGX servers with DGX OS 5.1
 * Mellanox ConnectX-6 VPI HCA
 * Ansible 2.9.27 (deployed by DeepOps)
 * Kubernetes v1.21.6 (deployed by DeepOps)
 * Helm version v3.6.3 (deployed by DeepOps)
-* Nvidia network opertor v1.1.0
-* Infiniband networking. (Ethernet networking support will be added in the future.)
+* NVIDIA network opertor v1.1.0
+* InfiniBand networking. (Ethernet networking support will be added in the future.)
 
 ## Deployment Steps
 
-1. Make sure underlying Infiniband network works properly between Kubernetes nodes. It's recommended to run some bare metal micro benchmark testing to verify the IB network is working as expected.
+1. Make sure underlying InfiniBand network works properly between Kubernetes nodes. It's recommended to run some bare metal micro benchmark testing to verify the IB network is working as expected, for example, NVIDIA perftest package can be used for that purpose.
 
-2. Enabling IB port virtualization on IB opensm. This is done in an IB switch in our lab:
+2. Enabling IB port virtualization on IB opensm. This is done in an IB switch in the lab:
 
    ```sh
    IB_Switch (config) # ib sm virt enable
    ```
 
-3. Verify SRIOV is enabled in BIOS and HCAs.
+3. Verify SR-IOV is enabled in BIOS and HCAs.
 
-   Use following commands to verify SRIOV and VFs are enabled on ConnectX-6 HCAs, "0000:05:00.0" is the HCA's PCIe bus number.
+   Use following commands to verify SR-IOV and VFs are enabled on ConnectX-6 HCAs, "0000:05:00.0" is the HCA's PCIe bus number.
 
    ```sh
    sudo mlxconfig -d 0000:05:00.0 q | grep -i "sriov\|vfs"
@@ -78,7 +78,7 @@ This playbook is developed and tested in following environments:
     gpu01
     gpu02
     ```
-  - Add or modify user(s) across cluster:
+  - Add or modify user(s) across cluster if necessary:
     The ansible scripts assume a consistent user which has access to all nodes in the cluster.
      > Note: If a user with the same username, uid, and password exists on each node, skip this step. It is critical for the user to exist with the same uid across all nodes.
     
@@ -122,7 +122,7 @@ This playbook is developed and tested in following environments:
     gpu02    Ready    <none>   1d8h   v1.21.6
     nvidia@mgmt01:~$
     ```
-5. Deploy Nvidia Network Operator
+5. Deploy NVIDIA Network Operator
    Before runnng the playbook, please update "roles/nvidia-network-operator/vars/main.yml" file according to your hardware and network configuration, this is what we used in our value.yaml file:
    ```sh
    num_vf: 8
@@ -151,9 +151,9 @@ This playbook is developed and tested in following environments:
 
 The cluster is ready to run multi-node workload in the cluster, One last thing is to add related interface configuration to the job file before launching your job. 
 
-### Using SRIOV interfaces
+### Using SR-IOV interfaces
 
-Below is what is the section of the job file looks like after adding relevant SRIOV interface configuration. We built a docker private registry at 192.168.1.11 to host and manage our testing images, please refer to this docker [document](https://docs.docker.com/registry/deploying/) for more details.
+Below is what is the section of the job file looks like after adding relevant SR-IOV interface configuration. A docker private registry at 192.168.1.11 is used to host and manage the testing images in this example, please refer to this docker [document](https://docs.docker.com/registry/deploying/) for more details. Other container registry can be used as well.
 
 ```sh
 Worker:
@@ -180,13 +180,14 @@ Worker:
         - name: NCCL_NET_GDR_LEVEL
           value: "2"
 ```
+"nvidia.com/resibs1" is the network resource where SR-IOV is enabled, it's also defined in "roles/nvidia-network-operator/vars/main.yaml" in this repository.
 
 Now you can launch the job with your familiar Kubernetes command:
 
 ```sh
 nvidia@mgmt01:~$ kubectl create -f nccl-test.yaml
 ```
-### NCCL Allreduce Test Result
+### NCCL AllReduce Test Result
 
 Below is a NCCL allreduce test result run on a DGX-1 cluster with 4 x 100G HCA interfaces. NCCL deliveries near line rate performance:
 
@@ -229,5 +230,5 @@ Below is a NCCL allreduce test result run on a DGX-1 cluster with 4 x 100G HCA i
 ```
    Enjoy!
 
-   > Note: This is not a performance benchmark testing so we don't fine tune any hardware and software stack parameters. The results are considered as an out-of-box number that can be observed in regular customer environments with the solution we documented here. For more information about NCCL, see the following [blog post](https://devblogs.nvidia.com/scaling-deep-learning-training-nccl/).
+   > Note: This is not a performance benchmark testing so we don't fine tune any hardware and software stack parameters. The results are considered as an out-of-box number that can be observed in regular customer environments with the solution documented here. For more information about NCCL, see the following [blog post](https://devblogs.nvidia.com/scaling-deep-learning-training-nccl/).
 
