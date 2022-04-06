@@ -6,6 +6,7 @@
   shell: kubectl label --overwrite nodes {{ item }} node-role.kubernetes.io/worker=
   with_items: "{{ groups['kube-node']}}"
 
+## required as the DeepOps openshift role doesn't work
 - name: Install openshift
   shell: pip3 install openshift
 
