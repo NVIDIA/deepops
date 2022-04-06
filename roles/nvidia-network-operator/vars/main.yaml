@@ -7,7 +7,9 @@
 #
 
 nvidia_network_operator_version: "1.1.0"
+nvidia_network_operator_url: "https://mellanox.github.io/network-operator"
 mpi_operator_version: "v2beta1"
+mpi_raw_url: "https://raw.githubusercontent.com/kubeflow/mpi-operator/master/deploy/v2beta1"
 
 num_vf: 8
 vendor_id: "15b3"

@@ -12,7 +12,7 @@
 - name: Add helm repo for network operator
   kubernetes.core.helm_repository:
     name: mellanox
-    repo_url: "https://mellanox.github.io/network-operator"
+    repo_url: "{{nvidia_network_operator_url}}"
 
 - name: Deploy network operator helm chart
   kubernetes.core.helm:
@@ -36,5 +36,5 @@
 - name: Install latest Kubeflow MPI-Operator 
   k8s:
     state: present
-    definition: "{{ lookup('url', 'https://raw.githubusercontent.com/kubeflow/mpi-operator/master/deploy/{{mpi_operator_version}}/mpi-operator.yaml', split_lines=False) }}"
+    definition: "{{ lookup('url', '{{mpi_raw_url}}/mpi-operator.yaml', split_lines=False) }}"
   run_once: true
