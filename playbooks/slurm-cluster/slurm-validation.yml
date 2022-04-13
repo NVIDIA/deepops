@@ -1,6 +1,7 @@
 ---
 # Playbook designed to run a NCCL test across nodes in a cluster of DGXs
-# Example to run on NSL-B with two nodes:
+# Example to run on two nodes with no UCX, no HCOLL, and enp set for
+# out-of-band NCCL init:
 #   ansible-playbook -l slurm-cluster playbooks/slurm-cluster/slurm-validation.yml \
 #     -e '{num_nodes: 2}' \
 #     -e '{srun_exports: "NCCL_DEBUG=INFO,OMPI_MCA_pml=^ucx,OMPI_MCA_coll=^hcoll,NCCL_SOCKET_IFNAME=enp"}' \
