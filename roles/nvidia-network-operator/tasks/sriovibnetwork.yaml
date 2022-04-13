@@ -11,7 +11,7 @@
         {
           "type": "whereabouts",
           "datastore": "kubernetes",
-          "kubernetes": { 
+          "kubernetes": {
             "kubeconfig": "/etc/cni/net.d/whereabouts.d/whereabouts.kubeconfig"
            },
           "range": "{{ item.ip_addr }}",
