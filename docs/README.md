@@ -21,7 +21,7 @@ cd deepops
 git checkout tags/21.09
 ```
 
-3. Pick one of the [Deployment Options](/README.md#deployment-options) mentioned in the main [README](/README.md), following the installation instructions. For example, if deploying a hybrid cluster, all features of DeepOps may be deployed by following the [DGX POD Hybrid Cluster](deepops/dgx-pod.md) guide.
+3. Pick one of the [Deployment Options](/README.md#deployment-options) mentioned in the main [README](/README.md), following the installation instructions.
 
 ## Configuration
 
