@@ -7,6 +7,9 @@ collections:
 - name: community.general
   version: 4.7.0
 
+- name: community.docker
+  version: 2.3.0
+
 roles:
 
 - src: dev-sec.ssh-hardening
