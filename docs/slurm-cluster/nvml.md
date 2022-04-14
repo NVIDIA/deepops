@@ -56,3 +56,22 @@ NodeName=node01  Gres=gpu:1g.10gb:2,gpu:2g.20gb:2     CPUs=2 Sockets=2 CoresPerS
 
 To configure a custom `slurm.conf` file, instead of using the auto-generated file provided by DeepOps, see the documentation
 on [configuring DeepOps](../deepops/configuration.md) and on [using static Slurm configuration](./large-deployments.md#manually-generate-static-files-for-cluster-wide-configuration).
+
+
+## Configuring MIG
+
+NVIDIA Multi-Instance GPU (MIG) is supported on specific NVIDIA GPUs such as the A100 and the A30.
+This feature enables the GPU to be split into multiple distinct GPU instances, which are presented to the user as if they were distinct physical GPUs.
+This is helpful especially when scheduling applications which do not need a full physical GPU to get good performance.
+
+MIG is managed using the NVIDIA MIG Manager tool.
+To install and configure this tool, you can use the [nvidia-mig.yml](../../playbooks/nvidia-software/nvidia-mig.yml) playbook in DeepOps.
+For example,
+
+```
+ansible-playbook -l slurm-node -e mig_manager_profile="all-1g.10gb" playbooks/nvidia-software/nvidia-mig.yml
+```
+
+Where `mig_manager_profile` is a configuration profile for the NVIDIA `mig-parted` tool.
+
+For more information on configuring MIG, see the documentation for [NVIDIA mig-parted](https://github.com/NVIDIA/mig-parted).
