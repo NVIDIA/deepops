@@ -190,6 +190,7 @@ We edit `config/group_vars/slurm-cluster.yml` to specify our custom files:
 
 ```
 slurm_conf_template: "../../config/files/slurm.conf"
+nhc_config_template: "../../config/files/nhc.conf"
 ```
 
 Then run Ansible to push this configuration back out to the cluster:
