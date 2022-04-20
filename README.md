@@ -9,7 +9,7 @@ The DeepOps project encapsulates best practices in the deployment of GPU server 
 
 * An on-prem data center of NVIDIA DGX servers where DeepOps provides end-to-end capabilities to set up the entire cluster management stack
 * An existing cluster running Kubernetes where DeepOps scripts are used to deploy Kubeflow and connect NFS storage
-* An existing cluster that needs a resource manager / batch scheduler, where DeepOps is used to install Slurm, Kubernetes, or a hybrid of both
+* An existing cluster that needs a resource manager / batch scheduler, where DeepOps is used to install Slurm or Kubernetes
 * A single machine where no scheduler is desired, only NVIDIA drivers, Docker, and the NVIDIA Container Runtime
 
 Check out the [video tutorial](https://drive.google.com/file/d/1RNLQYlgJqE8JMv0np8SdEDqeCN2piavF/view) for how to use DeepOps to deploy Kubernetes and Kubeflow on a single DGX Station. This provides a good base test ground for larger deployments.
@@ -55,11 +55,12 @@ Consult the [DeepOps Slurm Deployment Guide](docs/slurm-cluster/) for instructio
 
 For more information on Slurm in general, refer to the [official Slurm docs](https://slurm.schedmd.com/overview.html).
 
-### DGX POD Hybrid Cluster
+### Hybrid clusters
 
-A hybrid cluster with both Kubernetes and Slurm can also be deployed. This is recommended for [DGX POD](https://www.nvidia.com/en-us/data-center/dgx-pod-reference-architecture/) and other setups that wish to make maximal use of the cluster.
+DeepOps doesn't currently test or support a configuration where both Kubernetes and Slurm are deployed on the same physical cluster.
+Instead, we recommend [NVIDIA Bright Cluster Manager](https://www.brightcomputing.com/brightclustermanager) as a solution which enables managing multiple workload managers within a single cluster,
+including Kubernetes, Slurm, Univa Grid Engine, and PBS Pro.
 
-Consult the [DeepOps DGX POD Deployment Guide](docs/deepops/dgx-pod.md) for step-by-step instructions on building a GPU-enabled hybrid cluster using DeepOps.
 
 ### Virtual
 
