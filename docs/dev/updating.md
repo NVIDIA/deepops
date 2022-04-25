@@ -25,6 +25,9 @@ Update release name and tag in: `README.md`
 
 ```sh
 cd submodules/kubespray
+git fetch --all
+git tag -l
+# pick the latest tag from the list
 git checkout v2.15.1
 ```
 
