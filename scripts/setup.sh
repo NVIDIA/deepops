@@ -4,8 +4,8 @@
 #   This script installs required dependencies on a system so it can run Ansible
 #   and initializes the DeepOps directory
 #
-# Can be run standalone with: curl -sL git.io/deepops | bash
-#                         or: curl -sL git.io/deepops | bash -s -- 19.07
+# Can be run standalone with: curl -sL bit.ly/nvdeepops | bash
+#                         or: curl -sL bit.ly/nvdeepops | bash -s -- 19.07
 
 # Determine current directory and root directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
