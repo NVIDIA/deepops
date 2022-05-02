@@ -1,23 +1,20 @@
 ---
-- name: Ubuntu | add pin file
-  copy:
-    src: "cuda-ubuntu.pin"
-    dest: "/etc/apt/preferences.d/cuda-repository-pin-600"
-    owner: "root"
-    group: "root"
-    mode: "0644"
-
-- name: Ubuntu | add key
+- name: Ubuntu | remove old key
   apt_key:
-    url: "{{ nvidia_driver_ubuntu_cuda_repo_gpgkey_url }}"
-    id: "{{ nvidia_driver_ubuntu_cuda_repo_gpgkey_id }}"
+    id: "{{ old_nvidia_driver_ubuntu_cuda_repo_gpgkey_id }}"
+    state: "absent"
+
+- name: Ubuntu | install CUDA keyring
+  apt:
+    deb: "{{ nvidia_driver_ubuntu_cuda_keyring_url }}"
+    state: "present"
   environment: "{{ proxy_env if proxy_env is defined else {} }}"
 
-- name: Ubuntu | add CUDA repo
-  apt_repository:
-    repo: "deb {{ nvidia_driver_ubuntu_cuda_repo_baseurl }} /"
-    update_cache: yes
+- name: Ubuntu | force apt update
+  apt:
+    update_cache: true
   environment: "{{ proxy_env if proxy_env is defined else {} }}"
+  changed_when: false
 
 - name: Ubuntu | install package
   apt:
