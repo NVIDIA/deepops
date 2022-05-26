@@ -18,8 +18,12 @@
 - name: "Deploy NetApp Trident"
   hosts: kube-master
   become: true
-  become_method: sudo
   vars_files:
-    - ../../config/group_vars/netapp-trident.yml
-  roles:
-    - role: netapp-trident
+  - ../../config/group_vars/netapp-trident.yml
+  environment:
+    PATH: /usr/local/bin/:{{ ansible_env.PATH }}
+  tasks:
+  - name: Include netapp trident role
+    run_once: true
+    include_role:
+      name: netapp-trident
