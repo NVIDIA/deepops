@@ -1,4 +1,4 @@
----
+
 # Create user with password (defined in config/group_vars/all.yml)
 - hosts: all
   become: true
@@ -21,7 +21,7 @@
 
     - name: Configure SSH to allow login with password
       include_role:
-        name: dev-sec.ssh-hardening
+        name: devsec.hardening.ssh_hardening
 
     - name: Set user password
       include_role:
