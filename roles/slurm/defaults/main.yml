@@ -93,7 +93,7 @@ slurm_enable_pam_slurm_adopt: true
 slurm_restrict_node_access: true
 
 slurm_include_hwloc: yes
-hwloc_version: 2.5.0
+hwloc_version: "2.7.1"
 hwloc_tag: "v{{ hwloc_version.split('.')[0] }}.{{ hwloc_version.split('.')[1] }}"
 hwloc_src_url: "https://download.open-mpi.org/release/hwloc/{{ hwloc_tag }}/hwloc-{{ hwloc_version }}.tar.gz"
 hwloc_install_prefix: /opt/deepops/hwloc
