@@ -1,5 +1,5 @@
 ---
-mofed_version: "5.4-3.1.0.0"
+mofed_version: "5.6-2.0.9.0"
 
 mofed_download_dir: "/tmp/mofed-install"
 mofed_download_dest: "mofed.tgz"
