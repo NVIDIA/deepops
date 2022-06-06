@@ -1,0 +1,69 @@
+---
+- name: include vars if ubuntu
+  include_vars: ubuntu.yml
+  when: ansible_distribution == "Ubuntu"
+
+- name: include vars if redhat-compatible
+  include_vars: rhel{{ ansible_distribution_major_version }}.yml
+  when: ansible_os_family == "RedHat"
+
+- name: ensure perl is installed
+  package:
+    name: perl
+    state: present
+
+- name: ensure rhel prereqs are installed
+  yum:
+    name: "{{ mofed_pkg_prereqs }}"
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: attempt to get installed ofed version  # noqa risky-shell-pipe
+  shell: ofed_info | head -n1
+  register: ofed_info
+  changed_when: ofed_info.rc != 0
+
+- name: default to skipping install
+  set_fact:
+    mofed_do_install: false
+
+- name: check ofed version against desired version  # noqa no-handler
+  set_fact:
+    mofed_do_install: true
+  when: ofed_info.changed or (mofed_version not in ofed_info.stdout)
+
+- name: create download directory
+  file:
+    path: "{{ mofed_download_dir }}"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  when: mofed_do_install
+
+- name: download mofed distribution
+  get_url:
+    url: "{{ mofed_download_url }}"
+    dest: "{{ mofed_download_dir }}/{{ mofed_download_dest }}"
+  when: mofed_do_install
+
+- name: extract mofed distribution
+  unarchive:
+    src: "{{ mofed_download_dir }}/{{ mofed_download_dest }}"
+    remote_src: true
+    dest: "{{ mofed_download_dir }}"
+  when: mofed_do_install
+
+- name: execute mlnxofedinstall
+  shell: 
+    cmd: yes | ./mlnxofedinstall {{ mofed_install_flags }}
+    chdir: "{{ mofed_download_dir }}/{{ mofed_download_name }}"
+  environment:
+    TERM: "xterm"
+  when: mofed_do_install
+
+- name: clean up install dir
+  file:
+    path: "{{ mofed_download_dir }}"
+    state: "absent"
+  when: mofed_do_install and mofed_cleanup_install_dir

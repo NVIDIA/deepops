@@ -1,0 +1,12 @@
+# Installs NVIDIA Mellanox OFED, a collection of software packages to enable
+# high-speed networking with InfiniBand or RoCE on NVIDIA Mellanox networking
+# adapters.
+#
+# This playbook automates the software installation process outlined in the
+# MLNX_OFED documentation, here:
+# https://community.mellanox.com/s/article/howto-install-mlnx-ofed-driver
+---
+- hosts: "{{ hostlist | default('all') }}"
+  become: yes
+  roles:
+  - mofed

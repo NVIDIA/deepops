@@ -1,0 +1,12 @@
+---
+mofed_distro: "rhel"
+mofed_pkg_prereqs: 
+- pciutils-libs 
+- numactl-libs 
+- gcc-gfortran
+- tcsh
+- libusbx
+- libnl3
+- tcl
+- fuse-libs
+- tk

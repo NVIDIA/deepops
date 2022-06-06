@@ -22,6 +22,7 @@ jobs:
           - openshift
           - rsyslog_client
           - rsyslog_server
+          - mofed
           - singularity_wrapper
           - slurm
           - spack
