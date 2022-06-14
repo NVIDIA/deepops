@@ -201,15 +201,12 @@ spec:
 Alternatively, a local private docker registry can also be used in an air-gapped environment where docker.io is not accessible, In following example, A docker private registry at 192.168.1.11 is used to host and manage the testing images, please refer to this docker [document](https://docs.docker.com/registry/deploying/) for more details.
 
 ```sh
-Worker:
-  replicas: 2
-  template:
-    metadata:
-      annotations:
-        k8s.v1.cni.cncf.io/networks: ibs1,ibp12s0
-    spec:
-      containers:
-      - image: 192.168.1.11:5000/nccl-test:latest
+
+           containers:
+           - image: 192.168.1.11:5000/nccl-test:latest
+             name: nccltest
+             imagePullPolicy: IfNotPresent
+
 ```
 
 Now you can launch the job with your familiar Kubernetes command:
