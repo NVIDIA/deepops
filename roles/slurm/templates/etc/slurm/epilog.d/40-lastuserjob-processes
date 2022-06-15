@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 set -ex
 
-# Retrieve slurm user processes
-ps h -u $SLURM_JOB_USER | while read PROCESS
-do
-    PID=`echo $PROCESS | awk '{print $1}'`
-    PNAME=`echo $PROCESS | awk '{print $5}'`
+if [ "$SLURM_JOB_USER" != root ]; then
+    # Retrieve slurm user processes
+    ps h -u $SLURM_JOB_USER | while read PROCESS
+    do
+        PID=`echo $PROCESS | awk '{print $1}'`
+        PNAME=`echo $PROCESS | awk '{print $5}'`
 
-    # Kill residual user processes except: user ssh connection to compute nodes
-    # "sshd:" : A process created for ssh connection
-    # "-bash" : A shell process which is child of ssh connection
-    if [ "$PNAME" != "-bash" -a "$PNAME" != "sshd:" ]; then
-        kill -9 $PID
-        logger -s -t slurm-epilog 'Killed residual user processes'
-    fi
-done
+        # Kill residual user processes except: user ssh connection to compute nodes
+        # "sshd:" : A process created for ssh connection
+        # "-bash" : A shell process which is child of ssh connection
+        if [ "$PNAME" != "-bash" -a "$PNAME" != "sshd:" ]; then
+            kill -9 $PID
+            logger -s -t slurm-epilog 'Killed residual user processes'
+        fi
+    done
+fi
