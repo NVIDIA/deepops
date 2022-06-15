@@ -73,6 +73,7 @@
     mode: 0755
   with_items:
     - "{{ slurm_config_dir }}"
+    - "{{ slurmctl_config_dir }}"
     - /var/spool/slurm/ctld
     - /var/log/slurm
 
@@ -87,8 +88,17 @@
 - name: configure slurm.conf
   template:
     src: "{{ slurm_conf_template }}"
-    dest: "{{ slurm_config_dir }}/slurm.conf"
+    dest: "{{ slurmctl_config_dir }}/slurm.conf"
     mode: "0644"
+  tags:
+  - config
+
+- name: complete slurm.conf
+  file:
+    path: "{{ slurm_config_dir }}/slurm.conf"
+    state: link
+    src: "{{ slurmctl_config_dir }}/slurm.conf"
+    force: yes
   notify:
   - restart slurmctld
   tags:

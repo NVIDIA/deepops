@@ -12,6 +12,7 @@ slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar
 slurm_build_make_clean: no
 slurm_build_dir_cleanup: no
 slurm_config_dir: /etc/slurm
+slurmctl_config_dir: /sw/.slurm
 slurm_sysconf_dir: /etc/sysconfig
 slurm_install_prefix: /usr/local
 slurm_configure:  './configure --prefix={{ slurm_install_prefix }} --disable-dependency-tracking --disable-debug --disable-x11 --enable-really-no-cray --enable-salloc-kill-cmd --with-hdf5=no --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --with-shared-libslurm --without-rpath --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}'
