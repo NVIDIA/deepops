@@ -73,9 +73,18 @@
     mode: 0755
   with_items:
     - "{{ slurm_config_dir }}"
-    - "{{ slurmctl_config_dir }}"
     - /var/spool/slurm/ctld
     - /var/log/slurm
+
+- name: create slurm directories for nfs sharing
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: slurm
+    mode: 0755
+  with_items:
+    - "{{ slurmctl_config_dir }}"
+  when: slurm_conf_symlink
 
 - name: create slurm HA directory
   file:
@@ -88,8 +97,20 @@
 - name: configure slurm.conf
   template:
     src: "{{ slurm_conf_template }}"
+    dest: "{{ slurm_config_dir }}/slurm.conf"
+    mode: "0644"
+  when: not slurm_conf_symlink
+  notify:
+  - restart slurmctld
+  tags:
+  - config
+
+- name: configure slurm.conf to nfs
+  template:
+    src: "{{ slurm_conf_template }}"
     dest: "{{ slurmctl_config_dir }}/slurm.conf"
     mode: "0644"
+  when: slurm_conf_symlink
   tags:
   - config
 
@@ -99,6 +120,7 @@
     state: link
     src: "{{ slurmctl_config_dir }}/slurm.conf"
     force: yes
+  when: slurm_conf_symlink
   notify:
   - restart slurmctld
   tags:
