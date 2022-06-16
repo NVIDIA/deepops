@@ -55,6 +55,9 @@ slurm_cgroup_conf_template: "etc/slurm/cgroup.conf"
 slurm_gres_conf_template: "etc/slurm/gres.conf"
 slurm_dbd_conf_template: "etc/slurm/slurmdbd.conf"
 
+# Flags for sharing slurm.conf among compute and control nodes
+slurm_conf_symlink: false
+
 # Controls the ability of the partition to execute more than one job at a time on each resource (node, socket or core depending upon the value of SelectTypeParameters). If resources are to be over-subscribed, avoiding memory over-subscription is very important. SelectTypeParameters should be configured to treat memory as a consumable resource and the --mem option should be used for job allocations. Sharing of resources is typically useful only when using gang scheduling (PreemptMode=suspend,gang). Possible values for OverSubscribe are "EXCLUSIVE", "FORCE", "YES", and "NO". Note that a value of "YES" or "FORCE" can negatively impact performance for systems with many thousands of running jobs. The default value is "NO". For more information see the following web pages: 
 # Sets partition OverSubscribe
 # To avoid sharing nodes, set to "EXCLUSIVE"
