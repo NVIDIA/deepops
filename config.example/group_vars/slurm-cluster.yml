@@ -91,6 +91,9 @@ slurm_enable_nfs_client_nodes: true
 nfs_server_group: "slurm-master[0]"
 nfs_client_group: "slurm-master[1:],slurm-node"
 
+# Flags for sharing slurm.conf among compute and control nodes
+slurm_conf_symlink: false
+
 ################################################################################
 # SOFTWARE MODULES (SM)                                                        #
 #   May be built with either EasyBuild or Spack                                #

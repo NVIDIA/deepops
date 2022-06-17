@@ -102,6 +102,19 @@
     src: "{{ slurm_conf_template }}"
     dest: "{{ slurm_config_dir }}/slurm.conf"
     mode: "0644"
+  when: not slurm_conf_symlink
+  notify:
+  - restart slurmd
+  tags:
+  - config
+
+- name: configure slurm.conf by symbolic link
+  file:
+    path: "{{ slurm_config_dir }}/slurm.conf"
+    state: link
+    src: "{{ slurmctl_config_dir }}/slurm.conf"
+    force: yes
+  when: slurm_conf_symlink
   notify:
   - restart slurmd
   tags:
