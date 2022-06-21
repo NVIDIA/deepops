@@ -110,6 +110,13 @@
   when: slurm_build
   block:
 
+    # This service should be stopped before uninstalling slurm
+  - name: stop docker slurm exporter service to prevent subfolder creation
+    service:
+      name: "docker.slurm-exporter.service"
+      state: stopped
+    when: slurm_build and (ansible_distribution == 'Ubuntu') and ("{{ansible_hostname}}" not in groups['slurm-node'])
+
   - name: check that we have an old build dir
     stat:
       path: "{{ slurm_build_dir }}"
@@ -125,6 +132,11 @@
   - name: remove old build dir
     file:
       path: "{{ slurm_build_dir }}"
+      state: absent
+
+  - name: remove old lib dir
+    file:
+      path: "{{ slurm_install_prefix }}/lib/slurm"
       state: absent
 
 - name: make build directory
