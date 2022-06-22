@@ -153,34 +153,61 @@ The cluster is ready to run multi-node workload in the cluster, One last thing i
 
 ### Using SR-IOV interfaces
 
-Below is what is the section of the job file looks like after adding relevant SR-IOV interface configuration. A docker private registry at 192.168.1.11 is used to host and manage the testing images in this example, please refer to this docker [document](https://docs.docker.com/registry/deploying/) for more details. Other container registry can be used as well.
+Below is what is the section of the job file looks like after adding relevant SR-IOV interface configuration. The Dockerfile used to build the "docker.io/deepops/mpi-nccl-test" container is also available in this DeepOps git repository.
 
 ```sh
-Worker:
-  replicas: 2
-  template:
-    metadata:
-      annotations:
-        k8s.v1.cni.cncf.io/networks: ibs1,ibp12s0
-    spec:
-      containers:
-      - image: 192.168.1.11:5000/nccl-test
-        name: nccl-benchmark
-        securityContext:
-          capabilities:
-            add: [ "IPC_LOCK" ]
-        resources:
-          limits:
-            nvidia.com/resibs1: "1"
-            nvidia.com/resibp12s0: "1"
-            nvidia.com/gpu: 8
-        env:
-        - name: NCCL_IB_DISABLE
-          value: "0"
-        - name: NCCL_NET_GDR_LEVEL
-          value: "2"
+
+apiVersion: kubeflow.org/v2beta1
+kind: MPIJob
+metadata:
+  name: nccltest
+spec:
+  slotsPerWorker: 8
+  runPolicy:
+    cleanPodPolicy: Running
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+         spec:
+           containers:
+           - image: docker.io/deepops/mpi-nccl-test:latest
+             name: nccltest
+             imagePullPolicy: IfNotPresent
+             command:
+             - sh
+             - "-c"
+             - |
+               /bin/bash << 'EOF'
+               mpirun --allow-run-as-root \
+                 -np 32 \
+                 -bind-to none -map-by slot \
+                 -x NCCL_DEBUG=INFO \
+                 -x NCCL_ALGO=RING \
+                 -x NCCL_IB_DISABLE=0 \
+                 -x LD_LIBRARY_PATH \
+                 -x PATH \
+                 -mca pml ob1 \
+                 -mca btl self,tcp \
+                 -mca btl_tcp_if_include 192.168.0.0/16 \
+                 -mca oob_tcp_if_include 172.29.0.0/16 \
+                 /nccl_tests/build/all_reduce_perf -b 8 -e 4G -f2 -g 1 \
+                 && sleep infinity
+               EOF
+
 ```
 "nvidia.com/resibs1" is the network resource where SR-IOV is enabled, it's also defined in "roles/nvidia-network-operator/vars/main.yaml" in this repository.
+
+Alternatively, a local private docker registry can also be used in an air-gapped environment where docker.io is not accessible, In following example, A docker private registry at 192.168.1.11 is used to host and manage the testing images, please refer to this docker [document](https://docs.docker.com/registry/deploying/) for more details.
+
+```sh
+
+           containers:
+           - image: 192.168.1.11:5000/nccl-test:latest
+             name: nccltest
+             imagePullPolicy: IfNotPresent
+
+```
 
 Now you can launch the job with your familiar Kubernetes command:
 
@@ -189,44 +216,46 @@ nvidia@mgmt01:~$ kubectl create -f nccl-test.yaml
 ```
 ### NCCL AllReduce Test Result
 
-Below is a NCCL allreduce test result run on a DGX-1 cluster with 4 x 100G HCA interfaces. NCCL deliveries near line rate performance:
+Below is a NCCL allreduce test result run on between on a DGX A100 Kubernetes cluster between 2 nodes with 8 x 200G HCA (ConnectX-6 HDR) interfaces each. NCCL deliveries near line rate performance: NCCL bandwidth 188.53 GB/s between 8 interfaces translats to 188.53 Gbps/interfaces, 94.27% of theoretical maximum performance.
 
 ```sh
+#
 #                                                       out-of-place                       in-place
 #       size         count      type   redop     time   algbw   busbw  error     time   algbw   busbw  error
 #        (B)    (elements)                       (us)  (GB/s)  (GB/s)            (us)  (GB/s)  (GB/s)
-           8             2     float     sum    42.96    0.00    0.00  2e-07    32.87    0.00    0.00  1e-07
-          16             4     float     sum    37.39    0.00    0.00  1e-07    32.98    0.00    0.00  1e-07
-          32             8     float     sum    39.11    0.00    0.00  1e-07    34.82    0.00    0.00  1e-07
-          64            16     float     sum    41.81    0.00    0.00  1e-07    34.66    0.00    0.00  6e-08
-         128            32     float     sum    33.23    0.00    0.01  6e-08    38.19    0.00    0.01  6e-08
-         256            64     float     sum    38.90    0.01    0.01  6e-08    33.20    0.01    0.01  6e-08
-         512           128     float     sum    34.32    0.01    0.03  6e-08    32.05    0.02    0.03  6e-08
-        1024           256     float     sum    38.84    0.03    0.05  2e-07    37.46    0.03    0.05  2e-07
-        2048           512     float     sum    36.95    0.06    0.10  2e-07    37.23    0.06    0.10  2e-07
-        4096          1024     float     sum    39.67    0.10    0.19  5e-07    42.29    0.10    0.18  5e-07
-        8192          2048     float     sum    47.62    0.17    0.32  5e-07    45.39    0.18    0.34  5e-07
-       16384          4096     float     sum    45.50    0.36    0.68  5e-07    46.02    0.36    0.67  5e-07
-       32768          8192     float     sum    53.73    0.61    1.14  5e-07    58.91    0.56    1.04  5e-07
-       65536         16384     float     sum    62.27    1.05    1.97  5e-07    66.98    0.98    1.83  5e-07
-      131072         32768     float     sum    69.76    1.88    3.52  5e-07    74.26    1.76    3.31  5e-07
-      262144         65536     float     sum    72.19    3.63    6.81  5e-07    77.27    3.39    6.36  5e-07
-      524288        131072     float     sum    106.2    4.94    9.26  5e-07    104.7    5.01    9.39  5e-07
-     1048576        262144     float     sum    127.9    8.20   15.38  5e-07    126.9    8.26   15.49  5e-07
-     2097152        524288     float     sum    154.5   13.58   25.46  5e-07    153.4   13.67   25.63  5e-07
-     4194304       1048576     float     sum    228.7   18.34   34.38  5e-07    229.6   18.27   34.25  5e-07
-     8388608       2097152     float     sum    399.6   20.99   39.36  5e-07    407.6   20.58   38.59  5e-07
-    16777216       4194304     float     sum    751.9   22.31   41.84  5e-07    749.7   22.38   41.96  5e-07
-    33554432       8388608     float     sum   1437.3   23.35   43.77  5e-07   1431.7   23.44   43.94  5e-07
-    67108864      16777216     float     sum   2677.0   25.07   47.00  5e-07   2732.0   24.56   46.06  5e-07
-   134217728      33554432     float     sum   5292.9   25.36   47.55  5e-07   5300.1   25.32   47.48  5e-07
-   268435456      67108864     float     sum    10540   25.47   47.75  5e-07    10545   25.46   47.73  5e-07
-   536870912     134217728     float     sum    21099   25.45   47.71  5e-07    21010   25.55   47.91  5e-07
-  1073741824     268435456     float     sum    41998   25.57   47.94  5e-07    41949   25.60   47.99  5e-07
-  2147483648     536870912     float     sum    83868   25.61   48.01  5e-07    83730   25.65   48.09  5e-07
-  4294967296    1073741824     float     sum   167263   25.68   48.15  5e-07   167543   25.64   48.07  5e-07
+           8             2     float     sum    38.63    0.00    0.00  2e-07    38.85    0.00    0.00  1e-07
+          16             4     float     sum    38.14    0.00    0.00  1e-07    36.62    0.00    0.00  1e-07
+          32             8     float     sum    37.90    0.00    0.00  1e-07    40.26    0.00    0.00  1e-07
+          64            16     float     sum    40.47    0.00    0.00  1e-07    39.86    0.00    0.00  6e-08
+         128            32     float     sum    40.52    0.00    0.01  6e-08    40.00    0.00    0.01  6e-08
+         256            64     float     sum    39.99    0.01    0.01  6e-08    39.37    0.01    0.01  6e-08
+         512           128     float     sum    41.67    0.01    0.02  6e-08    39.85    0.01    0.02  6e-08
+        1024           256     float     sum    40.97    0.02    0.05  2e-07    49.81    0.02    0.04  2e-07
+        2048           512     float     sum    45.93    0.04    0.08  5e-07    44.64    0.05    0.09  5e-07
+        4096          1024     float     sum    49.16    0.08    0.16  5e-07    48.40    0.08    0.16  5e-07
+        8192          2048     float     sum    65.14    0.13    0.24  5e-07    53.92    0.15    0.28  5e-07
+       16384          4096     float     sum    57.43    0.29    0.53  5e-07    57.02    0.29    0.54  5e-07
+       32768          8192     float     sum    62.10    0.53    0.99  5e-07    61.67    0.53    1.00  5e-07
+       65536         16384     float     sum    77.12    0.85    1.59  5e-07    87.13    0.75    1.41  5e-07
+      131072         32768     float     sum    101.0    1.30    2.43  5e-07    113.0    1.16    2.17  5e-07
+      262144         65536     float     sum    121.5    2.16    4.04  5e-07    131.6    1.99    3.73  5e-07
+      524288        131072     float     sum    135.2    3.88    7.27  5e-07    127.7    4.11    7.70  5e-07
+     1048576        262144     float     sum    120.1    8.73   16.37  5e-07    119.3    8.79   16.48  5e-07
+     2097152        524288     float     sum    137.2   15.29   28.67  5e-07    139.7   15.01   28.14  5e-07
+     4194304       1048576     float     sum    165.8   25.29   47.43  5e-07    165.4   25.36   47.54  5e-07
+     8388608       2097152     float     sum    209.2   40.09   75.17  5e-07    207.4   40.45   75.84  5e-07
+    16777216       4194304     float     sum    301.9   55.57  104.19  5e-07    301.9   55.57  104.18  5e-07
+    33554432       8388608     float     sum    536.0   62.60  117.38  5e-07    531.0   63.20  118.49  5e-07
+    67108864      16777216     float     sum    918.0   73.11  137.08  5e-07    902.8   74.33  139.37  5e-07
+   134217728      33554432     float     sum   1603.7   83.69  156.92  5e-07   1579.6   84.97  159.31  5e-07
+   268435456      67108864     float     sum   2924.5   91.79  172.10  5e-07   2977.0   90.17  169.07  5e-07
+   536870912     134217728     float     sum   5601.4   95.85  179.71  5e-07   5620.3   95.52  179.11  5e-07
+  1073741824     268435456     float     sum    11085   96.87  181.62  5e-07    10994   97.67  183.13  5e-07
+  2147483648     536870912     float     sum    21551   99.64  186.83  5e-07    21577   99.53  186.61  5e-07
+  4294967296    1073741824     float     sum    42715  100.55  188.53  5e-07    42677  100.64  188.70  5e-07
 # Out of bounds values : 0 OK
-# Avg bus bandwidth    : 18.5822
+# Avg bus bandwidth    : 53.7098
+
 ```
    Enjoy!
 
