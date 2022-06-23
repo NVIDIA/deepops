@@ -106,16 +106,19 @@
   when: ansible_os_family == 'RedHat'
   failed_when: false
 
+- name: gather service facts
+  ansible.builtin.service_facts:
+
 - name: when building, try to uninstall first before downloading source
   when: slurm_build
   block:
-
     # This service should be stopped before uninstalling slurm
   - name: stop docker slurm exporter service to prevent subfolder creation
     service:
       name: "docker.slurm-exporter.service"
       state: stopped
-    when: slurm_build and (ansible_distribution == 'Ubuntu') and ("{{ansible_hostname}}" not in groups['slurm-node'])
+    when: (ansible_distribution == 'Ubuntu') and 
+      ("docker.slurm-exporter.service" in ansible_facts.services)
 
   - name: check that we have an old build dir
     stat:
@@ -229,3 +232,11 @@
     state: directory
     mode: 0755
     recurse: yes
+
+- name: start docker slurm exporter service again
+  service:
+    name: "docker.slurm-exporter.service"
+    state: restarted
+  when: (ansible_distribution == 'Ubuntu') and 
+      ("docker.slurm-exporter.service" in ansible_facts.services)
+
