@@ -31,3 +31,15 @@
   include_tasks: pyxis.yml
   when: slurm_install_pyxis
   tags: pyxis
+
+# Resize /run temporary file system, which is used to import docker image.
+#  - Default pyxis runtime_path is: /run/pyxis
+# If image is bigger than the file system, the importing will be failed
+- name: resize /run partition
+  mount:
+    name: /run
+    src: tmpfs
+    opts: size={{ pyxis_run_tmpfs_size }}
+    fstype: tmpfs
+    state: mounted
+  when: resize_run_partition

@@ -179,6 +179,12 @@ slurm_install_enroot: true
 slurm_install_pyxis: true
 slurm_pyxis_version: 0.11.1
 
+# /run is default partition of pyxis runtime_path
+resize_run_partition: false
+
+# /run tmpfs size. ubuntu default is 10%
+pyxis_run_tmpfs_size: 50%
+
 ################################################################################
 # Node Health Check                                                            #
 ################################################################################
