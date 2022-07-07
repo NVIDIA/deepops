@@ -19,7 +19,7 @@ slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 
 # Auto-detect GPUs using NVML
 # See docs/slurm-cluster/nvml.md for details.
-slurm_autodetect_nvml: false
+slurm_autodetect_nvml: true
 
 # Ensure hosts file generation only runs across slurm cluster
 hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]

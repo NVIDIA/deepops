@@ -47,7 +47,7 @@ slurm_resume_timeout: 900
 # Sets: GresTypes=gpu
 # Sets: Gres=gpu:{{ gpu_topology|count }}
 slurm_manage_gpus: true
-slurm_autodetect_nvml: false
+slurm_autodetect_nvml: true 
 
 # Configuration file templates to use for configuring Slurm.
 # The default values are relative paths that will point to files within the
