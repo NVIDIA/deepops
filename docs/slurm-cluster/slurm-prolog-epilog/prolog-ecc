@@ -1,5 +1,5 @@
 # Disable ECC if requested
-scontrol show job $Slurm_JOBID | grep Comment | grep -i ecc > /dev/null
+scontrol show job $SLURM_JOBID | grep Comment | grep -i ecc > /dev/null
 if [ $? -eq 0 ]; then
     logger -t PROLOG "Disabling ECC"
     nvidia-smi -e 0
