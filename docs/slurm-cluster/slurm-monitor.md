@@ -1,16 +1,22 @@
-# Slurm Monitoring
+# Slurm Monitor
+
+- [Slurm Monitor](#slurm-monitor)
+  - [Introduction](#introduction)
+  - [Exporters](#exporters)
+  - [Grafana](#grafana)
+  - [Prometheus](#prometheus)
+
+## Introduction
 
 By default DeepOps deploys a monitoring stack alongside Slurm. This can be disabled by setting `slurm_enable_monitoring` to `false`.
 
-
 DeepOps runs a `dcgm-exporter` container on all DGX nodes. This container exports various GPU utilization and metadata to a Prometheus database running on the `slurm-metric` nodes. The `slurm-metric` nodes also run a Grafana server that connects to the Prometheus database to visualize the data. Ad-hoc metric queries can be made against the Prometheus server, but monitoring is typically done through the dashboard on Grafana.
-
 
 ## Exporters
 
 A `node-exporter` and `dcgm-exporter` should be running on every node listed under `slurm-node`:
 
-```sh
+```bash
 # View the DCGM Exporter container on a DGX node
 $ sudo docker ps
 CONTAINER ID        IMAGE                              COMMAND                  CREATED             STATUS
@@ -33,26 +39,26 @@ In order to gain access to Grafana visit the url at http://\<slurm-metric ip\>:3
 
 The GPU dashboard provides the following metrics:
 
-* System Load
-* GPU Power Usage (by GPU)
-* GPU Power Total
-* System Memory Usage
-* GPU Temperature (by GPU)
-* GPU Average Temperature
-* PCIe Throughput
-* Disk Usage
-* GPU Memory Usage
-* GPU Utilization (by GPU)
-* GPU Total Utilization
-* Ethernet Throughput
-* Disk Throughput
-* GPU Mem Copy Utilization
-* GPU Average Memory Copy Utilization
-* Kernel
-* Hostname
-* System Total Power Draw
-* GPU SM Clocks
-* GPU Memory Clocks
+- System Load
+- GPU Power Usage (by GPU)
+- GPU Power Total
+- System Memory Usage
+- GPU Temperature (by GPU)
+- GPU Average Temperature
+- PCIe Throughput
+- Disk Usage
+- GPU Memory Usage
+- GPU Utilization (by GPU)
+- GPU Total Utilization
+- Ethernet Throughput
+- Disk Throughput
+- GPU Mem Copy Utilization
+- GPU Average Memory Copy Utilization
+- Kernel
+- Hostname
+- System Total Power Draw
+- GPU SM Clocks
+- GPU Memory Clocks
 
 Metrics are displayed per-node. To view utilization across nodes click the server selection drop-down in the top left and type or select the desired node names.
 
@@ -61,10 +67,11 @@ Metrics are displayed per-node. To view utilization across nodes click the serve
 ![Grafana GPU Node Selection](../img/slurm_monitoring_grafana05.png)
 
 The Slurm dashboard provides the following information about running jobs and the Slurm job queue:
-* Nodes & Node Status
-* Slurm Jobs & Job State
-* Slurm Agent Queue Size
-* Scheduler Threads & Backfill Depth Mean & Cycles
+
+- Nodes & Node Status
+- Slurm Jobs & Job State
+- Slurm Agent Queue Size
+- Scheduler Threads & Backfill Depth Mean & Cycles
 
 ![Grafana Slurm Dashboard](../img/slurm_monitoring_grafana06.png)
 

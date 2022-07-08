@@ -1,5 +1,16 @@
-Software modules for Slurm clusters
-===================================
+# Software Modules
+
+- [Software Modules](#software-modules)
+  - [Introduction](#introduction)
+  - [Installing Spack](#installing-spack)
+    - [Configuration](#configuration)
+    - [Usage](#usage)
+    - [Architecture-specific builds](#architecture-specific-builds)
+  - [Installing EasyBuild](#installing-easybuild)
+    - [Configuration](#configuration-1)
+    - [Usage](#usage-1)
+
+## Introduction
 
 Slurm clusters will frequently provide a bare-metal development environment in the form of "Environment Modules".
 Environment Modules provide a convenient way to dynamically change the user's environment variables, such as `PATH` or `LD_LIBRARY_PATH`, to enable use of software installed in different locations.
@@ -11,7 +22,6 @@ The [Lmod documentation](https://lmod.readthedocs.io/en/latest/) provides more i
 DeepOps also provides tooling for managing Environment Modules with two different frameworks: EasyBuild and Spack.
 These tools provide a selection of tested build recipes for common development tools and scientific software packages,
 making it easier to install software without a tedious manual build process.
-
 
 ## Installing Spack
 
@@ -25,9 +35,9 @@ ansible-playbook -l slurm-cluster playbooks/slurm-cluster/spack-modules.yml
 
 ### Configuration
 
-* `spack_install_dir`: Controls the directory where Spack is installed. This should be a shared filesystem visible on all nodes in the cluster (for example, using NFS). The default is `/sw/spack`.
-* `spack_build_packages`: Controls whether to build a default set of packages when installing Spack. Defaults to `false`.
-* `spack_default_packages`: List of default packages to build, if `spack_build_packages` is `true`. The default value for this can be found in `config.example/group_vars/slurm-cluster.yml`.
+- `spack_install_dir`: Controls the directory where Spack is installed. This should be a shared filesystem visible on all nodes in the cluster (for example, using NFS). The default is `/sw/spack`.
+- `spack_build_packages`: Controls whether to build a default set of packages when installing Spack. Defaults to `false`.
+- `spack_default_packages`: List of default packages to build, if `spack_build_packages` is `true`. The default value for this can be found in `config.example/group_vars/slurm-cluster.yml`.
 
 ### Usage
 
@@ -83,7 +93,6 @@ However, if you run multiple CPU microarchitectures on your cluster, you may wis
 If you prefer to avoid optimizing for a specific microarchitecture, you can target the generic `x86_64` architecture by adding `target=x86_64` to the spec.
 This will produce less-optimized but more generic builds.
 
-
 ## Installing EasyBuild
 
 [EasyBuild](https://easybuild.readthedocs.io/en/latest/) is a software build and installation framework that allows you to manage (scientific) software on HPC systems in an efficient way.
@@ -96,9 +105,9 @@ ansible-playbook -l slurm-cluster playbooks/slurm-cluster/easybuild-modules.yml
 
 ### Configuration
 
-* `sm_prefix`: Root path for installing modules. Defaults to `/sw`.
-* `sm_install_default`: Controls whether to install a default set of packages when installing EasyBuild. Defaults to `true`.
-* `sm_files_url`: Git repository to find default easyconfigs to install. Default is `https://github.com/DeepOps/easybuild_files.git` 
+- `sm_prefix`: Root path for installing modules. Defaults to `/sw`.
+- `sm_install_default`: Controls whether to install a default set of packages when installing EasyBuild. Defaults to `true`.
+- `sm_files_url`: Git repository to find default easyconfigs to install. Default is `https://github.com/DeepOps/easybuild_files.git`
 
 ### Usage
 

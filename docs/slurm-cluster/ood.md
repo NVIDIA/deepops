@@ -1,5 +1,11 @@
-Open OnDemand
-===
+# OOD
+
+- [OOD](#ood)
+  - [Introduction](#introduction)
+  - [Deploying](#deploying)
+  - [Access](#access)
+  - [Walkthrough](#walkthrough)
+    - [VS Code Server](#vs-code-server)
 
 ## Introduction
 
@@ -36,8 +42,6 @@ Once the server is ready, you can click on the "Connect to Code Server" button.
 Where you will now have a VS Code session tied to the GPU resources you requested. Happy coding!
 ![OOD 05](ood-images/ood-05.png)
 
-### VS Code Server
-
 Click on the "Interactive Apps" button in the menu bar. Then click on the "Hackathon Desktop" (this name might vary).
 ![OOD 02](ood-images/ood-02.png)
 
@@ -52,6 +56,3 @@ Once launched, click on "Launch Desktop" to get a remote session view.
 
 The remote session view allows you to interact with the resources you requested as if it were a desktop system sitting in front of you.
 ![OOD 09](ood-images/ood-09.png)
-
-
-
