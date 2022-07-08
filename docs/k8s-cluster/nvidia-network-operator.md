@@ -1,5 +1,14 @@
+# NVIDIA Network Operator
+
 Deploy NVIDIA Network Operator with DeepOps
-===========================================
+
+- [NVIDIA Network Operator](#nvidia-network-operator)
+  - [Overview](#overview)
+  - [Requirements and Tested Environment:](#requirements-and-tested-environment)
+  - [Deployment Steps](#deployment-steps)
+  - [Running the Workload](#running-the-workload)
+    - [Using SR-IOV interfaces](#using-sr-iov-interfaces)
+    - [NCCL AllReduce Test Result](#nccl-allreduce-test-result)
 
 ## Overview
 
@@ -7,29 +16,28 @@ NVIDIA Network Operator leverages Kubernetes CRDs and Operator SDK to manage net
 
 Here are the key components that NVIDIA network operator try to deploy together:
 
-* SR-IOV Virtual Function (VF) activation
-* Multus CNI
-* SR-IOV CNI for kubernetes
-* SR-IOV device plugin for kubernetes
-* Multus CNI
-* Helm chart for NVIDIA network operator
+- SR-IOV Virtual Function (VF) activation
+- Multus CNI
+- SR-IOV CNI for kubernetes
+- SR-IOV device plugin for kubernetes
+- Multus CNI
+- Helm chart for NVIDIA network operator
 
 This playbook also install the latest Kubeflow/MPI-Operator, currently version v2beta1, for multi-node MPI jobs.
 
 Currently only InfiniBand networking is supported in this implementation, RoCE networking support will be added shortly.
 
-
 ## Requirements and Tested Environment:
 
 This playbook is developed and tested in following environments:
 
-* NVIDIA DGX servers with DGX OS 5.1
-* Mellanox ConnectX-6 VPI HCA
-* Ansible 2.9.27 (deployed by DeepOps)
-* Kubernetes v1.21.6 (deployed by DeepOps)
-* Helm version v3.6.3 (deployed by DeepOps)
-* NVIDIA network opertor v1.1.0
-* InfiniBand networking. (Ethernet networking support will be added in the future.)
+- NVIDIA DGX servers with DGX OS 5.1
+- Mellanox ConnectX-6 VPI HCA
+- Ansible 2.9.27 (deployed by DeepOps)
+- Kubernetes v1.21.6 (deployed by DeepOps)
+- Helm version v3.6.3 (deployed by DeepOps)
+- NVIDIA network opertor v1.1.0
+- InfiniBand networking. (Ethernet networking support will be added in the future.)
 
 ## Deployment Steps
 
@@ -37,7 +45,7 @@ This playbook is developed and tested in following environments:
 
 2. Enabling IB port virtualization on IB opensm. This is done in an IB switch in the lab:
 
-   ```sh
+   ```bash
    IB_Switch (config) # ib sm virt enable
    ```
 
@@ -45,86 +53,96 @@ This playbook is developed and tested in following environments:
 
    Use following commands to verify SR-IOV and VFs are enabled on ConnectX-6 HCAs, "0000:05:00.0" is the HCA's PCIe bus number.
 
-   ```sh
+   ```bash
    sudo mlxconfig -d 0000:05:00.0 q | grep -i "sriov\|vfs"
    ```
+
 4. Set up Kubernetes cluster
 
    Kubernetes installation is done by DeepOps Ansible playbooks, For more information on Ansible and why we use it, consult the [Ansible Guide](ANSIBLE.md).
 
-  - Install and configure DeepOps on managemet node:
+- Install and configure DeepOps on managemet node:
 
-     ```sh
-     git clone https://github.com/NVIDIA/deepops.git
-     cd deepops/
-     ./scripts/setup.sh
-     vi config/inventory
-     ```
-    Configuring the Ansible inventory file by editing the "config/inventory" file,  and verify connectivity to all nodes.
-    > NOTE: Be warned that `/etc/hostname` and `/etc/hosts` on each host will be modified to the name(s) specified in the inventory file, so it is best to use the actual names of the hosts.
+  ```bash
+  git clone https://github.com/NVIDIA/deepops.git
+  cd deepops/
+  ./scripts/setup.sh
+  vi config/inventory
+  ```
 
-    When modifying the inventory, if the hosts are not accessible from the management node by their hostname, supply an an `ansible_host` with its IP address. Example of the inventory file:
+  Configuring the Ansible inventory file by editing the "config/inventory" file, and verify connectivity to all nodes.
 
-    ```yml
-    # in config/inventory...
-    [all]
-    mgmt01     ansible_host=192.168.1.11
-    gpu01      ansible_host=192.168.2.11
-    gpu02      ansible_host=192.168.3.11
-    ...
-    [kube-master]
-    mgmt01
-    [kube-node]
-    gpu01
-    gpu02
-    ```
-  - Add or modify user(s) across cluster if necessary:
-    The ansible scripts assume a consistent user which has access to all nodes in the cluster.
-     > Note: If a user with the same username, uid, and password exists on each node, skip this step. It is critical for the user to exist with the same uid across all nodes.
-    
-     ```sh
-     # The default user is `nvidia` with password `deepops`
-     # Modify this user/password in config/group_vars/all.yaml as desired
-     vi config/group_vars/all.yml
-     ```
+  > NOTE: Be warned that `/etc/hostname` and `/etc/hosts` on each host will be modified to the name(s) specified in the inventory file, so it is best to use the actual names of the hosts.
 
-     Run the users playbook to create/modify the user across all nodes.
+  When modifying the inventory, if the hosts are not accessible from the management node by their hostname, supply an an `ansible_host` with its IP address. Example of the inventory file:
 
-     ```sh
-     # NOTE: If SSH requires a password, add: `-k`
-     # NOTE: If sudo on remote machine requires a password, add: `-K`
-     # NOTE: If SSH user is different than current user, add: `-u <user>`
-     ansible-playbook -b playbooks/generic/users.yml
-     ```
-     Verify the configuration
+  ```bash
+  # in config/inventory...
+  [all]
+  mgmt01     ansible_host=192.168.1.11
+  gpu01      ansible_host=192.168.2.11
+  gpu02      ansible_host=192.168.3.11
+  ...
+  [kube-master]
+  mgmt01
+  [kube-node]
+  gpu01
+  gpu02
+  ```
 
-     ```sh
-     ansible all -m raw -a "hostname"
-     ```
+- Add or modify user(s) across cluster if necessary:
+  The ansible scripts assume a consistent user which has access to all nodes in the cluster.
 
-  - Deploying and verifying Kubernetes cluster
-    Install Kubernetes using Ansible and Kubespray
+  > Note: If a user with the same username, uid, and password exists on each node, skip this step. It is critical for the user to exist with the same uid across all nodes.
 
-    ```sh
-    # NOTE: If SSH requires a password, add: `-k`
-    # NOTE: If sudo on remote machine requires a password, add: `-K`
-    # NOTE: If SSH user is different than current user, add: `-u ubuntu`
-    ansible-playbook -l k8s-cluster playbooks/k8s-cluster.yml
-    ```
-    Please refer to [DeepOps Kubernetes Deployment Guidehere](https://github.com/NVIDIA/deepops/blob/master/docs/kubernetes-cluster.md) for more information.
-    
-    Verify that Kubernetes clustering is working with "kubectl get nodes" command:
-    ```sh
-    nvidia@mgmt01:~$ kubectl get nodes
-    NAME     STATUS   ROLES    AGE    VERSION
-    mgmt01   Ready    master   1d8h   v1.21.6
-    gpu01    Ready    <none>   1d8h   v1.21.6
-    gpu02    Ready    <none>   1d8h   v1.21.6
-    nvidia@mgmt01:~$
-    ```
+  ```bash
+  # The default user is `nvidia` with password `deepops`
+  # Modify this user/password in config/group_vars/all.yaml as desired
+  vi config/group_vars/all.yml
+  ```
+
+  Run the users playbook to create/modify the user across all nodes.
+
+  ```bash
+  # NOTE: If SSH requires a password, add: `-k`
+  # NOTE: If sudo on remote machine requires a password, add: `-K`
+  # NOTE: If SSH user is different than current user, add: `-u <user>`
+  ansible-playbook -b playbooks/generic/users.yml
+  ```
+
+  Verify the configuration
+
+  ```bash
+  ansible all -m raw -a "hostname"
+  ```
+
+- Deploying and verifying Kubernetes cluster
+  Install Kubernetes using Ansible and Kubespray
+
+  ```bash
+  # NOTE: If SSH requires a password, add: `-k`
+  # NOTE: If sudo on remote machine requires a password, add: `-K`
+  # NOTE: If SSH user is different than current user, add: `-u ubuntu`
+  ansible-playbook -l k8s-cluster playbooks/k8s-cluster.yml
+  ```
+
+  Please refer to [DeepOps Kubernetes Deployment Guidehere](https://github.com/NVIDIA/deepops/blob/master/docs/kubernetes-cluster.md) for more information.
+
+  Verify that Kubernetes clustering is working with "kubectl get nodes" command:
+
+  ```bash
+  nvidia@mgmt01:~$ kubectl get nodes
+  NAME     STATUS   ROLES    AGE    VERSION
+  mgmt01   Ready    master   1d8h   v1.21.6
+  gpu01    Ready    <none>   1d8h   v1.21.6
+  gpu02    Ready    <none>   1d8h   v1.21.6
+  nvidia@mgmt01:~$
+  ```
+
 5. Deploy NVIDIA Network Operator
    Before runnng the playbook, please update "roles/nvidia-network-operator/vars/main.yml" file according to your hardware and network configuration, this is what we used in our value.yaml file:
-   ```sh
+
+   ```yaml
    num_vf: 8
    vendor_id: "15b3"
    link_type: "ib"
@@ -141,22 +159,23 @@ This playbook is developed and tested in following environments:
        ip_addr: "192.168.102.0/24"
        ...
     ## "15b3" is Mellanox vendor code for ConnectX cards.
-    ```
+   ```
+
    Run the playbook:
-    ```sh
+
+   ```sh
    ansible-playbook playbooks/k8s-cluster/nvidia-network-operator.yaml
    ```
-   
+
 ## Running the Workload
 
-The cluster is ready to run multi-node workload in the cluster, One last thing is to add related interface configuration to the job file before launching your job. 
+The cluster is ready to run multi-node workload in the cluster, One last thing is to add related interface configuration to the job file before launching your job.
 
 ### Using SR-IOV interfaces
 
 Below is what is the section of the job file looks like after adding relevant SR-IOV interface configuration. The Dockerfile used to build the "docker.io/deepops/mpi-nccl-test" container is also available in this DeepOps git repository.
 
-```sh
-
+```yaml
 apiVersion: kubeflow.org/v2beta1
 kind: MPIJob
 metadata:
@@ -169,56 +188,55 @@ spec:
     Launcher:
       replicas: 1
       template:
-         spec:
-           containers:
-           - image: docker.io/deepops/mpi-nccl-test:latest
-             name: nccltest
-             imagePullPolicy: IfNotPresent
-             command:
-             - sh
-             - "-c"
-             - |
-               /bin/bash << 'EOF'
-               mpirun --allow-run-as-root \
-                 -np 32 \
-                 -bind-to none -map-by slot \
-                 -x NCCL_DEBUG=INFO \
-                 -x NCCL_ALGO=RING \
-                 -x NCCL_IB_DISABLE=0 \
-                 -x LD_LIBRARY_PATH \
-                 -x PATH \
-                 -mca pml ob1 \
-                 -mca btl self,tcp \
-                 -mca btl_tcp_if_include 192.168.0.0/16 \
-                 -mca oob_tcp_if_include 172.29.0.0/16 \
-                 /nccl_tests/build/all_reduce_perf -b 8 -e 4G -f2 -g 1 \
-                 && sleep infinity
-               EOF
-
+        spec:
+          containers:
+            - image: docker.io/deepops/mpi-nccl-test:latest
+              name: nccltest
+              imagePullPolicy: IfNotPresent
+              command:
+                - sh
+                - "-c"
+                - |
+                  /bin/bash << 'EOF'
+                  mpirun --allow-run-as-root \
+                    -np 32 \
+                    -bind-to none -map-by slot \
+                    -x NCCL_DEBUG=INFO \
+                    -x NCCL_ALGO=RING \
+                    -x NCCL_IB_DISABLE=0 \
+                    -x LD_LIBRARY_PATH \
+                    -x PATH \
+                    -mca pml ob1 \
+                    -mca btl self,tcp \
+                    -mca btl_tcp_if_include 192.168.0.0/16 \
+                    -mca oob_tcp_if_include 172.29.0.0/16 \
+                    /nccl_tests/build/all_reduce_perf -b 8 -e 4G -f2 -g 1 \
+                    && sleep infinity
+                  EOF
 ```
+
 "nvidia.com/resibs1" is the network resource where SR-IOV is enabled, it's also defined in "roles/nvidia-network-operator/vars/main.yaml" in this repository.
 
 Alternatively, a local private docker registry can also be used in an air-gapped environment where docker.io is not accessible, In following example, A docker private registry at 192.168.1.11 is used to host and manage the testing images, please refer to this docker [document](https://docs.docker.com/registry/deploying/) for more details.
 
-```sh
-
-           containers:
-           - image: 192.168.1.11:5000/nccl-test:latest
-             name: nccltest
-             imagePullPolicy: IfNotPresent
-
+```yaml
+containers:
+  - image: 192.168.1.11:5000/nccl-test:latest
+    name: nccltest
+    imagePullPolicy: IfNotPresent
 ```
 
 Now you can launch the job with your familiar Kubernetes command:
 
-```sh
+```bash
 nvidia@mgmt01:~$ kubectl create -f nccl-test.yaml
 ```
+
 ### NCCL AllReduce Test Result
 
 Below is a NCCL allreduce test result run on between on a DGX A100 Kubernetes cluster between 2 nodes with 8 x 200G HCA (ConnectX-6 HDR) interfaces each. NCCL deliveries near line rate performance: NCCL bandwidth 188.53 GB/s between 8 interfaces translats to 188.53 Gbps/interfaces, 94.27% of theoretical maximum performance.
 
-```sh
+```console
 #
 #                                                       out-of-place                       in-place
 #       size         count      type   redop     time   algbw   busbw  error     time   algbw   busbw  error
@@ -257,7 +275,7 @@ Below is a NCCL allreduce test result run on between on a DGX A100 Kubernetes cl
 # Avg bus bandwidth    : 53.7098
 
 ```
-   Enjoy!
 
-   > Note: This is not a performance benchmark testing so we don't fine tune any hardware and software stack parameters. The results are considered as an out-of-box number that can be observed in regular customer environments with the solution documented here. For more information about NCCL, see the following [blog post](https://devblogs.nvidia.com/scaling-deep-learning-training-nccl/).
+Enjoy!
 
+> Note: This is not a performance benchmark testing so we don't fine tune any hardware and software stack parameters. The results are considered as an out-of-box number that can be observed in regular customer environments with the solution documented here. For more information about NCCL, see the following [blog post](https://devblogs.nvidia.com/scaling-deep-learning-training-nccl/).

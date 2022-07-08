@@ -1,12 +1,16 @@
-PXE
-===
+# Minimal PXE Container
 
 Minimal containers for OS installation
 
+- [Minimal PXE Container](#minimal-pxe-container)
+  - [Requirements](#requirements)
+  - [Installation Steps](#installation-steps)
+  - [IPMI Command Reference](#ipmi-command-reference)
+
 ## Requirements
 
-  * Control machine connected to the same VLAN/subnet as target machines
-  * Docker installed on control machine
+- Control machine connected to the same VLAN/subnet as target machines
+- Docker installed on control machine
 
 ## Installation Steps
 
@@ -14,7 +18,7 @@ This process should run from a Linux system on the same network segment as the t
 
 1. Install docker.
 
-   ```sh
+   ```bash
    ./scripts/generic/install_docker.sh
    ```
 
@@ -22,7 +26,7 @@ This process should run from a Linux system on the same network segment as the t
 
    If you have an existing DHCP server, skip this step
 
-   ```sh
+   ```bash
    # Modify listen interface, DHCP range, and network gateway IP
    docker-compose -f src/containers/pxe/docker-compose.yml run -d dhcp dnsmasq -d --interface=ens192 --dhcp-range=192.168.1.100,192.168.1.199,7200 --dhcp-option=6,8.8.8.8 --dhcp-option=3,192.168.1.1
    ```
@@ -31,14 +35,14 @@ This process should run from a Linux system on the same network segment as the t
 
    If you have an existing network gateway, skip this step
 
-   ```sh
+   ```bash
    # Set eth0 and eth1 to your public and private interfaces, respectively
    ./scripts/pxe/setup_nat.sh eth0 eth1
    ```
 
 4. Start PXE server.
 
-   ```sh
+   ```bash
    docker-compose -f src/containers/pxe/docker-compose.yml up -d pxe
    ```
 
@@ -47,12 +51,13 @@ This process should run from a Linux system on the same network segment as the t
    Set servers to boot from the network for the next boot only (to avoid re-install loops) and reboot them to install the OS.
 
    The default credentials are:
-   * Username: `ubuntu`
-   * Password: `deepops`
+
+   - Username: `ubuntu`
+   - Password: `deepops`
 
 ## IPMI Command Reference
 
-```sh
+```bash
 # Set to boot from disk, always
 # Dell
 chassis bootdev disk options=persistent

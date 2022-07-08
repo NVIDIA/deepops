@@ -1,14 +1,15 @@
+# DCGM
+
 Installing NVIDIA Datacenter GPU Manager
-========================================
 
-[NVIDIA Datacenter GPU Manager](https://developer.nvidia.com/dcgm) is a suite of tools for managing and monitoring NVIDIA GPUs in cluster environments.
-It includes active health monitoring, comprehensive diagnostics, system alerts and governance policies including power and clock management.
-It can be used standalone by system administrators and easily integrates into cluster management, resource scheduling and monitoring products from NVIDIA partners.
+- [DCGM](#dcgm)
+  - [Summary](#summary)
 
-DCGM is included by default for NVIDIA DGX, but must be explicitly downloaded and installed for other systems.
-To download DCGM, you must first register for the NVIDIA developer program,
-after which you should be able to download DCGM from the [NVIDIA developer portal](https://developer.nvidia.com/dcgm).
-DCGM can be downloaded as either an RPM package, for Red Hat and compatible systems; or as a DEB package, for Ubuntu.
+## Introduction
+
+[NVIDIA Datacenter GPU Manager](https://developer.nvidia.com/dcgm) is a suite of tools for managing and monitoring NVIDIA GPUs in cluster environments. It includes active health monitoring, comprehensive diagnostics, system alerts and governance policies including power and clock management. It can be used standalone by system administrators and easily integrates into cluster management, resource scheduling and monitoring products from NVIDIA partners.
+
+DCGM is included by default for NVIDIA DGX, but must be explicitly downloaded and installed for other systems. To download DCGM, you must first register for the NVIDIA developer program, after which you should be able to download DCGM from the [NVIDIA developer portal](https://developer.nvidia.com/dcgm). DCGM can be downloaded as either an RPM package, for Red Hat and compatible systems; or as a DEB package, for Ubuntu.
 
 Once DCGM has been downloaded, you can install it using DeepOps via the [nvidia-dcgm](../../playbooks/nvidia-software/nvidia-dcgm.yml) playbook.
 

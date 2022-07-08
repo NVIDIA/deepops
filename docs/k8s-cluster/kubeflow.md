@@ -2,6 +2,19 @@
 
 [Kubeflow](https://www.kubeflow.org/docs/) is a K8s native tool that eases the Deep Learning and Machine Learning lifecycle.
 
+- [Kubeflow](#kubeflow)
+  - [Summary](#summary)
+  - [Installation](#installation)
+  - [Login information](#login-information)
+  - [Other usage](#other-usage)
+  - [Kubeflow Admin](#kubeflow-admin)
+    - [Uninstalling](#uninstalling)
+    - [Modifying Kubeflow configuration](#modifying-kubeflow-configuration)
+  - [Debugging common issues](#debugging-common-issues)
+    - [No DefaultStorageClass defined or ready](#no-defaultstorageclass-defined-or-ready)
+
+## Introduction
+
 Kubeflow allows users to request specific resources (such as number of GPUs and CPUs), specify Docker images, and easily launch and develop through Jupyter models. Kubeflow makes it easy to create persistent home directories, mount data volumes, and share notebooks within a team.
 
 Kubeflow also offers a full deep learning [pipeline](https://www.kubeflow.org/docs/pipelines/overview/pipelines-overview/) platform that allows you to run, track, and version experiments. Pipelines can be used to deploy code to production and can include all steps in the training process (data prep, training, tuning, etc.) each done through different Docker images. For some examples reference the [examples](../examples) directory.
@@ -20,9 +33,8 @@ Kubeflow requires a DefaultStorageClass to be defined. By default DeepOps instal
 
 Deploy Kubeflow:
 
-```sh
+```bash
 ./scripts/k8s/deploy_kubeflow.sh
-
 ```
 
 See the [install docs](https://www.kubeflow.org/docs/started/k8s/overview/) for additional install configuration options.
@@ -30,7 +42,8 @@ See the [install docs](https://www.kubeflow.org/docs/started/k8s/overview/) for 
 A local checkout of the [Kubeflow manifests](https://github.com/kubeflow/manifests) will be saved to `./config/kubeflow-install/manifests`.
 
 The services can be reached from the following address:
-* Kubeflow: http://\<kube-master\>:31380
+
+- Kubeflow: http://\<kube-master\>:31380
 
 ## Login information
 
@@ -42,7 +55,7 @@ This can be modified before deploying Kubeflow by editing `./config/files/kubefl
 
 For the most up-to-date usage information run `./scripts/k8s/deploy_kubeflow.sh -h`.
 
-```sh
+```console
 ./scripts/k8s/deploy_kubeflow.sh -h
 Usage:
 -h    This message.
@@ -59,7 +72,7 @@ Usage:
 
 To uninstall and re-install Kubeflow run:
 
-```sh
+```bash
 ./scripts/k8s/deploy_kubeflow.sh -d
 ./scripts/k8s/deploy_kubeflow.sh
 ```
@@ -68,7 +81,7 @@ To uninstall and re-install Kubeflow run:
 
 To modify the Kubeflow manifests, you can first clone the manifests directory without deploying Kubeflow:
 
-```sh
+```bash
 ./scripts/k8s/deploy_kubeflow.sh -c
 ```
 
@@ -84,29 +97,32 @@ A common issue with Kubeflow installation is that no DefaultStorageClass has bee
 
 This can be identified if most of the Kubeflow Pods are running and the MySQL pod and several others remain in a Pending state. The GUI may also load and throw a "Profile Error". Run the following to debug further:
 
-```sh
+```bash
 kubectl get pods -n kubeflow
 ```
+
 > NOTE: Everything should be in a running state.
 
 If `nfs-client-provisioner` was used as the Default StorageClass verify it is running and set:
 
-```
+```bash
 helm list | grep nfs-client
 kubectl get storageclass | grep default
 ```
+
 > NOTE: If NFS is being used, the helm application should be in a `deployed` state and `nfs-client` should be the default StorageClass.
 
 If Ceph was installed, verify it is running:
 
-```
+```bash
 ./scripts/k8s/deploy_rook.sh -w
 kubectl get storageclass | grep default
 ```
-> NOTE: If Ceph is being used, `deploy_rook.sh -w` should exit after several seconds and Ceph should be the default StorageClass. 
 
+> NOTE: If Ceph is being used, `deploy_rook.sh -w` should exit after several seconds and Ceph should be the default StorageClass.
 
 To correct this issue:
+
 1. Uninstall Rook/Ceph: `./scripts/k8s/deploy_rook.sh -d`
 2. Uninstall Kubeflow: `./scripts/k8s/deploy_kubeflow.sh -d`
 3. Re-install Rook/ceph: `./scripts/k8s/deploy_rook.sh`

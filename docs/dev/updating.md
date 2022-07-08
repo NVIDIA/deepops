@@ -1,14 +1,29 @@
+# Updating
+
 Creating a new DeepOps release
-===
+
+- [Updating](#updating)
+  - [Creating a new release branch](#creating-a-new-release-branch)
+  - [Things to update](#things-to-update)
+    - [DeepOps version number](#deepops-version-number)
+    - [Submodules](#submodules)
+    - [Version numbers](#version-numbers)
+  - [Finalizing a release](#finalizing-a-release)
 
 ## Creating a new release branch
 
-```sh
+_release-YY.MM_
+
+**_or_**
+
+_release-YY.MM.PATCH_
+
+```bash
 git checkout master
 git pull
 
-git checkout -b release-21.05
-git push -u origin release-21.05
+git checkout -b release-22.07
+git push -u origin release-22.07
 ```
 
 Create pull requests against release branch with bug fixes and changes to software versions
@@ -21,9 +36,9 @@ Update release name and tag in: `README.md`
 
 ### Submodules
 
-*Kubespray*
+_Kubespray_
 
-```sh
+```bash
 cd submodules/kubespray
 git fetch --all
 git tag -l
@@ -35,7 +50,7 @@ git checkout v2.15.1
 
 Search for version numbers that may need to be updated:
 
-```sh
+```bash
 egrep -Rin --exclude-dir=galaxy "version.*[0-9+](\.|-)[0-9+]" roles/
 egrep -Rin "version.*[0-9+](\.|-)[0-9+]" scripts/
 egrep -Rin "version.*[0-9+](\.|-)[0-9+]" config.example/
@@ -43,7 +58,7 @@ egrep -Rin "version.*[0-9+](\.|-)[0-9+]" config.example/
 
 In addition, update version numbers not caught by the regex, if required:
 
-  * `roles/nvidia-hpc-sdk/defaults/main.yml`
+- `roles/nvidia-hpc-sdk/defaults/main.yml`
 
 Update version numbers for Ansible Galaxy roles in: `roles/requirements.yml`
 

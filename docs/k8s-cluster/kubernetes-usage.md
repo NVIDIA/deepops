@@ -1,5 +1,12 @@
+# Kubernetes Usage
+
 Kubernetes Usage Guide
-===
+
+- [Kubernetes Usage](#kubernetes-usage)
+  - [Introduction](#introduction)
+  - [Simple Commands](#simple-commands)
+  - [Simple PyTorch Job](#simple-pytorch-job)
+  - [Using NGC Containers with Kubernetes and Launching Jobs](#using-ngc-containers-with-kubernetes-and-launching-jobs)
 
 ## Introduction
 
@@ -9,53 +16,53 @@ Most of the following examples can be configured and executed through the Kubern
 
 Get a list of the nodes in the cluster:
 
-```sh
+```bash
 kubectl get nodes
 ```
 
 Get a list of running pods in the cluster:
 
-```sh
+```bash
 kubectl get pods --all-namespaces
 ```
 
 ## Simple PyTorch Job
 
-1. Run the job. 
+1. Run the job.
 
-   A simple PyTorch Job can be run via `kubectl` using the following yml: 
+   A simple PyTorch Job can be run via `kubectl` using the following yml:
 
-   ```sh
+   ```bash
    kubectl create -f tests/pytorch-job.yml
-   ``` 
+   ```
 
    Take a look at the yml and observe that:
 
-   * we are pulling a pytorch container from the NGC registry
-   * a single GPU resource is requested
-   * the Kubernetes object we are creating is a `job` which spawns `pod` and runs this pod to completion a single time
+   - we are pulling a pytorch container from the NGC registry
+   - a single GPU resource is requested
+   - the Kubernetes object we are creating is a `job` which spawns `pod` and runs this pod to completion a single time
 
-2. Check on the job. 
+2. Check on the job.
 
-   ```sh
+   ```bash
    kubectl get jobs
    ```
-   
+
 3. Monitor the pod that's spawned from the job.
 
-   ```sh
+   ```bash
    kubectl get pods
    ```
-   
+
    Follow the logs for the pod:
-   
-   ```sh
+
+   ```bash
    kubectl logs -f <pytorch-job-pod>
    ```
-   
-4. Delete the job (and the corresponding pod). 
 
-   ```sh
+4. Delete the job (and the corresponding pod).
+
+   ```bash
    kubectl delete job cuda-job
    ```
 
@@ -65,23 +72,24 @@ kubectl get pods --all-namespaces
 
 To access the NGC container registry via Kubernetes, add a secret which will be employed when Kubernetes asks NGC to pull container images from it.
 
-1. Generate an NGC API Key, which will be used for the Kubernetes secret. 
-   * Login to the NGC Registry at https://ngc.nvidia.com/
-   * Go to https://ngc.nvidia.com/configuration/api-key
-   * Click on GENERATE API KEY
+1. Generate an NGC API Key, which will be used for the Kubernetes secret.
+
+   - Login to the NGC Registry at https://ngc.nvidia.com/
+   - Go to https://ngc.nvidia.com/configuration/api-key
+   - Click on GENERATE API KEY
 
 2. Using the NGC API Key, create a Kubernetes secret so that Kubernetes will be able to pull container images from the NGC registry. Create the secret by running the following command on the master (substitute the registered email account and secret in the appropriate locations).
 
-   ```sh
+   ```bash
    kubectl create secret docker-registry nvcr.dgxkey --docker-server=nvcr.io --docker-username=\$oauthtoken --docker-email=<email> --docker-password=<NGC API Key>
    ```
 
 3. Check that the secret exists.
 
-   ```sh
+   ```bash
    kubectl get secrets
    ```
-   
+
 4. You can now use the secret to pull custom NGC images by using the `imagePullSecrets` attribute. For example:
 
    ```yml
