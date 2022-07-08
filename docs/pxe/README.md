@@ -3,7 +3,7 @@
 - [OS provisioning via PXE](#os-provisioning-via-pxe)
   - [Summary](#summary)
 
-## Summary
+## Introduction
 
 Deploying bare-metal clusters at scale generally involves some method for installing the operating system over the network.
 This is typically using the [Preboot eXecution Environment (PXE)](https://en.wikipedia.org/wiki/Preboot_Execution_Environment),

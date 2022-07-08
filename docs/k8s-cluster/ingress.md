@@ -7,7 +7,7 @@ Load Balancer and Ingress
   - [Load Balancer](#load-balancer)
   - [Ingress controller](#ingress-controller)
 
-## Summary
+## Introduction
 Kubernetes provides a variety of mechanisms to expose pods in your cluster to external networks.
 Two key concepts for routing traffic to your services are:
 

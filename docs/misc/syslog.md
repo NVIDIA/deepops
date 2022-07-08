@@ -6,7 +6,7 @@ Centralized logging with syslog
   - [Summary](#summary)
   - [Using an external syslog server](#using-an-external-syslog-server)
 
-## Summary
+## Introduction
 
 Both the Slurm and Kubernetes cluster playbooks include a minimal implementation of centralized cluster logging using rsyslog.
 

@@ -9,7 +9,7 @@ Setting up offline mirrors for RPM repositories
   - [Transferring repositories to offline network](#transferring-repositories-to-offline-network)
   - [Create mirrors on offline network](#create-mirrors-on-offline-network)
 
-## Summary
+## Introduction
 
 Most of the software necessary to run GPU-enabled applications on RHEL or CentOS servers is available via RPM repositories.
 In order to deploy this software in an offline environment, the most straightforward path is to mirror the repositories in your offline network.

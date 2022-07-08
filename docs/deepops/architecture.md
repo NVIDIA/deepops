@@ -46,7 +46,7 @@ Documentation for all DeepOps functionality.
 
 
 ## playbooks
-Playbooks run via Ansible as part of complete SLURM or Kubernetes installation or ad-hoc plays.
+Playbooks run via Ansible as part of complete Slurm or Kubernetes installation or ad-hoc plays.
 ```bash
 ├── playbooks
 │   ├── bootstrap

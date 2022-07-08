@@ -8,7 +8,7 @@ RAPIDS with Dask
     - [Kubeflow](#kubeflow)
     - [Stand-alone](#stand-alone)
 
-## Summary
+## Introduction
 [Dask](https://dask.org) allows distributed computation in Python.
 [RAPIDS](https://rapids.ai/) adds gpu acceleration to machine learning.
 

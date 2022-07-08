@@ -12,7 +12,7 @@
     - [Slurm services](#slurm-services)
     - [MPI traffic](#mpi-traffic)
 
-## Summary
+## Introduction
 
 Your required firewall configuration will depend on which components of DeepOps you choose to set up.
 Different configuration will be needed depending on whether you use Kubernetes or Slurm, how you configure Ingress, etc.

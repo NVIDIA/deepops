@@ -14,7 +14,7 @@ High-Performance RoCE Implementation in Multi-Node Kubernetes Cluster
     - [ResNet-50 with TensorFlow Performance Comparison with Non-RoCE Kubernetes Pod](#resnet-50-with-tensorflow-performance-comparison-with-non-roce-kubernetes-pod)
     - [Troubleshoot](#troubleshoot)
 
-## Summary
+## Introduction
 
 RDMA over Converged Ethernet (RoCE) can be used as an interconnect technology in multi-node Kubernetes cluster for ML/AI workload. This document will walk through some of the design considerations, configuration steps and lab test results to help you better understand the solution and make an informed decision when you consider running your ML/AI workload on RoCE interconnect technology. The whole solution can be deployed with various DeepOps Kubernetes cluster deployment scripts and playbooks.
 

@@ -13,7 +13,7 @@
   - [Debugging common issues](#debugging-common-issues)
     - [No DefaultStorageClass defined or ready](#no-defaultstorageclass-defined-or-ready)
 
-## Summary
+## Introduction
 
 Kubeflow allows users to request specific resources (such as number of GPUs and CPUs), specify Docker images, and easily launch and develop through Jupyter models. Kubeflow makes it easy to create persistent home directories, mount data volumes, and share notebooks within a team.
 

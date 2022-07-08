@@ -19,7 +19,7 @@ OS Provisioning with MAAS
   - [Scaling up](#scaling-up)
   - [Creating a DGX OS image installable by MAAS](#creating-a-dgx-os-image-installable-by-maas)
 
-## Summary
+## Introduction
 
 DeepOps includes an Ansible [playbook for setting up MAAS](../../playbooks/provisioning/maas.yml),
 Canonical's [Metal as a Service](https://maas.io/) tool for provisioning the operating system on bare-metal servers.

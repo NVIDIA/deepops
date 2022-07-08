@@ -2,7 +2,7 @@
 
 Rootless docker enables unprivileged end-users to utilize docker containers.
 One motivation for this is that typically it is easier to manage unprivileged
-users within HPC clusters such as SLURM. Alternatives, such as Singularity and
+users within HPC clusters such as Slurm. Alternatives, such as Singularity and
 Enroot, also enable an unprivileged user to utilize containerization. The added
 convenience of rootless docker is that if one is working with docker containers
 it would be more straightforward to build and run docker containers instead of
