@@ -130,8 +130,7 @@ To configure alternate URLs for these repositories, set the following variables 
 
 **Ubuntu**
 
-```
-# Ubuntu
+```bash
 docker_ubuntu_repo_base_url: "http://<your-package-mirror>/<your-path-to-docker-repo>"
 docker_ubuntu_repo_gpgkey: "http://<your-package-mirror>/<your-path-to-docker-gpgkey>"
 
