@@ -52,7 +52,7 @@ The playbook installs an environment module for loading rootless docker via
 modules. Users with bash shells will see the following modules in a typical
 DeepOps deployed Slurm cluster:
 
-```bash
+```console
 module avail
 
 -------------------------------------------------------------------------- /sw/hpc-sdk/modulefiles ----------------------------------
