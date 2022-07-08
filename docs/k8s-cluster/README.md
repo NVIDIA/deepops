@@ -2,10 +2,7 @@
 
 Instructions for deploying a GPU cluster with Kubernetes
 
-## Table of Contents
-
 - [Kubernetes Deployment Guide](#kubernetes-deployment-guide)
-  - [Table of Contents](#table-of-contents)
   - [Requirements](#requirements)
   - [Installation Steps](#installation-steps)
   - [Using Kubernetes](#using-kubernetes)
@@ -44,7 +41,7 @@ Instructions for deploying a GPU cluster with Kubernetes
 
    This will install Ansible and other software on the provisioning machine which will be used to deploy all other software to the cluster. For more information on Ansible and why we use it, consult the [Ansible Guide](../deepops/ansible.md).
 
-   ```sh
+   ```bash
    # Install software prerequisites and copy default configuration
    ./scripts/setup.sh
    ```
@@ -55,7 +52,7 @@ Instructions for deploying a GPU cluster with Kubernetes
 
    Edit the inventory:
 
-   ```sh
+   ```bash
    # Edit inventory and add nodes to the "KUBERNETES" section
    # Note: Etcd requires an odd number of servers
    vi config/inventory
@@ -65,7 +62,7 @@ Instructions for deploying a GPU cluster with Kubernetes
 
    Note that as part of the kubernetes deployment process, the default behavior is to also deploy the [NVIDIA k8s-device-plugin](https://github.com/NVIDIA/k8s-device-plugin) for GPU support. The [GPU Operator](https://github.com/NVIDIA/gpu-operator) is an alternative all-in-one deployment method, which will deploy the [device plugin](https://github.com/NVIDIA/k8s-device-plugin) and optionally includes GPU tooling such as driver containers, [GPU Feature Discovery](https://github.com/NVIDIA/gpu-feature-discovery), [DCGM-Exporter](https://github.com/NVIDIA/dcgm-exporter) and [MIG Manager](https://github.com/NVIDIA/mig-parted). The default behavior of the [GPU Operator](https://github.com/NVIDIA/gpu-operator) in DeepOps is to deploy host-level drivers and NVIDIA software. To leverage driver containers as part of the GPU Operator, disable the `gpu_operator_preinstalled_nvidia_software` flag. To enable the GPU Operator in DeepOps...
 
-   ```sh
+   ```bash
    vi config/group_vars/k8s-cluster.yml
 
    # Enable GPU Operator
@@ -77,13 +74,13 @@ Instructions for deploying a GPU cluster with Kubernetes
 
 4. Verify the configuration
 
-   ```sh
+   ```bash
    ansible all -m raw -a "hostname"
    ```
 
 5. Install Kubernetes using Ansible and Kubespray.
 
-   ```sh
+   ```bash
    # NOTE: If SSH requires a password, add: `-k`
    # NOTE: If sudo on remote machine requires a password, add: `-K`
    # NOTE: If SSH user is different than current user, add: `-u ubuntu`
@@ -94,14 +91,14 @@ Instructions for deploying a GPU cluster with Kubernetes
 
 6. Verify that the Kubernetes cluster is running.
 
-   ```sh
+   ```bash
    # You may need to manually run: `sudo cp ./config/artifacts/kubectl /usr/local/bin`
    kubectl get nodes
    ```
 
    Optionally, verify all GPU nodes plug-ins in the Kubernetes cluster with following script.
 
-   ```sh
+   ```bash
    export CLUSTER_VERIFY_EXPECTED_PODS=1 # Expected number of GPUs in the cluster
    ./scripts/k8s/verify_gpu.sh
    ```
@@ -118,7 +115,7 @@ The following components are completely optional and can be installed on an exis
 
 Run the following script to create an administrative user and print out the dashboard URL and access token:
 
-```sh
+```bash
 ./scripts/k8s/deploy_dashboard_user.sh
 ```
 
@@ -132,7 +129,7 @@ To use an existing nfs server server update the `k8s_nfs_server` and `k8s_nfs_ex
 
 To manually install or re-install the `nfs-client-provisioner` run:
 
-```sh
+```bash
 ansible-playbook playbooks/k8s-cluster/nfs-client-provisioner.yml
 ```
 
@@ -142,13 +139,13 @@ To skip this installation set `k8s_nfs_client_provisioner` to `false`.
 
 For a non-nfs based alternative, deploy a Ceph cluster running on Kubernetes for services that require persistent storage (such as Kubeflow):
 
-```sh
+```bash
 ./scripts/k8s/deploy_rook.sh
 ```
 
 Poll the Ceph status by running (this script will return when Ceph initialization is complete):
 
-```sh
+```bash
 ./scripts/k8s/deploy_rook.sh -w
 ```
 
@@ -158,13 +155,13 @@ Deploy NetApp Astra Trident for services that require persistent storage (such a
 
 1. Set configuration parameters.
 
-   ```sh
+   ```bash
    vi config/group_vars/netapp-trident.yml
    ```
 
 2. Deploy Astra Trident using Ansible.
 
-   ```sh
+   ```bash
    # NOTE: If SSH requires a password, add: `-k`
    # NOTE: If sudo on remote machine requires a password, add: `-K`
    # NOTE: If SSH user is different than current user, add: `-u ubuntu`
@@ -173,13 +170,13 @@ Deploy NetApp Astra Trident for services that require persistent storage (such a
 
 3. Verify that Astra Trident is running.
 
-   ```sh
+   ```bash
    ./tridentctl -n deepops-trident version
    ```
 
    Output of the above command should resemble the following:
 
-   ```sh
+   ```console
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
@@ -193,11 +190,13 @@ For more information on Astra Trident, please refer to the [official documentati
 
 Deploy Prometheus and Grafana to monitor Kubernetes and cluster nodes:
 
-```sh
+```bash
 ./scripts/k8s/deploy_monitoring.sh
 ```
+
 Available Flags:
-```
+
+```bash
 -h      This message.
 -p      Print monitoring URLs.
 -d      Delete monitoring namespace and crds. Note, this may delete PVs storing prometheus metrics.
@@ -222,7 +221,7 @@ The source for our built-in Grafana dashboards can be found in [src/dashboards](
 
 To enable syslog forwarding from the cluster nodes to the first Kubernetes controller node, you can set the following variables in your DeepOps configuration:
 
-```
+```bash
 kube_enable_rsyslog_server: true
 kube_enable_rsyslog_client: true
 ```
@@ -241,7 +240,7 @@ The service can be reached from the following address:
 
 The default container registry hostname is `registry.local`. To set another hostname (for example, one that is resolvable outside the cluster), add `-e container_registry_hostname=registry.example.com`.
 
-```sh
+```bash
 ansible-playbook --tags container-registry playbooks/k8s-cluster/container-registry.yml
 ```
 
@@ -269,7 +268,7 @@ To add K8s nodes, modify the `config/inventory` file to include the new nodes un
 
 Then run the Kubespray `scale.yml` playbook...
 
-```sh
+```bash
 # NOTE: If SSH requires a password, add: `-k`
 # NOTE: If sudo on remote machine requires a password, add: `-K`
 # NOTE: If SSH user is different than current user, add: `-u ubuntu`
@@ -282,7 +281,7 @@ More information on this topic may be found in the [Kubespray docs](https://gith
 
 Removing nodes can be performed with Kubespray's `remove-node.yml` playbook and supplying the node names as extra vars...
 
-```sh
+```bash
 # NOTE: If SSH requires a password, add: `-k`
 # NOTE: If sudo on remote machine requires a password, add: `-K`
 # NOTE: If SSH user is different than current user, add: `-u ubuntu`
@@ -295,9 +294,9 @@ More information on this topic may be found in the [Kubespray docs](https://gith
 
 ### Reset the Cluster
 
-DeepOps is largely idempotent, but in some cases, it is helpful to completely reset a cluster. KubeSpray provides a best-effort attempt at this through a playbook. The script below is recommended to be run twice as some components may not completely uninstall due to time-outs/failed dependent conditions. 
+DeepOps is largely idempotent, but in some cases, it is helpful to completely reset a cluster. KubeSpray provides a best-effort attempt at this through a playbook. The script below is recommended to be run twice as some components may not completely uninstall due to time-outs/failed dependent conditions.
 
-```sh
+```bash
 ansible-playbook submodules/kubespray/reset.yml
 ```
 

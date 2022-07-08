@@ -1,4 +1,13 @@
-# Supporting Multi-Instance GPUs (MIG) in Kubernetes
+# NVIDIA MIG
+
+Supporting Multi-Instance GPUs (MIG) in Kubernetes
+
+- [NVIDIA MIG](#nvidia-mig)
+  - [Enabling MIG](#enabling-mig)
+  - [Configuring MIG Mode in Kubernetes](#configuring-mig-mode-in-kubernetes)
+  - [Configuring MIG Devices](#configuring-mig-devices)
+  - [Using MIG in Kubernetes](#using-mig-in-kubernetes)
+  - [Misc.](#misc)
 
 Multi-Instance GPU or MIG is a feature introduced in the NVIDIA A100 GPUs that allow a single GPU to be partitioned into several smaller GPUs. For more information see the [NVIDIA MIG page](https://www.nvidia.com/en-us/technologies/multi-instance-gpu/).
 
@@ -6,17 +15,18 @@ There are two methods that can be used to administer MIG. This guide details the
 
 Supporting MIG requires several administrative steps and open source projects.
 
-*Projects, included in GPU Operator v1.9.0+:*
-* [GPU Device Plugin](https://github.com/NVIDIA/k8s-device-plugin)
-* [GPU Feature Discovery](https://github.com/NVIDIA/gpu-feature-discovery)
-* [NVIDIA K8s MIG Manager](https://github.com/NVIDIA/mig-parted/tree/master/deployments/gpu-operator)
+_Projects, included in GPU Operator v1.9.0+:_
 
-*Admin Steps:*
-* Enable MIG
-* Configure MIG mode ('single' or 'mixed')
-* Configure MIG (Kubernetes configmap)
-* Update Application/YAML to support MIG
+- [GPU Device Plugin](https://github.com/NVIDIA/k8s-device-plugin)
+- [GPU Feature Discovery](https://github.com/NVIDIA/gpu-feature-discovery)
+- [NVIDIA K8s MIG Manager](https://github.com/NVIDIA/mig-parted/tree/master/deployments/gpu-operator)
 
+_Admin Steps:_
+
+- Enable MIG
+- Configure MIG mode ('single' or 'mixed')
+- Configure MIG (Kubernetes configmap)
+- Update Application/YAML to support MIG
 
 ## Enabling MIG
 
@@ -24,16 +34,16 @@ The K8s MIG Manager will handle enabling and disabling MIG on all devices, as ne
 
 There are some caveats depending on the state of your cluster and a node reboot may be necessary.
 
-
 ## Configuring MIG Mode in Kubernetes
 
 By default, MIG support for Kubernetes is enabled in DeepOps. The default MIG strategy used is set to `mixed`. This can be controlled by the `k8s_gpu_mig_strategy`variable in `config/group_vars/k8s-cluster.yml. The "mixed" strategy is recommended for new deployments. For more information about strategies see the GPU Device Plugin [README](https://github.com/NVIDIA/k8s-device-plugin#deployment-via-helm).
 
 If DeepOps is being used to manage a Kubernetes cluster that was deployed using another method, MIG can be enabled by running:
 
-```sh
+```bash
 ansible-playbook playbooks/k8s-cluster/nvidia-gpu-operator.yml
 ```
+
 > Note, the same command can be used to re-configure a new strategy
 
 ## Configuring MIG Devices
@@ -45,9 +55,9 @@ Configuration and reconfiguration require that you:
 1. Taint your node
 2. Evacuate all GPU pods
 3. Configure MIG
-6. Remove the taint
+4. Remove the taint
 
-```sh
+```bash
 kubectl taint node gpu01 mig=maintenance:NoSchedule
 kubectl taint node gpu01 mig=maintenance:NoExecute # Optionally, Deep Learning jobs and Notebooks could be allowed to "time out"
 kubectl label node gpu01 nvidia.com/mig.config=all-1g.5gb
@@ -59,14 +69,13 @@ kubectl taint node gpu01 mig=maintenance:NoExecute-
 
 For information on configuring MIG see the [official documentation](https://docs.nvidia.com/datacenter/tesla/mig-user-guide/).
 
-
 ## Using MIG in Kubernetes
 
 See "Requesting MIG devices with each Strategy" in [the K8S MIG guide](https://docs.google.com/document/u/1/d/1mdgMQ8g7WmaI_XVVRrCvHPFPOMCm5LQD5JefgAh6N8g) for full details.
 
 Example YAML:
 
-```sh
+```yaml
 # Request a MIG using nodeSelector
 apiVersion: v1
 kind: Pod
@@ -82,9 +91,10 @@ spec:
         limits:
           nvidia.com/gpu: 1
 ```
+
 > Single Strategy, note the nodeSelector
 
-```sh
+```yaml
 # Request MIG using resource limit
 apiVersion: v1
 kind: Pod
@@ -98,8 +108,8 @@ spec:
         limits:
           nvidia.com/mig-1g.5gb: 1
 ```
-> Mixed Strategy, note the resource limit
 
+> Mixed Strategy, note the resource limit
 
 ## Misc.
 
