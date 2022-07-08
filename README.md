@@ -25,7 +25,7 @@ Infrastructure automation tools for Kubernetes and Slurm clusters with NVIDIA GP
 The DeepOps project encapsulates best practices in the deployment of GPU server clusters and sharing single powerful nodes (such as [NVIDIA DGX Systems](https://www.nvidia.com/en-us/data-center/dgx-systems/)). DeepOps may also be adapted or used in a modular fashion to match site-specific cluster needs. For example:
 
 - An on-prem data center of NVIDIA DGX servers where DeepOps provides end-to-end capabilities to set up the entire cluster management stack
-- An existing cluster running Kubernetes where DeepOps scripts are used to deploy Kubeflow and connect NFS storage
+- An existing cluster running Kubernetes where DeepOps scripts are used to deploy KubeFlow and connect NFS storage
 - An existing cluster that needs a resource manager / batch scheduler, where DeepOps is used to install Slurm or Kubernetes
 - A single machine where no scheduler is desired, only NVIDIA drivers, Docker, and the NVIDIA Container Runtime
 
@@ -39,16 +39,16 @@ Latest release: [DeepOps 22.04 Release](https://github.com/NVIDIA/deepops/releas
   - [etcd](https://github.com/coreos/etcd) v3.5.0
   - [docker](https://www.docker.com/) v20.10
   - [containerd](https://containerd.io/) v1.5.8
-  - [cri-o](http://cri-o.io/) v1.22 (experimental)
+  - [cri-o](http://cri-o.io/) v1.22
   - [calico](https://github.com/projectcalico/calico) v3.20.3
-  - [dashboard](https://github.com/kubernetes/dashboard/tree/v2.0.3) v2.0.3
-  - [dashboard metrics scraper](https://github.com/kubernetes-sigs/dashboard-metrics-scraper/tree/v1.0.4) v1.0.4
-  - [nvidia gpu operator](https://github.com/NVIDIA/gpu-operator/tree/v1.10.0) 1.10.0
+  - [dashboard](https://github.com/kubernetes/dashboard/tree/master) v2.0.3
+  - [dashboard metrics scraper](https://github.com/kubernetes-sigs/dashboard-metrics-scraper/tree/master) v1.0.4
+  - [nvidia gpu operator](https://github.com/NVIDIA/gpu-operator/tree/master) 1.10.0
 
 - Slurm Default Components:
 
-  - [slurm](https://github.com/SchedMD/slurm/tree/slurm-21-08-8-2) 21.08.8-2
-  - [Singularity](https://github.com/apptainer/singularity/tree/v3.7.3) 3.7.3
+  - [slurm](https://github.com/SchedMD/slurm/tree/master) 21.08.8-2
+  - [Singularity](https://github.com/apptainer/singularity/tree/master) 3.7.3
   - [docker](https://www.docker.com/) v20.10
 
 It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally [functional](docs/deepops/testing.md) but may change significantly between releases.
@@ -75,7 +75,7 @@ You may also install a supported operating system on all servers via a 3rd-party
 
 ### Kubernetes
 
-Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications. The instantiation of a Kubernetes cluster is done by [Kubespray](submodules/kubespray). Kubespray runs on bare metal and most clouds, using Ansible as its substrate for provisioning and orchestration. For people with familiarity with Ansible, existing Ansible deployments or the desire to run a Kubernetes cluster across multiple platforms, Kubespray is a good choice. Kubespray does generic configuration management tasks from the "OS operators" ansible world, plus some initial K8s clustering (with networking plugins included) and control plane bootstrapping. DeepOps provides additional playbooks to orchestration and optimization GPU environments.
+Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications. The instantiation of a Kubernetes cluster is done by [Kubespray](submodules/kubespray). Kubespray runs on bare metal and most clouds, using Ansible as its substrate for provisioning and orchestration. For people with familiarity with Ansible, existing Ansible deployments or the desire to run a Kubernetes cluster across multiple platforms, Kubespray is a good choice. Kubespray does generic configuration management tasks from the "OS operators" ansible world, plus some initial K8s clustering (with networking plugins included) and control plane bootstrapping. DeepOps provides additional playbooks for orchestration and optimization of GPU environments.
 
 Consult the [DeepOps Kubernetes Deployment Guide](docs/k8s-cluster/) for instructions on building a GPU-enabled Kubernetes cluster using DeepOps.
 
@@ -99,8 +99,6 @@ For more information on Slurm in general, refer to the [official Slurm docs](htt
 
 **DeepOps does not test or support a configuration where nodes have a heterogenous OS running.**
 Additional modifications are needed if you plan to use unsupported operating systems such as RHEL.
-
-If you are deploying
 
 ### Virtual
 
