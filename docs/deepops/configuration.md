@@ -1,6 +1,17 @@
-Configuring DeepOps
-===================
+# Configuration
 
+- [Configuration](#configuration)
+  - [The DeepOps configuration directory](#the-deepops-configuration-directory)
+  - [Modifying the Ansible inventory](#modifying-the-ansible-inventory)
+  - [Modifying Ansible variables](#modifying-ansible-variables)
+    - [Optional features](#optional-features)
+    - [Role parameters](#role-parameters)
+    - [Finding variables to change](#finding-variables-to-change)
+    - [Which file should my variables go in?](#which-file-should-my-variables-go-in)
+  - [Adding custom playbooks](#adding-custom-playbooks)
+  - [Managing your configuration directory in Git](#managing-your-configuration-directory-in-git)
+  - [Using multiple configuration directories for separate clusters](#using-multiple-configuration-directories-for-separate-clusters)
+  
 ## The DeepOps configuration directory
 
 When you first clone the DeepOps repository and run `scripts/setup.sh`, one of the first things that the setup script does is copy the [`config.example` directory](../../config.example) to a new directory called `config`.
@@ -26,12 +37,11 @@ For example, you may choose to:
 - Change the version of software being installed, such as the Slurm version
 - Or change the download URL used for a software install, if you want to point to a different mirror
 
-However, unless you're developing changes to DeepOps itself, you should never have to make changes *outside your configuration directory*.
+However, unless you're developing changes to DeepOps itself, you should never have to make changes _outside your configuration directory_.
 (If you do, that's a sign that we haven't made our playbooks configurable enough, and you should open an issue or PR to fix that!)
 
 Ideally, we expect that all customizations for a specific cluster should be made in the configuration directory for that cluster.
 There are a few exceptions to this in the [example workloads directory](../../workloads), but in most cases it should be possible to copy these to your config directory to manage with the rest of your configuration.
-
 
 ## Modifying the Ansible inventory
 
@@ -42,7 +52,7 @@ In general, we expect that there will always be a section labeled `[all]` that c
 If you need to supply the IP addresses of your hosts, you will usually specify those IPs here as well.
 For example:
 
-```
+```bash
 [all]
 my-cluster-controller      ansible_host=10.0.0.1
 my-cluster-compute-01      ansible_host=10.0.0.2
@@ -58,7 +68,7 @@ These groups are used by DeepOps to determine which playbooks run on which nodes
 and you should add nodes to these groups based on how you want to lay out your cluster.
 For example:
 
-```
+```bash
 [slurm-master]
 my-cluster-controller
 
@@ -71,18 +81,16 @@ If you want to further sub-divide your cluster, or target particular hosts with 
 For example, if you have a host that you will use as a separate NFS server, you may want to create an `nfs-server` group and only run the [NFS server playbook](../../playbooks/generic/nfs-server.yml) on that host.
 You can restrict the hosts that will run an Ansible playbook using the `--limit` or `-l` flag, e.g.:
 
-```
+```bash
 ansible-playbook -l nfs-server playbooks/generic/nfs-server.yml
 ```
 
 For more information on using Ansible inventory files, we recommend reading the [Ansible documentation](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html).
 
-
 ## Modifying Ansible variables
 
 After the inventory file, the next most common customization is to modify the Ansible variables used for your cluster.
 These variables are included in the various files under [`config/group_vars`](../../config.example/group_vars).
-
 
 ### Optional features
 
@@ -93,7 +101,6 @@ For example, the [slurm-cluster playbook](../../playbooks/slurm-cluster.yml) aut
 This is useful if you plan to use containers on your cluster, but you might not want to do this if you do all your development outside containers!
 This feature can be disabled by setting `slurm_enable_container_registry: false` in your DeepOps configuration.
 
-
 ### Role parameters
 
 Many of the Ansible roles in DeepOps are parameterized, allowing you to change values such as component versions, download URLs, or filesystem paths.
@@ -101,7 +108,6 @@ Many of the Ansible roles in DeepOps are parameterized, allowing you to change v
 For example, the [OpenMPI role](../../roles/openmpi) installs OpenMPI 4.0.3 by default.
 However, some applications still don't work with more recent versions of OpenMPI, and you may want to install OpenMPI 3.1.6 instead.
 You can do this with an Ansible variable by setting `openmpi_version: "3.1.6"`.
-
 
 ### Finding variables to change
 
@@ -114,13 +120,12 @@ If you're interested in customizing the behavior of a particular Ansible role fu
 This contains the default values of the variables included with the role itself, and may contain variables that aren't listed in the example configuration.
 However, you can override these values by adding them to your DeepOps configuration files.
 
-
 ### Which file should my variables go in?
 
 **Group variables** are applied to all the hosts in an Ansible inventory group.
 These variables are specified in files named for the inventory group used, in the `config/group_vars` directory:
 
-```
+```console
 config/group_vars/
 ├── all.yml
 ├── k8s-cluster.yml
@@ -139,13 +144,12 @@ or test configurations,
 such as installing a different version of the NVIDIA driver on a host where you're testing an upgrade.
 These variables go in files named for each host in the `host_vars` directory:
 
-```
+```bash
 config/host_vars/
 └── gpu01
 ```
 
 The variables in `host_vars/gpu01` would only be applied for a host named `gpu01`.
-
 
 ## Adding custom playbooks
 
@@ -155,7 +159,7 @@ For example, DeepOps doesn't (yet) include a playbook for installing the classic
 If you wrote an Ansible playbook for installing Pingus on your cluster (to give your users a way to [entertain themselves while their code compiles](https://xkcd.com/303/)),
 you would put it in your `config/playbooks` directory:
 
-```
+```bash
 config/playbooks/
 └── pingus.yml
 ```
@@ -168,7 +172,6 @@ ansible-playbook config/playbooks/pingus.yml
 
 And can make use of variables in your `config` directory like other playboks.
 
-
 ## Managing your configuration directory in Git
 
 We recommend creating a separate Git repository for managing your cluster configuration, so that you can track changes to your cluster independently of DeepOps changes and upgrades.
@@ -176,40 +179,39 @@ We recommend creating a separate Git repository for managing your cluster config
 
 A good practice is to start a new Git repository by copying the example configuration:
 
-```
-$ cp -R config.example/ config/
-$ cd config
-$ git init
-$ git commit -am "Start from the example configuration"
+```bash
+cp -R config.example/ config/
+cd config
+git init
+git commit -am "Start from the example configuration"
 ```
 
 And then pushing this repository to a remote Git host, such as Github:
 
-```
-$ cd config.my-cluster/
-$ git remote add origin <your-git-remote>
-$ git push -u origin main
+```bash
+cd config.my-cluster/
+git remote add origin <your-git-remote>
+git push -u origin main
 ```
 
 Once you have a repository set up, you can use it to track changes as you configure your cluster.
 For example, if you change the version of Slurm being installed:
 
-```
-$ cd config.my-cluster/group_vars/
+```bash
+cd config.my-cluster/group_vars/
 
 # Edit your Slurm configuration to upgrade to version 20.11
-$ vim slurm-cluster.yml
+vim slurm-cluster.yml
 
-$ git add slurm-cluster.yml
-$ git commit -m "Update cluster to Slurm 20.11"
+git add slurm-cluster.yml
+git commit -m "Update cluster to Slurm 20.11"
 ```
-
 
 ## Using multiple configuration directories for separate clusters
 
 If you're running multiple clusters, you can keep their configuration in separate configuration directories within the same DeepOps repository clone:
 
-```
+```bash
 config.cluster-0
 └── group_vars
 config.cluster-1
@@ -225,6 +227,6 @@ These configuration directories can each have their own inventory files, Ansible
 
 You can then run Ansible for each of the clusters independently by specifying the inventory file on the command line:
 
-```
+```bash
 ansible-playbook -i config.cluster-1/inventory playbooks/slurm-cluster.yml
 ```

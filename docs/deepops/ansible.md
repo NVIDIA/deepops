@@ -1,27 +1,38 @@
-[Ansible Guide](https://www.ansible.com/overview/how-ansible-works)
-===
+# [Ansible Guide](https://www.ansible.com/overview/how-ansible-works)
 
 Ansible is a tool that automates the configuration of systems.
 
+- [Ansible Guide](#ansible-guide)
+  - [Ansible Setup](#ansible-setup)
+    - [Requirements](#requirements)
+    - [Passwordless configuration using SSH keys](#passwordless-configuration-using-ssh-keys)
+    - [Password configuration](#password-configuration)
+  - [Ansible Playbooks](#ansible-playbooks)
+    - [Ansible playbook output](#ansible-playbook-output)
+  - [Ansible Usage](#ansible-usage)
+    - [Useful commands](#useful-commands)
+  - [Ansible Troubleshooting](#ansible-troubleshooting)
+  - [Reference Documentation](#reference-documentation)
+
 Install Ansible on any system which can access target nodes via SSH. This can be a laptop, small virtual machine, or cluster management server. This system is known in these docs as the provisioning node.
 
-Ansible is:
-* Agentless (there’s nothing that needs to be installed on other nodes in the cluster)
-* Idempotent (you can run the same playbook or task over and over again without repercussions - and tasks that do not require modification of the target nodes will result in Ansible skipping those tasks)
-* Easy to maintain & scale (rather than custom scripts)
-* Easy to read & use (via YAML playbooks, roles, and tasks)
+**Ansible is...**
 
+- Agentless (there’s nothing that needs to be installed on other nodes in the cluster)
+- Idempotent (you can run the same playbook or task over and over again without repercussions - and tasks that do not require modification of the target nodes will result in Ansible skipping those tasks)
+- Easy to maintain & scale (rather than custom scripts)
+- Easy to read & use (via YAML playbooks, roles, and tasks)
 
 ## Ansible Setup
 
 ### Requirements
 
-* Control machine with supported OS to run Ansible
-* [Passwordless](docs/deepops/ansible.md#passwordless-configuration-using-ssh-keys) (SSH key) access from Ansible system to Universal GPU servers
+- Control machine with supported OS to run Ansible
+- [Passwordless](docs/deepops/ansible.md#passwordless-configuration-using-ssh-keys) (SSH key) access from Ansible system to Universal GPU servers
 
 A script is provided to install Ansible on Ubuntu and RHEL/CentOS machines. Ansible can also be installed on Mac OS and Windows (WSL).
 
-```sh
+```bash
 # Install Ansible and required roles from Ansible Galaxy
 ./scripts/setup.sh
 ```
@@ -33,7 +44,7 @@ See the official [Ansible documentation](https://docs.ansible.com/ansible/latest
 Systems are easier to manage with Ansible if you don't have to type passwords. To configure SSH for passwordless
 access using SSH keys. Run the following commands on the control machine where Ansible is installed:
 
-```sh
+```bash
 # Generate an SSH keypair for the current user (hit enter to accept defaults)
 ssh-keygen
 
@@ -56,11 +67,10 @@ If sudo requires a password, add the `-K` flag
 
 ### Ansible playbook output
 
-* *Green* indicates nothing changed as a result of the task
-* *Yellow* indicates something changed as a result of the task
-* *Blue* indicates the task was skipped
-* *Red* indicates the task failed
-
+- _Green_ indicates nothing changed as a result of the task
+- _Yellow_ indicates something changed as a result of the task
+- _Blue_ indicates the task was skipped
+- _Red_ indicates the task failed
 
 For more verbose output, add `-v`, `-vv`, `-vvv`, etc. flags.
 
@@ -76,7 +86,7 @@ node1                      : ok=401  changed=121  unreachable=0    failed=0
 
 _Create server inventory_
 
-```sh
+```bash
 # Copy the default configuration
 # This should be in the deepops directory and will be done automatically by setup.sh
 cp -r config.example config
@@ -95,7 +105,7 @@ _Run Commands_
 
 To run arbitrary commands in parallel across nodes in the cluster, you can use ansible and the groups or hosts defined in the inventory file, for example:
 
-```sh
+```bash
 # ansible <host-group> -a hostname
 ansible management -a hostname
 ```
@@ -104,8 +114,7 @@ _Run Playbooks_
 
 To run playbooks, use the `ansible-playbook` command:
 
-
-```sh
+```bash
 # If sudo requires a password, add the -K flag
 
 # ansible-playbook <host-group> playbooks/<playbook>.yml
@@ -124,7 +133,7 @@ _SSH Connection_
 
 Ansible is configured by default in DeepOps to use SSH multiplexing to speed up connections. If a target system changes and you have a persistent connection (the default length is 30m), you may need to clean up the control socket to prevent connection errors:
 
-```
+```bash
 find ~/.ssh -type s -delete
 ```
 
