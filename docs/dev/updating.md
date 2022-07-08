@@ -1,5 +1,7 @@
 # Updating
 
+Creating a new DeepOps release
+
 - [Updating](#updating)
   - [Creating a new release branch](#creating-a-new-release-branch)
   - [Things to update](#things-to-update)
@@ -8,14 +10,14 @@
     - [Version numbers](#version-numbers)
   - [Finalizing a release](#finalizing-a-release)
 
-Creating a new DeepOps release
-
 ## Creating a new release branch
-*release-YY.MM*
 
-__*or*__
+_release-YY.MM_
 
-*release-YY.MM.PATCH*
+**_or_**
+
+_release-YY.MM.PATCH_
+
 ```bash
 git checkout master
 git pull
