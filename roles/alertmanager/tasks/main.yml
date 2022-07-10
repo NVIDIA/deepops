@@ -7,7 +7,7 @@
 
 - name: install config file
   template:
-    src: templates/alertmanager.yml.j2
+    src: "{{ alertmanager_config_src }}"
     dest: "{{ alertmanager_config_dir }}/alertmanager.yml"
     owner: root
     group: root
