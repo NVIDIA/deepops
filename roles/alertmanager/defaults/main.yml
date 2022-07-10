@@ -1,0 +1,7 @@
+alertmanager_config_dir: /etc/alertmanager
+alertmanager_config_src: templates/alertmanager.yml.j2
+alertmanager_container: "prom/alertmanager"
+alertmanager_svc_name: "docker.alertmanager.service"
+alertmanager_docker_volume_name: "deepops_alertmanager_metrics"
+alertmanager_state: started
+alertmanager_enabled: yes

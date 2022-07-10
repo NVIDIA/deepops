@@ -95,7 +95,11 @@
   vars:
     hostlist: "{{ slurm_monitoring_group | default('slurm-metric') }}"
   when: slurm_enable_monitoring
-
+- include: slurm-cluster/alertmanager.yml
+  vars:
+    hostlist: "{{ slurm_monitoring_group | default('slurm-metric') }}"
+  when: slurm_enable_monitoring
+  
 # Install monitoring exporters
 - include: slurm-cluster/prometheus-slurm-exporter.yml
   vars:

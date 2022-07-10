@@ -1,4 +1,6 @@
 prometheus_config_dir: /etc/prometheus
+prometheus_config_src: templates/prometheus.yml.j2
+prometheus_alert_rules_src: templates/alert_rules.yml.j2
 prometheus_container: "prom/prometheus"
 prometheus_svc_name: "docker.prometheus.service"
 prometheus_docker_volume_name: "deepops_prometheus_metrics"
@@ -6,4 +8,5 @@ prometheus_state: started
 prometheus_enabled: yes
 
 prometheus_cfg_scrape_interval: 15s
+prometheus_cfg_evaluation_interval: 15s
 prometheus_cfg_endpoint_dir: "{{ prometheus_config_dir }}/endpoints"

@@ -11,9 +11,23 @@
     state: directory
     mode: "0755"
 
+- name: create alarm rules dir
+  file:
+    path: "{{ prometheus_config_dir }}/rules"
+    state: directory
+    mode: "0755"
+
+- name: install alarm rules file
+  template:
+    src: "{{ prometheus_alert_rules_src }}"
+    dest: "{{ prometheus_config_dir }}/rules/alert_rules.yml"
+    owner: root
+    group: root
+    mode: 0644
+
 - name: install config file
   template:
-    src: templates/prometheus.yml.j2
+    src: "{{ prometheus_config_src }}"
     dest: "{{ prometheus_config_dir }}/prometheus.yml"
     owner: root
     group: root
