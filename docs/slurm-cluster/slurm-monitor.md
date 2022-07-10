@@ -79,3 +79,20 @@ In order to make ad-hoc queries Prometheus can be used. Visit Prometheus at http
 ![Prometheus Query](../img/slurm_monitoring_prometheus01.png)
 
 For more information on constructing Prometheus queries see the official [Prometheus getting started guide](https://prometheus.io/docs/prometheus/latest/querying/basics/).
+
+## Alertmanager
+
+The Alertmanager handles alerts sent by client applications such as the Prometheus server, after adding alert rules from Prometheus, you can receive alerts via receivers like email, Slack, etc with Alertmanager.
+
+Describes how to configure Alertmanager.
+
+* Configure the desired [receiver](https://prometheus.io/docs/alerting/latest/configuration/#receiver) in Alertmanager configuration yml. (slack, email, etc)
+* Configure the desired [rules](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/) in Prometheus alert rules yml.
+  * Alerting rules allow you to define alert conditions based on Prometheus expression language expressions and to send notifications about firing alerts to an external service.
+  * Visit http://\<slurm-metric ip\>:9090/alerts to check the status of rules 
+  ![Prometheus alert rules](../img/slurm_monitoring_alertmanager01.png)
+
+Visit http://\<slurm-metric ip\>:9093 for checking and setting about alerting.
+![Alertmanager](../img/slurm_monitoring_alertmanager02.png)
+
+For more information on constructing Alertmanager alerting see the official [Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/).
