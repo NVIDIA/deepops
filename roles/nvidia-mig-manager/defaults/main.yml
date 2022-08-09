@@ -1,3 +1,3 @@
 ---
-mig_manager_url_deb: https://github.com/NVIDIA/mig-parted/releases/download/v0.2.0/nvidia-mig-manager_0.2.0-1_amd64.deb
-mig_manager_url_rpm: https://github.com/NVIDIA/mig-parted/releases/download/v0.2.0/nvidia-mig-manager-0.2.0-1.x86_64.rpm
+mig_manager_url_deb: https://github.com/NVIDIA/mig-parted/releases/download/v0.4.2/nvidia-mig-manager_0.4.2-1_amd64.deb
+mig_manager_url_rpm: https://github.com/NVIDIA/mig-parted/releases/download/v0.4.2/nvidia-mig-manager-0.4.2-1.x86_64.rpm

@@ -1,4 +1,4 @@
-slurm_exporter_container: "deepops/prometheus-slurm-exporter"
+slurm_exporter_container: "deepops/prometheus-slurm-exporter:latest"
 slurm_exporter_svc_name: "docker.slurm-exporter.service"
 slurm_exporter_state: started
 slurm_exporter_enabled: yes
