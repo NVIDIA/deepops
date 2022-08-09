@@ -23,7 +23,7 @@ fi
 
 # Add Helm metallb repo if it doesn't exist
 HELM_CHARTS_REPO_METALLB="${HELM_CHARTS_REPO_METALLB:-https://metallb.github.io/metallb}"
-HELM_METALLB_CHART_VERSION=${HELM_METALLB_CHART_VERSION:-0.12.1}
+HELM_METALLB_CHART_VERSION=${HELM_METALLB_CHART_VERSION:-0.13.4}
 if ! helm repo list | grep metallb  >/dev/null 2>&1 ; then
 	helm repo add metallb "${HELM_CHARTS_REPO_METALLB}"
 	helm repo update
