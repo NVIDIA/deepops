@@ -1,6 +1,6 @@
 ---
 nginx_docker_cache_name: "deepops-nginx-docker-cache"
-nginx_docker_cache_image: "rpardini/docker-registry-proxy:0.6.1"
+nginx_docker_cache_image: "rpardini/docker-registry-proxy:0.6.4"
 
 nginx_docker_cache_mirror_path: "/opt/deepops/nginx-docker-cache/mirror"
 nginx_docker_cache_ca_path: "/opt/deepops/nginx-docker-cache/ca"

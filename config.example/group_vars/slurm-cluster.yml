@@ -3,7 +3,7 @@
 ################################################################################
 # Slurm job scheduler configuration
 # Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
-slurm_version: "21.08.8-2"
+slurm_version: "22.05.2"
 slurm_install_prefix: /usr/local
 pmix_install_prefix: /opt/deepops/pmix
 hwloc_install_prefix: /opt/deepops/hwloc
@@ -50,12 +50,16 @@ slurm_allow_ssh_user: []
 # See docs/slurm-cluster/slurm-single-node.md
 slurm_login_on_compute: false
 
+################################################################################
+# Kubespray - necessary configuration for Docker setup                         #
+################################################################################
+dns_mode: "none"
+dns_late: false
 
 ################################################################################
 # Optional installs                                                            #
 ################################################################################
 slurm_configure_etc_hosts: yes
-dns_mode: none
 slurm_cluster_install_cuda: yes
 slurm_cluster_install_nvidia_driver: yes
 slurm_cluster_install_singularity: no
