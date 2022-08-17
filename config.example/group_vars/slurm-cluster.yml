@@ -50,12 +50,16 @@ slurm_allow_ssh_user: []
 # See docs/slurm-cluster/slurm-single-node.md
 slurm_login_on_compute: false
 
+################################################################################
+# Kubespray - necessary configuration for Docker setup                         #
+################################################################################
+dns_mode: "none"
+dns_late: false
 
 ################################################################################
 # Optional installs                                                            #
 ################################################################################
 slurm_configure_etc_hosts: yes
-dns_mode: none
 slurm_cluster_install_cuda: yes
 slurm_cluster_install_nvidia_driver: yes
 slurm_cluster_install_singularity: no
