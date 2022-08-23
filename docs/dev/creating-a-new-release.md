@@ -19,12 +19,12 @@ All changes should be merged with the main branch and a release tag created.
 
 Create a new pull request against the main branch with changes to version numbers
 
-- [] Kubespray
-- [] Slurm
-- [] Ansible Galaxy dependencies
-- [] Slurm container dependencies
-- [] Helm charts
-- [] Misc. roles
+- Kubespray
+- Slurm
+- Ansible Galaxy dependencies
+- Slurm container dependencies
+- Helm charts
+- Misc. roles
 
 ### Kubespray
 
@@ -78,9 +78,9 @@ Update version numbers in the `roles/requirements.yml` file
 
 Once all pull requests for the release have been merged, including software version updates,
 and all QA tests are passing, create a new PR with release notes and an updated release tag
-in the main `README.md` file. See #1164 as an example.
+in the main `README.md` file. See (#1164) as an example.
 
 ## Create release
 
-Once the pull request with release notes and tag has been merged, create a new release
-with a new tag, pointing at the main branch
+Once the previous pull request with release notes and tag update has been merged, create a new release
+with a new tag, pointing at the main branch and using the release notes from the PR.
