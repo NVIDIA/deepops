@@ -31,7 +31,7 @@ The DeepOps project encapsulates best practices in the deployment of GPU server 
 
 ## Releases Notes
 
-Latest release: [DeepOps 22.04 Release](https://github.com/NVIDIA/deepops/releases/tag/22.04)
+Latest release: [DeepOps 22.08 Release](https://github.com/NVIDIA/deepops/releases/tag/22.08)
 
 - Kubernetes Default Components:
 
