@@ -78,7 +78,7 @@ Update version numbers in the `roles/requirements.yml` file
 
 Once all pull requests for the release have been merged, including software version updates,
 and all QA tests are passing, create a new PR with release notes and an updated release tag
-in the main `README.md` file. See (#1164) as an example.
+in the main `README.md` file. See [#1164](https://github.com/NVIDIA/deepops/pull/1164) as an example.
 
 ## Create release
 
