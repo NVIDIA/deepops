@@ -17,6 +17,10 @@ slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
 #slurm_max_job_timelimit: INFINITE
 #slurm_default_job_timelimit:
 
+# Auto-detect GPUs using NVML
+# See docs/slurm-cluster/nvml.md for details.
+slurm_autodetect_nvml: true
+
 # Ensure hosts file generation only runs across slurm cluster
 hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
 

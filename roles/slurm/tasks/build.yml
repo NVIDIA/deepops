@@ -170,7 +170,13 @@
   command: "{{ slurm_configure }}"
   args:
     chdir: "{{ slurm_build_dir }}"
-  when: slurm_build
+  when: slurm_build and (not slurm_autodetect_nvml)
+
+- name: configure
+  command: "{{ slurm_configure_nvml }}"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+  when: slurm_build and slurm_autodetect_nvml
 
 - name: build
   shell: "make -j$(nproc) > build.log 2>&1"

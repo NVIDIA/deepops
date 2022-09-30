@@ -57,6 +57,8 @@ Instructions for deploying a GPU cluster with Slurm
    > `slurm_enable_ha: true` in `config/group_vars/slurm-cluster.yml`. For more information about HA Slurm deployments,
    > see: https://slurm.schedmd.com/quickstart_admin.html#HA
 
+4. If running on a cluster where you intend to configure [Multi-Instance GPU](https://www.nvidia.com/en-us/technologies/multi-instance-gpu/), consult the [Slurm NVML documentation](./nvml.md).
+
 4. Verify the configuration.
 
    ```bash
