@@ -83,6 +83,11 @@ pipeline {
             timeout 180 bash -x ./workloads/jenkins/scripts/test-dashboard.sh
           '''
 
+          echo "Start new virtual environment pre-Slurm checks"
+          sh '''
+            bash -x ./workloads/jenkins/scripts/vagrant-startup.sh
+          '''
+
           echo "Set up Slurm"
           sh '''
             bash -x ./workloads/jenkins/scripts/test-setup-slurm.sh
@@ -125,7 +130,7 @@ pipeline {
 
           echo "Test DCGM metrics"
           sh '''
-            timeout 500 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
+             timeout 600 bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node
           '''
         }
       }

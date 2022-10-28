@@ -1,0 +1,11 @@
+---
+mofed_version: "5.6-2.0.9.0"
+
+mofed_download_dir: "/tmp/mofed-install"
+mofed_download_dest: "mofed.tgz"
+mofed_download_name: "MLNX_OFED_LINUX-{{ mofed_version }}-{{ mofed_distro }}{{ ansible_distribution_version }}-{{ ansible_architecture }}"
+mofed_download_url: "http://www.mellanox.com/downloads/ofed/MLNX_OFED-{{ mofed_version }}/{{ mofed_download_name }}.tgz"
+
+mofed_install_flags: "--all --without-fw-update"
+
+mofed_cleanup_install_dir: true

@@ -1,5 +1,25 @@
+# MAAS
+
 OS Provisioning with MAAS
-=========================
+
+- [MAAS](#maas)
+  - [Summary](#summary)
+  - [Pre-requisites](#pre-requisites)
+  - [Installing MAAS with DeepOps](#installing-maas-with-deepops)
+  - [Configuring MAAS](#configuring-maas)
+    - [SSH keys](#ssh-keys)
+    - [OS repositories](#os-repositories)
+    - [Configuring DHCP](#configuring-dhcp)
+  - [Booting the test VM from MAAS](#booting-the-test-vm-from-maas)
+    - [Adding the test VM to the MAAS database](#adding-the-test-vm-to-the-maas-database)
+    - [Configuring the test VM for power control (or manual)](#configuring-the-test-vm-for-power-control-or-manual)
+    - [Commission the test VM](#commission-the-test-vm)
+    - [Deploying the test VM](#deploying-the-test-vm)
+    - [Releasing and reinstalling the machine](#releasing-and-reinstalling-the-machine)
+  - [Scaling up](#scaling-up)
+  - [Creating a DGX OS image installable by MAAS](#creating-a-dgx-os-image-installable-by-maas)
+
+## Introduction
 
 DeepOps includes an Ansible [playbook for setting up MAAS](../../playbooks/provisioning/maas.yml),
 Canonical's [Metal as a Service](https://maas.io/) tool for provisioning the operating system on bare-metal servers.
@@ -16,22 +36,22 @@ For the best reference on how to use MAAS in general, see the [documentation on 
 
 In order to set up and use MAAS, you should at minimum have the following components:
 
-* An Ubuntu 18.04 server which you can use to run MAAS
-* One or more servers which you will manage using MAAS
-* A network connection between all the servers on which you can safely run DHCP. This is needed so that MAAS can provision IP addresses to the nodes it manages.
-* A network connection which you can use to log into the MAAS server. This may be the same network as the inter-node network, or it may be a separate network.
+- An Ubuntu 18.04 server which you can use to run MAAS
+- One or more servers which you will manage using MAAS
+- A network connection between all the servers on which you can safely run DHCP. This is needed so that MAAS can provision IP addresses to the nodes it manages.
+- A network connection which you can use to log into the MAAS server. This may be the same network as the inter-node network, or it may be a separate network.
 
 ![maas-topology](./maas-example-vms.png "Example network topology")
 
 In this example, we will use:
 
-* An internal (VM-only) network on which we'll use the subnet `192.168.1.0/24`
-* An external network connection on which we'll use the subnet `192.168.122.0/24`
-* `maas-vm`, a pre-installed Ubuntu 18.04 virtual machine
-    * `maas-vm` has IP `192.168.1.1` on the internal network, and `192.168.122.90` on the external network
-* `test-vm`, a "blank" virtual machine with no OS, on the same VM host
-    * `test-vm` has a connection only to the internal network, which is not configured yet
-    * `test-vm` should be configured to PXE boot on its network interface, rather than boot from its local disk
+- An internal (VM-only) network on which we'll use the subnet `192.168.1.0/24`
+- An external network connection on which we'll use the subnet `192.168.122.0/24`
+- `maas-vm`, a pre-installed Ubuntu 18.04 virtual machine
+  - `maas-vm` has IP `192.168.1.1` on the internal network, and `192.168.122.90` on the external network
+- `test-vm`, a "blank" virtual machine with no OS, on the same VM host
+  - `test-vm` has a connection only to the internal network, which is not configured yet
+  - `test-vm` should be configured to PXE boot on its network interface, rather than boot from its local disk
 
 This guide assumes that you have already set up the virtual networks, created the two VMs, installed Ubuntu on `maas-vm`, and configured the IPs on `maas-vm`.
 (You may also have done this using physical machines, but VMs are easier!)
@@ -42,22 +62,22 @@ Please consult your hypervisor documentation for instructions on doing this.
 
 1. If you haven't already done so, clone the DeepOps repository to your local machine and run `scripts/setup.sh`.
 1. Configure DeepOps with basic information about your installation, including the DNS domain, controller IP, and user login information.
-    The configuration can be found in `config/group_vars/all.yml`.
-    Note that the IP address used for MAAS should be on the internal network; in this example, we're using `192.168.1.1`.
-    ```
-    maas_adminusers:
-      - username: 'admin'
-        email: 'admin@{{ maas_dns_domain }}'
-        password: 'admin'
-    maas_dns_domain: 'deepops.local'
-    maas_region_controller: '192.168.1.1'
-    maas_region_controller_url: 'http://{{ maas_region_controller }}:5240/MAAS'
-    maas_repo: 'ppa:maas/2.8'
-    ```
+   The configuration can be found in `config/group_vars/all.yml`.
+   Note that the IP address used for MAAS should be on the internal network; in this example, we're using `192.168.1.1`.
+   ```yaml
+   maas_adminusers:
+     - username: 'admin'
+       email: 'admin@{{ maas_dns_domain }}'
+       password: 'admin'
+   maas_dns_domain: 'deepops.local'
+   maas_region_controller: '192.168.1.1'
+   maas_region_controller_url: 'http://{{ maas_region_controller }}:5240/MAAS'
+   maas_repo: 'ppa:maas/2.8'
+   ```
 1. Run the Ansible playbook to install:
-    ```
-    ansible-playbook -l <name-of-maas-node> playbooks/provisioning/maas.yml
-    ```
+   ```bash
+   ansible-playbook -l <name-of-maas-node> playbooks/provisioning/maas.yml
+   ```
 
 ## Configuring MAAS
 
@@ -79,9 +99,9 @@ Then click the button to go to the MAAS dashboard.
 
 After entering SSH keys, you will be redirected to an intro configuration page on which you can configure:
 
-* The name of the MAAS region you are creating
-* Connectivity information to the Internet
-* The source and versions of Ubuntu which will be downloaded by MAAS to install
+- The name of the MAAS region you are creating
+- Connectivity information to the Internet
+- The source and versions of Ubuntu which will be downloaded by MAAS to install
 
 In this example, I'm leaving all these parameters at their default values.
 This will enable us to install Ubuntu 18.04 on the VM we are installing.
@@ -100,12 +120,11 @@ However, there should be a warning message on this page, reading:
 To configure DHCP on the internal network VLAN, do the following:
 
 1. In the header of the page, click the "Subnets" link
-1. On the Subnets page, you should see one or more "fabrics" listed. These are the available networks which can be used to run DHCP and provision servers with MAAS. 
+1. On the Subnets page, you should see one or more "fabrics" listed. These are the available networks which can be used to run DHCP and provision servers with MAAS.
 1. Look for the fabric whose subnet matches your internal network (`192.168.1.0/24` in our two-VM example). Then, in this row, click the "untagged" link in the "VLAN" column.
 1. This should take you to the page for the Default VLAN on your internal network. The second panel in this page will be for DCHP, and there should be a button all the way to the right labeled "Enable DHCP".
-    Click it.
+   Click it.
 1. On the DHCP configuration page, you will be asked for the configuration of the "Reserved dynamic range". On a real network, you should ensure that the gateway IP is correct, and that the IPs in this range don't overlap with any IPs your site is using. For our example, we will accept the defaults and click "Configure DHCP".
-
 
 ## Booting the test VM from MAAS
 
@@ -132,19 +151,19 @@ If you want to, you can also rename the machine by clicking the name at the top 
 
 Before we can deploy this machine, we have to configure it so that MAAS can turn it on or off (or tell MAAS that we will do this manually).
 
-1. On the page for the machine, look for the navigation bar *under* the machine's name.
+1. On the page for the machine, look for the navigation bar _under_ the machine's name.
 1. Click Configuration.
 1. Scroll down until you see the Power configuration setting.
-    If this has already been selected to a pre-configured value, you're good to go, because MAAS has autodetected how to control the power on this node!
+   If this has already been selected to a pre-configured value, you're good to go, because MAAS has autodetected how to control the power on this node!
 1. If it's not yet selected, click the drop-down menu and it will show several different types of power control available.
-    For a physical machine, the most common choice will be "IPMI", and will require you to fill in the username and password for the server BMC. 
-    MAAS also supports power control via several different types of hypervisors, such as VMware; these may also require credentials to access.
-    If none of these are available for your hypervisor, click "Manual". This will allow you to proceed with deploying your node, but you will have to manually boot it up when needed.
+   For a physical machine, the most common choice will be "IPMI", and will require you to fill in the username and password for the server BMC.
+   MAAS also supports power control via several different types of hypervisors, such as VMware; these may also require credentials to access.
+   If none of these are available for your hypervisor, click "Manual". This will allow you to proceed with deploying your node, but you will have to manually boot it up when needed.
 1. Click "Save changes"
 
 ### Commission the test VM
 
-Once the machine is configured for power control, you will need to *commission* the machine.
+Once the machine is configured for power control, you will need to _commission_ the machine.
 This process is similar to enlistment, but prepares the machine to have an OS deployed.
 
 Navigate to the machine page for your new machine, then click the green "Take action" button in the upper-right hand corner.

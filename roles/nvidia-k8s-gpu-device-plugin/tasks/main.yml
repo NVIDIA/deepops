@@ -6,9 +6,12 @@
 
 - name: install nvidia k8s gpu device plugin helm repo
   command: /usr/local/bin/helm repo add nvdp "{{ k8s_gpu_plugin_helm_repo }}"
+  changed_when: false
 
 - name: update helm repos
   command: /usr/local/bin/helm repo update
+  changed_when: false
 
 - name: install nvidia k8s gpu device plugin
   command: /usr/local/bin/helm upgrade --install "{{ k8s_gpu_plugin_release_name }}" "{{ k8s_gpu_plugin_chart_name }}" --version "{{ k8s_gpu_plugin_chart_version }}" --set "migStrategy={{ k8s_gpu_mig_strategy }}" --set "failOnInitError={{ k8s_gpu_plugin_init_error }}" --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key="nvidia\.com\/gpu\.count",affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator="Exists" --wait
+  changed_when: false

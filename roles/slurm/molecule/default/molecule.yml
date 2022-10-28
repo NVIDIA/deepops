@@ -1,0 +1,71 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: slurm-ubuntu-1804
+    image: geerlingguy/docker-ubuntu1804-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    tmpfs:
+    - /run
+    - /tmp
+    pre_build_image: true
+    privileged: true
+    groups:
+    - slurm-master
+    - slurm-node
+  - name: slurm-ubuntu-2004
+    image: geerlingguy/docker-ubuntu2004-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    tmpfs:
+    - /run
+    - /tmp
+    pre_build_image: true
+    privileged: true
+    groups:
+    - slurm-master
+    - slurm-node
+  - name: slurm-centos-7
+    image: geerlingguy/docker-centos7-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    tmpfs:
+    - /run
+    - /tmp
+    pre_build_image: true
+    privileged: true
+    groups:
+    - slurm-master
+    - slurm-node
+#  - name: slurm-centos-8
+#    image: geerlingguy/docker-centos8-ansible
+#    volumes:
+#      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+#    command: /sbin/init
+#    tmpfs:
+#    - /run
+#    - /tmp
+#    pre_build_image: true
+#    privileged: true
+#    groups:
+#    - slurm-master
+#    - slurm-node
+
+# Note: Molecule tests do not use NVML because the Github runner can't handle
+# the CUDA install as well as the Slurm build, it times out.
+provisioner:
+  name: ansible
+  inventory:
+    group_vars:
+      all:
+        slurm_autodetect_nvml: false
+  ansible_args:
+  - -vv
+verifier:
+  name: ansible

@@ -20,7 +20,7 @@
 
 # Configure Chrony (NTP) sync
 - include: generic/chrony-client.yml
-  when: chrony_install
+  when: chrony_install|default(true)
 
 # Set up a local cluster container registry
 - include: container/standalone-container-registry.yml hostlist=slurm-master
@@ -29,7 +29,7 @@
 # Set up NGINX-based container caching
 - include: container/nginx-docker-registry-cache-server.yml
   vars:
-    hostlist: "{{ nginx_docker_cache_hostgroup | default('slurm-master') }}"
+    hostlist: "{{ nginx_docker_cache_hostgroup | default('slurm-cache') }}"
   when: slurm_enable_nginx_docker_cache | default(false)
 - include: container/nginx-docker-registry-cache-client.yml
   vars:
@@ -54,11 +54,11 @@
 # Set up NFS filesystem
 - include: generic/nfs-server.yml
   vars:
-    hostlist: "{{ nfs_server_group | default('slurm-master[0]') }}"
+    hostlist: "{{ nfs_server_group | default('slurm-nfs[0]') }}"
   when: slurm_enable_nfs_server
 - include: generic/nfs-client.yml
   vars:
-    hostlist: "{{ nfs_client_group | default('slurm-master[1:],slurm-node') }}"
+    hostlist: "{{ nfs_client_group | default('slurm-nfs-client') }}"
   when: slurm_enable_nfs_client_nodes
 
 # Install DCGM
@@ -83,7 +83,7 @@
 # Install the NVIDIA HPC SDK
 - include: nvidia-software/nvidia-hpc-sdk.yml
   vars:
-    hostlist: "{{ sm_install_host | default('slurm-master[0]')}}"
+    hostlist: "{{ sm_install_host | default('slurm-login[0]')}}"
   when: slurm_install_hpcsdk
 
 # Install monitoring services
@@ -95,7 +95,11 @@
   vars:
     hostlist: "{{ slurm_monitoring_group | default('slurm-metric') }}"
   when: slurm_enable_monitoring
-
+- include: slurm-cluster/alertmanager.yml
+  vars:
+    hostlist: "{{ slurm_monitoring_group | default('slurm-metric') }}"
+  when: slurm_enable_monitoring
+  
 # Install monitoring exporters
 - include: slurm-cluster/prometheus-slurm-exporter.yml
   vars:

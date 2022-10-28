@@ -1,14 +1,18 @@
 ---
+# TODO: As of GPU Operator version 1.9.0, this node-prep role is no longer required
+# Handling of the Nouveau drivers and loading of these modules is handled within the GPU Oparator itself
+# Leaving this here for historical reasons and until GPU Operator v1.10.0 comes out
+
 - name: unload nouveau
   modprobe:
     name: nouveau
     state: absent
-  ignore_errors: true
+  failed_when: false
 
-- name: blacklist nouveau
+- name: blocklist nouveau
   copy:
-    src: "blacklist-nouveau.conf"
-    dest: "/etc/modprobe.d/blacklist-nouveau.conf"
+    src: "blocklist-nouveau.conf"
+    dest: "/etc/modprobe.d/blocklist-nouveau.conf"
     owner: "root"
     group: "root"
     mode: "0644"

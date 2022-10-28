@@ -1,0 +1,10 @@
+---
+- include: ../container/docker.yml
+
+- hosts: "{{ hostlist | default('all') }}"
+  become: yes
+  tasks:
+    - name: configure alertmanager
+      include_role:
+        name: alertmanager
+

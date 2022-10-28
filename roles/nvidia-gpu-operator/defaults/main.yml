@@ -1,7 +1,6 @@
 ---
 # See GitHub for more information https://github.com/NVIDIA/gpu-operator
 
-# For vGPU support, this role require a manual build step to create a driver container image in a private registry
 # See https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html#considerations-to-install-gpu-operator-with-nvidia-vgpu-driver
 #  for additional details around buidling/pushing/using driver containers and setting gpu_operator_driver_version to the correct value
 
@@ -13,19 +12,30 @@ gpu_operator_nvaie_helm_repo: "https://helm.ngc.nvidia.com/nvaie"
 gpu_operator_nvaie_chart_name: "nvaie/gpu-operator"
 
 # NVAIE GPU Operator may require different version, check NGC enterprise collection.
-gpu_operator_chart_version: "1.8.2"
+gpu_operator_chart_version: "1.11.1"
 
 k8s_gpu_mig_strategy: "mixed"
 
+# Enable/Disalbe specific components of GPU Operator
+gpu_operator_enable_driver: true
+gpu_operator_enable_toolkit: true
+gpu_operator_enable_dcgm: false
+gpu_operator_enable_migmanager: true
+
+# Set to true for DGX and other systems with pre-installed drivers
+# In an upcoming GPU Operator release, components can be enabled/disabled per-node
+# In the current version, the cluster is expected to be more homogeneous
+# TODO: Remove this flag and make detection dynamic per-node in this new release
+gpu_operator_preinstalled_nvidia_software: true
+
 # Configuration customization
-# XXX: This currently appears to be hardcoded in the operator
 gpu_operator_namespace: "gpu-operator-resources"
 gpu_operator_grid_config_dir: "{{ deepops_dir }}/gpu_operator"
 
 # Defaults from https://github.com/NVIDIA/gpu-operator/blob/master/deployments/gpu-operator/values.yaml
-gpu_operator_default_runtime: "docker"
+gpu_operator_default_runtime: "containerd"
 gpu_operator_driver_registry: "nvcr.io/nvidia"
-gpu_operator_driver_version: "470.57.02"
+gpu_operator_driver_version: "515.48.07"
 
 # This enables/disables NVAIE
 gpu_operator_nvaie_enable: false
@@ -46,4 +56,3 @@ gpu_operator_registry_username: "$oauthtoken"
 gpu_operator_registry_password: ""
 ## This is most likely an NGC email
 gpu_operator_registry_email: ""
-

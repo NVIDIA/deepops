@@ -1,0 +1,38 @@
+---
+#
+# variables for VFs, resource names,interface names and software versions.
+# pf_name is the physical interface with sriov enabled
+# res_name must match container's network resources in job file
+# if_name must match k8s network annotation name
+#
+
+nvidia_network_operator_version: "1.2.0"
+nvidia_network_operator_url: "https://mellanox.github.io/network-operator"
+mpi_operator_version: "v2beta1"
+mpi_raw_url: "https://raw.githubusercontent.com/kubeflow/mpi-operator/master/deploy/v2beta1"
+
+num_vf: 8
+vendor_id: "15b3"
+link_type: "ib"
+mtu: 4096
+
+intf_resources:
+  - if_name: "ibs1"
+    pf_name: "ibs1"
+    res_name: "resibs1"
+    ip_addr: "192.168.101.0/24"
+
+  - if_name: "ibp12s0"
+    pf_name: "ibp12s0"
+    res_name: "resibp12s0"
+    ip_addr: "192.168.102.0/24"
+
+  - if_name: "ibp132s0"
+    pf_name: "ibp132s0"
+    res_name: "resibp132s0"
+    ip_addr: "192.168.103.0/24"
+
+  - if_name: "ibp139s0"
+    pf_name: "ibp139s0"
+    res_name: "resibp139s0"
+    ip_addr: "192.168.104.0/24"

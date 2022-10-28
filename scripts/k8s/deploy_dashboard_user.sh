@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Source common libraries and env variables
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/../.."
+source ${ROOT_DIR}/scripts/common.sh
+
 # Make the dashboard a NodePort
 kubectl patch svc -n kube-system kubernetes-dashboard  -p '{"spec": {"type": "NodePort", "ports": [{"nodePort": 31443, "port": 443}] }}'
 

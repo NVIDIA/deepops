@@ -20,8 +20,10 @@
       owner: "root"
       group: "root"
       mode: "0644"
+    register: copy_ca_cert
   - name: update CA cert bundle
     command: update-ca-trust
+    when: copy_ca_cert.changed
 
 - name: install CA certificate from live proxy
   when: nginx_docker_cache_ca is not defined
@@ -33,5 +35,7 @@
       owner: "root"
       group: "root"
       mode: "0644"
+    register: download_ca_cert
   - name: update CA cert bundle
     command: update-ca-trust
+    when: download_ca_cert.changed

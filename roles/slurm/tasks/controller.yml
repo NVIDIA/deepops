@@ -39,11 +39,15 @@
     target: '/lib64(/.*)?'
     setype: mysqld_db_t
     state: present
-  when: ansible_os_family == "RedHat"
+  when: 
+  - ansible_os_family == "RedHat"
+  - (ansible_selinux is defined) and (ansible_selinux.status != "disabled")
 
 - name: Apply new SELinux file context to filesystem
   command: restorecon -irv /lib64
-  when: ansible_os_family == "RedHat"
+  when: 
+  - ansible_os_family == "RedHat"
+  - (ansible_selinux is defined) and (ansible_selinux.status != "disabled")
 
 - name: start mariadb
   systemd:
@@ -72,18 +76,51 @@
     - /var/spool/slurm/ctld
     - /var/log/slurm
 
+- name: create slurm directories for nfs sharing
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: slurm
+    mode: 0755
+  with_items:
+    - "{{ slurmctl_config_dir }}"
+  when: slurm_conf_symlink
+
 - name: create slurm HA directory
   file:
     path: "{{ slurm_ha_state_save_location }}"
     state: directory
     owner: slurm
     mode: 0755
-  when: "{{ slurm_enable_ha }}"
+  when: slurm_enable_ha
 
 - name: configure slurm.conf
   template:
     src: "{{ slurm_conf_template }}"
     dest: "{{ slurm_config_dir }}/slurm.conf"
+    mode: "0644"
+  when: not slurm_conf_symlink
+  notify:
+  - restart slurmctld
+  tags:
+  - config
+
+- name: configure slurm.conf to nfs
+  template:
+    src: "{{ slurm_conf_template }}"
+    dest: "{{ slurmctl_config_dir }}/slurm.conf"
+    mode: "0644"
+  when: slurm_conf_symlink
+  tags:
+  - config
+
+- name: complete slurm.conf
+  file:
+    path: "{{ slurm_config_dir }}/slurm.conf"
+    state: link
+    src: "{{ slurmctl_config_dir }}/slurm.conf"
+    force: yes
+  when: slurm_conf_symlink
   notify:
   - restart slurmctld
   tags:
@@ -152,7 +189,7 @@
 
 - name: kill slurmctld
   command: killall slurmctld
-  ignore_errors: yes
+  failed_when: false
   when: slurm_downgrade
 
 - name: restart slurmctld

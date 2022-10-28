@@ -1,0 +1,33 @@
+---
+# Install the NVIDIA MIG Manager tooling on all MIG-capable nodes
+
+# Check node state
+- name: check for MIG capable devices
+  shell: set -o pipefail && nvidia-smi --query-gpu=mig.mode.current --format=csv,noheader | grep -v 'N/A'
+  args:
+    executable: "/bin/bash"
+  register: has_mig
+  failed_when: false
+  changed_when: false
+
+- name: check for NVIDIA MIG parted
+  shell: which nvidia-mig-parted  # noqa command-instead-of-shell
+  register: has_mig_parted
+  failed_when: false
+  changed_when: false
+
+# Install NVIDIA MIG Manager Systemd service
+- name: Install MIG Manager (apt)
+  apt:
+    deb: "{{ mig_manager_url_deb }}"
+  when:
+    - has_mig.rc == 0
+    - has_mig_parted.rc != 0
+    - ansible_os_family == "Debian"
+- name: Install MIG Manager (yum)
+  yum:
+    name: "{{ mig_manager_url_rpm }}"
+    state: present
+  when:
+    - has_mig_parted.rc != 0
+    - ansible_os_family == "RedHat"

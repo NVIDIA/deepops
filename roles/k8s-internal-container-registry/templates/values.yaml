@@ -13,8 +13,8 @@ ingress:
   enabled: "{{ container_registry_ingress_enabled }}"
   hosts:
   - "{{ container_registry_hostname }}"
+  className: "nginx"
   annotations:
-    kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/proxy-body-size: "{{ container_registry_ingress_size }}"

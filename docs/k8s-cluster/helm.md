@@ -2,6 +2,10 @@
 
 Some services are installed using [Helm](https://helm.sh/), a package manager for Kubernetes.
 
+- [Helm](#helm)
+  - [Manual Install](#manual-install)
+
+
 ## Manual Install
 
 Install the Helm client by following the instructions for the OS on your provisioning system: https://docs.helm.sh/using_helm/#installing-helm
@@ -14,7 +18,7 @@ If `helm_enabled` is `true` in `config/kube.yml`, the Helm server will already b
 
 If the the value of `helm_enabled` was set to `false` in the `config/kube.yml` file helm will need to manually be installed. This is also how helm should be reinstalled.
 
-```sh
+```bash
 kubectl create sa tiller --namespace kube-system
 kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
 helm init --service-account tiller --node-selectors node-role.kubernetes.io/master=true

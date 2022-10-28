@@ -3,11 +3,13 @@
   file:
     path: "{{ prometheus_config_dir }}"
     state: directory
+    mode: "0755"
 
 - name: create endpoints config dir
   file:
     path: "{{ prometheus_cfg_endpoint_dir }}"
     state: directory
+    mode: "0755"
 
 - name: install config file
   template:
@@ -21,6 +23,7 @@
   file:
     path: "{{ nvidia_dcgm_container_config_dir }}"
     state: directory
+    mode: "0755"
   when: has_gpus
 
 - name: copy metrics file

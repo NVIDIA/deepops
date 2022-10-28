@@ -1,6 +1,26 @@
 ---
 # Kubernetes Cluster Playbook
 
+# Set facts depending on container runtime
+# Use GPU operator when container runtime is not docker
+# etcd_deployment_type must be `host` when container_manager is not `docker`
+- hosts: all
+  tasks:
+    - name: Set facts when not using docker container runtime (default)
+      set_fact:
+        deepops_gpu_operator_enabled: true
+        etcd_deployment_type: host
+      when:
+        - container_manager is defined
+        - container_manager != "docker"
+    - name: Set facts when using Docker container runtime
+      set_fact:
+        etcd_deployment_type: docker
+        gpu_operator_default_runtime: "docker"
+      when:
+        - container_manager is defined
+        - container_manager == "docker"
+
 # Install python required for Ansible
 - include: bootstrap/bootstrap-python.yml
   tags:
@@ -32,11 +52,11 @@
 
 # Disable cloud-init
 - include: generic/disable-cloud-init.yml
-  when: deepops_disable_cloud_init
+  when: deepops_disable_cloud_init|default(true)
 
 # Configure Chrony (NTP) sync
 - include: generic/chrony-client.yml
-  when: chrony_install
+  when: chrony_install|default(true)
 
 # Install the OpenShift API libraries required by the GPU plugin
 - include: bootstrap/bootstrap-openshift.yml
@@ -48,7 +68,7 @@
 
 # Set up a local cluster container registry
 - include: container/standalone-container-registry.yml hostlist=kube-master
-  when: kube_enable_container_registry|default(true)
+  when: kube_enable_container_registry|default(false)
 
 # Install 'sshpass' program for: https://github.com/ansible/ansible/issues/56629
 - hosts: all
@@ -66,6 +86,26 @@
   environment: "{{proxy_env if proxy_env is defined else {}}}"
   tags:
     - bootstrap
+
+# Un-hold container runtime packages on Ubuntu
+# In some cases, container runtime packages can be in the 'held' state, preventing
+# them from being removed and causing the install of the containerd runtime to fail
+- hosts: all
+  gather_facts: true
+  tasks:
+    - name: un-hold container runtime packages on Ubuntu
+      dpkg_selections:
+        name: "{{ item }}"
+        selection: purge
+      with_items:
+        - docker-ce
+        - docker-ce-cli
+        - docker-ce-rootless-extras
+        - containerd.io
+      when:
+        - container_manager is defined and container_manager != "docker"
+        - ansible_distribution == "Ubuntu"
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
 
 # Install Kubernetes
 # for configuration, see: config/group_vars/k8s-cluster.yml
@@ -125,33 +165,23 @@
 
 # Install NVIDIA driver on GPU servers
 - include: nvidia-software/nvidia-driver.yml
+  vars:
+    hostlist: "k8s-cluster"
   tags:
     - nvidia
-  when: deepops_gpu_operator_enabled | default('false') | bool == false
+  when: deepops_gpu_operator_enabled|default(true) | bool == false or
+        gpu_operator_preinstalled_nvidia_software|default(true)
 
 # Install NVIDIA container runtime on GPU servers
 - include: container/nvidia-docker.yml
+  vars:
+    hostlist: "k8s-cluster"
   tags:
     - nvidia
-  when: deepops_gpu_operator_enabled | default('false') | bool == false
-
-# Install k8s GPU feature discovery
-- include: k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml
-  tags:
-    - nvidia
-  when: deepops_gpu_operator_enabled | default('false') | bool == false
-
-# Install k8s GPU device plugin
-- include: k8s-cluster/nvidia-k8s-gpu-device-plugin.yml
-  tags:
-    - nvidia
-  when: deepops_gpu_operator_enabled | default('false') | bool == false
-
-# Install NVIDIA GPU Operator
-- include: k8s-cluster/nvidia-gpu-operator.yml
-  tags:
-    - nvidia
-  when: deepops_gpu_operator_enabled | default('false') | bool == true
+  when:
+    - deepops_gpu_operator_enabled|default(true) | bool == false or
+      gpu_operator_preinstalled_nvidia_software|default(true)
+    - container_manager is defined and container_manager == "docker"
 
 # Manage kubectl binary
 - hosts: kube-master
@@ -241,8 +271,27 @@
       delegate_to: localhost
       failed_when: false # Taint will not be present if kube-master also under kube-node
 
+# Install k8s GPU feature discovery
+- include: k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml
+  tags:
+    - nvidia
+  when: deepops_gpu_operator_enabled|default(true) | bool == false
+
+# Install k8s GPU device plugin
+- include: k8s-cluster/nvidia-k8s-gpu-device-plugin.yml
+  tags:
+    - nvidia
+  when: deepops_gpu_operator_enabled|default(true) | bool == false
+
+# Install NVIDIA GPU Operator
+- include: k8s-cluster/nvidia-gpu-operator.yml
+  tags:
+    - nvidia
+  when: deepops_gpu_operator_enabled|default(true) | bool == true
+
+# Setup a volume for NFS, install nfs_utils, and install NFS Helm chart
 - include: k8s-cluster/nfs-client-provisioner.yml
-  when: k8s_nfs_client_provisioner
+  when: k8s_nfs_client_provisioner | default('false')
 
 - include: generic/rsyslog-server.yml
   vars:

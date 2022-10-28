@@ -8,8 +8,11 @@
 # Get absolute path for script and root
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../.."
-CHART_VERSION="1.22.1"
 
+# Source common libraries and env variables
+source ${ROOT_DIR}/scripts/common.sh
+
+CHART_VERSION="1.22.1"
 HELM_ROOK_CHART_REPO="${HELM_ROOK_CHART_REPO:-https://charts.rook.io/release}"
 HELM_ROOK_CHART_VERSION="${HELM_ROOK_CHART_VERSION:-v1.1.1}"
 

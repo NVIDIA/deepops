@@ -28,6 +28,8 @@
   block:
     - name: update grub
       command: update-grub
+      register: update_grub_cmd
+      changed_when: update_grub_cmd.rc == 0
     - name: reboot after updating grub config
       reboot:
         reboot_timeout: "{{ slurm_node_reboot_timeout }}"
@@ -37,6 +39,8 @@
   block:
     - name: update grub
       command: grub2-mkconfig -o /boot/grub2/grub.cfg
+      register: grub2_mkconfig_cmd
+      changed_when: grub2_mkconfig_cmd.rc == 0
     - name: reboot after updating grub config
       reboot:
         reboot_timeout: "{{ slurm_node_reboot_timeout }}"
@@ -69,6 +73,7 @@
   blockinfile:
     path: "{{ slurm_sysconf_dir }}/slurmd"
     create: yes
+    mode: "0644"
     block: |
       PMIX_MCA_ptl=^usock
       PMIX_MCA_psec=none
@@ -96,6 +101,20 @@
   template:
     src: "{{ slurm_conf_template }}"
     dest: "{{ slurm_config_dir }}/slurm.conf"
+    mode: "0644"
+  when: not slurm_conf_symlink
+  notify:
+  - restart slurmd
+  tags:
+  - config
+
+- name: configure slurm.conf by symbolic link
+  file:
+    path: "{{ slurm_config_dir }}/slurm.conf"
+    state: link
+    src: "{{ slurmctl_config_dir }}/slurm.conf"
+    force: yes
+  when: slurm_conf_symlink
   notify:
   - restart slurmd
   tags:
@@ -105,6 +124,7 @@
   template:
     src: "{{ slurm_cgroup_conf_template }}"
     dest: "{{ slurm_config_dir }}/cgroup.conf"
+    mode: "0644"
   notify:
   - restart slurmd
   tags:
@@ -114,6 +134,7 @@
   template:
     src: "{{ slurm_gres_conf_template }}"
     dest: "{{ slurm_config_dir }}/gres.conf"
+    mode: "0644"
   notify:
   - restart slurmd
   tags:
@@ -137,24 +158,43 @@
   tags:
     - localusers
 
-- name: setup /etc/pam.d/sshd
+- name: configure /etc/pam.d/sshd to restrict node access without jobs
   blockinfile:
     path: /etc/pam.d/sshd
     block: |
-      -account required {{ slurm_pam_lib_dir }}/pam_slurm_adopt.so action_no_jobs=ignore
+      -account sufficient {{ slurm_pam_lib_dir }}/pam_slurm_adopt.so action_no_jobs=ignore
       -account sufficient pam_listfile.so item=user sense=allow file=/etc/localusers
       -account required {{ slurm_pam_lib_dir }}/pam_slurm_adopt.so
     insertafter: EOF
     marker: "# {mark} ANSIBLE MANAGED BLOCK (ansible-role-slurm)"
   tags:
     - config
+  when:
+  - slurm_enable_pam_slurm_adopt
+  - slurm_restrict_node_access
+
+- name: configure /etc/pam.d/sshd to adopt processes but not otherwise deny access
+  blockinfile:
+    path: /etc/pam.d/sshd
+    block: |
+      -account sufficient {{ slurm_pam_lib_dir }}/pam_slurm_adopt.so action_no_jobs=ignore
+      -account sufficient pam_listfile.so item=user sense=allow file=/etc/localusers
+    insertafter: EOF
+    marker: "# {mark} ANSIBLE MANAGED BLOCK (ansible-role-slurm)"
+  tags:
+    - config
+  when:
+  - slurm_enable_pam_slurm_adopt
+  - not slurm_restrict_node_access
 
 - name: comment out pam_systemd.so as it conflicts with pam_slurm_adapt.so, see https://slurm.schedmd.com/pam_slurm_adopt.html
   replace:
     path: /etc/pam.d/common-session
     regexp: '^([^#].*pam_systemd.so.*)'
     replace: '# \1 # ANSIBLE MANAGED (ansible-role-slurm)'
-  when: ansible_distribution == 'Ubuntu'
+  when: 
+  - ansible_distribution == 'Ubuntu'
+  - slurm_enable_pam_slurm_adopt
   tags:
     - config
 
@@ -163,7 +203,9 @@
     path: /etc/pam.d/password-auth
     regexp: '^([^#].*pam_systemd.so.*)'
     replace: '# \1 # ANSIBLE MANAGED (ansible-role-slurm)'
-  when: ansible_os_family == "RedHat"
+  when:
+  - ansible_os_family == "RedHat"
+  - slurm_enable_pam_slurm_adopt
   tags:
     - config
 

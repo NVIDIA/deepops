@@ -1,0 +1,26 @@
+---
+dependency:
+  name: galaxy
+  options:
+    requirements-file: requirements.yml
+driver:
+  name: docker
+platforms:
+  - name: singularity-ubuntu-1804
+    image: geerlingguy/docker-ubuntu1804-ansible
+    pre_build_image: true
+  - name: singularity-ubuntu-2004
+    image: geerlingguy/docker-ubuntu2004-ansible
+    pre_build_image: true
+  - name: singularity-centos-7
+    image: geerlingguy/docker-centos7-ansible
+    pre_build_image: true
+#  - name: singularity-centos-8
+#    image: geerlingguy/docker-centos8-ansible
+#    pre_build_image: true
+provisioner:
+  name: ansible
+  ansible_args:
+  - -vv
+verifier:
+  name: ansible

@@ -1,0 +1,27 @@
+---
+- name: Ubuntu | remove ppa
+  apt_repository:
+    repo: ppa:graphics-drivers/ppa
+    state: absent
+
+- name: Ubuntu | ensure old key is absent
+  apt_key:
+    id: "{{ old_nvidia_driver_ubuntu_cuda_repo_gpgkey_id }}"
+    state: "absent"
+
+- name: Ubuntu | install CUDA keyring
+  apt:
+    deb: "{{ nvidia_driver_ubuntu_cuda_keyring_url }}"
+    state: "present"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
+
+- name: Ubuntu | force apt update
+  apt:
+    update_cache: true
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
+  changed_when: false
+
+- name: Ubuntu | install cuda
+  package:
+    name: "{{ cuda_version }}"
+    state: present

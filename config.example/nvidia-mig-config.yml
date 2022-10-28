@@ -1,0 +1,239 @@
+version: v1
+mig-configs:
+  all-disabled:
+    - devices: all
+      mig-enabled: false
+
+  all-enabled:
+    - devices: all
+      mig-enabled: true
+      mig-devices: {}
+
+  all-1g.5gb:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "1g.5gb": 7
+
+  all-1g.10gb:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "1g.10gb": 7
+
+  all-2g.10gb:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "2g.10gb": 3
+  
+  all-2g.20gb:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "2g.20gb": 3
+
+  all-3g.20gb:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "3g.20gb": 2
+
+  all-3g.40gb:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "3g.40gb": 2
+  
+  all-7g.80gb:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "7g.80gb": 2
+
+  all-7g.80gb:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "7g.80gb": 2
+
+  all-balanced-a100-40:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "1g.5gb": 2
+        "2g.10gb": 1
+        "3g.20gb": 1
+
+  all-balanced-a100-80:
+    - devices: all
+      mig-enabled: true
+      mig-devices:
+        "1g.10gb": 2
+        "2g.20gb": 1
+        "3g.40gb": 1
+
+  custom-config-a100-40:
+    - devices: [0,1,2,3]
+      mig-enabled: false
+    - devices: [4]
+      mig-enabled: true
+      mig-devices:
+        "1g.5gb": 7
+    - devices: [5]
+      mig-enabled: true
+      mig-devices:
+        "2g.10gb": 3
+    - devices: [6]
+      mig-enabled: true
+      mig-devices:
+        "3g.20gb": 2
+    - devices: [7]
+      mig-enabled: true
+      mig-devices:
+        "1g.5gb": 2
+        "2g.10gb": 1
+        "3g.20gb": 1
+
+  custom-config-a100-80:
+    - devices: [0,1,2,3]
+      mig-enabled: false
+    - devices: [4]
+      mig-enabled: true
+      mig-devices:
+        "1g.10gb": 7
+    - devices: [5]
+      mig-enabled: true
+      mig-devices:
+        "2g.20gb": 3
+    - devices: [6]
+      mig-enabled: true
+      mig-devices:
+        "3g.40gb": 2
+    - devices: [7]
+      mig-enabled: true
+      mig-devices:
+        "1g.10gb": 2
+        "2g.20gb": 1
+        "3g.40gb": 1
+
+  all-disabled-dgx-station-80:
+    - device-filter: "0x20B210DE"
+      devices: all
+      mig-enabled: false
+      mig-devices: {}
+    - device-filter: "0x1FB010DE"
+      devices: all
+      mig-enabled: false
+      mig-devices: {}
+
+  all-enabled-dgx-station-80:
+    - device-filter: "0x20B210DE"
+      devices: all
+      mig-enabled: true
+      mig-devices: {}
+    - device-filter: "0x1FB010DE"
+      devices: all
+      mig-enabled: false
+      mig-devices: {}
+
+  all-1g.10gb-dgx-station-80:
+    - device-filter: "0x20B210DE"
+      devices: all
+      mig-enabled: true
+      mig-devices:
+        "1g.10gb": 7
+    - device-filter: "0x1FB010DE"
+      devices: all
+      mig-enabled: false
+      mig-devices: {}
+
+  all-2g.20gb-dgx-station-80:
+    - device-filter: "0x20B210DE"
+      devices: all
+      mig-enabled: true
+      mig-devices:
+        "2g.20gb": 3
+    - device-filter: "0x1FB010DE"
+      devices: all
+      mig-enabled: false
+      mig-devices: {}
+
+  all-3g.40gb-dgx-station-80:
+    - device-filter: "0x20B210DE"
+      devices: all
+      mig-enabled: true
+      mig-devices:
+        "3g.40gb": 2
+    - device-filter: "0x1FB010DE"
+      devices: all
+      mig-enabled: false
+      mig-devices: {}
+
+  all-4g.40gb-dgx-station-80:
+    - device-filter: "0x20B210DE"
+      devices: all
+      mig-enabled: true
+      mig-devices:
+        "4g.40gb": 1
+    - device-filter: "0x1FB010DE"
+      devices: all
+      mig-enabled: false
+      mig-devices: {}
+
+  all-7g.80gb-dgx-station-80:
+    - device-filter: "0x20B210DE"
+      devices: all
+      mig-enabled: true
+      mig-devices:
+        "7g.80gb": 1
+    - device-filter: "0x1FB010DE"
+      devices: all
+      mig-enabled: false
+      mig-devices: {}
+
+  all-balanced-dgx-station-80:
+    - device-filter: "0x20B210DE"
+      devices: all
+      mig-enabled: true
+      mig-devices:
+        "1g.10gb": 2
+        "2g.20gb": 1
+        "3g.40gb": 1
+    - device-filter: "0x1FB010DE"
+      devices: all
+      mig-enabled: false
+      mig-devices: {}
+
+  balanced-k8s-dgx-station-80:
+    # Training
+    - device-filter: "0x20B210DE"
+      devices: [0]
+      mig-enabled: false
+      mig-devices: {}
+
+    # Training & Fine-tuning
+    - device-filter: "0x20B210DE"
+      devices: [1]
+      mig-enabled: true
+      mig-devices:
+        "3g.40gb": 2
+
+    # Development & Fine-tuning
+    - device-filter: "0x20B210DE"
+      devices: [2]
+      mig-enabled: true
+      mig-devices:
+        "2g.20gb": 3
+        "1g.10gb": 1
+
+    # Inference & Development
+    - device-filter: "0x20B210DE"
+      devices: [4]
+      mig-enabled: true
+      mig-devices:
+        "1g.10gb": 7
+    - device-filter: "0x1FB010DE"
+      devices: [3]
+      mig-enabled: false
+      mig-devices: {}

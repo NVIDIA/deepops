@@ -5,11 +5,12 @@
 # So for now we will run /usr/local/bin/helm commands directly...
 - name: install gpu-operator helm repo
   command: /usr/local/bin/helm repo add nvidia "{{ gpu_operator_helm_repo }}"
+  changed_when: false
 
 - name: update helm repos
   command: /usr/local/bin/helm repo update
+  changed_when: false
 
-# XXX: This currently installs into the default namespace, as per the GPU Operator docs
-# https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html
 - name: install nvidia gpu operator
-  command: /usr/local/bin/helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --set operator.defaultRuntime="{{ gpu_operator_default_runtime }}" --set driver.version="{{ gpu_operator_driver_version }}" --set mig.strategy="{{ k8s_gpu_mig_strategy }}" --wait
+  command: /usr/local/bin/helm upgrade --install "{{ gpu_operator_release_name }}" "{{ gpu_operator_chart_name }}" --version "{{ gpu_operator_chart_version }}" --create-namespace --namespace {{ gpu_operator_namespace }} --set driver.version="{{ gpu_operator_driver_version }}" --set mig.strategy="{{ k8s_gpu_mig_strategy |lower }}" --set driver.enabled="{{ gpu_operator_enable_driver |lower }}" --set toolkit.enabled="{{ gpu_operator_enable_toolkit |lower }}" --set dcgm.enabled="{{ gpu_operator_enable_dcgm |lower }}" --set migManager.enabled="{{ gpu_operator_enable_migmanager |lower }}" --wait
+  changed_when: false

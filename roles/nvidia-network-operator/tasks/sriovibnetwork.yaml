@@ -1,0 +1,30 @@
+---
+## This example configures the IB interfaces used by the K8s cluster.
+##
+- name: Create sriov network definition
+  vars:
+    spec_yaml: |
+      resourceName: "{{ item.res_name }}"
+      linkState: "enable"
+      networkNamespace: "default"
+      ipam: |
+        {
+          "type": "whereabouts",
+          "datastore": "kubernetes",
+          "kubernetes": {
+            "kubeconfig": "/etc/cni/net.d/whereabouts.d/whereabouts.kubeconfig"
+           },
+          "range": "{{ item.ip_addr }}",
+          "log_file": "/var/log/whereabouts.log",
+          "log_level": "info"
+        }
+  k8s:
+    state: present
+    definition:
+      apiVersion: sriovnetwork.openshift.io/v1
+      kind: SriovIBNetwork
+      metadata:
+        name: "{{ item.if_name }}"
+        namespace: network-operator
+      spec: "{{ spec_yaml | from_yaml }}"
+  run_once: true

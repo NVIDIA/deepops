@@ -11,6 +11,9 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../.."
 cd "${ROOT_DIR}" || exit 1
 
+# Source common libraries and env variables
+source ${ROOT_DIR}/scripts/common.sh
+
 # Allow overriding config dir to look in
 DEEPOPS_CONFIG_DIR=${DEEPOPS_CONFIG_DIR:-"${ROOT_DIR}/config"}
 
@@ -21,12 +24,14 @@ if [ ! -d "${DEEPOPS_CONFIG_DIR}" ]; then
 fi
 
 HELM_CHARTS_REPO_PROMETHEUS="${HELM_CHARTS_REPO_PROMETHEUS:-https://prometheus-community.github.io/helm-charts}"
-HELM_PROMETHEUS_CHART_VERSION="${HELM_PROMETHEUS_CHART_VERSION:-10.0.2}"
+HELM_PROMETHEUS_CHART_VERSION="${HELM_PROMETHEUS_CHART_VERSION:-39.5.0}"
 ingress_name="ingress-nginx"
 
 PROMETHEUS_YAML_CONFIG="${PROMETHEUS_YAML_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/monitoring.yml}"
 PROMETHEUS_YAML_NO_PERSIST_CONFIG="${PROMETHEUS_YAML_NO_PERSIST_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/monitoring-no-persist.yml}"
 DCGM_CONFIG_CSV="${DCGM_CONFIG_CSV:-${DEEPOPS_CONFIG_DIR}/files/k8s-cluster/dcgm-custom-metrics.csv}"
+
+GPU_OPERATOR_NAMESPACE="${GPU_OPERATOR_NAMESPACE:-gpu-operator-resources}"
 
 function help_me() {
     echo "This script installs the DCGM exporter, Prometheus, Grafana, and configures a GPU Grafana dashboard."
@@ -147,18 +152,21 @@ function setup_prom_monitoring() {
             --set alertmanager.ingress.hosts[0]="alertmanager-${ingress_ip_string}" \
             --set prometheus.ingress.hosts[0]="prometheus-${ingress_ip_string}" \
             --set grafana.ingress.hosts[0]="grafana-${ingress_ip_string}" \
+	    --timeout 1200s \
             ${helm_prom_oper_args} \
             ${helm_kube_prom_args}
     fi
 }
 
-function setup_gpu_monitoring() {
+function setup_gpu_monitoring_dashboard() {
     # Create GPU Dashboard config map
     if ! kubectl -n monitoring get configmap kube-prometheus-grafana-gpu >/dev/null 2>&1 ; then
         kubectl create configmap kube-prometheus-grafana-gpu --from-file=${ROOT_DIR}/src/dashboards/gpu-dashboard.json -n monitoring
         kubectl -n monitoring label configmap kube-prometheus-grafana-gpu grafana_dashboard=1
     fi
+}
 
+function setup_gpu_monitoring() {
     # Create DCGM metrics config map
     if ! kubectl -n monitoring get configmap dcgm-custom-metrics >/dev/null 2>&1 ; then
         kubectl create configmap dcgm-custom-metrics --from-file=${DCGM_CONFIG_CSV} -n monitoring
@@ -262,8 +270,22 @@ function poll_monitoring_url() {
 
 get_opts ${@}
 
+# Install deps
 install_dependencies
 
+# Install Prom
 setup_prom_monitoring
-setup_gpu_monitoring
+
+# Install DCGM-Exporter and setup custom metrics, if needed
+# # GPU Device Plugin is installed into kube-system, GPU Operator installs it into gpu-operator-resources, use uniq for HA K8s clusters
+plugin_namespace=$( kubectl get pods -A -l app.kubernetes.io/instance=nvidia-device-plugin  --no-headers   --no-headers -o custom-columns=NAMESPACE:.metadata.namespace | uniq)
+if [ "${plugin_namespace}" == "kube-system" ] ; then
+    # No GPU Operator DCGM-Exporter Stack
+    setup_gpu_monitoring
+fi
+
+# Install custom gpu dashboards
+setup_gpu_monitoring_dashboard
+
+# Print URL outputs
 print_monitoring

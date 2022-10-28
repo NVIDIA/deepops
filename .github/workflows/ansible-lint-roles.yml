@@ -1,0 +1,31 @@
+---
+name: run ansible-lint on deepops roles
+on:
+  - push
+  - pull_request
+jobs:
+  lint:
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: check out repo
+        uses: actions/checkout@v2
+        with:
+          path: "${{ github.repository }}"
+
+      - name: set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
+      - name: install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install ansible-lint==5.4.0 ansible==4.8.0
+
+      - name: run lint script
+        env:
+          ANSIBLE_LINT_EXCLUDE: "nvidia-dgx|nvidia-gpu-tests"
+        run: |
+          cd "${{ github.repository }}"
+          bash ./scripts/deepops/ansible-lint-roles.sh

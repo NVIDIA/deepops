@@ -1,0 +1,33 @@
+---
+- name: assert that variables are defined
+  fail:
+    msg: "Variable '{{ item }}' is not defined"
+  when: item not in vars
+  with_items:
+    - kerberos_client_realm_name
+
+- name: Install the kerberos packages
+  yum: name={{ item }} state=present
+  with_items: '{{ kerberos_client_redhat7_pkg }}'
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+
+- name: Install the kerberos packages
+  yum: name={{ item }} state=present
+  with_items: '{{ kerberos_client_redhat8_pkg }}'
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+
+- name: Install the kerberos packages
+  apt: name={{ item }} state=present
+  with_items: '{{ kerberos_client_ubuntu18_pkg }}'
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "18"
+
+- name: Install the kerberos packages
+  apt: name={{ item }} state=present
+  with_items: '{{ kerberos_client_ubuntu20_pkg }}'
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version == "20"
+
+- name: Copy the client configuration file
+  template: 
+    src: "krb5.conf.j2"
+    dest: "/etc/krb5.conf"
+    mode: "0644"

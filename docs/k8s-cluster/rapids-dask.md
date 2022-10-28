@@ -1,9 +1,16 @@
-RAPIDS with Dask
-===
+# RAPIDS Dask
 
+RAPIDS with Dask
+
+- [RAPIDS Dask](#rapids-dask)
+  - [Summary](#summary)
+  - [Installation](#installation)
+    - [Kubeflow](#kubeflow)
+    - [Stand-alone](#stand-alone)
+
+## Introduction
 [Dask](https://dask.org) allows distributed computation in Python.
 [RAPIDS](https://rapids.ai/) adds gpu acceleration to machine learning.
-
 
 Dask has tight kubernetes integration that allows you to scale up/down your Dask cluster either from within your python code or using the `kubectl` utility.
 
@@ -23,7 +30,7 @@ Deploy the [LoadBalancer](ingress.md#on-prem-loadbalancer)
 
 Deploy Dask:
 
-```sh
+```bash
 # Optionally, Modify chart configuration
 vi config/helm/rapids-dask.yml
 

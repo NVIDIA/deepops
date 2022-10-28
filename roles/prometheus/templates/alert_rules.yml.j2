@@ -1,0 +1,11 @@
+groups:
+    - name: default
+      rules:
+      - alert: InstanceDown
+        expr: up{job="cluster"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance down"
+          description: "Something has been down for more than 5 minutes."

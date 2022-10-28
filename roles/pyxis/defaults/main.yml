@@ -12,3 +12,9 @@ pyxis_ubuntu_deps:
 
 pyxis_el_deps:
 - "util-linux"
+
+# /run is default partition of pyxis runtime_path
+resize_run_partition: false
+
+# /run tmpfs size. ubuntu default is 10% of physical memory
+pyxis_run_tmpfs_size: 50%

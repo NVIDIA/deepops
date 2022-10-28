@@ -1,0 +1,5 @@
+---
+- name: restart alertmanager
+  service:
+    name: "{{ alertmanager_svc_name }}"
+    state: restarted

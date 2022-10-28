@@ -1,4 +1,9 @@
 ---
+- name: Install CUDA when we require NVML support for autodetection
+  include_role:
+    name: nvidia_cuda
+  when: slurm_autodetect_nvml|default(false)
+
 - include: setup-role.yml
 
 - include: build.yml

@@ -30,7 +30,7 @@
 
 # NTP configuration
 # Playbook: chrony-client
-chrony_install: yes
+chrony_install: true
 chrony_service_state: "started"
 chrony_service_enabled: "yes"
 chrony_timezone: "Etc/UTC"
@@ -122,7 +122,7 @@ sftp_chroot: false
 ################################################################################
 # NVIDIA GPU configuration
 # Playbook: nvidia-cuda
-cuda_version: cuda-toolkit-11-4
+cuda_version: cuda-toolkit-11-5
 
 # DGX-specific vars may be used to target specific models,
 # because available versions for DGX may differ from the generic repo
@@ -281,6 +281,11 @@ openmpi_version: 4.0.3
 
 # Disable cloud-init
 deepops_disable_cloud_init: true
+
+# Default profile when using NVIDIA MIG Manager: https://github.com/NVIDIA/mig-parted
+mig_manager_profile: all-disabled
+mig_manager_config: /etc/nvidia-mig-manager/config.yml
+mig_manager_hooks: /etc/nvidia-mig-manager/hooks.yaml
 
 ################################################################################
 # Container registry                                                           #

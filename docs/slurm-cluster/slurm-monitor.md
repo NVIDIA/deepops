@@ -1,16 +1,22 @@
-# Slurm Monitoring
+# Slurm Monitor
+
+- [Slurm Monitor](#slurm-monitor)
+  - [Introduction](#introduction)
+  - [Exporters](#exporters)
+  - [Grafana](#grafana)
+  - [Prometheus](#prometheus)
+
+## Introduction
 
 By default DeepOps deploys a monitoring stack alongside Slurm. This can be disabled by setting `slurm_enable_monitoring` to `false`.
 
-
 DeepOps runs a `dcgm-exporter` container on all DGX nodes. This container exports various GPU utilization and metadata to a Prometheus database running on the `slurm-metric` nodes. The `slurm-metric` nodes also run a Grafana server that connects to the Prometheus database to visualize the data. Ad-hoc metric queries can be made against the Prometheus server, but monitoring is typically done through the dashboard on Grafana.
-
 
 ## Exporters
 
 A `node-exporter` and `dcgm-exporter` should be running on every node listed under `slurm-node`:
 
-```sh
+```bash
 # View the DCGM Exporter container on a DGX node
 $ sudo docker ps
 CONTAINER ID        IMAGE                              COMMAND                  CREATED             STATUS
@@ -33,26 +39,26 @@ In order to gain access to Grafana visit the url at http://\<slurm-metric ip\>:3
 
 The GPU dashboard provides the following metrics:
 
-* System Load
-* GPU Power Usage (by GPU)
-* GPU Power Total
-* System Memory Usage
-* GPU Temperature (by GPU)
-* GPU Average Temperature
-* PCIe Throughput
-* Disk Usage
-* GPU Memory Usage
-* GPU Utilization (by GPU)
-* GPU Total Utilization
-* Ethernet Throughput
-* Disk Throughput
-* GPU Mem Copy Utilization
-* GPU Average Memory Copy Utilization
-* Kernel
-* Hostname
-* System Total Power Draw
-* GPU SM Clocks
-* GPU Memory Clocks
+- System Load
+- GPU Power Usage (by GPU)
+- GPU Power Total
+- System Memory Usage
+- GPU Temperature (by GPU)
+- GPU Average Temperature
+- PCIe Throughput
+- Disk Usage
+- GPU Memory Usage
+- GPU Utilization (by GPU)
+- GPU Total Utilization
+- Ethernet Throughput
+- Disk Throughput
+- GPU Mem Copy Utilization
+- GPU Average Memory Copy Utilization
+- Kernel
+- Hostname
+- System Total Power Draw
+- GPU SM Clocks
+- GPU Memory Clocks
 
 Metrics are displayed per-node. To view utilization across nodes click the server selection drop-down in the top left and type or select the desired node names.
 
@@ -61,10 +67,11 @@ Metrics are displayed per-node. To view utilization across nodes click the serve
 ![Grafana GPU Node Selection](../img/slurm_monitoring_grafana05.png)
 
 The Slurm dashboard provides the following information about running jobs and the Slurm job queue:
-* Nodes & Node Status
-* Slurm Jobs & Job State
-* Slurm Agent Queue Size
-* Scheduler Threads & Backfill Depth Mean & Cycles
+
+- Nodes & Node Status
+- Slurm Jobs & Job State
+- Slurm Agent Queue Size
+- Scheduler Threads & Backfill Depth Mean & Cycles
 
 ![Grafana Slurm Dashboard](../img/slurm_monitoring_grafana06.png)
 
@@ -79,3 +86,20 @@ In order to make ad-hoc queries Prometheus can be used. Visit Prometheus at http
 ![Prometheus Query](../img/slurm_monitoring_prometheus01.png)
 
 For more information on constructing Prometheus queries see the official [Prometheus getting started guide](https://prometheus.io/docs/prometheus/latest/querying/basics/).
+
+## Alertmanager
+
+The Alertmanager handles alerts sent by client applications such as the Prometheus server, after adding alert rules from Prometheus, you can receive alerts via receivers like email, Slack, etc with Alertmanager.
+
+Describes how to configure Alertmanager.
+
+* Configure the desired [receiver](https://prometheus.io/docs/alerting/latest/configuration/#receiver) in Alertmanager configuration yml. (slack, email, etc)
+* Configure the desired [rules](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/) in Prometheus alert rules yml.
+  * Alerting rules allow you to define alert conditions based on Prometheus expression language expressions and to send notifications about firing alerts to an external service.
+  * Visit http://\<slurm-metric ip\>:9090/alerts to check the status of rules 
+  ![Prometheus alert rules](../img/slurm_monitoring_alertmanager01.png)
+
+Visit http://\<slurm-metric ip\>:9093 for checking and setting about alerting.
+![Alertmanager](../img/slurm_monitoring_alertmanager02.png)
+
+For more information on constructing Alertmanager alerting see the official [Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/).

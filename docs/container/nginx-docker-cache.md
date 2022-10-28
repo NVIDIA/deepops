@@ -1,8 +1,18 @@
-NGINX-based Container Registry Caching Proxy
-============================================
+# NGINX Docker Cache
 
-Overview
---------
+NGINX-based Container Registry Caching Proxy
+
+- [NGINX Docker Cache](#nginx-docker-cache)
+  - [Overview](#overview)
+    - [Security considerations](#security-considerations)
+  - [Deploying the caching proxy](#deploying-the-caching-proxy)
+    - [Configuration variables](#configuration-variables)
+    - [Configuring a pre-generated CA](#configuring-a-pre-generated-ca)
+    - [Server deployment](#server-deployment)
+    - [Configuring Docker clients](#configuring-docker-clients)
+    - [Configuring Enroot clients](#configuring-enroot-clients)
+
+## Overview
 
 Running container-based workloads on large compute clusters will generally require every node to pull a copy of the container image from the container registry.
 However, many container images are very large, especially for deep learning or HPC development.
@@ -13,7 +23,6 @@ In order to reduce this load, DeepOps includes a playbook to deploy a caching HT
 This proxy can be configured to cache container pulls from specific container registries, and caches containers on a per-layer basis.
 Following the first pull from an upstream container registry, subsequent pulls will only fetch from the proxy, reducing the number of pulls that need to hit the upstream registry.
 
-
 ### Security considerations
 
 Note that in order to successfully proxy HTTPS container registries, the caching proxy deployed by this playbook implements a "person-in-the-middle" HTTPS proxy.
@@ -23,9 +32,7 @@ The cluster nodes must then have the proxy's CA certificate added to their trust
 Because using this proxy requires that the nodes be configured to explicitly trust the proxy CA certificate, we believe this is a reasonable solution for a caching proxy.
 However, those using this feature should ensure this mechanism fits their security policy, and may choose to implement additional logging or auditing around the use of this proxy.
 
-
-Deploying the caching proxy 
----------------------------
+## Deploying the caching proxy
 
 ### Configuration variables
 
@@ -33,16 +40,15 @@ The full list of variables used by the caching proxy role can be found in [roles
 
 The following variables are the most common configuration you may want to adjust:
 
-| Variable | Default value | Description |
-| -------- | ------------- | ----------- |
-| `nginx_docker_cache_image` | `"rpardini/docker-registry-proxy:0.6.1"` | Container image used to deploy the proxy |
-| `nginx_docker_cache_registry_string` | `"quay.io k8s.gcr.io gcr.io nvcr.io"` | Space-separated list of registries to proxy |
-| `nginx_docker_cache_manifests` | `"false"` | Flag to determine whether to cache image manifests |
-| `nginx_docker_cache_manifest_default_time` | "1h" | If manifests are cached, time to cache them |
-| `nginx_docker_cache_hostgroup` | `"cache"` | Ansible inventory host group where proxy is deployed |
-| `nginx_docker_cache_dockerd_clients` | `true` | Flag to determine whether `dockerd` should be configured to use the proxy |
-| `nginx_docker_cache_ca` | not configured by default | Specifies file paths for CA certificate and key, if you supply these yourself |
-
+| Variable                                   | Default value                            | Description                                                                   |
+| ------------------------------------------ | ---------------------------------------- | ----------------------------------------------------------------------------- |
+| `nginx_docker_cache_image`                 | `"rpardini/docker-registry-proxy:0.6.1"` | Container image used to deploy the proxy                                      |
+| `nginx_docker_cache_registry_string`       | `"quay.io k8s.gcr.io gcr.io nvcr.io"`    | Space-separated list of registries to proxy                                   |
+| `nginx_docker_cache_manifests`             | `"false"`                                | Flag to determine whether to cache image manifests                            |
+| `nginx_docker_cache_manifest_default_time` | "1h"                                     | If manifests are cached, time to cache them                                   |
+| `nginx_docker_cache_hostgroup`             | `"cache"`                                | Ansible inventory host group where proxy is deployed                          |
+| `nginx_docker_cache_dockerd_clients`       | `true`                                   | Flag to determine whether `dockerd` should be configured to use the proxy     |
+| `nginx_docker_cache_ca`                    | not configured by default                | Specifies file paths for CA certificate and key, if you supply these yourself |
 
 ### Configuring a pre-generated CA
 
@@ -54,7 +60,7 @@ A sample script for generating the key and certificate can be found in [scripts/
 
 To specify the CA certificate and key which you wish to use, set the following variable:
 
-```
+```bash
 nginx_docker_cache_ca:
 - crt: "/path/to/ca.crt"
 - key: "/path/to/ca.key"
@@ -62,22 +68,20 @@ nginx_docker_cache_ca:
 
 This set of files will then be used for both the server and the clients.
 
- 
 ### Server deployment
 
 To deploy the proxy server with the default configuration, add the host(s) where you wish to run the proxy to the `cache` hostgroup in inventory.
 Then run:
 
-```
+```bash
 ansible-playbook -l cache playbooks/container/nginx-docker-registry-cache-server.yml
 ```
-
 
 ### Configuring Docker clients
 
 To configure client nodes using Docker for container pulls, ensure `nginx_docker_cache_dockerd_clients` is set to `true`, then run:
 
-```
+```bash
 ansible-playbook -l <nodes> playbooks/container/nginx-docker-registry-cache-client.yml
 ```
 
@@ -85,7 +89,7 @@ ansible-playbook -l <nodes> playbooks/container/nginx-docker-registry-cache-clie
 
 To configure client nodes using Enroot for container pulls, add the following line to the `enroot_config` variable:
 
-```
+```bash
 https_proxy=http://<proxy-hostname>:3128/
 ```
 
@@ -93,7 +97,7 @@ Where `<proxy_hostname>` is the name of the host where you're running the proxy.
 
 Then run:
 
-```
+```bash
 ansible-playbook -l <nodes> playbooks/container/nginx-docker-registry-cache-client.yml
 ansible-playbook -l <nodes> playbooks/container/pyxis.yml
 ```

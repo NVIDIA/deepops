@@ -32,6 +32,7 @@
 - name: create clusters dir
   file:
     path: "{{ ood_cluster_config_dir }}"
+    mode: "0755"
     state: directory
   tags:
     - configure
@@ -39,6 +40,7 @@
 - name: configure slurm cluster connector
   template:
     src: cluster.yml.j2
+    mode: "0644"
     dest: "{{ ood_cluster_config_dir }}/{{ ood_cluster_name }}.yml"
   tags:
     - configure
@@ -77,6 +79,7 @@
     path: "{{ ood_htpasswd_file }}"
     name: "{{ user }}"
     password: "{{ ood_default_password }}"
+    mode: "0600"
     create: yes
   tags:
     - configure
@@ -106,7 +109,7 @@
   systemd:
     service: "{{ ood_apache_service_name }}"
     state: restarted
-  when: mod_install.changed
+  when: mod_install.changed  # noqa no-handler
   tags:
     - configure
 
@@ -147,6 +150,7 @@
 - name: create desktop app dir
   file:
     path: "{{ ood_desktops_dir }}/submit"
+    mode: "0755"
     state: directory
   tags:
     - configure
@@ -155,6 +159,7 @@
   template:
     src: desktop.yml.j2
     dest: "{{ ood_desktops_dir }}/{{ ood_cluster_name }}.yml"
+    mode: "0644"
   tags:
     - configure
 
@@ -162,6 +167,7 @@
   template:
     src: desktop-submit.yml.erb.j2
     dest: "{{ ood_desktops_dir }}/submit/{{ ood_cluster_name }}_desktop.yml.erb"
+    mode: "0644"
   tags:
     - configure
 
@@ -169,6 +175,7 @@
   template:
     src: desktop-form.yml.j2
     dest: "{{ ood_desktop_app_dir }}/form.yml"
+    mode: "0644"
   tags:
     - configure
 
@@ -188,6 +195,7 @@
   template:
     src: bc_osc_codeserver/form.yml.j2
     dest: "{{ ood_codeserver_app_dir }}/form.yml"
+    mode: "0644"
   tags:
     - configure
 
@@ -195,6 +203,7 @@
   template:
     src: bc_osc_codeserver/manifest.yml.j2
     dest: "{{ ood_codeserver_app_dir }}/manifest.yml"
+    mode: "0644"
   tags:
     - configure
 
@@ -202,6 +211,7 @@
   template:
     src: bc_osc_codeserver/submit.yml.erb.j2
     dest: "{{ ood_codeserver_app_dir }}/submit.yml.erb"
+    mode: "0644"
   tags:
     - configure
 
@@ -209,13 +219,6 @@
   template:
     src: bc_osc_codeserver/script.sh.erb.j2
     dest: "{{ ood_codeserver_app_dir }}/template/script.sh.erb"
-    mode: 0755
-  tags:
-    - configure
-
-- name: fix permissions on regex file
-  file:
-    path: "{{ ood_base_dir }}/ood_auth_map/bin/ood_auth_map.regex"
     mode: 0755
   tags:
     - configure

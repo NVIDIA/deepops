@@ -7,6 +7,11 @@
 # Requirements for this script are a working "kubectl" and ideally a working "helm"
 # Optionally, a working "ansible" with a config/inventory file that has kubernetes node defined in a kube-node group
 
+# Source common libraries and env variables
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="${SCRIPT_DIR}/../.."
+source ${ROOT_DIR}/scripts/common.sh
+
 timestamp=$(date +%s)
 logdir=config/log_${timestamp}
 mkdir -p ${logdir}
@@ -35,6 +40,8 @@ kubectl get nodes > ${logdir}/get-nodes.log
 kubectl describe nodes > ${logdir}/describe-nodes.log
 kubectl get storageclass > ${logdir}/get-storageclass.log
 kubectl get events -A > ${logdir}/get-events.log
+kubectl get svc -A > ${logdir}/get-svc.log
+
 # Kubectl / GPU Operator (Generic for any Kubernetes cluster)
 kubectl get pvc -A > ${logdir}/get-pvc.log
 for pod in $(kubectl get pods -n gpu-operator-resources  | grep nvidia-device-plugin | awk '{print $1}'); do
@@ -49,7 +56,12 @@ done
 for pod in $(kubectl get pods -n gpu-operator-resources  | grep driver | awk '{print $1}'); do
   kubectl -n gpu-operator-resources  logs ${pod} > ${logdir}/get-plugin-logs-${pod}.log
 done
+for pod in $(kubectl get pods -n gpu-operator-resources  | grep mig | awk '{print $1}'); do
+  kubectl -n gpu-operator-resources  logs ${pod} > ${logdir}/get-plugin-logs-${pod}.log
+done
 kubectl describe pods -n gpu-operator-resources > ${logdir}/describe-gpu-operator-resources-pods.log
+kubectl describe configmap -n gpu-operator-resources default-mig-parted-config > ${logdir}/default-mig-parted-config.log
+
 
 # Helm
 helm list -aA > ${logdir}/helm-list.log

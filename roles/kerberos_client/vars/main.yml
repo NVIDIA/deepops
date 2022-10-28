@@ -1,0 +1,24 @@
+---
+kerberos_client_redhat7_pkg:
+  - libselinux-python
+  - krb5-libs
+  - krb5-workstation
+  - cyrus-sasl-gssapi
+
+kerberos_client_redhat8_pkg:
+  - python3-libselinux
+  - krb5-libs
+  - krb5-workstation
+  - cyrus-sasl-gssapi
+
+kerberos_client_ubuntu18_pkg:
+  - python-selinux
+  - krb5-user
+  - libsasl2-modules-gssapi-mit
+  - libpam-krb5
+
+kerberos_client_ubuntu20_pkg:
+  - python3-selinux
+  - krb5-user
+  - libsasl2-modules-gssapi-mit
+  - libpam-krb5

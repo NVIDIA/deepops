@@ -16,7 +16,9 @@ Map matrix_axes = [
   DEEPOPS_DEPLOYMENT_PLATFORM: ['slurm', 'k8s'],
   DEEPOPS_BRANCH: ['master'],
   DEEPOPS_REPO: ['https://github.com/NVIDIA/deepops.git'],
-  DEEPOPS_K8S_OPERATOR: ['', 'true']
+  DEEPOPS_K8S_OPERATOR: ['', 'true'],
+  DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE: ['', 'true'],
+  DEEPOPS_K8S_CONTAINER_MANAGER: ['containerd', 'docker'] 
 ]
 
 // Override default values as specified by the manual builds with a special case for 'all'
@@ -35,6 +37,9 @@ if("$DEEPOPS_K8S_OPERATOR" != "all") {
 if("$DEEPOPS_OS_VERSION" != "all") {
   matrix_axes['DEEPOPS_OS_VERSION'] = ["$DEEPOPS_OS_VERSION"]
 }
+if("$DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE" != "all") {
+  matrix_axes['DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE'] = ["$DEEPOPS_K8S_OPERATOR_EXISTING_SOFTWARE"]
+}
 
 // Special case for branch and repo, these cannot be blank
 if("$DEEPOPS_BRANCH" != "") {
@@ -42,6 +47,10 @@ if("$DEEPOPS_BRANCH" != "") {
 }
 if("$DEEPOPS_REPO" != "") {
   matrix_axes['DEEPOPS_REPO'] = ["$DEEPOPS_REPO"]
+}
+
+if("$DEEPOPS_K8S_CONTAINER_MANAGER" != "all") {
+  matrix_axes['DEEPOPS_K8S_CONTAINER_MANAGER'] = ["$DEEPOPS_K8S_CONTAINER_MANAGER"]
 }
 
 // Default values
@@ -184,6 +193,11 @@ for(int i = 0; i < axes.size(); i++) {
               echo "Verify ingress config"
               sh '''
                 bash -x ./workloads/jenkins/scripts/verify-ingress-config.sh
+              '''
+
+              echo "Test running a Deep Learning Example"
+              sh '''
+                timeout 1200 bash -x ./workloads/jenkins/scripts/test-dle-deployment.sh
               '''
 
               echo "Test Kubeflow installation"

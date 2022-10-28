@@ -1,0 +1,10 @@
+---
+# vars for lecorguille.singularity
+singularity_version: "3.7.3"
+singularity_conf_path: "/etc/singularity/singularity.conf"
+bind_paths: []
+
+# vars for gantsign.golang
+golang_version: "1.14.4"
+golang_install_dir: "/opt/go/{{ golang_version }}"
+golang_gopath: "/opt/go/packages"

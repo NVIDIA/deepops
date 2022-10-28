@@ -1,0 +1,43 @@
+---
+# Deploy network operator related tasks on master node
+#
+
+- name: label the nodes  # noqa command-instead-of-shell
+  shell: kubectl label --overwrite nodes {{ item }} node-role.kubernetes.io/worker=
+  with_items: "{{ groups['kube-node'] }}"
+  changed_when: false
+
+## required as the DeepOps openshift role doesn't work
+- name: Install openshift  # noqa command-instead-of-shell
+  shell: pip3 install openshift
+  changed_when: false
+
+- name: Add helm repo for network operator
+  kubernetes.core.helm_repository:
+    name: mellanox
+    repo_url: "{{ nvidia_network_operator_url }}"
+
+- name: Deploy network operator helm chart
+  kubernetes.core.helm:
+    name: network-operator
+    release_namespace: network-operator
+    chart_version: "{{ nvidia_network_operator_version }}"
+    chart_ref: mellanox/network-operator
+    create_namespace: true
+    update_repo_cache: true
+    wait: true
+    values: "{{ lookup('template', 'values.yaml') | from_yaml }}"
+
+- name: Create network node poliy
+  include_tasks: sriovnetworknodepolicy.yaml
+  with_items: "{{ intf_resources }}"
+
+- name: Create IB network attachment definition
+  include_tasks: sriovibnetwork.yaml
+  with_items: "{{ intf_resources }}"
+
+- name: Install latest Kubeflow MPI-Operator
+  k8s:
+    state: present
+    definition: "{{ lookup('url', '{{ mpi_raw_url }}/mpi-operator.yaml', split_lines=False) }}"
+  run_once: true

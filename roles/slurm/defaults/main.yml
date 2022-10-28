@@ -1,19 +1,23 @@
 epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
-epel_key_url: "https://getfedora.org/static/fedora.gpg"
+epel_key_url: "https://download.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
 
+deepops_dir: /opt/deepops
 slurm_build_dir: /opt/deepops/build/slurm
 hwloc_build_dir: /opt/deepops/build/hwloc
 pmix_build_dir: /opt/deepops/build/pmix
 
 slurm_workflow_build: yes
-slurm_version: 21.08.0
+slurm_version: "22.05.2"
 slurm_src_url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
 slurm_build_make_clean: no
 slurm_build_dir_cleanup: no
 slurm_config_dir: /etc/slurm
+slurmctl_config_dir: /sw/.slurm
 slurm_sysconf_dir: /etc/sysconfig
 slurm_install_prefix: /usr/local
+slurm_cuda_prefix: /usr/local/cuda
 slurm_configure:  './configure --prefix={{ slurm_install_prefix }} --disable-dependency-tracking --disable-debug --disable-x11 --enable-really-no-cray --enable-salloc-kill-cmd --with-hdf5=no --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --with-shared-libslurm --without-rpath --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }}'
+slurm_configure_nvml:  './configure --prefix={{ slurm_install_prefix }} --disable-dependency-tracking --disable-debug --disable-x11 --enable-really-no-cray --enable-salloc-kill-cmd --with-hdf5=no --sysconfdir={{ slurm_config_dir }} --enable-pam --with-pam_dir={{ slurm_pam_lib_dir }} --with-shared-libslurm --without-rpath --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }} --with-nvml={{ slurm_cuda_prefix }}'
 slurm_force_rebuild: no
 slurm_contain_ssh: yes
 
@@ -43,6 +47,7 @@ slurm_resume_timeout: 900
 # Sets: GresTypes=gpu
 # Sets: Gres=gpu:{{ gpu_topology|count }}
 slurm_manage_gpus: true
+slurm_autodetect_nvml: true 
 
 # Configuration file templates to use for configuring Slurm.
 # The default values are relative paths that will point to files within the
@@ -52,6 +57,9 @@ slurm_conf_template: "etc/slurm/slurm.conf"
 slurm_cgroup_conf_template: "etc/slurm/cgroup.conf"
 slurm_gres_conf_template: "etc/slurm/gres.conf"
 slurm_dbd_conf_template: "etc/slurm/slurmdbd.conf"
+
+# Flags for sharing slurm.conf among compute and control nodes
+slurm_conf_symlink: false
 
 # Controls the ability of the partition to execute more than one job at a time on each resource (node, socket or core depending upon the value of SelectTypeParameters). If resources are to be over-subscribed, avoiding memory over-subscription is very important. SelectTypeParameters should be configured to treat memory as a consumable resource and the --mem option should be used for job allocations. Sharing of resources is typically useful only when using gang scheduling (PreemptMode=suspend,gang). Possible values for OverSubscribe are "EXCLUSIVE", "FORCE", "YES", and "NO". Note that a value of "YES" or "FORCE" can negatively impact performance for systems with many thousands of running jobs. The default value is "NO". For more information see the following web pages: 
 # Sets partition OverSubscribe
@@ -85,6 +93,11 @@ epilog_fileglob:
 
 # Disable clearing of shared memory when user login shell exits
 slurm_fix_shm: true
+
+# Configure pam_slurm_adopt to adopt processes from user SSH into a job cgroup
+slurm_enable_pam_slurm_adopt: true
+# Restrict user SSH access to only allow users with a running job
+slurm_restrict_node_access: true
 
 slurm_include_hwloc: yes
 hwloc_version: 2.5.0

@@ -1,10 +1,5 @@
 ---
 - hosts: all
   become: yes
-  pre_tasks:
-  - name: create a folder for go
-    file:
-      path: "{{ golang_install_dir }}"
-      recurse: yes
   roles:
-    - lecorguille.singularity
+    - singularity_wrapper

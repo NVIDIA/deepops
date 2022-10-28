@@ -1,0 +1,10 @@
+---
+## Playbook for installing nvidia-network-operator
+#
+- hosts: kube-master[0]
+  become: true
+  become_method: sudo
+  tasks:
+    - include_role:
+        name: nvidia-network-operator
+        tasks_from: main

@@ -1,0 +1,8 @@
+---
+- name: Converge
+  hosts: all
+  become: yes
+  tasks:
+    - name: "Include nvidia_hpc_sdk"
+      include_role:
+        name: "nvidia_hpc_sdk"

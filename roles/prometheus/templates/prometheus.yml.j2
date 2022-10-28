@@ -1,5 +1,18 @@
 global:
-  scrape_interval: {{ prometheus_cfg_scrape_interval }}
+  scrape_interval: {{ prometheus_cfg_scrape_interval }}         # Default is every 1 minute.
+  evaluation_interval: {{ prometheus_cfg_evaluation_interval }} # Default is every 1 minute.
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+  - scheme: http
+    static_configs:
+    - targets: ['localhost:9093']
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - 'rules/alert_rules.yml'
+# - 'rules/second_rules.yml'
 
 scrape_configs:
   - job_name: 'cluster'

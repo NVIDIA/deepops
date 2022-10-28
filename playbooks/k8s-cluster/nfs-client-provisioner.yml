@@ -5,8 +5,6 @@
 # After settting up an NFS server, nfs software is installed on all nodes
 # Lastly, the nfs-client-provisioner is helm installed using the role
 #
-# TODO: This uses a local submodule because 'stable' is EOL and a new repo is not yet up
-#
 # The default NFS configuration of this playbook is not meant for production systems
 #   For production deployments please configur NFS with storage-partner guidance
 #
@@ -40,5 +38,4 @@
     - name: install nfs-client-provisioner
       include_role:
         name: nfs-client-provisioner
-      when: k8s_nfs_client_provisioner
   environment: "{{proxy_env if proxy_env is defined else {}}}"

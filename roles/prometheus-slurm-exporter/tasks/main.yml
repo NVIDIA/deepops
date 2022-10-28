@@ -3,11 +3,13 @@
   file:
     path: "{{ prometheus_config_dir }}"
     state: directory
+    mode: "0755"
 
 - name: create endpoints config dir
   file:
     path: "{{ prometheus_cfg_endpoint_dir }}"
     state: directory
+    mode: "0755"
 
 - name: install config file
   template:
@@ -22,18 +24,21 @@
     path: "{{ grafana_data_dir }}"
     state: directory
     owner: "{{ grafana_user_id }}"
+    mode: "0755"
 
 - name: create dashboard dir
   file:
     path: "{{ grafana_cfg_dashboard_path }}"
     state: directory
     owner: "{{ grafana_user_id }}"
+    mode: "0755"
 
 - name: copy dashboards
   copy:
     src: "{{ item }}"
     dest: "{{ grafana_cfg_dashboard_path }}"
     owner: "{{ grafana_user_id }}"
+    mode: "0644"
   with_items:
     - slurm-dashboard.json
   notify: restart grafana

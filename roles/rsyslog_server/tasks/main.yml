@@ -1,0 +1,35 @@
+---
+- name: ensure rsyslog is installed
+  package:
+    name: rsyslog
+    state: present
+
+- name: configure syslog listener
+  template:
+    src: "01-deepops-listen.conf"
+    dest: "/etc/rsyslog.d/01-deepops-listen.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
+- name: create directory for clients logs in ubuntu
+  file:
+    path: "{{ rsyslog_log_file_path }}"
+    state: directory
+    owner: "syslog"
+    group: "syslog"
+    mode: "0755"
+  when: ansible_facts['distribution'] == "Ubuntu"
+  notify:
+  - reload rsyslog
+
+- name: create directory for clients logs in rhel
+  file:
+    path: "{{ rsyslog_log_file_path }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  when: ansible_os_family == "RedHat"
+  notify:
+  - reload rsyslog

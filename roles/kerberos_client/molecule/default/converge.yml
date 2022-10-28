@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include kerberos_client"
+      include_role:
+        name: "kerberos_client"
