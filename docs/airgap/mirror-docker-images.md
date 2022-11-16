@@ -41,9 +41,10 @@ ansible-playbook playbooks/container/docker.yml
 Then, for each image you want to download, you should pull the image from the remote registry and save it to a local file.
 In this example, we're saving all our Docker images to `/tmp/images`:
 
-```bash
-docker pull nvidia/cuda:11.1-devel-ubuntu20.04
-docker save nvidia/cuda:11.1-devel-ubuntu20.04 > /tmp/images/nvidia-cuda-11.1-devel-ubuntu20.04.tar
+```
+$ docker pull nvidia/cuda:11.1-devel-ubuntu20.04
+$ docker save -o /tmp/images/nvidia-cuda-11.1-devel-ubuntu20.04.tar nvidia/cuda:11.1-devel-ubuntu20.04 
+>>>>>>> e1d0a775 (Airgap documentation update.)
 ```
 
 Additionally, you should download and save the [`registry` image](https://hub.docker.com/_/registry) so that you can deploy a local registry on the offline network.
@@ -75,8 +76,13 @@ Additionally, we assume that the `registry` image was included when you transfer
 
 Load the registry image into the Docker image cache of your container registry host:
 
+<<<<<<< HEAD
 ```bash
 docker load < /tmp/images/registry-2.7.tar
+=======
+```
+$ docker load -i /tmp/images/registry-2.7.tar
+>>>>>>> e1d0a775 (Airgap documentation update.)
 ```
 
 Then create a Docker volume to store your container images:
