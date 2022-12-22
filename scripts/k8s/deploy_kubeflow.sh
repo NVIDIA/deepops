@@ -18,7 +18,7 @@ export KUBEFLOW_DEPLOY_TIMEOUT="${KUBEFLOW_DEPLOY_TIMEOUT:-1200}"
 # Define Kubeflow manifests location
 export KUBEFLOW_MANIFESTS_DEST="${KUBEFLOW_MANIFESTS_DEST:-${CONFIG_DIR}/kubeflow-install/manifests}"
 export KUBEFLOW_MANIFESTS_URL="${KUBEFLOW_MANIFESTS_URL:-https://github.com/kubeflow/manifests}"
-export KUBEFLOW_MANIFESTS_VERSION="${KUBEFLOW_MANIFESTS_VERSION:-v1.4.1}"
+export KUBEFLOW_MANIFESTS_VERSION="${KUBEFLOW_MANIFESTS_VERSION:-v1.6.1}"
 
 # Define configuration we're injecting into the manifests location
 export KUBEFLOW_DEEPOPS_CONFIG_DIR="${KUBEFLOW_DEEPOPS_CONFIG_DIR:-${CONFIG_DIR}/files/kubeflow}"
