@@ -20,7 +20,7 @@ pipeline {
       steps {
         // The only difference between the nightly and multi-nightly Jenkinsfiles should be changing GPU quantity from 1 to 2
         // TODO: ideally lock should work with declared stages
-        lock(resource: null, label: 'gpu', quantity: 2, variable: 'GPUDATA') {
+        lock(resource: null, label: 'gpu', quantity: 1, variable: 'GPUDATA') {
           echo "Reset repo and unmunge files"
           sh '''
             git reset --hard
@@ -69,7 +69,7 @@ pipeline {
 
           echo "Verify local docker registry"
           sh '''
-             echo "unsupported configuration" # TODO bash -x ./workloads/jenkins/scripts/test-local-registry.sh
+             bash -x ./workloads/jenkins/scripts/test-local-registry.sh
           '''
 
           echo "Test running a Deep Learning Example"
