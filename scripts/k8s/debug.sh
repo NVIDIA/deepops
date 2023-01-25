@@ -22,6 +22,7 @@ git branch > ${logdir}/git-branch.log
 git status > ${logdir}/git-status.log
 git diff > ${logdir}/git-diff.log
 git log --pretty=oneline | head -n 20 > ${logdir}/git-log.log
+ansible --version
 
 # GPU configuration
 ansible kube-node -ba "nvidia-smi" -vv > ${logdir}/nvidia-smi.log
