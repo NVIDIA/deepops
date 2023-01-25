@@ -32,6 +32,7 @@ ansible kube-node -ba "docker info" -vv > ${logdir}/docker-info.log
 ansible kube-node -ba "cat /etc/docker/daemon.json" -vv > ${logdir}/docker-daemon.log
 
 # Kubectl (Generic for any Kubernetes cluster)
+kubectl version
 kubectl get pvc -A > ${logdir}/get-pvc.log
 kubectl get pv -A > ${logdir}/get-pv.log
 kubectl get pods -A > ${logdir}/get-pods.log
