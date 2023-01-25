@@ -69,7 +69,7 @@ pipeline {
 
           echo "Verify local docker registry"
           sh '''
-             echo "unsupported configuration" # TODO bash -x ./workloads/jenkins/scripts/test-local-registry.sh
+             bash -x ./workloads/jenkins/scripts/test-local-registry.sh
           '''
 
           echo "Test running a Deep Learning Example"
