@@ -69,10 +69,12 @@ docker_insecure_registries: "{{ groups['kube-master']|map('regex_replace', '^(.*
 crio_insecure_registries: "{{ groups['kube-master']|map('regex_replace', '^(.*)$', '\\1:5000')|list + ['registry.local:31500']}}"
 docker_registry_mirrors: "{{ groups['kube-master'] | map('regex_replace', '^(.*)$', 'http://\\1:5000') | list }}"
 
-# TODO: Add support in containerd for automatically setting up registry
-# mirrors, not just the k8s-local registry
-containerd_insecure_registries:
-  "registry.local:31500": "http://registry.local:31500"
+# TODO: The presence of an insecure local containerd registry in K8s v1.24+ seems to be causing an issue, add support for this back when the issue is fixed
+# BUG: https://github.com/kubernetes-sigs/kubespray/issues/9956
+## TODO: Add support in containerd for automatically setting up registry
+## mirrors, not just the k8s-local registry
+#containerd_insecure_registries:
+#  "registry.local:31500": "http://registry.local:31500"
 
 # Workaround an issue where kubespray defaults are  causing containerd failures
 # https://github.com/kubernetes-sigs/cri-tools/issues/436
