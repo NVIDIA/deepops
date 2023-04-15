@@ -1,14 +1,4 @@
 ---
-# Default address range matches private network for the virtual cluster
-# defined in virtual/.
-# You should set this address range based on your site's infrastructure.
-configInline:
-  address-pools:
-  - name: default
-    protocol: layer2
-    addresses:
-    - 10.0.0.100-10.0.0.110
-
 controller:
   nodeSelector:
     node-role.kubernetes.io/master: ""
