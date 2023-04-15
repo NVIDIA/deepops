@@ -20,7 +20,7 @@ prometheus:
       - role: endpoints
         namespaces:
           names:
-          - gpu-operator-resources
+          - gpu-operator
           - monitoring
       relabel_configs:
       - source_labels: [__meta_kubernetes_pod_node_name]

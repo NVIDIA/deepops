@@ -12,8 +12,8 @@ kubectl get nodes
 kubectl describe nodes
 
 # Wait for GPU operator to finish
-if kubectl get pods -n gpu-operator-resources | grep nvidia-operator-validator ; then
-    kubectl wait --for=condition=ready --timeout=600s pod -n gpu-operator-resources -l app=nvidia-operator-validator
+if kubectl get pods -n gpu-operator | grep nvidia-operator-validator ; then
+    kubectl wait --for=condition=ready --timeout=600s pod -n gpu-operator -l app=nvidia-operator-validator
 fi
 
 # Verify GPU Feature Discovery was installed and one or more nodes were labeled, run queries and remove new lines/white space/non-gpu node output
