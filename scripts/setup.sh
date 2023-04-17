@@ -18,6 +18,7 @@ ANSIBLE_LINT_VERSION="${ANSIBLE_LINT_VERSION:-5.4.0}"
 CONFIG_DIR="${CONFIG_DIR:-${ROOT_DIR}/config}"            # Default configuration directory location
 DEEPOPS_TAG="${1:-master}"                      # DeepOps branch to set up
 JINJA2_VERSION="${JINJA2_VERSION:-2.11.3}"      # Jinja2 required version
+JMESPATH_VERSION="${JMESPATH_VERSION:-0.10.0}"    # jmespath pegged version, actual version probably not that crucial
 MARKUPSAFE_VERSION="${MARKUPSAFE_VERSION:-1.1.1}"  # MarkupSafe version
 PIP="${PIP:-pip3}"                              # Pip binary to use
 PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"    # Python3 path
@@ -117,6 +118,7 @@ if command -v virtualenv &> /dev/null ; then
         ruamel.yaml \
         PyMySQL \
         paramiko \
+        jmespath==${JMESPATH_VERSION} \
         MarkupSafe==${MARKUPSAFE_VERSION} \
         selinux"
 else
