@@ -27,7 +27,7 @@ gpu_operator_enable_migmanager: true
 gpu_operator_preinstalled_nvidia_software: true
 
 # Configuration customization
-gpu_operator_namespace: "gpu-operator-resources"
+gpu_operator_namespace: "gpu-operator"
 gpu_operator_grid_config_dir: "{{ deepops_dir }}/gpu_operator"
 
 # Defaults from https://github.com/NVIDIA/gpu-operator/blob/master/deployments/gpu-operator/values.yaml

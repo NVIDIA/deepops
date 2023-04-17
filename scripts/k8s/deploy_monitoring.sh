@@ -31,7 +31,7 @@ PROMETHEUS_YAML_CONFIG="${PROMETHEUS_YAML_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/mon
 PROMETHEUS_YAML_NO_PERSIST_CONFIG="${PROMETHEUS_YAML_NO_PERSIST_CONFIG:-${DEEPOPS_CONFIG_DIR}/helm/monitoring-no-persist.yml}"
 DCGM_CONFIG_CSV="${DCGM_CONFIG_CSV:-${DEEPOPS_CONFIG_DIR}/files/k8s-cluster/dcgm-custom-metrics.csv}"
 
-GPU_OPERATOR_NAMESPACE="${GPU_OPERATOR_NAMESPACE:-gpu-operator-resources}"
+GPU_OPERATOR_NAMESPACE="${GPU_OPERATOR_NAMESPACE:-gpu-operator}"
 
 function help_me() {
     echo "This script installs the DCGM exporter, Prometheus, Grafana, and configures a GPU Grafana dashboard."
@@ -277,7 +277,7 @@ install_dependencies
 setup_prom_monitoring
 
 # Install DCGM-Exporter and setup custom metrics, if needed
-# # GPU Device Plugin is installed into kube-system, GPU Operator installs it into gpu-operator-resources, use uniq for HA K8s clusters
+# # GPU Device Plugin is installed into kube-system, GPU Operator installs it into gpu-operator, use uniq for HA K8s clusters
 plugin_namespace=$( kubectl get pods -A -l app.kubernetes.io/instance=nvidia-device-plugin  --no-headers   --no-headers -o custom-columns=NAMESPACE:.metadata.namespace | uniq)
 if [ "${plugin_namespace}" == "kube-system" ] ; then
     # No GPU Operator DCGM-Exporter Stack

@@ -44,23 +44,23 @@ kubectl get svc -A > ${logdir}/get-svc.log
 
 # Kubectl / GPU Operator (Generic for any Kubernetes cluster)
 kubectl get pvc -A > ${logdir}/get-pvc.log
-for pod in $(kubectl get pods -n gpu-operator-resources  | grep nvidia-device-plugin | awk '{print $1}'); do
-  kubectl -n gpu-operator-resources  logs ${pod} > ${logdir}/get-plugin-logs-${pod}.log
+for pod in $(kubectl get pods -n gpu-operator  | grep nvidia-device-plugin | awk '{print $1}'); do
+  kubectl -n gpu-operator  logs ${pod} > ${logdir}/get-plugin-logs-${pod}.log
 done
-for pod in $(kubectl get pods -n gpu-operator-resources  | grep gpu-feature-discovery | awk '{print $1}'); do
-  kubectl -n gpu-operator-resources  logs ${pod} > ${logdir}/get-plugin-logs-${pod}.log
+for pod in $(kubectl get pods -n gpu-operator  | grep gpu-feature-discovery | awk '{print $1}'); do
+  kubectl -n gpu-operator  logs ${pod} > ${logdir}/get-plugin-logs-${pod}.log
 done
-for pod in $(kubectl get pods -n gpu-operator-resources  | grep nvidia-operator-validator | awk '{print $1}'); do
-  kubectl -n gpu-operator-resources  logs ${pod} > ${logdir}/get-plugin-logs-${pod}.log
+for pod in $(kubectl get pods -n gpu-operator  | grep nvidia-operator-validator | awk '{print $1}'); do
+  kubectl -n gpu-operator  logs ${pod} > ${logdir}/get-plugin-logs-${pod}.log
 done
-for pod in $(kubectl get pods -n gpu-operator-resources  | grep driver | awk '{print $1}'); do
-  kubectl -n gpu-operator-resources  logs ${pod} > ${logdir}/get-plugin-logs-${pod}.log
+for pod in $(kubectl get pods -n gpu-operator  | grep driver | awk '{print $1}'); do
+  kubectl -n gpu-operator  logs ${pod} > ${logdir}/get-plugin-logs-${pod}.log
 done
-for pod in $(kubectl get pods -n gpu-operator-resources  | grep mig | awk '{print $1}'); do
-  kubectl -n gpu-operator-resources  logs ${pod} > ${logdir}/get-plugin-logs-${pod}.log
+for pod in $(kubectl get pods -n gpu-operator  | grep mig | awk '{print $1}'); do
+  kubectl -n gpu-operator  logs ${pod} > ${logdir}/get-plugin-logs-${pod}.log
 done
-kubectl describe pods -n gpu-operator-resources > ${logdir}/describe-gpu-operator-resources-pods.log
-kubectl describe configmap -n gpu-operator-resources default-mig-parted-config > ${logdir}/default-mig-parted-config.log
+kubectl describe pods -n gpu-operator > ${logdir}/describe-gpu-operator-pods.log
+kubectl describe configmap -n gpu-operator default-mig-parted-config > ${logdir}/default-mig-parted-config.log
 
 
 # Helm

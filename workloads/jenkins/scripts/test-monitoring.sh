@@ -125,13 +125,13 @@ set -e # The loop is done, and we got debug if it failed, re-enable fail on erro
 kubectl get all -n monitoring
 
 # Check for dcgm-exporter pods that are not running
-if kubectl get pods -n gpu-operator-resources -l app=nvidia-dcgm-exporter | grep nvidia-dcgm-exporter | grep -v Running; then
+if kubectl get pods -n gpu-operator -l app=nvidia-dcgm-exporter | grep nvidia-dcgm-exporter | grep -v Running; then
   echo "Some nvidia-dcgm-exporter pods are not in state Running"
   exit 1
 fi
 
 # When deploying the GPU Operator, DCGM is not made available via port 9400 and is instead a K8s service
-if [ "$(kubectl get pods -n gpu-operator-resources -l app=nvidia-dcgm-exporter  -o name)" == "" ]; then
+if [ "$(kubectl get pods -n gpu-operator -l app=nvidia-dcgm-exporter  -o name)" == "" ]; then
   bash -x ./workloads/jenkins/scripts/test-dcgm-metrics.sh slurm-node # We use slurm-node here because it is GPU only, kube-node includes the mgmt plane
 else
   kubectl get svc -A # TODO: Look into if there is a trivial way we can verify DCGM metrics, not high priority because we check Prometheus above
