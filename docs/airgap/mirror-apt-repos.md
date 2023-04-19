@@ -149,6 +149,13 @@ sudo apt update
 sudo apt install apt-mirror
 ```
 
+The package in the repository is not maintained anymore and has some issues. There are community supported forks. Get updated version of the `apt-mirror`:
+```
+git clone https://github.com/Stifler6996/apt-mirror
+cd apt-mirror
+sudo cp -f apt-mirror /usr/bin/
+```
+
 After installing `apt-mirror`, edit the `/etc/apt/mirror.list` file make the following changes:
 
 - Set the `base_path` to the desired download path for your mirror (here, `/var/repos`)
@@ -167,6 +174,57 @@ set _tilde 0
 
 deb https://download.docker.com/linux/ubuntu bionic stable
 deb https://nvidia.github.io/nvidia-docker/ubuntu20.04/amd64 /
+```
+
+The full mirror.list file for Deepops:
+
+```
+############# config ##################
+#
+set base_path    /var/repos
+#
+# set mirror_path  $base_path/mirror
+# set skel_path    $base_path/skel
+# set var_path     $base_path/var
+# set cleanscript $var_path/clean.sh
+# set defaultarch  <running host architecture>
+# set postmirror_script $var_path/postmirror.sh
+# set run_postmirror 0
+set nthreads     20
+set _tilde 0
+#
+############# end config ##############
+
+deb http://archive.ubuntu.com/ubuntu focal main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu focal-security main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu focal-updates main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu focal-proposed main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu focal-backports main restricted universe multiverse
+deb http://ppa.launchpad.net/maas/2.9/ubuntu focal main
+deb http://archive.canonical.com/ubuntu focal partner
+
+deb-src http://archive.ubuntu.com/ubuntu focal main restricted universe multiverse
+deb-src http://archive.ubuntu.com/ubuntu focal-security main restricted universe multiverse
+deb-src http://archive.ubuntu.com/ubuntu focal-updates main restricted universe multiverse
+deb-src http://archive.ubuntu.com/ubuntu focal-proposed main restricted universe multiverse
+deb-src http://archive.ubuntu.com/ubuntu focal-backports main restricted universe multiverse
+
+deb https://download.docker.com/linux/ubuntu focal stable
+deb https://nvidia.github.io/nvidia-docker/ubuntu20.04/amd64 /
+deb https://nvidia.github.io/libnvidia-container/stable/ubuntu20.04/amd64 /
+deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu20.04/amd64 /
+
+deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 /
+
+deb http://repo.download.nvidia.com/baseos/ubuntu/focal/x86_64/ focal common dgx
+deb http://repo.download.nvidia.com/baseos/ubuntu/focal/x86_64/ focal-updates common dgx
+
+clean http://archive.ubuntu.com/ubuntu
+clean https://download.docker.com
+clean https://nvidia.github.io
+clean https://developer.download.nvidia.com
+clean http://repo.download.nvidia.com
+clean http://ppa.launchpad.net
 ```
 
 Then create the target directory and run `apt-mirror`:
@@ -217,7 +275,32 @@ sudo cp -r /var/repos/mirror/nvidia.github.com/nvidia-docker/ /var/www/html/repo
 At this point, the downloaded package repositories should be available on your offline network via the package server.
 You can then add these downloaded repos to the `/etc/apt/sources.list` configuration on the servers that need to install the packages, e.g.:
 
+ Line added to `/etc/apt/sources.list`:
+
 ```
-# Line added to /etc/apt/sources.list
-deb http://repo-server/repos/nvidia-docker/ubuntu20.04/amd64 /
+deb http://repo-server/ubuntu focal main restricted universe multiverse
+deb http://repo-server/ubuntu focal-updates main restricted universe multiverse
+deb http://repo-server/ubuntu focal-backports main restricted universe multiverse
+deb http://repo-server/ubuntu focal-security main restricted universe multiverse
+```
+
+Lines added to `/etc/apt/sources.list.d/dgx.list`:
+
+```
+deb http://repo-server/baseos/ubuntu/focal/x86_64/ focal common dgx
+deb http://repo-server/baseos/ubuntu/focal/x86_64/ focal-updates common dgx
+```
+
+Lines added to `/etc/apt/sources.list.d/cuda-compute-repo.list`:
+
+```
+deb http://repo-server/cuda/repos/ubuntu2004/x86_64/ /
+```
+
+Lines add to `/etc/apt/sources.list.d/nvidia-docker.list`:
+
+```
+deb  [trusted=yes] http://repo-server/libnvidia-container/stable/ubuntu20.04/amd64 /
+deb  [trusted=yes] http://repo-server/nvidia-container-runtime/stable/ubuntu20.04/amd64 /
+deb  [trusted=yes] http://repo-server/nvidia-docker/ubuntu20.04/amd64 /
 ```
