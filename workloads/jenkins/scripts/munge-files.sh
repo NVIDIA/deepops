@@ -30,7 +30,7 @@ if [ ${DEEPOPS_FULL_INSTALL} ]; then # mgmt02, mgmt03, gpu02
 fi
 
 echo "Also fix IPs in the load balancer config"
-sed -i -e  "s/10\\.0\\.0\\.100-10\\.0\\.0\\.110$/10.0.0.1${GPU01}0-10.0.0.1${GPU01}9/g" config.example/helm/metallb.yml
+sed -i -e  "s/10\\.0\\.0\\.100-10\\.0\\.0\\.110$/10.0.0.1${GPU01}0-10.0.0.1${GPU01}9/g" config.example/helm/metallb-resources.yml
 
 echo "Increase debug scope for ansible-playbook commands"
 sed -i -e "s/ansible-playbook/ansible-playbook -v/g" virtual/scripts/*
