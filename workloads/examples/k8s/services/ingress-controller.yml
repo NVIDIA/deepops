@@ -55,7 +55,7 @@ spec:
     spec:
       serviceAccountName: ingress
       nodeSelector:
-        node-role.kubernetes.io/master: "true"
+        node-role.kubernetes.io/control-plane: "true"
       containers:
         - name: nginx-ingress-controller
           image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.11.0
@@ -126,7 +126,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 60
       nodeSelector:
-        node-role.kubernetes.io/master: "true"
+        node-role.kubernetes.io/control-plane: "true"
       containers:
       - name: default-http-backend
         image: gcr.io/google_containers/defaultbackend:1.0

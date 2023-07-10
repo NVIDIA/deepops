@@ -221,7 +221,7 @@ function poll_url() {
 
 function get_url() {
   # Get LoadBalancer and NodePorts
-  master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
+  master_ip=$(kubectl get nodes -l node-role.kubernetes.io/control-plane= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
   nodePort="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=PORT:.spec.ports[?\(@.name==\"http2\"\)].nodePort)"
   secure_nodePort="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=PORT:.spec.ports[?\(@.name==\"https\"\)].nodePort)"
   lb_ip="$(kubectl get svc -n istio-system istio-ingressgateway --no-headers -o custom-columns=:.status.loadBalancer.ingress[0].ip)"

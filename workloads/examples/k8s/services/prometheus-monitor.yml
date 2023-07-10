@@ -58,7 +58,7 @@ spec:
       securityContext:
         fsGroup: 2000       # 2000 works but container runs as 'nobody/nobody', id/gid: 65534
       nodeSelector:
-        node-role.kubernetes.io/master: "true"
+        node-role.kubernetes.io/control-plane: "true"
       containers:
       - image: quay.io/prometheus/prometheus:v2.1.0
         name: prometheus
@@ -183,7 +183,7 @@ data:
       tls_config:
         ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
         # If your node certificates are self-signed or use a different CA to the
-        # master CA, then disable certificate verification below. Note that
+        # control-plane CA, then disable certificate verification below. Note that
         # certificate verification is an integral part of a secure infrastructure
         # so this should only be disabled in a controlled environment. You can
         # disable certificate verification by uncommenting the line below.

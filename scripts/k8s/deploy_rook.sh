@@ -81,7 +81,7 @@ function print_rook() {
   export rook_toolspod=$(kubectl -n rook-ceph get pod -l app=rook-ceph-tools --no-headers -o custom-columns=:.metadata.name)
 
   # Get IP of first master
-  master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
+  master_ip=$(kubectl get nodes -l node-role.kubernetes.io/control-plane= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
 
   # Get Ceph dashboard port
   dash_port=$(kubectl -n rook-ceph get svc rook-ceph-mgr-dashboard-external-https --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)

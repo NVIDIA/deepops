@@ -72,7 +72,7 @@ spec:
         kubernetes.io/cluster-service: "true"
     spec:
       nodeSelector:
-        node-role.kubernetes.io/master: "true"
+        node-role.kubernetes.io/control-plane: "true"
       serviceAccountName: elasticsearch-logging
       containers:
       - image: k8s.gcr.io/elasticsearch:v5.6.4

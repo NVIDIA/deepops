@@ -4,7 +4,7 @@ persistence:
   {% if container_registry_persistence_enabled %}size: "{{ container_registry_storage_size }}"{% endif %}
 
 nodeSelector:
-  node-role.kubernetes.io/master: ""
+  node-role.kubernetes.io/control-plane: ""
 service:
   type: "{{ container_registry_service_type }}"
   {% if container_registry_service_type == "NodePort" %}nodePort: "{{ container_registry_node_port }}"{% endif %}

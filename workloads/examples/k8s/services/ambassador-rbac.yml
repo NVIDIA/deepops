@@ -63,7 +63,7 @@ spec:
     spec:
       serviceAccountName: ambassador
       nodeSelector:
-        node-role.kubernetes.io/master: "true"
+        node-role.kubernetes.io/control-plane: "true"
       containers:
       - name: ambassador
         image: quay.io/datawire/ambassador:0.28.1

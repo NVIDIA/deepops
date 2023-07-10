@@ -21,5 +21,5 @@ If the the value of `helm_enabled` was set to `false` in the `config/kube.yml` f
 ```bash
 kubectl create sa tiller --namespace kube-system
 kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-helm init --service-account tiller --node-selectors node-role.kubernetes.io/master=true
+helm init --service-account tiller --node-selectors node-role.kubernetes.io/control-plane=true
 ```

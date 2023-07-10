@@ -192,7 +192,7 @@ function setup_gpu_monitoring() {
 
 function get_ips(){
     # Get IP information
-    master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
+    master_ip=$(kubectl get nodes -l node-role.kubernetes.io/control-plane= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
     ingress_ip_string="$(echo ${master_ip} | tr '.' '-').nip.io"
 }
 

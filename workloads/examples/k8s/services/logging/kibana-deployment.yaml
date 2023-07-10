@@ -18,7 +18,7 @@ spec:
         k8s-app: kibana-logging
     spec:
       nodeSelector:
-        node-role.kubernetes.io/master: "true"
+        node-role.kubernetes.io/control-plane: "true"
       containers:
       - name: kibana-logging
         image: docker.elastic.co/kibana/kibana:5.6.4

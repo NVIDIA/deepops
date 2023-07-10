@@ -49,7 +49,7 @@ resources: {}
   #  memory: 128Mi
 
 nodeSelector:
-  node-role.kubernetes.io/master: ""
+  node-role.kubernetes.io/control-plane: ""
 
 tolerations: []
 
