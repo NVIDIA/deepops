@@ -1,6 +1,6 @@
 prometheusOperator:
   nodeSelector:
-    node-role.kubernetes.io/master: ""
+    node-role.kubernetes.io/control-plane: ""
 
 prometheus:
   ingress:
@@ -37,7 +37,7 @@ prometheus:
             requests:
               storage: 10Gi
     nodeSelector:
-      node-role.kubernetes.io/master: ""
+      node-role.kubernetes.io/control-plane: ""
   service:
     type: NodePort
     nodePort: 30500
@@ -64,7 +64,7 @@ alertmanager:
       nginx.ingress.kubernetes.io/rewrite-target: /
   alertmanagerSpec:
     nodeSelector:
-      node-role.kubernetes.io/master: ""
+      node-role.kubernetes.io/control-plane: ""
   service:
     type: NodePort
     nodePort: 30400
@@ -79,7 +79,7 @@ grafana:
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/rewrite-target: /
   nodeSelector:
-    node-role.kubernetes.io/master: ""
+    node-role.kubernetes.io/control-plane: ""
   service:
     type: NodePort
     nodePort: 30200
