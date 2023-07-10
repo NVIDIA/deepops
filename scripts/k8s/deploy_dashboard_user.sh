@@ -15,7 +15,7 @@ fi
 
 # Get IP of first master
 dashboard_port=$(kubectl -n kube-system get svc kubernetes-dashboard --no-headers -o custom-columns=PORT:.spec.ports.*.nodePort)
-master_ip=$(kubectl get nodes -l node-role.kubernetes.io/master= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
+master_ip=$(kubectl get nodes -l node-role.kubernetes.io/control-plane= --no-headers -o custom-columns=IP:.status.addresses.*.address | cut -f1 -d, | head -1)
 
 # Get access token
 token=$(kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}') | grep ^token: | awk '{print $2}')
