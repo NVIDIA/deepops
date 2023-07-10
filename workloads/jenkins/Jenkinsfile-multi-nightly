@@ -20,7 +20,7 @@ pipeline {
       steps {
         // The only difference between the nightly and multi-nightly Jenkinsfiles should be changing GPU quantity from 1 to 2
         // TODO: ideally lock should work with declared stages
-        lock(resource: null, label: 'gpu', quantity: 1, variable: 'GPUDATA') {
+        lock(resource: null, label: 'gpu', quantity: 2, variable: 'GPUDATA') {
           echo "Reset repo and unmunge files"
           sh '''
             git reset --hard
