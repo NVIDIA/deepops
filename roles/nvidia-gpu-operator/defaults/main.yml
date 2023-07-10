@@ -12,7 +12,7 @@ gpu_operator_nvaie_helm_repo: "https://helm.ngc.nvidia.com/nvaie"
 gpu_operator_nvaie_chart_name: "nvaie/gpu-operator"
 
 # NVAIE GPU Operator may require different version, check NGC enterprise collection.
-gpu_operator_chart_version: "v22.9.2"
+gpu_operator_chart_version: "v23.3.2"
 
 k8s_gpu_mig_strategy: "mixed"
 
@@ -33,7 +33,7 @@ gpu_operator_grid_config_dir: "{{ deepops_dir }}/gpu_operator"
 # Defaults from https://github.com/NVIDIA/gpu-operator/blob/master/deployments/gpu-operator/values.yaml
 gpu_operator_default_runtime: "containerd"
 gpu_operator_driver_registry: "nvcr.io/nvidia"
-gpu_operator_driver_version: "525.85.12"
+gpu_operator_driver_version: "525.105.17"
 
 # This enables/disables NVAIE
 gpu_operator_nvaie_enable: false
