@@ -142,6 +142,13 @@ function clone_repo() {
   # XXX: Change the default Istio Ingress Gateway configuration to support NodePort for ease-of-use in on-prem
   sed -i 's:ClusterIP:NodePort:g' "${KUBEFLOW_MANIFESTS_DEST}/common/istio-1-16/istio-install/base/patches/service.yaml"
 
+  # XXX: Make the Kubeflow cluster allow insecure http instead of https
+  # Remove this for any production cluster and enable HTTPS suitable for the environment
+  # XXX: https://github.com/kubeflow/manifests#connect-to-your-kubeflow-cluster
+  sed -i 's:JWA_APP_SECURE_COOKIES=true:JWA_APP_SECURE_COOKIES=false:' "${KUBEFLOW_MANIFESTS_DEST}/apps/jupyter/jupyter-web-app/upstream/base/params.env"
+  sed -i 's:VWA_APP_SECURE_COOKIES=true:VWA_APP_SECURE_COOKIES=false:' "${KUBEFLOW_MANIFESTS_DEST}/apps/volumes-web-app/upstream/base/params.env"
+  sed -i 's:TWA_APP_SECURE_COOKIES=true:TWA_APP_SECURE_COOKIES=false:' "${KUBEFLOW_MANIFESTS_DEST}/apps/tensorboard/tensorboards-web-app/upstream/base/params.env"
+
   popd
   echo "Kubeflow manifests repo:"
   echo "- Cloned from: ${KUBEFLOW_MANIFESTS_URL}"
