@@ -37,6 +37,6 @@ data:
     staticClients:
     # https://github.com/dexidp/dex/pull/1664
     - idEnv: OIDC_CLIENT_ID
-      redirectURIs: ["/login/oidc"]
+      redirectURIs: ["/login/oidc", "/authservice/oidc/callback"]
       name: 'Dex Login Application'
       secretEnv: OIDC_CLIENT_SECRET
