@@ -18,7 +18,7 @@ export KUBEFLOW_DEPLOY_TIMEOUT="${KUBEFLOW_DEPLOY_TIMEOUT:-1200}"
 # Define Kubeflow manifests location
 export KUBEFLOW_MANIFESTS_DEST="${KUBEFLOW_MANIFESTS_DEST:-${CONFIG_DIR}/kubeflow-install/manifests}"
 export KUBEFLOW_MANIFESTS_URL="${KUBEFLOW_MANIFESTS_URL:-https://github.com/kubeflow/manifests}"
-export KUBEFLOW_MANIFESTS_VERSION="${KUBEFLOW_MANIFESTS_VERSION:-v1.6.1}"
+export KUBEFLOW_MANIFESTS_VERSION="${KUBEFLOW_MANIFESTS_VERSION:-v1.7.0}"
 
 # Define configuration we're injecting into the manifests location
 export KUBEFLOW_DEEPOPS_CONFIG_DIR="${KUBEFLOW_DEEPOPS_CONFIG_DIR:-${CONFIG_DIR}/files/kubeflow}"
@@ -26,7 +26,7 @@ export KUBEFLOW_DEEPOPS_DEX_CONFIG="${KUBEFLOW_DEEPOPS_DEX_CONFIG:-${KUBEFLOW_DE
 export KUBEFLOW_DEEPOPS_USERNS_PARAMS="${KUBEFLOW_DEEPOPS_USERNS_PARAMS:-${KUBEFLOW_DEEPOPS_CONFIG_DIR}/user-namespace-params.env}"
 
 # Define Kustomize location
-export KUSTOMIZE_URL="${KUSTOMIZE_URL:-https://github.com/kubernetes-sigs/kustomize/releases/download/v3.2.0/kustomize_3.2.0_linux_amd64}"
+export KUSTOMIZE_URL="${KUSTOMIZE_URL:-https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.1.0/kustomize_v5.1.0_linux_amd64.tar.gz}"
 export KUSTOMIZE="${KUSTOMIZE:-${CONFIG_DIR}/kustomize}"
 
 function help_me() {
@@ -147,7 +147,8 @@ function stand_up() {
   pushd .
   pushd "${KUBEFLOW_MANIFESTS_DEST}"
 
-  wget -O "${KUSTOMIZE}" "${KUSTOMIZE_URL}"
+  wget -O "${KUSTOMIZE}.tgz" "${KUSTOMIZE_URL}"
+  tar -xvf "${KUSTOMIZE}.tgz" -C "${CONFIG_DIR}"
   chmod +x "${KUSTOMIZE}"
 
   echo "Beginning Kubeflow deployment"
