@@ -136,9 +136,11 @@ function clone_repo() {
   cp -v "${KUBEFLOW_DEEPOPS_DEX_CONFIG}" "${KUBEFLOW_MANIFESTS_DEST}/common/dex/base/config-map.yaml"
   cp -v "${KUBEFLOW_DEEPOPS_USERNS_PARAMS}" "${KUBEFLOW_MANIFESTS_DEST}/common/user-namespace/base/params.env"
 
-
   # BUG: https://stackoverflow.com/questions/76502195/horizontalpodautoscaler-not-found-on-minikube-when-installing-kubeflow
   sed -i 's:autoscaling/v2beta2:autoscaling/v2:' "${KUBEFLOW_MANIFESTS_DEST}/common/knative/knative-serving/base/upstream/serving-core.yaml"
+
+  # XXX: Change the default Istio Ingress Gateway configuration to support NodePort for ease-of-use in on-prem
+  sed -i 's:ClusterIP:NodePort:g' "${KUBEFLOW_MANIFESTS_DEST}/common/istio-1-16/istio-install/base/patches/service.yaml"
 
   popd
   echo "Kubeflow manifests repo:"
