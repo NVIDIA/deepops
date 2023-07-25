@@ -27,7 +27,7 @@ roles:
   version: "2.3.0"
 
 - src: andrewrothstein.miniconda
-  version: "v6.1.5"
+  version: "v6.1.9"
 
 - src: nvidia.nvidia_driver
   version: "v2.3.0"
