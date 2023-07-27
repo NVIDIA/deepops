@@ -1,5 +1,5 @@
 ---
-nhc_version: "1.4.2"
+nhc_version: "1.4.3"
 nhc_src_url: "https://github.com/mej/nhc/releases/download/{{ nhc_version }}/lbnl-nhc-{{ nhc_version }}.tar.xz"
 nhc_install_dir: "/usr"
 nhc_config_dir: "/etc"

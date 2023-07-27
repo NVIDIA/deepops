@@ -16,6 +16,12 @@ platforms:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     privileged: true
     pre_build_image: true
+  - name: nhc-ubuntu-2204
+    image: geerlingguy/docker-ubuntu2204-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+    pre_build_image: true
   - name: nhc-centos-7
     image: geerlingguy/docker-centos7-ansible
     volumes:
