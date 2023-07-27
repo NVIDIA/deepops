@@ -1,6 +1,6 @@
 ---
 # vars for lecorguille.singularity
-singularity_version: "3.7.3"
+singularity_version: "3.11.4"
 singularity_conf_path: "/etc/singularity/singularity.conf"
 bind_paths: []
 
