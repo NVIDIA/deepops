@@ -1,6 +1,7 @@
 ---
-# 'cuda' is the generic package and will pull the latest version
-cuda_version: "cuda-toolkit-11-7"
+# 'cuda-toolkit' is the generic package and will pull the latest version
+# if you want a specific version, use i.e. cuda-toolkit=12.2.0-1
+cuda_version: cuda-toolkit
 
 # DGX-specific vars may be used to target specific models,
 # because available versions for DGX may differ from the generic repo
