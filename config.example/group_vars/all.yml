@@ -122,7 +122,9 @@ sftp_chroot: false
 ################################################################################
 # NVIDIA GPU configuration
 # Playbook: nvidia-cuda
-cuda_version: cuda-toolkit-11-5
+# Install latest version by default,
+# if you want a specific version, use i.e. cuda-toolkit=12.2.0-1
+cuda_version: cuda-toolkit
 
 # DGX-specific vars may be used to target specific models,
 # because available versions for DGX may differ from the generic repo
