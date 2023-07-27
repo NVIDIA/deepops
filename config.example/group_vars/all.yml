@@ -124,7 +124,7 @@ sftp_chroot: false
 # Playbook: nvidia-cuda
 # Install latest version by default,
 # if you want a specific version, use i.e. cuda-toolkit=12.2.0-1
-cuda_version: cuda-toolkit
+# cuda_version: cuda-toolkit
 
 # DGX-specific vars may be used to target specific models,
 # because available versions for DGX may differ from the generic repo
@@ -148,9 +148,9 @@ nvidia_driver_force_install: false
 # Docker configuration
 # Playbook: docker, nvidia-docker, k8s-cluster
 #
-# For supported Docker versions, see: kubespray/roles/container-engine/docker/vars/*
+# For supported Docker versions, see: submodules/kubespray/roles/container-engine/docker/vars/*
 docker_install: yes
-docker_version: '20.10'
+# docker_version: 'latest'
 docker_dns_servers_strict: no
 docker_storage_options: -s overlay2
 #docker_options: "--bip=192.168.99.1/24"
@@ -198,7 +198,9 @@ enroot_environ_config_files_dgx:
 # Singularity configuration
 # Playbook: singularity, slurm-cluster
 # Singularity target version
-singularity_version: "3.7.3"
+# set an alternate singularity version here;
+# see roles/singularity_wrapper/defaults/main.yml for default
+# singularity_version:
 singularity_conf_path: "/etc/singularity/singularity.conf"
 bind_paths: []
   # example:
