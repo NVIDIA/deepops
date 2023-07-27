@@ -277,10 +277,6 @@ deepops_dir: /opt/deepops
 # Roles: K8s GPU operator, GPU plugin, OpenShift/K8s
 deepops_venv: '{{ deepops_dir }}/venv'
 
-# OpenMPI
-# Playbook: openmpi
-openmpi_version: 4.0.3
-
 # Disable cloud-init
 deepops_disable_cloud_init: true
 
