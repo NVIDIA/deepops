@@ -121,6 +121,9 @@ sftp_chroot: false
 # NVIDIA                                                                       #
 ################################################################################
 # NVIDIA GPU configuration
+# Playbook nvidia-driver
+nvidia_driver_branch: 530
+
 # Playbook: nvidia-cuda
 # Install latest version by default,
 # if you want a specific version, use i.e. cuda-toolkit=12.2.0-1
