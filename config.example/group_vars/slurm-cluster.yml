@@ -3,7 +3,7 @@
 ################################################################################
 # Slurm job scheduler configuration
 # Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
-slurm_version: "23.02.4"
+# slurm_version: ""
 slurm_install_prefix: /usr/local
 pmix_install_prefix: /opt/deepops/pmix
 hwloc_install_prefix: /opt/deepops/hwloc
@@ -137,10 +137,10 @@ sm_install_host: "slurm-master[0]"
 slurm_install_hpcsdk: true
 
 # Select the version of HPC SDK to download
-hpcsdk_major_version: "23"
-hpcsdk_minor_version: "5"
-hpcsdk_file_cuda: "12.1"
-hpcsdk_arch: "x86_64"
+#hpcsdk_major_version: ""
+#hpcsdk_minor_version: ""
+#hpcsdk_file_cuda: ""
+#hpcsdk_arch: "x86_64"
 
 # In a Slurm cluster, default to setting up HPC SDK as modules rather than in
 # the default user environment
@@ -156,7 +156,7 @@ hpcsdk_install_in_path: false
 # this can help you get started.
 ################################################################################
 slurm_cluster_install_openmpi: false
-openmpi_version: 4.0.4
+#openmpi_version:
 openmpi_install_prefix: "/usr/local"
 openmpi_configure: "./configure --prefix={{ openmpi_install_prefix }} --disable-dependency-tracking --disable-getpwuid --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }} --with-pmi={{ slurm_install_prefix }} --with-slurm={{ slurm_install_prefix }} --with-libevent=/usr"
 
@@ -185,7 +185,7 @@ allow_user_set_gpu_clocks: no
 ################################################################################
 slurm_install_enroot: true
 slurm_install_pyxis: true
-slurm_pyxis_version: 0.11.1
+#slurm_pyxis_version:
 
 # /run is default partition of pyxis runtime_path
 resize_run_partition: false
