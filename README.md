@@ -7,7 +7,6 @@ Infrastructure automation tools for Kubernetes and Slurm clusters with NVIDIA GP
 - [DeepOps](#deepops)
   - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
-  - [Releases Notes](#releases-notes)
   - [Deployment Requirements](#deployment-requirements)
     - [Provisioning System](#provisioning-system)
     - [Cluster System](#cluster-system)
