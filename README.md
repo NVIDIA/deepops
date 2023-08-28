@@ -7,7 +7,6 @@ Infrastructure automation tools for Kubernetes and Slurm clusters with NVIDIA GP
 - [DeepOps](#deepops)
   - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
-  - [Releases Notes](#releases-notes)
   - [Deployment Requirements](#deployment-requirements)
     - [Provisioning System](#provisioning-system)
     - [Cluster System](#cluster-system)
@@ -29,27 +28,7 @@ The DeepOps project encapsulates best practices in the deployment of GPU server 
 - An existing cluster that needs a resource manager / batch scheduler, where DeepOps is used to install Slurm or Kubernetes
 - A single machine where no scheduler is desired, only NVIDIA drivers, Docker, and the NVIDIA Container Runtime
 
-## Releases Notes
-
-Latest release: [DeepOps 22.08 Release](https://github.com/NVIDIA/deepops/releases/tag/22.08)
-
-- Kubernetes Default Components:
-
-  - [kubernetes](https://github.com/kubernetes/kubernetes) v1.22.8
-  - [etcd](https://github.com/coreos/etcd) v3.5.0
-  - [docker](https://www.docker.com/) v20.10
-  - [containerd](https://containerd.io/) v1.5.8
-  - [cri-o](http://cri-o.io/) v1.22
-  - [calico](https://github.com/projectcalico/calico) v3.20.3
-  - [dashboard](https://github.com/kubernetes/dashboard/tree/master) v2.0.3
-  - [dashboard metrics scraper](https://github.com/kubernetes-sigs/dashboard-metrics-scraper/tree/master) v1.0.4
-  - [nvidia gpu operator](https://github.com/NVIDIA/gpu-operator/tree/master) 1.10.0
-
-- Slurm Default Components:
-
-  - [slurm](https://github.com/SchedMD/slurm/tree/master) 21.08.8-2
-  - [Singularity](https://github.com/apptainer/singularity/tree/master) 3.7.3
-  - [docker](https://www.docker.com/) v20.10
+Latest release: [DeepOps 23.08 Release](https://github.com/NVIDIA/deepops/releases/tag/23.08)
 
 It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally [functional](docs/deepops/testing.md) but may change significantly between releases.
 
@@ -60,7 +39,7 @@ It is recommended to use the latest release branch for stable code (linked above
 The provisioning system is used to orchestrate the running of all playbooks and one will be needed when instantiating Kubernetes or Slurm clusters. Supported operating systems which are tested and supported include:
 
 - NVIDIA DGX OS 4, 5
-- Ubuntu 18.04 LTS, 20.04 LTS
+- Ubuntu 18.04 LTS, 20.04, 22.04 LTS
 - CentOS 7, 8
 
 ### Cluster System
@@ -68,7 +47,7 @@ The provisioning system is used to orchestrate the running of all playbooks and 
 The cluster nodes will follow the requirements described by Slurm or Kubernetes. You may also use a cluster node as a provisioning system but it is not required.
 
 - NVIDIA DGX OS 4, 5
-- Ubuntu 18.04 LTS, 20.04 LTS
+- Ubuntu 18.04 LTS, 20.04, 22.04 LTS
 - CentOS 7, 8
 
 You may also install a supported operating system on all servers via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)) or utilize the provided [OS install container](docs/pxe/minimal-pxe-container.md).
