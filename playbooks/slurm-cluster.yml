@@ -52,10 +52,11 @@
 - include: generic/software.yml
 
 # Set up NFS filesystem
-- include: generic/nfs-server.yml
-  vars:
-    hostlist: "{{ nfs_server_group | default('slurm-nfs[0]') }}"
-  when: slurm_enable_nfs_server
+# - include: generic/nfs-server.yml
+#   vars:
+#     hostlist: "{{ nfs_server_group | default('slurm-nfs[0]') }}"
+#   when: slurm_enable_nfs_server
+
 - include: generic/nfs-client.yml
   vars:
     hostlist: "{{ nfs_client_group | default('slurm-nfs-client') }}"
@@ -69,6 +70,9 @@
 - include: slurm-cluster/nhc.yml hostlist=slurm-node
   when: slurm_install_nhc|default(false)
 
+# Create software/data mounts
+- include: slurm-cluster/create_mounts.yml
+
 # Install Slurm
 - include: slurm-cluster/slurm.yml
 
@@ -79,6 +83,16 @@
 # Install Lmod
 - include: slurm-cluster/lmod.yml
   when: slurm_install_lmod
+
+# Install spack
+- include: slurm-cluster/spack-modules.yml
+  when: slurm_install_spack
+
+# Update motd
+- include: slurm-cluster/motd.yml
+
+# Install nvtop
+- include: slurm-cluster/nvtop.yml
 
 # Install the NVIDIA HPC SDK
 - include: nvidia-software/nvidia-hpc-sdk.yml
@@ -95,6 +109,7 @@
   vars:
     hostlist: "{{ slurm_monitoring_group | default('slurm-metric') }}"
   when: slurm_enable_monitoring
+
 - include: slurm-cluster/alertmanager.yml
   vars:
     hostlist: "{{ slurm_monitoring_group | default('slurm-metric') }}"

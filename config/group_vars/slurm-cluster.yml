@@ -155,6 +155,7 @@ slurm_conf_symlink: true
 #   May be built with either EasyBuild or Spack                                #
 ################################################################################
 slurm_install_lmod: true
+slurm_install_spack: true
 
 # Note: the sm_prefix must be in an NFS-shared location
 sm_prefix: "/sw"
