@@ -5,6 +5,11 @@
   roles:
   - lmod
 
+- hosts: "{{ hostlist | default('all') }}"
+  become: yes
+  roles:
+  - spack.environment
+
 - hosts: "{{ hostlist | default('slurm-master[0]') }}"
   become: yes
   roles:
