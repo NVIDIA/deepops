@@ -3,19 +3,67 @@
 ################################################################################
 # Slurm job scheduler configuration
 # Playbook: slurm, slurm-cluster, slurm-perf, slurm-perf-cluster, slurm-validation
-# slurm_version: ""
 slurm_install_prefix: /usr/local
-pmix_install_prefix: /opt/deepops/pmix
-hwloc_install_prefix: /opt/deepops/hwloc
-#slurm_user_home: /local/slurm
+pmix_install_prefix: /opt/kosmos-cluster/pmix
+hwloc_install_prefix: /opt/kosmos-cluster/hwloc
+
 slurm_manage_gpus: true
-#slurm_cluster_name: deepops
-#slurm_username: slurm
+
+slurm_cluster_name: kosmos-cluster
+slurm_default_group: aifo
+slurm_organization_name: nki
+
 slurm_password: ReplaceWithASecurePasswordInTheVault
-#slurm_db_username: slurm
 slurm_db_password: AlsoReplaceWithASecurePasswordInTheVault
-#slurm_max_job_timelimit: INFINITE
-#slurm_default_job_timelimit:
+
+slurm_max_job_timelimit: 10080
+slurm_default_job_timelimit: 60
+slurm_grace_time: 120  # time in seconds to allow for job cleanup
+
+# Partition settings, individual nodes can overwrite settings in host_vars
+partition_settings:
+  a100:
+    slurm_def_mem_per_cpu: 7000
+    slurm_def_cpu_per_gpu: 16
+    slurm_allow_qos: a100_qos,four_a100_qos,eight_a100_qos
+    slurm_max_job_timelimit: 10080
+    default: false
+  a6000:
+    slurm_def_mem_per_cpu: 7000
+    slurm_def_cpu_per_gpu: 16
+    slurm_allow_qos: a6000_qos,four_a6000_qos
+    slurm_max_job_timelimit: 10080
+    default: false
+  rtx2080ti:
+    slurm_def_mem_per_cpu: 5700
+    slurm_def_cpu_per_gpu: 4
+    slurm_allow_qos: rtx_qos
+    slurm_max_job_timelimit: 10080
+    default: false
+  rtx2080ti_sm:
+    slurm_def_mem_per_cpu: 3700
+    slurm_def_cpu_per_gpu: 12
+    slurm_allow_qos: rtx_qos
+    slurm_max_job_timelimit: 20160
+    default: true
+  p6000:
+    slurm_def_mem_per_cpu: 3000
+    slurm_def_cpu_per_gpu: 10
+    slurm_allow_qos: rtx_qos
+    slurm_max_job_timelimit: 10080
+    default: false
+  rtx8000:
+    slurm_def_mem_per_cpu: 6000
+    slurm_def_cpu_per_gpu: 10
+    slurm_allow_qos: a6000_qos,four_a6000_qos
+    slurm_max_job_timelimit: 10080
+    default: false
+  cpu:
+    slurm_def_mem_per_cpu: 1000
+    slurm_allow_qos: rtx_qos,a6000_qos,a100_qos
+    slurm_max_job_timelimit: 30-00
+    default: false
+
 
 # Auto-detect GPUs using NVML
 # See docs/slurm-cluster/nvml.md for details.
@@ -64,9 +112,9 @@ dns_late: false
 # Optional installs                                                            #
 ################################################################################
 slurm_configure_etc_hosts: yes
-slurm_cluster_install_cuda: yes
+slurm_cluster_install_cuda: no
 slurm_cluster_install_nvidia_driver: yes
-slurm_cluster_install_singularity: no
+slurm_cluster_install_singularity: yes
 
 ################################################################################
 # NFS                                                                          #
@@ -74,33 +122,33 @@ slurm_cluster_install_singularity: no
 # Default exports:
 # - /home: shared home directories, needed for Open OnDemand and best practice
 # - /sw:   shared space for software installs, used for Spack or EasyBuild
-nfs_exports:
-  - path: /home
-    options: "*(rw,sync,no_root_squash)"
-  - path: /sw
-    options: "*(rw,sync,no_root_squash)"
-nfs_mounts:
-  - mountpoint: /home
-    server: '{{ groups["slurm-master"][0] }}'
-    path: /home
-    options: async,vers=3
-  - mountpoint: /sw
-    server: '{{ groups["slurm-master"][0] }}'
-    path: /sw
-    options: async,vers=3
+# nfs_exports:
+#   - path: /home
+#     options: "*(rw,sync,no_root_squash)"
+#   - path: /sw
+#     options: "*(rw,sync,no_root_squash)"
+# nfs_mounts:
+#   - mountpoint: /home
+#     server: '{{ groups["slurm-master"][0] }}'
+#     path: /home
+#     options: async,vers=3
+#   - mountpoint: /sw
+#     server: '{{ groups["slurm-master"][0] }}'
+#     path: /sw
+#     options: async,vers=3
 
 # Flags for enable/disable of NFS deployment
 #  - Set up an NFS server on nfs-server?
-slurm_enable_nfs_server: true
+slurm_enable_nfs_server: false
 #  - Mount NFS filesystems on nfs-clients?
-slurm_enable_nfs_client_nodes: true
+slurm_enable_nfs_client_nodes: false
 
 # Inventory host groups to use for NFS server or clients
 nfs_server_group: "slurm-master[0]"
 nfs_client_group: "slurm-master[1:],slurm-node"
 
 # Flags for sharing slurm.conf among compute and control nodes
-slurm_conf_symlink: false
+slurm_conf_symlink: true
 
 ################################################################################
 # SOFTWARE MODULES (SM)                                                        #
@@ -125,16 +173,14 @@ sm_module_path: "{{ sm_module_root }}/all"
 spack_install_dir: "{{ sm_prefix }}/spack"
 spack_build_packages: false
 spack_default_packages:
-- "cuda@10.2.89"
-- "openmpi@3.1.6 +cuda +pmi schedulers=auto"
 
 # Which host should we run installs on for software going into the NFS share?
-sm_install_host: "slurm-master[0]"
+sm_install_host: "slurm-login[0]"
 
 ################################################################################
 # NVIDIA HPC SDK                                                               #
 ################################################################################
-slurm_install_hpcsdk: true
+slurm_install_hpcsdk: false
 
 # Select the version of HPC SDK to download
 #hpcsdk_major_version: ""
@@ -184,7 +230,7 @@ allow_user_set_gpu_clocks: no
 # Enroot & Pyxis                                                               #
 ################################################################################
 slurm_install_enroot: true
-slurm_install_pyxis: true
+slurm_install_pyxis: false
 #slurm_pyxis_version:
 
 # /run is default partition of pyxis runtime_path
