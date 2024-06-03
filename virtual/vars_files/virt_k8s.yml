@@ -1,3 +1,0 @@
----
-container_registry_persistence_enabled: false
-rsyslog_client_tcp_host: "{{ groups['kube-master'][0] }}"
