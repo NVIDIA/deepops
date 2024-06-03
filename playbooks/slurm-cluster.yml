@@ -57,6 +57,8 @@
 #     hostlist: "{{ nfs_server_group | default('slurm-nfs[0]') }}"
 #   when: slurm_enable_nfs_server
 
+- include: generic/nfs-general.yml
+
 - include: generic/nfs-client.yml
   vars:
     hostlist: "{{ nfs_client_group | default('slurm-nfs-client') }}"
