@@ -4,7 +4,7 @@ epel_key_url: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible
 
 standalone_container_registry_image: "registry:2.8"
 standalone_container_registry_port: "5000"
-standalone_container_registry_name: "deepops-registry"
+standalone_container_registry_name: "kosmos-registry"
 
 standalone_container_registry_config_template: "config.yml"
 
