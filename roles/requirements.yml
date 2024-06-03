@@ -29,8 +29,9 @@ roles:
 - src: andrewrothstein.miniconda
   version: "v6.1.9"
 
-- src: nvidia.nvidia_driver
-  version: "v2.3.0"
+- src: https://github.com/NKI-AI/ansible-role-nvidia-driver.git
+  version: master
+  name: nvidia.nvidia_driver
 
 - src: nvidia.nvidia_docker
   version: "v1.2.4"
