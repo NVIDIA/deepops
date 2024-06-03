@@ -9,7 +9,7 @@ hwloc_install_prefix: /opt/kosmos-cluster/hwloc
 
 slurm_manage_gpus: true
 
-slurm_cluster_name: kosmos-cluster
+slurm_cluster_name: kosmos
 slurm_default_group: aifo
 slurm_organization_name: nki
 
