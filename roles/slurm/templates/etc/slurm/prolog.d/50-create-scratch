@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+SCRATCH_FOLDER=/processing/"$SLURM_JOB_USER"
+
+if [ ! -d $SCRATCH_FOLDER ]; then
+  sudo mkdir -p "$SCRATCH_FOLDER"
+  sudo chown "$SLURM_JOB_USER:$SLURM_JOB_USER" "$SCRATCH_FOLDER"
+  sudo chmod 700 "$SCRATCH_FOLDER"
+fi

@@ -19,6 +19,7 @@
     state: absent
   with_items:
     - prolog.sh
+    - task_prolog.sh
     - prolog.d
     - prolog-parts.d
     - prolog-exclusive.d
@@ -69,6 +70,14 @@
     mode: 0755
   tags:
     - prolog
+
+- name: copy task task prolog script
+  template:
+    src: etc/slurm/task_prolog.sh
+    dest: "{{ slurm_config_dir }}/"
+    mode: 0755
+  tags:
+    - task_prolog
 
 - name: copy prolog parts
   template:
