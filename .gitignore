@@ -6,7 +6,6 @@
 
 # project-specific
 /admin.conf
-/config*/
 !/config.example/
 /roles/galaxy/
 /collections/*
