@@ -1,0 +1,16 @@
+---
+- hosts:  "{{ hostlist | default('slurm-login,slurm-node') }}"
+  become: yes
+  tasks:
+    - name: Gather custom facts
+      include_role:
+        name: facts
+    - name: Dump
+      delegate_to: localhost
+      run_once: true
+      copy:
+       content: "{{ ansible_local | to_nice_json }}"
+       dest: /tmp/setup-dump.json
+    - name: Create mount points
+      include_role:
+        name: create-mounts

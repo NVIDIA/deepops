@@ -1,0 +1,3 @@
+---
+motd_header_template: "00-header.yml.j2"
+motd_sysinfo_template: "50-landscape-sysinfo.yml.j2"

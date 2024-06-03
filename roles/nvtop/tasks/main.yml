@@ -1,0 +1,81 @@
+#
+# ansible role to install nvtop
+#
+---
+- name: "install packages"
+  become: yes
+  apt:
+    name:
+    - cmake
+    - libncurses5-dev
+    - libncursesw5-dev
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: create nvtop source dir
+  file:
+    path: /usr/local/src/nvtop
+    state: directory
+  tags: nvtop
+
+- name: clone nvtop
+  become: yes
+  git:
+    repo: "{{ nvtop_github_url }}"
+    dest: /usr/local/src/nvtop
+    clone: yes
+    update: yes
+  tags: nvtop
+
+- name: create nvtop build dir
+  become: yes
+  file:
+    path: /usr/local/src/nvtop/build
+    state: directory
+  tags: nvtop
+
+- name: cmake nvtop
+  become: yes
+  command:
+    chdir: /usr/local/src/nvtop/build
+    argv:
+      - cmake
+      - ..
+      - -DNVIDIA_SUPPORT=ON
+      - -DAMDGPU_SUPPORT=NO
+      - -DINTEL_SUPPORT=NO
+  register: result
+#  changed_when: "result.stdout != \"make: Nothing to be done for 'all'.\""
+  tags: nvtop
+
+- name: make nvtop
+  become: yes
+  command:
+    chdir: /usr/local/src/nvtop/build
+    argv:
+      - make
+      - -j
+  register: result
+  changed_when: "result.stdout != \"make: Nothing to be done for 'all'.\""
+  tags: nvtop
+
+- name: install nvtop
+  become: yes
+  command:
+    chdir: /usr/local/src/nvtop/build
+    argv:
+      - make
+      - install
+  register: result
+#  changed_when: "result.stdout != \"make: Nothing to be done for 'all'.\""
+  tags: nvtop
+
+- name: clean nvtop source directory
+  become: yes
+  command:
+    chdir: /usr/local/src/nvtop/build
+    argv:
+      - make
+      - clean
+  ignore_errors: true
+  tags: nvtop

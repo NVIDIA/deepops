@@ -1,0 +1,7 @@
+---
+- hosts:  "{{ hostlist | default('all') }}"
+  become: yes
+  tasks:
+    - name: install motd
+      include_role:
+        name: motd

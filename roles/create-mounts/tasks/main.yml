@@ -1,0 +1,31 @@
+# This has to be done earlier because it's possible mount -a is executed by cronjob
+- name: create mounts if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - /sw
+    - /data/groups/aiforoncology
+    - /data/groups/beets-tan
+    - /data/groups/nkiai
+    - /data/groups/public
+    - /projects
+    - /home
+
+- name: add mounts to /etc/fstab
+  blockinfile:
+    dest: /etc/fstab
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    content: |
+      kronos:/data-pool/software /sw nfs rsize=524288,wsize=524288,vers=3,timeo=30,intr 0 0
+      kronos:/data-pool/groups/aiforoncology /data/groups/aiforoncology nfs rsize=524288,wsize=524288,vers=3,timeo=30,intr 0 0
+      kronos:/data-pool/groups/beets-tan /data/groups/beets-tan nfs rsize=524288,wsize=524288,vers=3,timeo=30,intr 0 0
+      kronos:/data-pool/groups/nkiai /data/groups/nkiai nfs rsize=524288,wsize=524288,vers=3,timeo=30,intr 0 0
+      kronos:/data-pool/groups/public /data/groups/public nfs rsize=524288,wsize=524288,vers=3,timeo=30,intr 0 0
+      rhea:/project-pool/projects /projects nfs rsize=524288,wsize=524288,vers=3,timeo=30,intr 0 0
+      rhea:/project-pool/network_homes /home nfs rsize=524288,wsize=524288,vers=3,timeo=30,intr 0 0
+  register: update_fstab
+
+- name: mount drives
+  command: mount -a
+  register: drives_mounted
