@@ -67,7 +67,7 @@ partition_settings:
 
 # Auto-detect GPUs using NVML
 # See docs/slurm-cluster/nvml.md for details.
-slurm_autodetect_nvml: true
+slurm_autodetect_nvml: false
 
 # Ensure hosts file generation only runs across slurm cluster
 hosts_add_ansible_managed_hosts_groups: ["slurm-cluster"]
