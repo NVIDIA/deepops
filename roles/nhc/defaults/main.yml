@@ -4,7 +4,7 @@ nhc_src_url: "https://github.com/mej/nhc/releases/download/{{ nhc_version }}/lbn
 nhc_install_dir: "/usr"
 nhc_config_dir: "/etc"
 nhc_libexec_dir: "/usr/libexec"
-nhc_build_dir: "/opt/deepops/build/nhc"
+nhc_build_dir: "/opt/kosmos-cluster/build/nhc"
 nhc_sysconfig_dir: "/etc/sysconfig"
 
 nhc_extract_dir: "{{ nhc_build_dir }}/lbnl-nhc-{{ nhc_version }}"

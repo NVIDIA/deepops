@@ -8,7 +8,7 @@ standalone_container_registry_name: "deepops-registry"
 
 standalone_container_registry_config_template: "config.yml"
 
-deepops_dir: "/opt/deepops"
+deepops_dir: "/opt/kosmos-cluster"
 standalone_container_registry_config_dir: "{{ deepops_dir }}/registry"
 
 # To configure the container registry as a pull-through cache, set
