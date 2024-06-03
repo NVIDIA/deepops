@@ -1,0 +1,3 @@
+---
+slurm_partition_name: rtx8000
+slurm_def_mem_per_cpu: 7000

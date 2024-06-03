@@ -1,0 +1,7 @@
+---
+slurm_partition_name: rtx2080ti_sm
+slurm_def_mem_per_cpu: 7000
+slurm_max_job_timelimit: 20160
+gpu_topology:
+  - "0-11"
+  - "0-11"

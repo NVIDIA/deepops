@@ -1,0 +1,4 @@
+---
+# Don't install Singularity on this host
+slurm_cluster_install_singularity: false
+install_dcgm: false

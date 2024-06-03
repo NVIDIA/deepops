@@ -51,12 +51,6 @@ mig-configs:
       mig-devices:
         "7g.80gb": 2
 
-  all-7g.80gb:
-    - devices: all
-      mig-enabled: true
-      mig-devices:
-        "7g.80gb": 2
-
   all-balanced-a100-40:
     - devices: all
       mig-enabled: true

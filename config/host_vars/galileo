@@ -1,0 +1,4 @@
+---
+slurm_partition_name: a6000
+slurm_def_mem_per_cpu: 3800
+slurm_max_job_timelimit: 20160

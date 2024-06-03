@@ -1,4 +1,0 @@
-# This configuration file is used while rebooting DGX servers into PXE boot
-# This information is used to connect to the DGX BMC
-10.0.0.1
-10.0.0.2

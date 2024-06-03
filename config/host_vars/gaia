@@ -1,0 +1,4 @@
+---
+slurm_partition_name: cpu
+slurm_def_mem_per_cpu: 1900
+slurm_max_job_timelimit: 30-00
