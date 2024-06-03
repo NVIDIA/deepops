@@ -1,5 +1,5 @@
 ---
-- hosts:  "{{ hostlist | default('slurm-login,slurm-node') }}"
+- hosts:  "{{ hostlist | default('slurm-master,slurm-login,slurm-node') }}"
   become: yes
   tasks:
     - name: Gather custom facts

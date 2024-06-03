@@ -21,7 +21,7 @@ slurm_configure_nvml:  './configure --prefix={{ slurm_install_prefix }} --disabl
 slurm_force_rebuild: no
 slurm_contain_ssh: yes
 
-slurm_cluster_name: deepops
+slurm_cluster_name: kosmos
 slurm_username: slurm
 slurm_password: ReplaceWithASecurePasswordInTheVault
 slurm_user_uid: 22078
