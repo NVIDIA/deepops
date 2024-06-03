@@ -25,8 +25,8 @@
 ################################################################################
 # DNS config
 # Playbook: dns-config
-#dns_config_servers: [8.8.8.8]
-#dns_config_search: [example.com]
+dns_config_servers: [127.0.0.53]
+dns_config_search: [rhpc.nki.nl]
 
 # NTP configuration
 # Playbook: chrony-client
@@ -274,7 +274,7 @@ install_dcgm: true
 #   echo bar
 #
 # DeepOps specific config
-deepops_dir: /opt/deepops
+deepops_dir: /opt/kosmos-cluster
 # Directory for python virtualenv
 # Roles: K8s GPU operator, GPU plugin, OpenShift/K8s
 deepops_venv: '{{ deepops_dir }}/venv'
