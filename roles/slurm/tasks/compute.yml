@@ -158,16 +158,16 @@
   tags:
     - localusers
 
-- name: install /etc/groupusers
+- name: install /etc/localgroups
   template:
-    src: etc/groupusers
+    src: etc/localgroups
     dest: "{{ item }}"
     mode: 0600
   with_items:
-    - "{{ slurm_config_dir }}/groupusers.backup"
-    - /etc/groupusers
+    - "{{ slurm_config_dir }}/localgroups.backup"
+    - /etc/localgroups
   tags:
-    - groupusers
+    - localgroups
 
 - name: configure /etc/pam.d/sshd to restrict node access without jobs
   blockinfile:
