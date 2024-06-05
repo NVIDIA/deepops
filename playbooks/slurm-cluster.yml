@@ -5,8 +5,8 @@
 - include: bootstrap/bootstrap-python.yml
 
 # Set up passwordless sudo and SSH keys if needed
-- include: bootstrap/bootstrap-ssh.yml
-- include: bootstrap/bootstrap-sudo.yml
+# - include: bootstrap/bootstrap-ssh.yml
+# - include: bootstrap/bootstrap-sudo.yml
 
 # Disable cloud-init
 - include: generic/disable-cloud-init.yml
