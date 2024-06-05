@@ -155,7 +155,7 @@ slurm_conf_symlink: true
 #   May be built with either EasyBuild or Spack                                #
 ################################################################################
 slurm_install_lmod: true
-slurm_install_spack: true
+slurm_install_spack: false
 
 # Note: the sm_prefix must be in an NFS-shared location
 sm_prefix: "/sw"
@@ -261,8 +261,8 @@ slurm_health_check_program: "/usr/sbin/nhc"
 # Container registry                                                           #
 ################################################################################
 slurm_enable_container_registry: false
-docker_insecure_registries: "{{ groups['slurm-login'] | map('regex_replace', '^(.*)$', '\\1:5000') | list + ['registry.local:31500'] }}"
-docker_registry_mirrors: "{{ groups['slurm-login'] | map('regex_replace', '^(.*)$', 'http://\\1:5000') | list }}"
+# docker_insecure_registries: "{{ groups['slurm-login'] | map('regex_replace', '^(.*)$', '\\1:5000') | list + ['registry.local:31500'] }}"
+# docker_registry_mirrors: "{{ groups['slurm-login'] | map('regex_replace', '^(.*)$', 'http://\\1:5000') | list }}"
 
 ################################################################################
 # Monitoring stack                                                             #
