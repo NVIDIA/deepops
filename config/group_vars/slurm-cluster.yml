@@ -46,12 +46,12 @@ partition_settings:
     slurm_allow_qos: rtx_qos
     slurm_max_job_timelimit: 20160
     default: true
-  p6000:
-    slurm_def_mem_per_cpu: 3000
-    slurm_def_cpu_per_gpu: 10
-    slurm_allow_qos: rtx_qos
-    slurm_max_job_timelimit: 10080
-    default: false
+    # p6000:
+    #   slurm_def_mem_per_cpu: 3000
+    #   slurm_def_cpu_per_gpu: 10
+    #   slurm_allow_qos: rtx_qos
+    #   slurm_max_job_timelimit: 10080
+    #   default: false
   rtx8000:
     slurm_def_mem_per_cpu: 6000
     slurm_def_cpu_per_gpu: 10

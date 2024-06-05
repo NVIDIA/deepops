@@ -25,58 +25,60 @@ gaia                ansible_host=rhpc-gaia
 # RTX2080Ti small nodes
 plato               ansible_host=rhpc-plato
 schrodinger         ansible_host=rhpc-schrodinger
-carlos              ansible_host=rhpc-carlos
+# carlos              ansible_host=rhpc-carlos
 
 # RTX2080Ti large node
 alanturing          ansible_host=rhpc-alanturing
-roentgen            ansible_host=rhpc-roentgen
 hamilton            ansible_host=rhpc-hamilton
 
+# RTX8000 nodes
+roentgen            ansible_host=rhpc-roentgen
+
 # P6000 node
-mariecurie          ansible_host=rhpc-mariecurie
+# mariecurie          ansible_host=rhpc-mariecurie
 
 # VMs/controller
-atlas               ansible_host=rhpc-atlas
+atlas2               ansible_host=atlas2
 
 # Storage
-rhea                ansible_host=rhpc-rhea
-kronos              ansible_host=rhpc-kronos
+# rhea                ansible_host=rhpc-rhea
+# kronos              ansible_host=rhpc-kronos
 
-[storage]
-rhea                ansible_host=rhpc-rhea
-kronos              ansible_host=rhpc-kronos
+# [storage]
+# rhea                ansible_host=rhpc-rhea
+# kronos              ansible_host=rhpc-kronos
 
 ######
 # SLURM
 ######
 [slurm-master]
-atlas
+atlas2
 
-[slurm-login]
-kosmos
-
-[slurm-metric]
-kosmos
+# [slurm-login]
+# kosmos
+# 
+# [slurm-metric]
+# kosmos
 
 [slurm-node]
 aristarchus
 ptolemaeus
 galileo
-carlos
+# carlos
 euctemon
 eudoxus
 plato
 schrodinger
 alanturing
 roentgen
-mariecurie
+# mariecurie
 hamilton
 gaia
 
 [slurm-cluster:children]
 slurm-master
 slurm-node
-slurm-login
+# slurm-login
 
 ######
 # SSH connection configuration
