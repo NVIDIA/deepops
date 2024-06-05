@@ -1,5 +1,5 @@
 ---
-- hosts:  "{{ hostlist | default('all') }}"
+- hosts: slurm-node
   become: yes
   tasks:
     - name: install custom facts module

@@ -42,8 +42,11 @@
       - cmake
       - ..
       - -DNVIDIA_SUPPORT=ON
-      - -DAMDGPU_SUPPORT=NO
-      - -DINTEL_SUPPORT=NO
+      - -DAMDGPU_SUPPORT=OFF
+      - -DINTEL_SUPPORT=OFF
+      - -DMSM_SUPPORT=OFF
+      - -DPANFROST_SUPPORT=OFF
+      - -DPANTHOR_SUPPORT=OFF
   register: result
 #  changed_when: "result.stdout != \"make: Nothing to be done for 'all'.\""
   tags: nvtop
