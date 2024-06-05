@@ -11,9 +11,9 @@
   - "z00_spack.csh"
   - "z00_spack.zsh"
 
-    # - name: source zsh profile on login
-    #   lineinfile:
-    #     dest: /etc/zsh/zprofile
-    #     insertafter: EOF
-    #     line: 'source /etc/profile.d/z00_spack.zsh'
-    #   register: update_zsh_spack
+- name: source zsh profile on login
+  lineinfile:
+    dest: /etc/zsh/zprofile
+    insertafter: EOF
+    line: 'source /etc/profile.d/z00_spack.zsh'
+  register: update_zsh_spack
