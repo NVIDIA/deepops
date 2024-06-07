@@ -1,0 +1,39 @@
+---
+- name: "install required packages"
+  become: yes
+  apt:
+    name:
+    - python3-pip
+    - python3-setuptools
+    - python3-wheel
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: create nodestat source dir
+  file:
+    path: /usr/local/src/nodestat
+    state: directory
+  tags: nodestat
+
+- name: clone nodestat
+  become: yes
+  git:
+    repo: "{{ nodestat_github_url }}"
+    dest: /usr/local/src/nodestat
+    clone: yes
+    update: yes
+  tags: nodestat
+
+- name: install nodestat
+  become: yes
+  pip:
+    chdir: /usr/local/src/nodestat
+    name: .
+  tags: nodestat
+
+- name: verify nodestat installation
+  become: yes
+  command: nodestat --help
+  register: result
+  changed_when: false
+  tags: nodestat
