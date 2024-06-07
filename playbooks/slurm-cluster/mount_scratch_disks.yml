@@ -1,0 +1,45 @@
+---
+- name: Configure NFS Exports on Compute Nodes
+  hosts: scratch-node
+  become: yes  # If needed, become superuser
+  tasks:
+    - name: install nfs packages
+      package: name=nfs-kernel-server
+    - name: ensure /etc/exports exists
+      copy:
+        content: ""
+        dest: /etc/exports
+        force: false
+        group: root
+        owner: root
+        mode: 0644
+    - name: Add export line to /etc/exports
+      lineinfile:
+        path: /etc/exports
+        line: "/processing {{ item }}(rw,sync,no_subtree_check)"
+        state: present
+      loop: "{{ groups['mount-scratch'] }}"
+    - name: Export NFS share
+      ansible.builtin.command: exportfs -a
+
+- name: Configure NFS Mounts 
+  hosts: mount-scratch
+  become: yes  # If needed, become superuser
+  tasks:
+    - name: Ensure NFS mount directory exists
+      ansible.builtin.file: 
+        path: "/mnt/processing/{{ hostvars[item]['inventory_hostname'] }}"
+        state: directory
+      with_items: "{{ groups['scratch-node'] }}"
+
+    - name: add mounts to /etc/fstab
+      blockinfile:
+        dest: /etc/fstab
+        marker: "# {mark} ANSIBLE SCRATCH DRIVES"
+        block: |
+          {% for item in groups['scratch-node'] %}
+          {{ hostvars[item]['inventory_hostname'] }}:/processing /mnt/processing/{{ hostvars[item]['inventory_hostname'] }} nfs defaults 0 0
+          {% endfor %}
+      register: update_fstab
+    - name: Execute mount 
+      ansible.builtin.command: mount -a

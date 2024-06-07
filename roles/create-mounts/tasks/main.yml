@@ -17,13 +17,13 @@
     dest: /etc/fstab
     marker: "# {mark} ANSIBLE MANAGED BLOCK"
     content: |
-      kronos:/data-pool/software /sw nfs rsize=524288,wsize=524288,vers=3,timeo=30,intr 0 0
-      kronos:/data-pool/groups/aiforoncology /data/groups/aiforoncology nfs rsize=524288,wsize=524288,vers=3,timeo=30,intr 0 0
-      kronos:/data-pool/groups/beets-tan /data/groups/beets-tan nfs rsize=524288,wsize=524288,vers=3,timeo=30,intr 0 0
-      kronos:/data-pool/groups/nkiai /data/groups/nkiai nfs rsize=524288,wsize=524288,vers=3,timeo=30,intr 0 0
-      kronos:/data-pool/groups/public /data/groups/public nfs rsize=524288,wsize=524288,vers=3,timeo=30,intr 0 0
-      rhea:/project-pool/projects /projects nfs rsize=524288,wsize=524288,vers=3,timeo=30,intr 0 0
-      rhea:/project-pool/network_homes /home nfs rsize=524288,wsize=524288,vers=3,timeo=30,intr 0 0
+      kronos:/data-pool/software /sw nfs rsize=524288,wsize=524288,vers=3,timeo=600 0 0
+      kronos:/data-pool/groups/aiforoncology /data/groups/aiforoncology nfs rsize=524288,wsize=524288,vers=3,timeo=600 0 0
+      kronos:/data-pool/groups/beets-tan /data/groups/beets-tan nfs rsize=524288,wsize=524288,vers=3,timeo=600 0 0
+      kronos:/data-pool/groups/nkiai /data/groups/nkiai nfs rsize=524288,wsize=524288,vers=3,timeo=600 0 0
+      kronos:/data-pool/groups/public /data/groups/public nfs rsize=524288,wsize=524288,vers=3,timeo=600 0 0
+      rhea:/project-pool/projects /projects nfs rsize=524288,wsize=524288,vers=3,timeo=600 0 0
+      rhea:/project-pool/network_homes /home nfs rsize=524288,wsize=524288,vers=3,timeo=600 0 0
   register: update_fstab
 
 - name: mount drives

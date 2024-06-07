@@ -38,7 +38,7 @@ roentgen            ansible_host=rhpc-roentgen
 # mariecurie          ansible_host=rhpc-mariecurie
 
 # VMs/controller
-atlas2               ansible_host=atlas2
+atlas               ansible_host=atlas
 
 # Storage
 # rhea                ansible_host=rhpc-rhea
@@ -48,16 +48,36 @@ atlas2               ansible_host=atlas2
 # rhea                ansible_host=rhpc-rhea
 # kronos              ansible_host=rhpc-kronos
 
+# Outside slurm cluster
+# [outside]
+# gorgophone
+
+[scratch-node]
+euctemon
+eudoxus
+ptolemaeus
+galileo
+aristarchus
+alanturing
+# hamilton
+# roentgen
+plato
+schrodinger
+
+[mount-scratch]
+gaia
+
+
 ######
 # SLURM
 ######
 [slurm-master]
-atlas2
+atlas
 
-# [slurm-login]
-# kosmos
+[slurm-login]
+kosmos
 # 
-# [slurm-metric]
+[slurm-metric]
 # kosmos
 
 [slurm-node]
@@ -78,7 +98,7 @@ gaia
 [slurm-cluster:children]
 slurm-master
 slurm-node
-# slurm-login
+slurm-login
 
 ######
 # SSH connection configuration
