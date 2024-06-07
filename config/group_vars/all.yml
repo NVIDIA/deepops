@@ -33,7 +33,7 @@ dns_config_search: [rhpc.nki.nl]
 chrony_install: true
 chrony_service_state: "started"
 chrony_service_enabled: "yes"
-chrony_timezone: "Etc/UTC"
+chrony_timezone: "Europe/Amsterdam"
 chrony_config_server:
   - 0.pool.ntp.org
   - 1.pool.ntp.org
