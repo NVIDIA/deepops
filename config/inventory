@@ -11,42 +11,42 @@
 
 [all]
 # A6000 nodes
-aristarchus         ansible_host=rhpc-aristarchus
-ptolemaeus          ansible_host=rhpc-ptolemaeus
-galileo             ansible_host=rhpc-galileo
+aristarchus         
+ptolemaeus          
+galileo             
 
 # A100 nodes
-eudoxus             ansible_host=rhpc-eudoxus
-euctemon            ansible_host=rhpc-euctemon
+eudoxus             
+euctemon            
 
 # CPU nodes
-gaia                ansible_host=rhpc-gaia
+gaia                
 
 # RTX2080Ti small nodes
-plato               ansible_host=rhpc-plato
-schrodinger         ansible_host=rhpc-schrodinger
-# carlos              ansible_host=rhpc-carlos
+plato              
+schrodinger        
+# carlos           
 
 # RTX2080Ti large node
-alanturing          ansible_host=rhpc-alanturing
-hamilton            ansible_host=rhpc-hamilton
+alanturing         
+hamilton           
 
 # RTX8000 nodes
-roentgen            ansible_host=rhpc-roentgen
+roentgen           
 
 # P6000 node
-# mariecurie          ansible_host=rhpc-mariecurie
+# mariecurie         
 
 # VMs/controller
-atlas               ansible_host=atlas
+atlas              
 
 # Storage
-# rhea                ansible_host=rhpc-rhea
-# kronos              ansible_host=rhpc-kronos
+# rhea                
+# kronos              
 
 # [storage]
-# rhea                ansible_host=rhpc-rhea
-# kronos              ansible_host=rhpc-kronos
+# rhea                
+# kronos              
 
 # Outside slurm cluster
 # [outside]
