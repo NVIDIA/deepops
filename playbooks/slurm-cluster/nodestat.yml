@@ -1,0 +1,11 @@
+---
+- hosts: slurm-node
+  become: yes
+  tasks:
+    - name: install custom facts module
+      include_role:
+        name: facts
+
+    - name: install nodestat
+      include_role:
+        name: nodestat

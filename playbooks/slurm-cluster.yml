@@ -96,6 +96,9 @@
 # Install nvtop
 - include: slurm-cluster/nvtop.yml
 
+# Install nodestat
+- include: slurm-cluster/nodestat.yml
+
 # Install the NVIDIA HPC SDK
 - include: nvidia-software/nvidia-hpc-sdk.yml
   vars:
