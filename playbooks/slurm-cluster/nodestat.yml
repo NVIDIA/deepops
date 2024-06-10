@@ -1,5 +1,5 @@
 ---
-- hosts: slurm-node
+- hosts: slurm-node,slurm-login
   become: yes
   tasks:
     - name: install custom facts module
