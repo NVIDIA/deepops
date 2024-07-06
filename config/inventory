@@ -19,6 +19,9 @@ galileo             ansible_host=rhpc-galileo
 eudoxus             ansible_host=rhpc-eudoxus
 euctemon            ansible_host=rhpc-euctemon
 
+# H100 nodes
+herakles            ansible_host=rhpc-herakles
+
 # CPU nodes
 gaia                ansible_host=rhpc-gaia
 
@@ -59,6 +62,7 @@ ptolemaeus
 galileo
 aristarchus
 alanturing
+herakles
 # hamilton
 # roentgen
 plato
@@ -94,6 +98,7 @@ roentgen
 # mariecurie
 hamilton
 gaia
+herakles
 
 [slurm-cluster:children]
 slurm-master
