@@ -60,6 +60,8 @@ software_extra_packages:
  - linux-tools-generic
  - zsh
  - ncdu
+ - nfs-common
+ - dcmtk
 #  - "{{ 'linux-headers-' + ansible_kernel }}"
 #software_remove_packages:
 #  - popularity-contest
