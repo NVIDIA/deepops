@@ -28,7 +28,7 @@ gaia                ansible_host=rhpc-gaia
 # RTX2080Ti small nodes
 plato               ansible_host=rhpc-plato
 schrodinger         ansible_host=rhpc-schrodinger
-# carlos              ansible_host=rhpc-carlos
+carlos              ansible_host=carlos.rhpc.nki.nl
 
 # RTX2080Ti large node
 alanturing          ansible_host=rhpc-alanturing
@@ -67,6 +67,7 @@ herakles
 # roentgen
 plato
 schrodinger
+carlos
 
 [mount-scratch]
 gaia
@@ -88,7 +89,7 @@ kosmos
 aristarchus
 ptolemaeus
 galileo
-# carlos
+carlos
 euctemon
 eudoxus
 plato
