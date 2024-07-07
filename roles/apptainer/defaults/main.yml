@@ -1,0 +1,3 @@
+apptainer_version: "1.3.3"
+apptainer_package: "apptainer_{{ apptainer_version }}_amd64.deb"
+apptainer_download_url: "https://github.com/apptainer/apptainer/releases/download/v{{ apptainer_version }}/{{ apptainer_package }}"
