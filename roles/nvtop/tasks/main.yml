@@ -47,6 +47,7 @@
       - -DMSM_SUPPORT=OFF
       - -DPANFROST_SUPPORT=OFF
       - -DPANTHOR_SUPPORT=OFF
+      - -DV3D_SUPPORT=OFF
   register: result
 #  changed_when: "result.stdout != \"make: Nothing to be done for 'all'.\""
   tags: nvtop
