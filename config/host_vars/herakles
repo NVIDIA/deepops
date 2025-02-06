@@ -1,0 +1,3 @@
+---
+slurm_partition_name: h100
+slurm_def_mem_per_cpu: 10000

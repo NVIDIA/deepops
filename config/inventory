@@ -11,42 +11,45 @@
 
 [all]
 # A6000 nodes
-aristarchus         
-ptolemaeus          
-galileo             
+aristarchus         ansible_host=rhpc-aristarchus
+ptolemaeus          ansible_host=rhpc-ptolemaeus
+galileo             ansible_host=rhpc-galileo
 
 # A100 nodes
-eudoxus             
-euctemon            
+eudoxus             ansible_host=rhpc-eudoxus
+euctemon            ansible_host=rhpc-euctemon
+
+# H100 nodes
+herakles            ansible_host=rhpc-herakles
 
 # CPU nodes
-gaia                
+gaia                ansible_host=rhpc-gaia
 
 # RTX2080Ti small nodes
-plato              
-schrodinger        
-# carlos           
+plato               ansible_host=rhpc-plato
+schrodinger         ansible_host=rhpc-schrodinger
+carlos              ansible_host=carlos.rhpc.nki.nl
 
 # RTX2080Ti large node
-alanturing         
-hamilton           
+alanturing          ansible_host=rhpc-alanturing
+hamilton            ansible_host=rhpc-hamilton
 
 # RTX8000 nodes
-roentgen           
+roentgen            ansible_host=rhpc-roentgen
 
 # P6000 node
-# mariecurie         
+# mariecurie          ansible_host=rhpc-mariecurie
 
 # VMs/controller
-atlas              
+atlas               ansible_host=atlas
 
 # Storage
-# rhea                
-# kronos              
+# rhea                ansible_host=rhpc-rhea
+# kronos              ansible_host=rhpc-kronos
 
 # [storage]
-# rhea                
-# kronos              
+# rhea                ansible_host=rhpc-rhea
+# kronos              ansible_host=rhpc-kronos
 
 # Outside slurm cluster
 # [outside]
@@ -59,10 +62,12 @@ ptolemaeus
 galileo
 aristarchus
 alanturing
+herakles
 # hamilton
 # roentgen
 plato
 schrodinger
+carlos
 
 [mount-scratch]
 gaia
@@ -84,7 +89,7 @@ kosmos
 aristarchus
 ptolemaeus
 galileo
-# carlos
+carlos
 euctemon
 eudoxus
 plato
@@ -94,6 +99,7 @@ roentgen
 # mariecurie
 hamilton
 gaia
+herakles
 
 [slurm-cluster:children]
 slurm-master

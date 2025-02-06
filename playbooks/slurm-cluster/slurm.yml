@@ -1,8 +1,15 @@
 ---
 - hosts: all
   become: yes
-  roles:
-    - name: facts
+  pre_tasks:
+    - name: Gather facts from ALL hosts (regardless of limit or tags)
+      setup:
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      when: hostvars[item]['ansible_default_ipv4'] is not defined
+      with_items: "{{ groups['all'] }}"
+
+  tasks: []
 
 # Set root SSH key to allow SSH/ansible when no slurm job running for ansible user
 - hosts: slurm-node

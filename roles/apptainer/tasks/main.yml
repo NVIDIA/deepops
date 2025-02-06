@@ -1,0 +1,17 @@
+- name: Update APT package index
+  apt:
+    update_cache: yes
+
+- name: Install wget
+  apt:
+    name: wget
+    state: present
+
+- name: Download Apptainer package
+  get_url:
+    url: "{{ apptainer_download_url }}"
+    dest: "/tmp/{{ apptainer_package }}"
+
+- name: Install Apptainer
+  apt:
+    deb: "/tmp/{{ apptainer_package }}"
