@@ -1,14 +1,25 @@
 ---
 
-- include: bootstrap/bootstrap-python.yml
-- include: bootstrap/bootstrap-ssh.yml
-- include: bootstrap/bootstrap-sudo.yml
+- name: Install python
+  import_playbook: bootstrap/bootstrap-python.yml
 
-- include: container/docker.yml
-- include: nvidia-software/nvidia-driver.yml
-- include: container/nvidia-docker.yml
+- name: Set up SSH keys if needed
+  import_playbook: bootstrap/bootstrap-ssh.yml
 
-- include: nvidia-software/nvidia-dcgm.yml
+- name: Set up passwordless sudo if needed
+  import_playbook: bootstrap/bootstrap-sudo.yml
+
+- name: Install docker
+  import_playbook: container/docker.yml
+
+- name: Install NVIDIA driver
+  import_playbook: nvidia-software/nvidia-driver.yml
+
+- name: Install NVIDIA container runtime
+  import_playbook: container/nvidia-docker.yml
+
+- name: Install NVIDIA DCGM
+  import_playbook: nvidia-software/nvidia-dcgm.yml
   when: install_dcgm|default(false)
 
 - hosts: all

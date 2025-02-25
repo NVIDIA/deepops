@@ -1,6 +1,7 @@
 ---
 # Ensure Docker is installed and configured
-- include: docker.yml
+- name: Install docker
+  import_playbook: docker.yml
 
 # Log into Docker registries
 - hosts: "{{ hostlist | default('all') }}"

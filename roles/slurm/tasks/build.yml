@@ -3,7 +3,8 @@
 # Install dependencies
 ###########################################
 
-- include: setup-role.yml
+- name: Setup role
+  include_tasks: setup-role.yml
 
 - name: configure alternative library path
   template:
@@ -16,13 +17,16 @@
   command: ldconfig
   when: updated_slurm_ld.changed # noqa no-handler
 
-- include: munge.yml
+- name: Setup munge
+  include_tasks: munge.yml
 
-- include: hwloc.yml
+- name: Setup hwlock
+  include_tasks: hwloc.yml
   tags: hwloc
   when: slurm_include_hwloc
 
-- include: pmix.yml
+- name: Setup pmix
+  include_tasks: pmix.yml
   tags: pmix
   when: slurm_include_pmix
 

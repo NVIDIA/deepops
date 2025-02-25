@@ -3,7 +3,8 @@
   debug:
     msg: "Starting now"
 
-- include: check-firmware.yml
+- name: Check firmware
+  include_tasks: check-firmware.yml
 
 - block:
   - name: Check if force update requested
@@ -62,6 +63,7 @@
   debug:
     msg: Host is online
 
-- include: verify-firmware.yml
+- name: Verify firmware
+  include_tasks: verify-firmware.yml
   when:
     - firmware_needs_upgrade | default(false)
