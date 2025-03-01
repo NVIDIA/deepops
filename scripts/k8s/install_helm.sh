@@ -4,7 +4,7 @@ set -x
 
 # Source common libraries and env variables
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-ROOT_DIR="${SCRIPT_DIR}/.."
+ROOT_DIR="${SCRIPT_DIR}/../.."
 source ${ROOT_DIR}/scripts/common.sh
 
 HELM_INSTALL_DIR=/usr/local/bin
