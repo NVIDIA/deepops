@@ -106,6 +106,7 @@
       when:
         - container_manager is defined and container_manager != "docker"
         - ansible_distribution == "Ubuntu"
+      ignore_errors: yes
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
 # Install Kubernetes
