@@ -12,9 +12,9 @@ NVIDIA® GPU Cloud (NGC) containers leverage the power of NGC-Ready servers with
 
 These instructions assume the following:
 
-- You have a NGC-Ready server. To determine if your server is NGC-Ready, please review the list of validated servers at the NGC-Ready Server documentation page - https://docs.nvidia.com/ngc/ngc-ready-systems/index.html
+- You have a NGC-Ready server. To determine if your server is NGC-Ready, please review the list of validated servers at the NGC-Ready Server documentation page - https://docs.nvidia.com/certification-programs/ngc-ready-systems/index.html
 - Your NGC-Ready Server has a compatible Linux distribution installed:
-  - Ubuntu Server 18.04 LTS
+  - Ubuntu Server 20.04 LTS
   - CentOS 7
 
 ## Setup
