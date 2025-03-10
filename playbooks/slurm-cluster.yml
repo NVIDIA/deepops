@@ -1,146 +1,163 @@
 ---
 # Slurm Cluster Playbook
 
-# Install python required for Ansible
-- include: bootstrap/bootstrap-python.yml
+- name: Install python required for Ansible
+  import_playbook: bootstrap/bootstrap-python.yml
 
-# Set up passwordless sudo and SSH keys if needed
-- include: bootstrap/bootstrap-ssh.yml
-- include: bootstrap/bootstrap-sudo.yml
+- name: Set up SSH keys if needed
+  import_playbook: bootstrap/bootstrap-ssh.yml
 
-# Disable cloud-init
-- include: generic/disable-cloud-init.yml
+- name: Set up passwordless sudo if needed
+  import_playbook: bootstrap/bootstrap-sudo.yml
+
+- name: Disable cloud-init
+  import_playbook: generic/disable-cloud-init.yml
   when: deepops_disable_cloud_init
 
-# Configure hostnames, /etc/hosts
-- include: generic/hosts.yml
+- name: Configure hostnames, /etc/hosts
+  import_playbook: generic/hosts.yml
   when: "{{ slurm_configure_etc_hosts | default(true) }}"
   tags:
   - set-etc-hosts
 
-# Configure Chrony (NTP) sync
-- include: generic/chrony-client.yml
+- name: Configure Chrony (NTP) sync
+  import_playbook: generic/chrony-client.yml
   when: chrony_install|default(true)
 
-# Set up a local cluster container registry
-- include: container/standalone-container-registry.yml hostlist=slurm-master
+- name: Set up a local cluster container registry
+  import_playbook: container/standalone-container-registry.yml hostlist=slurm-master
   when: slurm_enable_container_registry|default(true)
 
-# Set up NGINX-based container caching
-- include: container/nginx-docker-registry-cache-server.yml
+- name: Set up NGINX-based container caching | Install docker registry cache server
+  import_playbook: container/nginx-docker-registry-cache-server.yml
   vars:
     hostlist: "{{ nginx_docker_cache_hostgroup | default('slurm-cache') }}"
   when: slurm_enable_nginx_docker_cache | default(false)
-- include: container/nginx-docker-registry-cache-client.yml
+
+- name: Set up NGINX-based container caching | Install docker registry cache client
+  import_playbook: container/nginx-docker-registry-cache-client.yml
   vars:
     hostlist: "{{ nginx_docker_cache_clients | default('slurm-node') }}"
   when: slurm_enable_nginx_docker_cache | default(false)
 
-# Install NVIDIA driver
-- include: nvidia-software/nvidia-driver.yml
+- name: Install NVIDIA driver
+  import_playbook: nvidia-software/nvidia-driver.yml
   when: slurm_cluster_install_nvidia_driver|default(true)
 
 # Install NVIDIA CUDA Toolkit
 #   Note: the CUDA playbook also installs the driver, so we pass the
 #   appropriate flag to this playbook as well.
-- include: nvidia-software/nvidia-cuda.yml
+- name: Install NVIDIA CUDA Toolkit
+  import_playbook: nvidia-software/nvidia-cuda.yml
   vars:
      cuda_playbook_install_driver: "{{ slurm_cluster_install_nvidia_driver }}"
   when: slurm_cluster_install_cuda|default(true)
 
-# Install software
-- include: generic/software.yml
+- name: Install software
+  import_playbook: generic/software.yml
 
-# Set up NFS filesystem
-- include: generic/nfs-server.yml
+- name: Set up NFS filesystem | Install nfs-server
+  import_playbook: generic/nfs-server.yml
   vars:
     hostlist: "{{ nfs_server_group | default('slurm-nfs[0]') }}"
   when: slurm_enable_nfs_server
-- include: generic/nfs-client.yml
+
+- name: Set up NFS filesystem | Install nfs-client
+  import_playbook: generic/nfs-client.yml
   vars:
     hostlist: "{{ nfs_client_group | default('slurm-nfs-client') }}"
   when: slurm_enable_nfs_client_nodes
 
-# Install DCGM
-- include: nvidia-software/nvidia-dcgm.yml hostlist=slurm-node
+- name: Install DCGM
+  import_playbook: nvidia-software/nvidia-dcgm.yml hostlist=slurm-node
   when: install_dcgm|default(false)
 
-# Install Node Health Check
-- include: slurm-cluster/nhc.yml hostlist=slurm-node
+- name: Install Node Health Check
+  import_playbook: slurm-cluster/nhc.yml hostlist=slurm-node
   when: slurm_install_nhc|default(false)
 
-# Install Slurm
-- include: slurm-cluster/slurm.yml
+- name: Install Slurm
+  import_playbook: slurm-cluster/slurm.yml
 
-# Install OpenMPI
-- include: slurm-cluster/openmpi.yml
+- name: Install OpenMPI
+  import_playbook: slurm-cluster/openmpi.yml
   when: slurm_cluster_install_openmpi|default(true)
 
-# Install Lmod
-- include: slurm-cluster/lmod.yml
+- name: Install Lmod
+  import_playbook: slurm-cluster/lmod.yml
   when: slurm_install_lmod
 
-# Install the NVIDIA HPC SDK
-- include: nvidia-software/nvidia-hpc-sdk.yml
+- name: Install the NVIDIA HPC SDK
+  import_playbook: nvidia-software/nvidia-hpc-sdk.yml
   vars:
     hostlist: "{{ sm_install_host | default('slurm-login[0]')}}"
   when: slurm_install_hpcsdk
 
-# Install monitoring services
-- include: slurm-cluster/prometheus.yml
+- name: Install monitoring services | Install prometheus
+  import_playbook: slurm-cluster/prometheus.yml
   vars:
     hostlist: "{{ slurm_monitoring_group | default('slurm-metric') }}"
   when: slurm_enable_monitoring
-- include: slurm-cluster/grafana.yml
+
+- name: Install monitoring services | Install grafana
+  import_playbook: slurm-cluster/grafana.yml
   vars:
     hostlist: "{{ slurm_monitoring_group | default('slurm-metric') }}"
   when: slurm_enable_monitoring
-- include: slurm-cluster/alertmanager.yml
+
+- name: Install monitoring services | Install alert manager
+  import_playbook: slurm-cluster/alertmanager.yml
   vars:
     hostlist: "{{ slurm_monitoring_group | default('slurm-metric') }}"
   when: slurm_enable_monitoring
   
-# Install monitoring exporters
-- include: slurm-cluster/prometheus-slurm-exporter.yml
+- name: Install monitoring exporters | Install prometheus slurm exporter
+  import_playbook: slurm-cluster/prometheus-slurm-exporter.yml
   vars:
     hostlist: "{{ slurm_monitoring_group | default('slurm-metric') }}"
   when: slurm_enable_monitoring
-- include: slurm-cluster/prometheus-node-exporter.yml
-  when: slurm_enable_monitoring
-- include: slurm-cluster/nvidia-dcgm-exporter.yml
+
+- name: Install monitoring exporters | Install prometheus node exporter
+  import_playbook: slurm-cluster/prometheus-node-exporter.yml
   when: slurm_enable_monitoring
 
-# Set up rsyslog forwarding from compute nodes to head node
-- include: generic/rsyslog-server.yml
+- name: Install monitoring exporters | Install nvidia dcgm exporter
+  import_playbook: slurm-cluster/nvidia-dcgm-exporter.yml
+  when: slurm_enable_monitoring
+
+- name: Set up rsyslog forwarding from compute nodes to head node | Install rsyslog server
+  import_playbook: generic/rsyslog-server.yml
   vars:
     hostlist: "{{ rsyslog_server_hostname | default('slurm-master[0]') }}"
   when: slurm_enable_rsyslog_server|default(true)
-- include: generic/rsyslog-client.yml
+
+- name: Set up rsyslog forwarding from compute nodes to head node | Install rsyslog client
+  import_playbook: generic/rsyslog-client.yml
   vars:
     hostlist: "{{ rsyslog_client_group | default('slurm-node') }}"
   when: slurm_enable_rsyslog_client|default(true)
 
-# Install Singularity
-- include: container/singularity.yml
+- name: Install Singularity
+  import_playbook: container/singularity.yml
   when: slurm_cluster_install_singularity|default(true)
 
-# Install Open OnDemand
-- include: slurm-cluster/open-ondemand.yml
+- name: Install Open OnDemand
+  import_playbook: slurm-cluster/open-ondemand.yml
   when: install_open_ondemand
 
-# Set Permissions to adjust GPU Clocks speeds
-- include: utilities/gpu-clocks.yml
+- name: Set Permissions to adjust GPU Clocks speeds
+  import_playbook: utilities/gpu-clocks.yml
   when: allow_user_set_gpu_clocks
 
-# Install Enroot and Pyxis
-- include: container/pyxis.yml
+- name: Install Enroot and Pyxis
+  import_playbook: container/pyxis.yml
   when:
     - slurm_install_enroot
     - slurm_install_pyxis
   tags:
     - pyxis
 
-# Ensure that nv_peer_mem is loaded
-- include: nvidia-software/nvidia-peer-memory.yml
+- name: Ensure that nv_peer_mem is loaded
+  import_playbook: nvidia-software/nvidia-peer-memory.yml
   tags:
     - nvidia-peer-memory

@@ -1,7 +1,12 @@
 ---
-- include: ../container/docker.yml
-- include: ../nvidia-software/nvidia-driver.yml
-- include: ../container/nvidia-docker.yml
+- name: Install docker
+  import_playbook: ../container/docker.yml
+
+- name: Install NVIDIA driver
+  import_playbook: ../nvidia-software/nvidia-driver.yml
+
+- name: Install NVIDIA container runtime
+  import_playbook: ../container/nvidia-docker.yml
 
 - hosts:  "{{ hostlist | default('all') }}"
   become: yes

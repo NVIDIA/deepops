@@ -3,9 +3,14 @@
   debug:
     msg: "Starting now"
 
-- include: check-firmware.yml
+- name: Check firmware
+  include_tasks: check-firmware.yml
   ignore_errors: true
-- include: get-health.yml
+
+- name: Get health
+  include_tasks: get-health.yml
   ignore_errors: true
-- include: get-ib.yml
+
+- name: Get IB
+  include_tasks: get-ib.yml
   ignore_errors: true

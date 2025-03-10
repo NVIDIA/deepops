@@ -4,34 +4,45 @@
     name: nvidia_cuda
   when: slurm_autodetect_nvml|default(false)
 
-- include: setup-role.yml
+- name: Setup role
+  include_tasks: setup-role.yml
 
-- include: build.yml
+- name: Setup build
+  include_tasks: build.yml
   tags: build
   when: slurm_workflow_build
 
-- include: service-files.yml
+- name: Setup slurm systemd services
+  include_tasks: service-files.yml
 
-- include: setup-user.yml
+- name: Setup slurm user environment
+  include_tasks: setup-user.yml
 
-- include: controller.yml
+- name: Setup slurm controller
+  include_tasks: controller.yml
   when: is_controller
 
-- include: compute.yml
+- name: Setup slurm on compute nodes
+  include_tasks: compute.yml
   when: is_compute
 
-- include: misc-node.yml
+- name: Setup slurm on other nodes
+  include_tasks: misc-node.yml
   when: (not is_compute) and (not is_controller)
 
-- include: shmfix.yml
+- name: Apply shm fix
+  include_tasks: shmfix.yml
   when: is_compute and slurm_fix_shm
 
-- include: logging.yml
+- name: Setup logging
+  include_tasks: logging.yml
   tags:
   - rsyslog
   - logging
 
-- include: undrain.yml
+- name: Setup undrain
+  include_tasks: undrain.yml
   when: is_compute
 
-- include: build-cleanup.yml
+- name: Cleanup
+  include_tasks: build-cleanup.yml

@@ -1,5 +1,6 @@
 ---
-- include: docker.yml
+- name: Install docker
+  import_playbook: docker.yml
 
 - hosts: "{{ hostlist | default('all') }}"
   become: yes

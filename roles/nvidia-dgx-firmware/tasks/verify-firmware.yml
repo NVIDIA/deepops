@@ -15,7 +15,7 @@
 
 - name: Ensure firmware was updated and everything is up-to-date. Skip if force update was used.
   block:
-    - include: check-firmware.yml
+    - include_tasks: check-firmware.yml
     - name: "Ensure all fw versions are up-to-date after the update - skip if force update was used or specific target fw was updated"
       debug:
         msg: ""

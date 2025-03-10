@@ -10,11 +10,14 @@
       skip: true
   tags: vars
 
-- include: server.yml
+- name: Setup Open OnDemand server
+  include_tasks: server.yml
   when: ood_is_server
 
-- include: client.yml
+- name: Setup Open OnDemand client
+  include_tasks: client.yml
   when: ood_is_client
 
-- include: linuxhost-adapter.yml
+- name: Setup linuxhost adapter
+  include_tasks: linuxhost-adapter.yml
   when: ood_is_server and ood_install_linuxhost_adapter

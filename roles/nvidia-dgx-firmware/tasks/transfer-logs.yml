@@ -1,5 +1,6 @@
 ---
-- include: get-time.yml
+- name: Get current time
+  include_tasks: get-time.yml
 
 # nvsm does not allow you to specify a dump location, so we search /tmp for the last dump
 - name: Get name of the latest dumpfile from nvsm
