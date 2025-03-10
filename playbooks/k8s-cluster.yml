@@ -21,8 +21,8 @@
         - container_manager is defined
         - container_manager == "docker"
 
-# Install python required for Ansible
-- include: bootstrap/bootstrap-python.yml
+- name: Install python required for Ansible
+  import_playbook: bootstrap/bootstrap-python.yml
   tags:
     - bootstrap
 
@@ -42,32 +42,33 @@
   tags:
     - local
 
-# Set up passwordless sudo and SSH keys if needed
-- include: bootstrap/bootstrap-ssh.yml
+- name: Set up SSH keys if needed
+  import_playbook: bootstrap/bootstrap-ssh.yml
   tags:
     - bootstrap
-- include: bootstrap/bootstrap-sudo.yml
+- name: Set up passwordless sudo if needed
+  import_playbook: bootstrap/bootstrap-sudo.yml
   tags:
     - bootstrap
 
-# Disable cloud-init
-- include: generic/disable-cloud-init.yml
+- name: Disable cloud-init
+  import_playbook: generic/disable-cloud-init.yml
   when: deepops_disable_cloud_init|default(true)
 
-# Configure Chrony (NTP) sync
-- include: generic/chrony-client.yml
+- name: Configure Chrony (NTP) sync
+  import_playbook: generic/chrony-client.yml
   when: chrony_install|default(true)
 
-# Install the OpenShift API libraries required by the GPU plugin
-- include: bootstrap/bootstrap-openshift.yml
+- name: Install the OpenShift API libraries required by the GPU plugin
+  import_playbook: bootstrap/bootstrap-openshift.yml
   tags:
     - bootstrap
 
-# Configure hostnames, /etc/hosts
-- include: generic/hosts.yml
+- name: Configure hostnames, /etc/hosts
+  import_playbook: generic/hosts.yml
 
-# Set up a local cluster container registry
-- include: container/standalone-container-registry.yml hostlist=kube-master
+- name: Set up a local cluster container registry
+  import_playbook: container/standalone-container-registry.yml hostlist=kube-master
   when: kube_enable_container_registry|default(false)
 
 # Install 'sshpass' program for: https://github.com/ansible/ansible/issues/56629
@@ -105,11 +106,13 @@
       when:
         - container_manager is defined and container_manager != "docker"
         - ansible_distribution == "Ubuntu"
+      ignore_errors: yes
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
 # Install Kubernetes
 # for configuration, see: config/group_vars/k8s-cluster.yml
-- include: ../submodules/kubespray/cluster.yml
+- name: Install Kubernetes
+  import_playbook: ../submodules/kubespray/cluster.yml
   tags:
     - k8s
   vars:
@@ -163,8 +166,8 @@
   tags:
     - local
 
-# Install NVIDIA driver on GPU servers
-- include: nvidia-software/nvidia-driver.yml
+- name: Install NVIDIA driver on GPU servers
+  import_playbook: nvidia-software/nvidia-driver.yml
   vars:
     hostlist: "k8s-cluster"
   tags:
@@ -172,8 +175,8 @@
   when: deepops_gpu_operator_enabled|default(true) | bool == false or
         gpu_operator_preinstalled_nvidia_software|default(true)
 
-# Install NVIDIA container runtime on GPU servers
-- include: container/nvidia-docker.yml
+- name: Install NVIDIA container runtime on GPU servers
+  import_playbook: container/nvidia-docker.yml
   vars:
     hostlist: "k8s-cluster"
   tags:
@@ -271,33 +274,36 @@
       delegate_to: localhost
       failed_when: false # Taint will not be present if kube-master also under kube-node
 
-# Install k8s GPU feature discovery
-- include: k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml
+- name: Install k8s GPU feature discovery
+  import_playbook: k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml
   tags:
     - nvidia
   when: deepops_gpu_operator_enabled|default(true) | bool == false
 
-# Install k8s GPU device plugin
-- include: k8s-cluster/nvidia-k8s-gpu-device-plugin.yml
+- name: Install k8s GPU device plugin
+  import_playbook: k8s-cluster/nvidia-k8s-gpu-device-plugin.yml
   tags:
     - nvidia
   when: deepops_gpu_operator_enabled|default(true) | bool == false
 
-# Install NVIDIA GPU Operator
-- include: k8s-cluster/nvidia-gpu-operator.yml
+- name: Install NVIDIA GPU Operator
+  import_playbook: k8s-cluster/nvidia-gpu-operator.yml
   tags:
     - nvidia
   when: deepops_gpu_operator_enabled|default(true) | bool == true
 
-# Setup a volume for NFS, install nfs_utils, and install NFS Helm chart
-- include: k8s-cluster/nfs-client-provisioner.yml
+- name: Setup a volume for NFS, install nfs_utils, and install NFS Helm chart
+  import_playbook: k8s-cluster/nfs-client-provisioner.yml
   when: k8s_nfs_client_provisioner | default('false')
 
-- include: generic/rsyslog-server.yml
+- name: Setup rsyslog server
+  import_playbook: generic/rsyslog-server.yml
   vars:
     hostlist: "{{ rsyslog_server_hostname | default('kube-master[0]') }}"
   when: kube_enable_rsyslog_server|default(true)
-- include: generic/rsyslog-client.yml
+
+- name: Setup rsyslog client
+  import_playbook: generic/rsyslog-client.yml
   vars:
     hostlist: "{{ rsyslog_client_group | default('k8s-cluster') }}"
   when: kube_enable_rsyslog_client|default(true)

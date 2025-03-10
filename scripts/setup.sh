@@ -12,14 +12,14 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/.."
 
 # Configuration
-ANSIBLE_VERSION="${ANSIBLE_VERSION:-4.8.0}"     # Ansible version to install
-ANSIBLE_TOO_NEW="${ANSIBLE_TOO_NEW:-5.0.0}"    # Ansible version too new
+ANSIBLE_VERSION="${ANSIBLE_VERSION:-9.13.0}"     # Ansible version to install
+ANSIBLE_TOO_NEW="${ANSIBLE_TOO_NEW:-10.0.1}"    # Ansible version too new
 ANSIBLE_LINT_VERSION="${ANSIBLE_LINT_VERSION:-5.4.0}"
 CONFIG_DIR="${CONFIG_DIR:-${ROOT_DIR}/config}"            # Default configuration directory location
 DEEPOPS_TAG="${1:-master}"                      # DeepOps branch to set up
-JINJA2_VERSION="${JINJA2_VERSION:-2.11.3}"      # Jinja2 required version
+JINJA2_VERSION="${JINJA2_VERSION:-3.1.5}"      # Jinja2 required version
 JMESPATH_VERSION="${JMESPATH_VERSION:-0.10.0}"    # jmespath pegged version, actual version probably not that crucial
-MARKUPSAFE_VERSION="${MARKUPSAFE_VERSION:-1.1.1}"  # MarkupSafe version
+MARKUPSAFE_VERSION="${MARKUPSAFE_VERSION:-3.0.2}"  # MarkupSafe version
 PIP="${PIP:-pip3}"                              # Pip binary to use
 PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"    # Python3 path
 VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environment to create

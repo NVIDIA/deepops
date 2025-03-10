@@ -39,11 +39,14 @@
   tags:
     - nfs
 
-- include: server.yml
+- name: setup server
+  include_tasks: server.yml
   when: nfs_is_server
 
-- include: firewall.yml
+- name: setup firewall
+  include_tasks: firewall.yml
   when: nfs_is_server
 
-- include: client.yml
+- name: setup client
+  include_tasks: client.yml
   when: nfs_is_client

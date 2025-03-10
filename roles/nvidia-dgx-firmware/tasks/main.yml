@@ -19,7 +19,7 @@
 
 - block:
   # Run some pre-flight diagnostics pre-firmware update in case things go wrong
-  - include: run-diagnostics.yml
+  - include_tasks: run-diagnostics.yml
     vars:
       run_diagnostics_type: '-pre-check'
     when:
@@ -27,7 +27,7 @@
       - load_firmware or update_firmware
 
   # Verify the local container exists, then copy it over if necessary and verify it is loaded into Docker
-  - include: load-image.yml
+  - include_tasks: load-image.yml
     when: load_firmware
 
   # Shut down services and unload drivers
@@ -47,20 +47,20 @@
     when: update_firmware
 
   # Update the FW and reboot if necessary
-  - include: update-firmware.yml
+  - include_tasks: update-firmware.yml
     when: update_firmware
 
   # Run post-flight diagnostics
-  - include: run-diagnostics.yml
+  - include_tasks: run-diagnostics.yml
     vars:
       run_diagnostics_type: '-post-check'
     when: run_diagnostics
 
   always:
-  - include: transfer-logs.yml # In case of failure, this will pull whatever logs were captured; in case of success it will pull the later logs and some pre-flight checks may be overwritten
+  - include_tasks: transfer-logs.yml # In case of failure, this will pull whatever logs were captured; in case of success it will pull the later logs and some pre-flight checks may be overwritten
 
-# Clean up the loaded images and copied files
-- include: clean.yml
+- name: Clean up the loaded images and copied files
+  include_tasks: clean.yml
   when: clean_fw
 
 # Some FW component upgrades require cleanly shutting down the DGX and doing a full powercycle (typically SBIOS or BMC)

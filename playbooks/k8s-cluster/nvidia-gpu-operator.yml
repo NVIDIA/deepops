@@ -1,6 +1,6 @@
 ---
-# Ensure OpenShift packages are installed
-- include: ../bootstrap/bootstrap-openshift.yml
+- name: Ensure OpenShift packages are installed
+  import_playbook: ../bootstrap/bootstrap-openshift.yml
 
 # GPU operator
 - hosts: kube-master[0]
