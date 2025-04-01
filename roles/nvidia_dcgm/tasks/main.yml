@@ -6,15 +6,15 @@
 
 - name: DGX tasks
   when: dcgm_is_dgx
-  include: install-dgx.yml
+  include_tasks: install-dgx.yml
 
 - name: Ubuntu tasks
   when: (ansible_distribution == "Ubuntu") and not dcgm_is_dgx
-  include: install-ubuntu.yml
+  include_tasks: install-ubuntu.yml
 
 - name: Red Hat family tasks
   when: (ansible_os_family == "RedHat") and not dcgm_is_dgx
-  include: install-redhat.yml
+  include_tasks: install-redhat.yml
 
 # We don't test service start in Molecule, because the dcgm service will fail
 # if the CUDA driver isn't installed and working.

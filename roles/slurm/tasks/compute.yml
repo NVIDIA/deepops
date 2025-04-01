@@ -94,7 +94,7 @@
     - epilog
 
 - name: include prolog/epilog
-  include: prolog_epilog.yml
+  include_tasks: prolog_epilog.yml
   when: slurm_enable_prolog_epilog
 
 - name: configure slurm.conf
