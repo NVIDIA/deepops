@@ -28,9 +28,9 @@ VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environ
 
 # Set distro-specific variables
 . /etc/os-release
-DEPS_DEB=(git virtualenv python3-virtualenv sshpass wget)
-DEPS_EL7=(git libselinux-python3 python-virtualenv python3-virtualenv sshpass wget)
-DEPS_EL8=(git python3-libselinux python3-virtualenv sshpass wget)
+DEPS_DEB=(git virtualenv python3-virtualenv sshpass wget jq)
+DEPS_EL7=(git libselinux-python3 python-virtualenv python3-virtualenv sshpass wget jq)
+DEPS_EL8=(git python3-libselinux python3-virtualenv sshpass wget jq)
 EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
 EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
 PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh 2>/dev/null | grep -v ^$ | wc -l`
@@ -86,6 +86,35 @@ case "$ID" in
         echo "Please install ${DEPS_RPM[@]} manually"
         ;;
 esac
+
+# Check Local Python and Ansible Compatibility
+PYVER=$($PYTHON_BIN -V 2>&1 | grep -oP '[0-9]+\.[0-9]+(\.[0-9]+)?')
+JSON=$(wget -qO- "https://pypi.org/pypi/ansible/$ANSIBLE_VERSION/json")
+[[ -z "$JSON" || "$JSON" == *"Not Found"* ]] && { echo "Not found: Ansible $ANSIBLE_VERSION"; exit 1; }
+
+REQ=$(echo "$JSON" | jq -r '.info.requires_python // empty')
+[[ -z "$REQ" ]] && { echo "Pass: no Python constraint"; exit 0; }
+
+cmp() {
+  a=$1 b=$2; [[ "$(printf '%s\n%s' "$a" "$b" | sort -V | head -n1)" == "$a" ]]
+}
+
+check_python_compatibility() {
+  for c in $(sed 's/,//g' <<< "$1"); do
+    op=${c//[0-9.]/}; ver=${c//[<>=]/}
+    case $op in
+      "==") [[ "$2" == "$ver" ]] || return 1 ;;
+      ">=") cmp "$ver" "$2" || return 1 ;;
+      "<=") cmp "$2" "$ver" || return 1 ;;
+      ">")  cmp "$ver" "$2" && [[ "$2" != "$ver" ]] || return 1 ;;
+      "<")  cmp "$2" "$ver" && [[ "$2" != "$ver" ]] || return 1 ;;
+    esac
+  done
+}
+
+check_python_compatibility "$REQ" "$PYVER" && {
+  echo "Compatible: Python $PYVER satisfies Ansible $ANSIBLE_VERSION requirement. $REQ"; } || {
+  echo "Incompatible: Python $PYVER does not satisfy Ansible $ANSIBLE_VERSION requirement. $REQ"; exit 1; }
 
 # Create virtual environment and install python dependencies
 if command -v virtualenv &> /dev/null ; then
