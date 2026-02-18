@@ -302,7 +302,7 @@ standalone_container_registry_port: "5000"
 ################################################################################
 # Configuration for NGC-Ready playbook                                         #
 ################################################################################
-ngc_ready_cuda_container: "nvcr.io/nvidia/cuda:10.1-base-ubuntu18.04"
-ngc_ready_pytorch: "nvcr.io/nvidia/pytorch:18.10-py3"
-ngc_ready_tensorflow: "nvcr.io/nvidia/tensorflow:18.10-py3"
+ngc_ready_cuda_container: "nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04"
+ngc_ready_pytorch: "nvcr.io/nvidia/pytorch:24.04-py3"
+ngc_ready_tensorflow: "nvcr.io/nvidia/tensorflow:24.04-tf2-py3"
 

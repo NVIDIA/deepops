@@ -4,15 +4,6 @@ dependency:
 driver:
   name: docker
 platforms:
-  - name: facts-ubuntu-1804
-    image: geerlingguy/docker-ubuntu1804-ansible
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    command: /sbin/init
-    tmpfs:
-    - /run
-    - /tmp
-    pre_build_image: true
   - name: facts-ubuntu-2004
     image: geerlingguy/docker-ubuntu2004-ansible
     volumes:
@@ -22,8 +13,8 @@ platforms:
     - /run
     - /tmp
     pre_build_image: true
-  - name: facts-centos-7
-    image: geerlingguy/docker-centos7-ansible
+  - name: facts-ubuntu-2204
+    image: geerlingguy/docker-ubuntu2204-ansible
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     command: /sbin/init
@@ -31,15 +22,6 @@ platforms:
     - /run
     - /tmp
     pre_build_image: true
-#  - name: facts-centos-8
-#    image: geerlingguy/docker-centos8-ansible
-#    volumes:
-#      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-#    command: /sbin/init
-#    tmpfs:
-#    - /run
-#    - /tmp
-#    pre_build_image: true
 provisioner:
   name: ansible
   ansible_args:

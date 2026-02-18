@@ -73,7 +73,7 @@ ood_linuxhost_adapter_config: |
       debug: true
       singularity_bin: /usr/bin/singularity
       singularity_bindpath: /etc,/media,/mnt,/opt,/run,/srv,/usr,/var,/users
-      singularity_image: {{ singularity_image_dir }}/ubuntu-18.04.simg
+      singularity_image: {{ singularity_image_dir }}/ubuntu-22.04.simg
       # Enabling strict host checking may cause the adapter to fail if the user's known_hosts does not have all the roundrobin hosts
       strict_host_checking: false
 

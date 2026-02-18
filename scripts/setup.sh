@@ -29,8 +29,7 @@ VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environ
 # Set distro-specific variables
 . /etc/os-release
 DEPS_DEB=(git virtualenv python3-virtualenv sshpass wget)
-DEPS_EL7=(git libselinux-python3 python-virtualenv python3-virtualenv sshpass wget)
-DEPS_EL8=(git python3-libselinux python3-virtualenv sshpass wget)
+DEPS_EL=(git python3-libselinux python3-virtualenv sshpass wget)
 EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
 EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
 PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh 2>/dev/null | grep -v ^$ | wc -l`
@@ -68,14 +67,7 @@ as_user(){
 case "$ID" in
     rhel*|centos*)
         as_sudo "yum -y -q install ${EPEL_URL} |& grep -v 'Nothing to do'"       # Enable EPEL (required for sshpass package)
-        case "$EPEL_VERSION" in
-            7)
-                as_sudo "yum -y -q install ${DEPS_EL7[@]}"
-                ;;
-            8)
-                as_sudo "yum -y -q install ${DEPS_EL8[@]}"
-                ;;
-            esac
+        as_sudo "yum -y -q install ${DEPS_EL[@]}"
         ;;
     ubuntu*)
         as_sudo "apt-get -q update"

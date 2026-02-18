@@ -28,18 +28,12 @@
   with_items: "{{ slurm_pmix_deps }}"
   when: ansible_os_family == 'RedHat'
 
-- name: install pmix 'pandoc' build dependency for RHEL 7
-  yum:
-    name: pandoc
-    state: present
-  when: ansible_os_family == 'RedHat' and ansible_distribution_major_version == "7"
-
-- name: install pmix 'pandoc' build dependency for RHEL 8
+- name: install pmix 'pandoc' build dependency
   dnf:
     name: pandoc
     state: present
     enablerepo: powertools
-  when: ansible_os_family == 'RedHat' and ansible_distribution_major_version == "8"
+  when: ansible_os_family == 'RedHat'
 
 - name: remove pmix packages
   apt:
