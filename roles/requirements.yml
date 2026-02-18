@@ -10,10 +10,10 @@ collections:
 - name: community.docker
   version: 5.0.6
 
-roles:
+- name: devsec.hardening
+  version: 10.5.0
 
-- src: dev-sec.ssh-hardening
-  version: "10.5.0"
+roles:
 
 - src: https://github.com/DeepOps/ansible-role-users
   name: DeepOps.users
