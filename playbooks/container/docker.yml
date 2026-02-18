@@ -7,7 +7,7 @@
   vars_files:
     # include kubespray-defaults here so that we can set the facts using the
     # kubespray 0020-set_facts.yml tasks
-    - ../../submodules/kubespray/roles/kubespray-defaults/defaults/main/main.yml
+    - ../../submodules/kubespray/roles/kubespray_defaults/defaults/main/main.yml
     - ../../submodules/kubespray/roles/kubernetes/preinstall/defaults/main.yml
   tasks:
     - name: include kubespray task to set facts required for docker role
@@ -27,7 +27,7 @@
   vars:
     fallback_ips: []
   roles:
-    - role: kubespray-defaults
+    - role: kubespray_defaults
       when: docker_install | default('yes')
     - role: "../../submodules/kubespray/roles/container-engine/docker"
       when: docker_install | default('yes')
