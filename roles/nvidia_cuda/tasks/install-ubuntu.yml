@@ -4,11 +4,6 @@
     repo: ppa:graphics-drivers/ppa
     state: absent
 
-- name: Ubuntu | ensure old key is absent
-  apt_key:
-    id: "{{ old_nvidia_driver_ubuntu_cuda_repo_gpgkey_id }}"
-    state: "absent"
-
 - name: Ubuntu | install CUDA keyring
   apt:
     deb: "{{ nvidia_driver_ubuntu_cuda_keyring_url }}"

@@ -4,12 +4,16 @@
 ---
 - name: "install needed packages"
   become: yes
-  action: apt name=python3-setuptools state=present
+  ansible.builtin.apt:
+    name: python3-setuptools
+    state: present
   when: ansible_os_family == "Debian"
 
 - name: "install needed packages"
   become: yes
-  action: yum name=python3-setuptools state=present
+  ansible.builtin.yum:
+    name: python3-setuptools
+    state: present
   when: ansible_os_family == "RedHat"
 
 - name: "rm previous tmp folders"    
@@ -38,7 +42,11 @@
   when: not ebsw_exe.matched
 
 - name: "download bootstrap script"
-  get_url: url="{{ item.url }}" dest="{{ item.dest }}" mode='u=rwx,g=rwx,o=rx' force=yes
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: 'u=rwx,g=rwx,o=rx'
+    force: true
   with_items:
     - url: "{{ eb_bootstrap_url }}" 
       dest: '/tmp'
@@ -95,7 +103,10 @@
   when: not ebsw_exe.matched
 
 - name: "rm EasyBuild tmp directories"
-  file: path={{ eb_tmp_dir }} state=absent force=yes
+  ansible.builtin.file:
+    path: "{{ eb_tmp_dir }}"
+    state: absent
+    force: true
   when: not ebsw_exe.matched
 
 - name: "configure sh profile"
