@@ -19,11 +19,9 @@ jobs:
           python-version: "3.10"
 
       - name: install dependencies
-        # ansible-lint 5.4.0 requires ansible-core <=2.12 (ansible 4.x/5.x)
-        # TODO: upgrade ansible-lint to 24.x for ansible 9.x+ compatibility
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install ansible-lint==5.4.0 ansible==4.8.0
+          python3 -m pip install ansible-lint==26.1.1 ansible==10.7.0
 
       - name: run lint script
         env:
