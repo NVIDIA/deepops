@@ -39,7 +39,7 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install ansible==9.13.0
-          python3 -m pip install molecule[docker] docker
+          python3 -m pip install molecule molecule-plugins[docker] docker
       - name: run molecule test
         run: |
           cd "${{ github.repository }}/roles"
