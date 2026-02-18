@@ -95,6 +95,7 @@ if command -v virtualenv &> /dev/null ; then
     virtualenv -q --python="${PYTHON_BIN}" "${VENV_DIR}"
     . "${VENV_DIR}/bin/activate"
     as_user "${PIP} install -q --upgrade pip"
+    as_user "${PIP} install -q packaging"
 
     # Check for any installed ansible pip package
     if pip show ansible 2>&1 >/dev/null; then
