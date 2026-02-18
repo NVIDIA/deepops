@@ -1,0 +1,25 @@
+---
+name: test setup.sh
+on:
+  - push
+  - pull_request
+jobs:
+  setup:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
+    steps:
+      - name: check out repo
+        uses: actions/checkout@v4
+
+      - name: run setup.sh
+        run: bash scripts/setup.sh
+
+      - name: verify ansible in venv
+        run: |
+          source /opt/deepops/env/bin/activate
+          ansible --version
+          python3 -c "from packaging.version import Version; print('packaging OK')"

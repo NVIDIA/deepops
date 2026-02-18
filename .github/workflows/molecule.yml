@@ -5,7 +5,7 @@ on:
   - pull_request
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       max-parallel: 4
       matrix:
@@ -28,17 +28,17 @@ jobs:
           - spack
     steps:
       - name: check out repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: "${{ github.repository }}"
       - name: set up python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.12"
       - name: install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install ansible==4.8.0
+          python3 -m pip install ansible==9.13.0
           python3 -m pip install molecule[docker] docker
       - name: run molecule test
         run: |

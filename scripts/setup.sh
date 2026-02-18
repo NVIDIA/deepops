@@ -100,12 +100,12 @@ if command -v virtualenv &> /dev/null ; then
     if pip show ansible 2>&1 >/dev/null; then
         current_version=$(pip show ansible | grep Version | awk '{print $2}')
 	echo "Current version of Ansible is ${current_version}"
-	if python3 -c "from packaging.version import Version; print(Version('$current_version') >= Version('$ANSIBLE_TOO_NEW'))" | grep True 2>&1 >/dev/null; then
+	if "${VENV_DIR}/bin/python3" -c "from packaging.version import Version; print(Version('$current_version') >= Version('$ANSIBLE_TOO_NEW'))" | grep True 2>&1 >/dev/null; then
             echo "Ansible version ${current_version} too new for DeepOps"
 	    echo "Please uninstall any ansible, ansible-base, and ansible-core packages and re-run this script"
 	    exit 1
 	fi
-	if python3 -c "from packaging.version import Version; print(Version('$current_version') < Version('$ANSIBLE_VERSION'))" | grep True 2>&1 >/dev/null; then
+	if "${VENV_DIR}/bin/python3" -c "from packaging.version import Version; print(Version('$current_version') < Version('$ANSIBLE_VERSION'))" | grep True 2>&1 >/dev/null; then
 	    echo "Ansible will be upgraded from ${current_version} to ${ANSIBLE_VERSION}"
 	fi
     fi
