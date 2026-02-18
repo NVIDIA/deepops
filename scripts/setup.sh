@@ -18,7 +18,7 @@ ANSIBLE_LINT_VERSION="${ANSIBLE_LINT_VERSION:-5.4.0}"
 CONFIG_DIR="${CONFIG_DIR:-${ROOT_DIR}/config}"            # Default configuration directory location
 DEEPOPS_TAG="${1:-master}"                      # DeepOps branch to set up
 JINJA2_VERSION="${JINJA2_VERSION:-3.1.5}"      # Jinja2 required version
-JMESPATH_VERSION="${JMESPATH_VERSION:-0.10.0}"    # jmespath pegged version, actual version probably not that crucial
+JMESPATH_VERSION="${JMESPATH_VERSION:-1.0.1}"    # jmespath version (matches kubespray requirements)
 MARKUPSAFE_VERSION="${MARKUPSAFE_VERSION:-3.0.2}"  # MarkupSafe version
 PIP="${PIP:-pip3}"                              # Pip binary to use
 PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"    # Python3 path
@@ -100,12 +100,12 @@ if command -v virtualenv &> /dev/null ; then
     if pip show ansible 2>&1 >/dev/null; then
         current_version=$(pip show ansible | grep Version | awk '{print $2}')
 	echo "Current version of Ansible is ${current_version}"
-	if "${PYTHON_BIN}" -c "from distutils.version import LooseVersion; print(LooseVersion('$current_version') >= LooseVersion('$ANSIBLE_TOO_NEW'))" | grep True 2>&1 >/dev/null; then
+	if python3 -c "from packaging.version import Version; print(Version('$current_version') >= Version('$ANSIBLE_TOO_NEW'))" | grep True 2>&1 >/dev/null; then
             echo "Ansible version ${current_version} too new for DeepOps"
 	    echo "Please uninstall any ansible, ansible-base, and ansible-core packages and re-run this script"
 	    exit 1
 	fi
-	if "${PYTHON_BIN}" -c "from distutils.version import LooseVersion; print(LooseVersion('$current_version') < LooseVersion('$ANSIBLE_VERSION'))" | grep True 2>&1 >/dev/null; then
+	if python3 -c "from packaging.version import Version; print(Version('$current_version') < Version('$ANSIBLE_VERSION'))" | grep True 2>&1 >/dev/null; then
 	    echo "Ansible will be upgraded from ${current_version} to ${ANSIBLE_VERSION}"
 	fi
     fi
@@ -115,6 +115,7 @@ if command -v virtualenv &> /dev/null ; then
 	ansible-lint==${ANSIBLE_LINT_VERSION} \
         Jinja2==${JINJA2_VERSION} \
         netaddr \
+        packaging \
         ruamel.yaml \
         PyMySQL \
         paramiko \
