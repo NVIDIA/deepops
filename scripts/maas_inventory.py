@@ -42,7 +42,6 @@ from pathlib import Path
 # These parent groups are auto-created using Ansible's "children" mechanism.
 GROUP_CHILDREN = {
     "k8s-cluster": ["kube-master", "kube-node"],
-    "etcd": ["kube-master"],
     "slurm-cluster": [
         "slurm-master", "slurm-node", "slurm-cache",
         "slurm-nfs", "slurm-metric", "slurm-login",
