@@ -68,7 +68,7 @@
   import_playbook: generic/hosts.yml
 
 - name: Set up a local cluster container registry
-  import_playbook: container/standalone-container-registry.yml hostlist=kube-master
+  import_playbook: container/standalone-container-registry.yml hostlist=kube_control_plane
   when: kube_enable_container_registry|default(false)
 
 # Install 'sshpass' program for: https://github.com/ansible/ansible/issues/56629
@@ -110,7 +110,7 @@
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
 # Install Kubernetes
-# for configuration, see: config/group_vars/k8s-cluster.yml
+# for configuration, see: config/group_vars/k8s_cluster.yml
 - name: Install Kubernetes
   import_playbook: ../submodules/kubespray/cluster.yml
   tags:
@@ -128,7 +128,7 @@
     - swap
  
 # Manage Kubernetes cluster access config file
-- hosts: k8s-cluster
+- hosts: k8s_cluster
   gather_facts: false
   vars:
     ansible_become: no
@@ -165,7 +165,7 @@
 - name: Install NVIDIA driver on GPU servers
   import_playbook: nvidia-software/nvidia-driver.yml
   vars:
-    hostlist: "k8s-cluster"
+    hostlist: "k8s_cluster"
   tags:
     - nvidia
   when: deepops_gpu_operator_enabled|default(true) | bool == false or
@@ -174,7 +174,7 @@
 - name: Install NVIDIA container runtime on GPU servers
   import_playbook: container/nvidia-docker.yml
   vars:
-    hostlist: "k8s-cluster"
+    hostlist: "k8s_cluster"
   tags:
     - nvidia
   when:
@@ -183,7 +183,7 @@
     - container_manager is defined and container_manager == "docker"
 
 # Manage kubectl binary
-- hosts: kube-master
+- hosts: kube_control_plane
   gather_facts: false
   vars:
     ansible_become: no
@@ -196,7 +196,7 @@
       run_once: true
   tags:
     - local
-- hosts: k8s-cluster
+- hosts: k8s_cluster
   gather_facts: false
   vars:
     config_dir: "../config"
@@ -252,9 +252,9 @@
   tags:
     - local
 
-# Remove taint from kube-master nodes.
+# Remove taint from kube_control_plane nodes.
 # This keeps backwards compatibility and allows a few services (monitoring/etc.) to run properly.
-- hosts: kube-master
+- hosts: kube_control_plane
   gather_facts: false
   vars:
     ansible_become: no
@@ -268,7 +268,7 @@
     - name: kubeadm | Remove taint for master with node role
       command: "{{ artifacts_dir }}/kubectl --kubeconfig {{ artifacts_dir }}/admin.conf taint node {{ inventory_hostname }} node-role.kubernetes.io/control-plane:NoSchedule-"
       delegate_to: localhost
-      failed_when: false # Taint will not be present if kube-master also under kube-node
+      failed_when: false # Taint will not be present if kube_control_plane also under kube_node
 
 - name: Install k8s GPU feature discovery
   import_playbook: k8s-cluster/nvidia-k8s-gpu-feature-discovery.yml
@@ -295,11 +295,11 @@
 - name: Setup rsyslog server
   import_playbook: generic/rsyslog-server.yml
   vars:
-    hostlist: "{{ rsyslog_server_hostname | default('kube-master[0]') }}"
+    hostlist: "{{ rsyslog_server_hostname | default('kube_control_plane[0]') }}"
   when: kube_enable_rsyslog_server|default(true)
 
 - name: Setup rsyslog client
   import_playbook: generic/rsyslog-client.yml
   vars:
-    hostlist: "{{ rsyslog_client_group | default('k8s-cluster') }}"
+    hostlist: "{{ rsyslog_client_group | default('k8s_cluster') }}"
   when: kube_enable_rsyslog_client|default(true)
