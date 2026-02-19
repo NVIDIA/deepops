@@ -111,6 +111,7 @@ if command -v virtualenv &> /dev/null ; then
         packaging \
         ruamel.yaml \
         PyMySQL \
+        passlib \
         paramiko \
         jmespath==${JMESPATH_VERSION} \
         MarkupSafe==${MARKUPSAFE_VERSION} \
