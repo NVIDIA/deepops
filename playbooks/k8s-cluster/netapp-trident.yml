@@ -2,7 +2,7 @@
 # Playbook for deploying NetApp Trident
 
 - name: "Install NFS utils on worker nodes"
-  hosts: kube-node
+  hosts: kube_node
   become: true
   become_method: sudo
   tasks:
@@ -16,7 +16,7 @@
     when: ansible_os_family == "RedHat"
 
 - name: "Deploy NetApp Trident"
-  hosts: kube-master
+  hosts: kube_control_plane
   become: true
   vars_files:
   - ../../config/group_vars/netapp-trident.yml

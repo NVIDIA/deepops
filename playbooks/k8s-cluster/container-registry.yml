@@ -1,5 +1,5 @@
 ---
-- hosts: kube-master
+- hosts: kube_control_plane
   become: true
   tasks:
     - name: Install helm chart for container registry
@@ -9,7 +9,7 @@
   tags:
     - container-registry
 
-- hosts: kube-node
+- hosts: kube_node
   become: true
   vars:
     container_registry_hostname: registry.local
@@ -17,6 +17,6 @@
     - name: Set registry hostname in /etc/hosts
       lineinfile:
         path: /etc/hosts
-        line: "{{ hostvars[groups['kube-master'][0]]['ansible_host'] | default(hostvars[groups['kube-master'][0]]['ansible_default_ipv4']['address']) }} {{ container_registry_hostname }}"
+        line: "{{ hostvars[groups['kube_control_plane'][0]]['ansible_host'] | default(hostvars[groups['kube_control_plane'][0]]['ansible_default_ipv4']['address']) }} {{ container_registry_hostname }}"
   tags:
     - container-registry

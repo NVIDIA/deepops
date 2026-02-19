@@ -1,0 +1,26 @@
+---
+# Project-level ansible-lint configuration for ansible-lint 26.x
+# Profile levels: min, basic, moderate, safety, shared, production
+profile: min
+
+# Exclude external/vendored roles and hardware-specific roles
+exclude_paths:
+  - roles/galaxy/
+  - roles/nvidia-dgx/
+  - roles/nvidia-dgx-firmware/
+  - roles/nvidia-gpu-tests/
+  - submodules/
+
+# Skip rules for pre-existing issues across the codebase.
+# These should be fixed incrementally in future PRs.
+skip_list:
+  - fqcn[action-core]    # 634 violations: modules not using FQCN
+  - fqcn[action]         # 24 violations: same for non-core
+  - name[casing]         # 526 violations: task names not capitalized
+  - yaml[truthy]         # 152 violations: yes/no instead of true/false
+  - yaml[octal-values]   # 52 violations: octal file modes
+  - jinja[spacing]       # 20 violations: jinja2 spacing
+  - name[play]           # 12 violations: play names
+  - schema[meta]         # 3 violations: meta/main.yml schema
+  - key-order[task]      # 3 violations: task key ordering
+  - ignore-errors        # pre-existing ignore_errors usage

@@ -19,7 +19,7 @@
 ######
 # KUBERNETES
 ######
-[kube-master]
+[kube_control_plane]
 #mgmt01
 #mgmt02
 #mgmt03
@@ -31,13 +31,13 @@
 #mgmt03
 
 # Also add mgmt/master nodes here if they will run non-control plane jobs
-[kube-node]
+[kube_node]
 #gpu01
 #gpu02
 
-[k8s-cluster:children]
-kube-master
-kube-node
+[k8s_cluster:children]
+kube_control_plane
+kube_node
 
 ######
 # SLURM

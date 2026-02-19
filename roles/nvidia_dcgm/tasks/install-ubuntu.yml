@@ -1,9 +1,4 @@
 ---
-- name: Ubuntu | remove old key
-  apt_key:
-    id: "{{ old_nvidia_driver_ubuntu_cuda_repo_gpgkey_id }}"
-    state: "absent"
-
 - name: Ubuntu | install CUDA keyring
   apt:
     deb: "{{ nvidia_driver_ubuntu_cuda_keyring_url }}"

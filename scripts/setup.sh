@@ -12,13 +12,13 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/.."
 
 # Configuration
-ANSIBLE_VERSION="${ANSIBLE_VERSION:-9.13.0}"     # Ansible version to install
-ANSIBLE_TOO_NEW="${ANSIBLE_TOO_NEW:-10.0.1}"    # Ansible version too new
-ANSIBLE_LINT_VERSION="${ANSIBLE_LINT_VERSION:-5.4.0}"
+ANSIBLE_VERSION="${ANSIBLE_VERSION:-10.7.0}"     # Ansible version to install
+ANSIBLE_TOO_NEW="${ANSIBLE_TOO_NEW:-11.0.1}"    # Ansible version too new
+ANSIBLE_LINT_VERSION="${ANSIBLE_LINT_VERSION:-26.1.1}"
 CONFIG_DIR="${CONFIG_DIR:-${ROOT_DIR}/config}"            # Default configuration directory location
 DEEPOPS_TAG="${1:-master}"                      # DeepOps branch to set up
 JINJA2_VERSION="${JINJA2_VERSION:-3.1.5}"      # Jinja2 required version
-JMESPATH_VERSION="${JMESPATH_VERSION:-0.10.0}"    # jmespath pegged version, actual version probably not that crucial
+JMESPATH_VERSION="${JMESPATH_VERSION:-1.1.0}"    # jmespath version (matches kubespray requirements)
 MARKUPSAFE_VERSION="${MARKUPSAFE_VERSION:-3.0.2}"  # MarkupSafe version
 PIP="${PIP:-pip3}"                              # Pip binary to use
 PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"    # Python3 path
@@ -29,8 +29,7 @@ VENV_DIR="${VENV_DIR:-/opt/deepops/env}"        # Path to python virtual environ
 # Set distro-specific variables
 . /etc/os-release
 DEPS_DEB=(git virtualenv python3-virtualenv sshpass wget)
-DEPS_EL7=(git libselinux-python3 python-virtualenv python3-virtualenv sshpass wget)
-DEPS_EL8=(git python3-libselinux python3-virtualenv sshpass wget)
+DEPS_EL=(git python3-libselinux python3-virtualenv sshpass wget)
 EPEL_VERSION="$(echo ${VERSION_ID} | sed  's/^[^0-9]*//;s/[^0-9].*$//')"
 EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL_VERSION}.noarch.rpm"
 PROXY_USE=`grep -v ^# ${SCRIPT_DIR}/deepops/proxy.sh 2>/dev/null | grep -v ^$ | wc -l`
@@ -68,14 +67,7 @@ as_user(){
 case "$ID" in
     rhel*|centos*)
         as_sudo "yum -y -q install ${EPEL_URL} |& grep -v 'Nothing to do'"       # Enable EPEL (required for sshpass package)
-        case "$EPEL_VERSION" in
-            7)
-                as_sudo "yum -y -q install ${DEPS_EL7[@]}"
-                ;;
-            8)
-                as_sudo "yum -y -q install ${DEPS_EL8[@]}"
-                ;;
-            esac
+        as_sudo "yum -y -q install ${DEPS_EL[@]}"
         ;;
     ubuntu*)
         as_sudo "apt-get -q update"
@@ -95,17 +87,18 @@ if command -v virtualenv &> /dev/null ; then
     virtualenv -q --python="${PYTHON_BIN}" "${VENV_DIR}"
     . "${VENV_DIR}/bin/activate"
     as_user "${PIP} install -q --upgrade pip"
+    as_user "${PIP} install -q packaging"
 
     # Check for any installed ansible pip package
     if pip show ansible 2>&1 >/dev/null; then
         current_version=$(pip show ansible | grep Version | awk '{print $2}')
 	echo "Current version of Ansible is ${current_version}"
-	if "${PYTHON_BIN}" -c "from distutils.version import LooseVersion; print(LooseVersion('$current_version') >= LooseVersion('$ANSIBLE_TOO_NEW'))" | grep True 2>&1 >/dev/null; then
+	if "${VENV_DIR}/bin/python3" -c "from packaging.version import Version; print(Version('$current_version') >= Version('$ANSIBLE_TOO_NEW'))" | grep True 2>&1 >/dev/null; then
             echo "Ansible version ${current_version} too new for DeepOps"
 	    echo "Please uninstall any ansible, ansible-base, and ansible-core packages and re-run this script"
 	    exit 1
 	fi
-	if "${PYTHON_BIN}" -c "from distutils.version import LooseVersion; print(LooseVersion('$current_version') < LooseVersion('$ANSIBLE_VERSION'))" | grep True 2>&1 >/dev/null; then
+	if "${VENV_DIR}/bin/python3" -c "from packaging.version import Version; print(Version('$current_version') < Version('$ANSIBLE_VERSION'))" | grep True 2>&1 >/dev/null; then
 	    echo "Ansible will be upgraded from ${current_version} to ${ANSIBLE_VERSION}"
 	fi
     fi
@@ -115,8 +108,10 @@ if command -v virtualenv &> /dev/null ; then
 	ansible-lint==${ANSIBLE_LINT_VERSION} \
         Jinja2==${JINJA2_VERSION} \
         netaddr \
+        packaging \
         ruamel.yaml \
         PyMySQL \
+        passlib \
         paramiko \
         jmespath==${JMESPATH_VERSION} \
         MarkupSafe==${MARKUPSAFE_VERSION} \

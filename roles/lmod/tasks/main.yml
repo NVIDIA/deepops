@@ -30,22 +30,13 @@
 
 - name: "install packages"
   become: yes
-  yum:
-    name:
-    - bash
-    - tcsh
-    - Lmod
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
-
-- name: "install packages"
-  become: yes
   dnf:
     name:
     - bash
     - tcsh
     - Lmod
     enablerepo: powertools
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+  when: ansible_os_family == "RedHat"
 
 - name: "mkdir software path"
   become: yes
@@ -82,25 +73,6 @@
     mode: 0755
   tags:
     - configuration
-
-# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=891541
-- name: "bugfix for lmod posix_c"
-  become: yes
-  register: lmod_bugfix_posix
-  file:
-    src: "/usr/lib/x86_64-linux-gnu/lua/{{ item }}/posix_c.so"
-    dest: "/usr/lib/x86_64-linux-gnu/lua/{{ item }}/posix.so"
-    owner: "root"
-    group: "root"
-    state: "link"
-    force: true
-  when: 
-    - ansible_distribution == 'Ubuntu'
-    - ansible_distribution_version == '18.04'
-  with_items:
-    - "5.1"
-    - "5.2"
-    - "5.3"
 
 - name: "unset previous lmod setup"
   shell: unset MODULEPATH_ROOT  # noqa command-instead-of-shell

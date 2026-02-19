@@ -14,22 +14,10 @@
     mode: 0644
   notify: restart alertmanager
 
-- name: Ensure Python 2 dependencies are installed via OS packages
-  when: (ansible_python.version.major==2) and (ansible_python.version.minor==7)
-  block:
-  - name: install python-docker
-    package:
-      name: python-docker
-
-- name: Ensure Python 3 dependencies are installed via pip
-  when: ansible_python.version.major==3
-  block:
-  - name: install pip
-    package:
-      name: python3-pip
-  - name: install docker
-    pip:
-      name: docker
+- name: install python3 docker module
+  package:
+    name: python3-docker
+    state: present
 
 - name: create a persistent docker volume for metrics
   docker_volume:

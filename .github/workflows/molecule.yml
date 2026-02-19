@@ -5,42 +5,43 @@ on:
   - pull_request
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
-      max-parallel: 4
+      fail-fast: false
       matrix:
         deepops-role:
           - cachefilesd
           - facts
           - kerberos_client
           - lmod
-          - nis_client
           - nfs
           - nhc
           - nvidia_dcgm
           - openmpi
           - openshift
-          - rsyslog_client
-          - rsyslog_server
           - mofed
-          - singularity_wrapper
-          - slurm
           - spack
+          # Excluded from Docker CI (require systemd services that can't
+          # run in containers): nis_client, rsyslog_client, rsyslog_server,
+          # slurm. Tested end-to-end on real MAAS VMs instead.
+          # Also excluded: singularity_wrapper (broken upstream Galaxy dep)
     steps:
       - name: check out repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: "${{ github.repository }}"
       - name: set up python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.12"
       - name: install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install ansible==4.8.0
-          python3 -m pip install molecule[docker] docker
+          python3 -m pip install ansible==10.7.0 passlib
+          python3 -m pip install molecule molecule-plugins[docker] docker
       - name: run molecule test
+        env:
+          ANSIBLE_ROLES_PATH: "${{ github.workspace }}/${{ github.repository }}/roles/galaxy:${{ github.workspace }}/${{ github.repository }}/roles"
         run: |
           cd "${{ github.repository }}/roles"
           ansible-galaxy role install --force -r ./requirements.yml

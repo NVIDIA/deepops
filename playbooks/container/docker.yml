@@ -7,7 +7,7 @@
   vars_files:
     # include kubespray-defaults here so that we can set the facts using the
     # kubespray 0020-set_facts.yml tasks
-    - ../../submodules/kubespray/roles/kubespray-defaults/defaults/main.yml
+    - ../../submodules/kubespray/roles/kubespray_defaults/defaults/main/main.yml
     - ../../submodules/kubespray/roles/kubernetes/preinstall/defaults/main.yml
   tasks:
     - name: include kubespray task to set facts required for docker role
@@ -25,12 +25,9 @@
   tags:
   - docker
   vars:
-    # override deprecated dockerproject repo; old docker repo broken as of 03.04.2020
-    dockerproject_rh_repo_base_url: 'https://download.docker.com/linux/centos/7/$basearch/stable'
-    dockerproject_rh_repo_gpgkey: 'https://download.docker.com/linux/centos/gpg'
     fallback_ips: []
   roles:
-    - role: kubespray-defaults
+    - role: kubespray_defaults
       when: docker_install | default('yes')
     - role: "../../submodules/kubespray/roles/container-engine/docker"
       when: docker_install | default('yes')

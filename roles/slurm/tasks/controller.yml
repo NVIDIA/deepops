@@ -12,18 +12,6 @@
   when: ansible_os_family == "Debian"
 
 - name: install dependencies
-  yum:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - mariadb-server
-    - MySQL-python
-    - mailx
-    - ssmtp
-    - policycoreutils-python
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
-
-- name: install dependencies
   dnf:
     name: "{{ item }}"
     state: present
@@ -32,7 +20,7 @@
     - python3-PyMySQL
     - mailx
     - policycoreutils-python-utils
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "8"
+  when: ansible_os_family == "RedHat"
 
 - name: Allow mysql to read libaio.so.1
   sefcontext:

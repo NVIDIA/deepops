@@ -38,10 +38,10 @@
     - linuxhost-adapter
 
 - name: pull singularity image
-  command: singularity pull --name ubuntu-18.04.simg docker://ubuntu:18.04
+  command: singularity pull --name ubuntu-22.04.simg docker://ubuntu:22.04
   args:
     chdir: "{{ singularity_image_dir }}"
-    creates: "{{ singularity_image_dir }}/ubuntu-18.04.simg"
+    creates: "{{ singularity_image_dir }}/ubuntu-22.04.simg"
   environment:
     PATH: /usr/local/bin:/usr/local/sbin:/sbin:/bin:/usr/sbin:/usr/bin:/opt/go/1.14/bin:/opt/go/packages/bin:/root/bin
   tags:

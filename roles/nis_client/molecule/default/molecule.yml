@@ -4,34 +4,11 @@ dependency:
 driver:
   name: docker
 platforms:
-  - name: nis-ubuntu-1804
-    image: geerlingguy/docker-ubuntu1804-ansible
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    command: /sbin/init
+  - name: nis-ubuntu-2204
+    image: geerlingguy/docker-ubuntu2204-ansible
+    cgroupns_mode: host
     pre_build_image: true
     privileged: true
-  - name: nis-ubuntu-2004
-    image: geerlingguy/docker-ubuntu2004-ansible
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    command: /sbin/init
-    pre_build_image: true
-    privileged: true
-  - name: nis-centos-7
-    image: geerlingguy/docker-centos7-ansible
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    command: /sbin/init
-    pre_build_image: true
-    privileged: true
-#  - name: nis-centos-8
-#    image: geerlingguy/docker-centos8-ansible
-#    volumes:
-#      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-#    command: /sbin/init
-#    pre_build_image: true
-#    privileged: true
 provisioner:
   name: ansible
   ansible_args:

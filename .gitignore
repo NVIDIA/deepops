@@ -4,6 +4,13 @@
 # misc.
 .*.swp
 
+# virtualenv
+/.venv/
+
+# claude code
+/CLAUDE.md
+/tasks/
+
 # project-specific
 /admin.conf
 /config*/
