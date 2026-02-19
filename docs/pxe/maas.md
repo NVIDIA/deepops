@@ -18,6 +18,7 @@ OS Provisioning with MAAS
     - [Releasing and reinstalling the machine](#releasing-and-reinstalling-the-machine)
   - [Scaling up](#scaling-up)
   - [Creating a DGX OS image installable by MAAS](#creating-a-dgx-os-image-installable-by-maas)
+  - [Dynamic Inventory](#dynamic-inventory)
 
 ## Introduction
 
@@ -27,7 +28,7 @@ By default, this playbook will set up a single-node MAAS install which can then 
 
 In most cases, you will use MAAS to provision the OS on multiple bare-metal servers.
 However, MAAS can also be used to provision VMs, and this guide will walk through an example using two virtual machines for ease of demonstration.
-This guide was written using MAAS 2.8.
+This guide was originally written using MAAS 2.8; current MAAS releases are 3.x.
 
 MAAS has a lot of different configuration options which are outside the scope of this guide.
 For the best reference on how to use MAAS in general, see the [documentation on maas.io](https://maas.io/docs).
@@ -36,7 +37,7 @@ For the best reference on how to use MAAS in general, see the [documentation on 
 
 In order to set up and use MAAS, you should at minimum have the following components:
 
-- An Ubuntu 18.04 server which you can use to run MAAS
+- An Ubuntu 22.04 or 24.04 server which you can use to run MAAS
 - One or more servers which you will manage using MAAS
 - A network connection between all the servers on which you can safely run DHCP. This is needed so that MAAS can provision IP addresses to the nodes it manages.
 - A network connection which you can use to log into the MAAS server. This may be the same network as the inter-node network, or it may be a separate network.
@@ -47,7 +48,7 @@ In this example, we will use:
 
 - An internal (VM-only) network on which we'll use the subnet `192.168.1.0/24`
 - An external network connection on which we'll use the subnet `192.168.122.0/24`
-- `maas-vm`, a pre-installed Ubuntu 18.04 virtual machine
+- `maas-vm`, a pre-installed Ubuntu 22.04 (or 24.04) virtual machine
   - `maas-vm` has IP `192.168.1.1` on the internal network, and `192.168.122.90` on the external network
 - `test-vm`, a "blank" virtual machine with no OS, on the same VM host
   - `test-vm` has a connection only to the internal network, which is not configured yet
@@ -72,7 +73,7 @@ Please consult your hypervisor documentation for instructions on doing this.
    maas_dns_domain: 'deepops.local'
    maas_region_controller: '192.168.1.1'
    maas_region_controller_url: 'http://{{ maas_region_controller }}:5240/MAAS'
-   maas_repo: 'ppa:maas/2.8'
+   maas_repo: 'ppa:maas/3.5'
    ```
 1. Run the Ansible playbook to install:
    ```bash
@@ -104,7 +105,7 @@ After entering SSH keys, you will be redirected to an intro configuration page o
 - The source and versions of Ubuntu which will be downloaded by MAAS to install
 
 In this example, I'm leaving all these parameters at their default values.
-This will enable us to install Ubuntu 18.04 on the VM we are installing.
+This will enable us to install Ubuntu on the VM we are provisioning.
 
 MAAS will sync the necessary package repositories for the installation to your provisioning server (`maas-vm`), which may take some time.
 If the repositories are still syncing, the "Continue" button at the bottom will be grayed out.
