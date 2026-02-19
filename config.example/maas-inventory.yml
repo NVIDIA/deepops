@@ -1,0 +1,28 @@
+# MAAS Dynamic Inventory Configuration
+#
+# This file is copied to config/maas-inventory.yml by scripts/setup.sh.
+# Edit your private copy there (config/ is gitignored).
+#
+# You can also set MAAS_INVENTORY_CONFIG=/path/to/config.yml or use
+# environment variables (MAAS_API_URL, MAAS_API_KEY, etc.).
+# Environment variables take precedence over config file values.
+
+# MAAS API endpoint (required)
+api_url: "http://<maas-server>:5240/MAAS/api/2.0"
+
+# MAAS API key in consumer_key:token_key:token_secret format (required)
+# Generate with: sudo maas apikey --username=<your-user>
+# Or find in MAAS web UI: your profile -> API keys
+api_key: "CONSUMER_KEY:TOKEN_KEY:TOKEN_SECRET"
+
+# Default SSH user for all hosts (default: ubuntu)
+ssh_user: "ubuntu"
+
+# Preferred network prefix for selecting ansible_host IP (optional)
+# Machines may have multiple IPs; this selects the one on your target network
+#network: "10.0.0"
+
+# SSH bastion/jumpbox for ProxyJump (optional)
+# Only needed if target machines are on a private network that requires
+# jumping through a bastion host. Leave commented out for direct access.
+#ssh_bastion: "user@bastion-host"

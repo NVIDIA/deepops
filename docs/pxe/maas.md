@@ -201,3 +201,125 @@ then commission them and provision them by selecting them as a group in the Mach
 
 The official NVIDIA DGX OS version 5.0 and higher is installable by MAAS by creating a custom OS image.
 The code is located in the `submodules/packer-maas` directory. For more information, see: https://github.com/DeepOps/packer-maas/tree/master/dgxos5
+
+## Dynamic Inventory
+
+DeepOps includes a dynamic inventory script that queries your MAAS server's
+API to automatically discover deployed machines and map them to Ansible groups
+using MAAS tags. This eliminates the need to manually edit `config/inventory`
+when machines are provisioned, released, or reassigned.
+
+### Prerequisites
+
+- A MAAS server with the REST API enabled (default port 5240)
+- A MAAS API key (generate one from the MAAS web UI under your profile,
+  or run `sudo maas apikey --username=<your-user>` on the MAAS server)
+- Python 3 on the Ansible control machine (no additional packages required)
+
+### Setup
+
+1. Run `scripts/setup.sh` (or manually copy `config.example/` to `config/`).
+
+2. Edit `config/maas-inventory.yml` with your MAAS server details:
+
+   ```yaml
+   api_url: "http://maas-server:5240/MAAS/api/2.0"
+   api_key: "consumer_key:token_key:token_secret"
+   ssh_user: "ubuntu"
+   ```
+
+3. Optionally set `network` to prefer a specific subnet when machines have
+   multiple IPs, and `ssh_bastion` if your machines are behind a jumpbox:
+
+   ```yaml
+   network: "10.0.0"
+   ssh_bastion: "user@bastion-host"
+   ```
+
+4. Test the inventory:
+
+   ```bash
+   ./scripts/maas_inventory.py --list
+   ansible -i scripts/maas_inventory.py all -m ping
+   ```
+
+### Tag-Based Group Assignment
+
+The script maps MAAS tags directly to Ansible groups. To assign a machine to
+the `[slurm-master]` group, tag it `slurm-master` in MAAS. A machine can
+have multiple tags and will appear in all corresponding groups.
+
+DeepOps parent groups (`slurm-cluster`, `k8s-cluster`, etc.) are
+automatically created with the correct `children` relationships, so you
+only need to tag leaf groups.
+
+**Recommended tags** (matching DeepOps inventory groups):
+
+| Tag | Ansible Group | Used By |
+|-----|--------------|---------|
+| `kube-master` | `[kube-master]` | K8s control plane |
+| `kube-node` | `[kube-node]` | K8s worker nodes |
+| `slurm-master` | `[slurm-master]` | Slurm head node |
+| `slurm-node` | `[slurm-node]` | Slurm compute nodes |
+| `slurm-nfs` | `[slurm-nfs]` | Slurm NFS server |
+
+**Example: switching between Slurm and K8s testing:**
+
+```bash
+# Tag machines for Slurm
+maas admin tag update-nodes slurm-master add=<vm01_system_id>
+maas admin tag update-nodes slurm-node add=<vm02_system_id> add=<vm03_system_id>
+
+# Run Slurm deployment
+ansible-playbook -i scripts/maas_inventory.py playbooks/slurm-cluster.yml
+
+# Later, retag for K8s
+maas admin tag update-nodes slurm-master remove=<vm01_system_id>
+maas admin tag update-nodes kube-master add=<vm01_system_id>
+maas admin tag update-nodes kube-node add=<vm02_system_id> add=<vm03_system_id>
+
+# Run K8s deployment
+ansible-playbook -i scripts/maas_inventory.py playbooks/k8s-cluster.yml
+```
+
+### Configuration Reference
+
+Configuration is loaded from environment variables or `config/maas-inventory.yml`.
+Environment variables take precedence.
+
+| Config Key | Env Variable | Required | Description |
+|-----------|-------------|----------|-------------|
+| `api_url` | `MAAS_API_URL` | Yes | MAAS API endpoint |
+| `api_key` | `MAAS_API_KEY` | Yes | OAuth1 API key (`consumer:token:secret`) |
+| `ssh_user` | `MAAS_SSH_USER` | No | SSH user (default: `ubuntu`) |
+| `network` | `MAAS_NETWORK` | No | Preferred IP network prefix |
+| `ssh_bastion` | `MAAS_SSH_BASTION` | No | SSH bastion for ProxyJump |
+
+### Host Variables
+
+The script exposes MAAS metadata as Ansible host variables:
+
+| Variable | Example | Description |
+|----------|---------|-------------|
+| `maas_system_id` | `4fcb8q` | MAAS machine ID |
+| `maas_fqdn` | `node01.maas` | Fully qualified domain name |
+| `maas_os` | `ubuntu` | Operating system |
+| `maas_distro` | `noble` | Distribution series |
+| `maas_tags` | `["slurm-master", "virtual"]` | All tags on the machine |
+| `maas_cpus` | `4` | CPU count |
+| `maas_memory_mb` | `8192` | Memory in MB |
+| `maas_arch` | `amd64/generic` | Architecture |
+| `maas_zone` | `default` | MAAS availability zone |
+| `maas_pool` | `default` | MAAS resource pool |
+
+### Static vs Dynamic Inventory
+
+You can use either approach:
+
+- **Static** (`config/inventory`): Manually list hosts and groups. Simpler
+  for fixed environments. This is the default set up by `scripts/setup.sh`.
+- **Dynamic** (`scripts/maas_inventory.py`): Auto-discovers machines from
+  MAAS. Better for environments where machines are frequently provisioned
+  or reassigned.
+
+Both can be combined by passing multiple `-i` flags to `ansible-playbook`.
