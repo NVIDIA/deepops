@@ -5,9 +5,9 @@ on:
   - pull_request
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
-      max-parallel: 4
+      fail-fast: false
       matrix:
         deepops-role:
           - cachefilesd
@@ -38,9 +38,11 @@ jobs:
       - name: install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install ansible==10.7.0
+          python3 -m pip install ansible==10.7.0 passlib
           python3 -m pip install molecule molecule-plugins[docker] docker
       - name: run molecule test
+        env:
+          ANSIBLE_ROLES_PATH: "${{ github.workspace }}/${{ github.repository }}/roles/galaxy:${{ github.workspace }}/${{ github.repository }}/roles"
         run: |
           cd "${{ github.repository }}/roles"
           ansible-galaxy role install --force -r ./requirements.yml

@@ -6,12 +6,11 @@ dependency:
 driver:
   name: docker
 platforms:
-  - name: singularity-ubuntu-2004
-    image: geerlingguy/docker-ubuntu2004-ansible
-    pre_build_image: true
   - name: singularity-ubuntu-2204
     image: geerlingguy/docker-ubuntu2204-ansible
+    cgroupns_mode: host
     pre_build_image: true
+    privileged: true
 provisioner:
   name: ansible
   ansible_args:

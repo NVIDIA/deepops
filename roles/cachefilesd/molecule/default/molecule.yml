@@ -4,24 +4,9 @@ dependency:
 driver:
   name: docker
 platforms:
-  - name: cachefilesd-ubuntu-2004
-    image: geerlingguy/docker-ubuntu2004-ansible
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    command: /sbin/init
-    tmpfs:
-    - /run
-    - /tmp
-    pre_build_image: true
-    privileged: true
   - name: cachefilesd-ubuntu-2204
     image: geerlingguy/docker-ubuntu2204-ansible
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    command: /sbin/init
-    tmpfs:
-    - /run
-    - /tmp
+    cgroupns_mode: host
     pre_build_image: true
     privileged: true
 provisioner:

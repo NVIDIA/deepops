@@ -4,16 +4,9 @@ dependency:
 driver:
   name: docker
 platforms:
-  - name: nvidia-cuda-ubuntu-2004
-    image: geerlingguy/docker-ubuntu2004-ansible
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    privileged: true
-    pre_build_image: true
   - name: nvidia-cuda-ubuntu-2204
     image: geerlingguy/docker-ubuntu2204-ansible
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    cgroupns_mode: host
     privileged: true
     pre_build_image: true
 provisioner:
