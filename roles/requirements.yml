@@ -67,8 +67,5 @@ roles:
 - src: https://github.com/OSC/ood-ansible.git
   version: 'v3.0.3'
 
-- src: abims_sbr.singularity
-  version: 3.7.1-4
-
 - src: gantsign.golang
   version: 3.5.0

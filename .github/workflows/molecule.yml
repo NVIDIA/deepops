@@ -14,18 +14,17 @@ jobs:
           - facts
           - kerberos_client
           - lmod
-          - nis_client
           - nfs
           - nhc
           - nvidia_dcgm
           - openmpi
           - openshift
-          - rsyslog_client
-          - rsyslog_server
           - mofed
-          - singularity_wrapper
-          - slurm
           - spack
+          # Excluded from Docker CI (require systemd services that can't
+          # run in containers): nis_client, rsyslog_client, rsyslog_server,
+          # slurm. Tested end-to-end on real MAAS VMs instead.
+          # Also excluded: singularity_wrapper (broken upstream Galaxy dep)
     steps:
       - name: check out repo
         uses: actions/checkout@v4
