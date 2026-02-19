@@ -147,7 +147,7 @@ def maas_api_get(url, api_key):
         sys.exit(1)
     except urllib.error.URLError as e:
         print(f"MAAS connection error: {e.reason}", file=sys.stderr)
-        print(f"Is MAAS reachable at {url}?", file=sys.stderr)
+        print("Check MAAS_API_URL and network connectivity.", file=sys.stderr)
         sys.exit(1)
 
 
@@ -201,8 +201,7 @@ def build_inventory(config):
             hostvars["ansible_user"] = config["ssh_user"]
         if config.get("ssh_bastion"):
             hostvars["ansible_ssh_common_args"] = (
-                f'-o ProxyJump="{config["ssh_bastion"]}" '
-                f'-o StrictHostKeyChecking=no'
+                f'-o ProxyJump="{config["ssh_bastion"]}"'
             )
 
         # MAAS metadata
@@ -248,9 +247,10 @@ def main():
         inventory = build_inventory(config)
         print(json.dumps(inventory, indent=2))
     elif args.host:
-        inventory = build_inventory(config)
-        hostvars = inventory["_meta"]["hostvars"].get(args.host, {})
-        print(json.dumps(hostvars, indent=2))
+        # Ansible uses hostvars from _meta in --list and typically does
+        # not call --host when _meta is provided. Return empty dict to
+        # avoid an unnecessary MAAS API call.
+        print(json.dumps({}))
 
 
 if __name__ == "__main__":
