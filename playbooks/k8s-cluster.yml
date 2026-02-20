@@ -182,71 +182,82 @@
       gpu_operator_preinstalled_nvidia_software|default(true)
     - container_manager is defined and container_manager == "docker"
 
-# Manage kubectl binary
+# Manage kubectl binary — handles cross-platform (e.g., Linux cluster → macOS controller)
 - hosts: kube_control_plane
   gather_facts: false
   vars:
     ansible_become: no
   tasks:
-    - name: copy kubectl binary to ansible host
-      synchronize:
-        mode: pull
+    - name: detect ansible host platform
+      command: uname -sm
+      register: local_uname
+      delegate_to: localhost
+      run_once: true
+      changed_when: false
+
+    - name: detect remote platform
+      command: uname -sm
+      register: remote_uname
+      run_once: true
+      changed_when: false
+
+    - name: copy kubectl binary to ansible host (matching platform)
+      fetch:
         src: "/usr/local/bin/kubectl"
         dest: "{{ artifacts_dir }}/kubectl"
+        flat: yes
       run_once: true
+      when: local_uname.stdout == remote_uname.stdout
+
+    - name: get kubectl version for cross-platform download
+      command: /usr/local/bin/kubectl version --client -o json
+      register: kubectl_ver_json
+      run_once: true
+      when: local_uname.stdout != remote_uname.stdout
+
+    - name: download kubectl for ansible host platform
+      vars:
+        kubectl_ver: "{{ (kubectl_ver_json.stdout | from_json).clientVersion.gitVersion }}"
+        kubectl_os: "{{ 'darwin' if 'Darwin' in local_uname.stdout else 'linux' }}"
+        kubectl_arch: "{{ 'arm64' if 'arm64' in local_uname.stdout or 'aarch64' in local_uname.stdout else 'amd64' }}"
+      get_url:
+        url: "https://dl.k8s.io/release/{{ kubectl_ver }}/bin/{{ kubectl_os }}/{{ kubectl_arch }}/kubectl"
+        dest: "{{ artifacts_dir }}/kubectl"
+        mode: '0755'
+        force: yes
+      delegate_to: localhost
+      run_once: true
+      when: local_uname.stdout != remote_uname.stdout
   tags:
     - local
 - hosts: k8s_cluster
   gather_facts: false
   vars:
     config_dir: "../config"
+    venv_dir: "{{ lookup('env', 'VIRTUAL_ENV') }}"
   tasks:
-    - name: check for kubectl
+    - name: check for kubectl in artifacts
       stat:
         path: "{{ artifacts_dir }}/kubectl"
       register: kubectl_local
       become: no
       delegate_to: localhost
       run_once: true
-    - name: modify kubectl permissions
-      file:
-        path: "{{ artifacts_dir }}/kubectl"
-        mode: '0755'
-      become: no
-      when: kubectl_local.stat.exists
-      delegate_to: localhost
-      run_once: true
-    - name: copy kubectl to /usr/local/bin
+    - name: install kubectl to virtualenv
       copy:
         src: "{{ artifacts_dir }}/kubectl"
-        dest: "/usr/local/bin/kubectl"
-      when: kubectl_local.stat.exists
-      become: yes
-      ignore_errors: yes
-      register: kubectl_copied
-      delegate_to: localhost
-      run_once: true
-    - name: check for copied kubectl
-      stat:
-        path: "/usr/local/bin/kubectl"
-      register: kubectl_system
-      delegate_to: localhost
-      run_once: true
-    - name: modify kubectl permissions
-      file:
-        path: "/usr/local/bin/kubectl"
-        owner: root
-        group: root
+        dest: "{{ venv_dir }}/bin/kubectl"
         mode: '0755'
-      become: yes
-      ignore_errors: yes
-      when: kubectl_system.stat.exists
+      become: no
       delegate_to: localhost
       run_once: true
-    - name: manually move kubectl binary
+      when: kubectl_local.stat.exists and venv_dir != ''
+    - name: kubectl location
       debug:
-        msg: "Unable to move kubectl, run: sudo cp {{ artifacts_dir | realpath }}/kubectl /usr/local/bin"
-      when: kubectl_copied is failed
+        msg: >-
+          {{ 'kubectl installed to ' ~ venv_dir ~ '/bin/kubectl'
+             if venv_dir != ''
+             else 'No virtualenv detected. kubectl is at ' ~ artifacts_dir ~ '/kubectl' }}
       delegate_to: localhost
       run_once: true
   tags:
