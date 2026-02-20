@@ -125,7 +125,12 @@ def load_config():
                                 config[k] = v
                     break
 
-    if not config["api_url"] or not config["api_key"]:
+    # Detect unconfigured: empty values or placeholder templates from config.example
+    api_url = config["api_url"]
+    api_key = config["api_key"]
+    if (not api_url or not api_key
+            or "<" in api_url or "<" in api_key
+            or api_key == "CONSUMER_KEY:TOKEN_KEY:TOKEN_SECRET"):
         # Return gracefully so ansible doesn't fail when MAAS isn't configured.
         # This allows the dynamic inventory to coexist with static inventory
         # in ansible.cfg without errors for users who don't use MAAS.
