@@ -10,7 +10,7 @@
 # documentation:
 #   https://docs.ansible.com/ansible/latest/user_guide/playbooks.html
 
-- hosts: kube-node
+- hosts: kube_node
   become: yes
   tasks:
   - name: install cowsay

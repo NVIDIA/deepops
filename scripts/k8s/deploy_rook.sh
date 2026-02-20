@@ -72,7 +72,7 @@ function delete_rook() {
   kubectl -n rook-ceph delete storageclass rook-ceph-block
   kubectl delete ns rook-ceph-system
   kubectl delete ns rook-ceph
-  ansible k8s-cluster -b -m file -a "path=/var/lib/rook state=absent"
+  ansible k8s_cluster -b -m file -a "path=/var/lib/rook state=absent"
 }
 
 

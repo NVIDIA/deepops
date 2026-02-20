@@ -107,7 +107,7 @@ users:
 
 ################################################################################
 # SSH HARDENING                                                                #
-#   dev-sec.ssh-hardening role called from users playbook                      #
+#   devsec.hardening role called from users playbook                           #
 ################################################################################
 
 ssh_client_hardening: false
@@ -146,7 +146,7 @@ nvidia_driver_force_install: false
 # CONTAINER RUNTIME                                                            #
 ################################################################################
 # Docker configuration
-# Playbook: docker, nvidia-docker, k8s-cluster
+# Playbook: docker, nvidia-docker, k8s_cluster
 #
 # For supported Docker versions, see: submodules/kubespray/roles/container-engine/docker/vars/*
 docker_install: yes

@@ -5,7 +5,7 @@
 # Ideally this is run out of the DeepOps repo used to deploy the cluster
 # However, this script will also work best-effort for any K8s cluster, DeepOps or otherwise
 # Requirements for this script are a working "kubectl" and ideally a working "helm"
-# Optionally, a working "ansible" with a config/inventory file that has kubernetes node defined in a kube-node group
+# Optionally, a working "ansible" with a config/inventory file that has kubernetes node defined in a kube_node group
 
 # Source common libraries and env variables
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -25,12 +25,12 @@ git log --pretty=oneline | head -n 20 > ${logdir}/git-log.log
 ansible --version
 
 # GPU configuration
-ansible kube-node -ba "nvidia-smi" -vv > ${logdir}/nvidia-smi.log
-ansible kube-node -ba "cat /etc/nvidia/gridd.conf" -vv > ${logdir}/vgpu-gridd.conf.log
+ansible kube_node -ba "nvidia-smi" -vv > ${logdir}/nvidia-smi.log
+ansible kube_node -ba "cat /etc/nvidia/gridd.conf" -vv > ${logdir}/vgpu-gridd.conf.log
 
 # Docker configuration
-ansible kube-node -ba "docker info" -vv > ${logdir}/docker-info.log
-ansible kube-node -ba "cat /etc/docker/daemon.json" -vv > ${logdir}/docker-daemon.log
+ansible kube_node -ba "docker info" -vv > ${logdir}/docker-info.log
+ansible kube_node -ba "cat /etc/docker/daemon.json" -vv > ${logdir}/docker-daemon.log
 
 # Kubectl (Generic for any Kubernetes cluster)
 kubectl version
@@ -70,7 +70,7 @@ helm list -aA > ${logdir}/helm-list.log
 
 # DCGM example output / metrics
 # Collect metrics from all nodes for debug
-ansible kube-node -vv -bm raw -a "curl http://127.0.0.1:9400/metrics" > ${logdir}/dcgm-metrics.log
+ansible kube_node -vv -bm raw -a "curl http://127.0.0.1:9400/metrics" > ${logdir}/dcgm-metrics.log
 
 # Packaging
 name="config/k8s-debug-${timestamp}.tgz"
