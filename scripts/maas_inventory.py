@@ -3,7 +3,7 @@
 
 Queries a Canonical MAAS server's REST API and generates Ansible inventory
 based on machine tags. Machines tagged with Ansible group names (e.g.,
-"slurm-master", "kube-node") are placed into those groups automatically.
+"slurm-master", "kube_node") are placed into those groups automatically.
 
 Only machines in the "Deployed" state (status=6) are included.
 
@@ -38,10 +38,12 @@ import uuid
 from pathlib import Path
 
 # DeepOps group hierarchy: parent -> list of child groups.
-# Tags in MAAS should match "leaf" group names (e.g., slurm-master, kube-node).
-# These parent groups are auto-created using Ansible's "children" mechanism.
+# Tags in MAAS should match "leaf" group names. Preferred K8s tags use
+# underscores (kube_control_plane, kube_node); old hyphenated tags
+# (kube-master, kube-node) are accepted via TAG_ALIASES below.
+# Slurm groups retain hyphens (slurm-master, slurm-node).
 GROUP_CHILDREN = {
-    "k8s-cluster": ["kube-master", "kube-node"],
+    "k8s_cluster": ["kube_control_plane", "kube_node"],
     "slurm-cluster": [
         "slurm-master", "slurm-node", "slurm-cache",
         "slurm-nfs", "slurm-metric", "slurm-login",
@@ -50,6 +52,14 @@ GROUP_CHILDREN = {
     "slurm-nfs-client": ["slurm-node"],
     "slurm-metric": ["slurm-master"],
     "slurm-login": ["slurm-master"],
+}
+
+# Backward-compatible tag aliases: old MAAS tag name -> canonical group name.
+# Users can tag machines with either the old or new name.
+TAG_ALIASES = {
+    "kube-master": "kube_control_plane",
+    "kube-node": "kube_node",
+    "k8s-cluster": "k8s_cluster",
 }
 
 
@@ -115,12 +125,17 @@ def load_config():
                                 config[k] = v
                     break
 
-    if not config["api_url"]:
-        print("Error: MAAS_API_URL not configured", file=sys.stderr)
-        sys.exit(1)
-    if not config["api_key"]:
-        print("Error: MAAS_API_KEY not configured", file=sys.stderr)
-        sys.exit(1)
+    # Detect unconfigured: empty values or placeholder templates from config.example
+    api_url = config["api_url"]
+    api_key = config["api_key"]
+    if (not api_url or not api_key
+            or "<" in api_url or "<" in api_key
+            or api_key == "CONSUMER_KEY:TOKEN_KEY:TOKEN_SECRET"):
+        # Return gracefully so ansible doesn't fail when MAAS isn't configured.
+        # This allows the dynamic inventory to coexist with static inventory
+        # in ansible.cfg without errors for users who don't use MAAS.
+        config["_unconfigured"] = True
+        return config
 
     # Defaults
     if not config["ssh_user"]:
@@ -220,13 +235,14 @@ def build_inventory(config):
         inventory["_meta"]["hostvars"][hostname] = hostvars
         inventory["all"]["hosts"].append(hostname)
 
-        # Map tags to Ansible groups
+        # Map tags to Ansible groups (apply aliases for renamed K8s groups)
         for tag in tags:
-            if tag not in inventory:
-                inventory[tag] = {"hosts": [], "vars": {}}
-            elif "hosts" not in inventory[tag]:
-                inventory[tag]["hosts"] = []
-            inventory[tag]["hosts"].append(hostname)
+            group = TAG_ALIASES.get(tag, tag)
+            if group not in inventory:
+                inventory[group] = {"hosts": [], "vars": {}}
+            elif "hosts" not in inventory[group]:
+                inventory[group]["hosts"] = []
+            inventory[group]["hosts"].append(hostname)
 
     return inventory
 
@@ -241,6 +257,14 @@ def main():
     args = parser.parse_args()
 
     config = load_config()
+
+    # If MAAS is not configured, return empty inventory (no error)
+    if config.get("_unconfigured"):
+        if args.list:
+            print(json.dumps({"_meta": {"hostvars": {}}}))
+        else:
+            print(json.dumps({}))
+        return
 
     if args.list:
         inventory = build_inventory(config)
