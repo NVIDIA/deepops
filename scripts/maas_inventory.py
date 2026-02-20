@@ -193,6 +193,9 @@ def build_inventory(config):
     for parent, children in GROUP_CHILDREN.items():
         inventory[parent] = {"children": children, "hosts": []}
 
+    # Track group membership with sets to avoid O(n^2) dedup
+    group_members = {}
+
     for machine in machines:
         # Only include Deployed machines
         if machine.get("status") != 6:
@@ -242,7 +245,11 @@ def build_inventory(config):
                 inventory[group] = {"hosts": [], "vars": {}}
             elif "hosts" not in inventory[group]:
                 inventory[group]["hosts"] = []
-            inventory[group]["hosts"].append(hostname)
+            if group not in group_members:
+                group_members[group] = set()
+            if hostname not in group_members[group]:
+                group_members[group].add(hostname)
+                inventory[group]["hosts"].append(hostname)
 
     return inventory
 
