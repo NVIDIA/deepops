@@ -26,3 +26,7 @@ ssh_user: "ubuntu"
 # Only needed if target machines are on a private network that requires
 # jumping through a bastion host. Leave commented out for direct access.
 #ssh_bastion: "user@bastion-host"
+
+# Machines to manage (hostnames as they appear in MAAS)
+# Used by maas_deploy.sh for deploy/release operations
+#machines: "maas-worker maas-worker-2 maas-worker-3"
