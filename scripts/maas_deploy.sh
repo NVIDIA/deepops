@@ -15,7 +15,8 @@
 # Configuration:
 #   Reads config/maas-inventory.yml (same config as maas_inventory.py).
 #   Environment variables override config file values:
-#     MAAS_API_URL, MAAS_API_KEY, MAAS_MACHINES, MAAS_SSH_USER, MAAS_SSH_PROXY
+#     MAAS_API_URL, MAAS_API_KEY, MAAS_MACHINES, MAAS_SSH_USER,
+#     MAAS_SSH_BASTION (or MAAS_SSH_PROXY for full ProxyCommand override)
 #
 # Examples:
 #   ./scripts/maas_deploy.sh --os noble --profile k8s
@@ -69,11 +70,16 @@ load_config() {
                 api_url)     [[ -z "${MAAS_API_URL:-}" ]]  && MAAS_API_URL="$value" ;;
                 api_key)     [[ -z "${MAAS_API_KEY:-}" ]]   && MAAS_API_KEY="$value" ;;
                 ssh_user)    [[ -z "${MAAS_SSH_USER:-}" ]]  && MAAS_SSH_USER="$value" ;;
-                ssh_bastion) [[ -z "${MAAS_SSH_PROXY:-}" ]] && MAAS_SSH_PROXY="ssh -W %h:%p -q ${value}" ;;
+                ssh_bastion) [[ -z "${MAAS_SSH_PROXY:-}" && -z "${MAAS_SSH_BASTION:-}" ]] && MAAS_SSH_BASTION="$value" ;;
                 network)     [[ -z "${MAAS_NETWORK:-}" ]]   && MAAS_NETWORK="$value" ;;
                 machines)    [[ -z "${MAAS_MACHINES:-}" ]]  && MAAS_MACHINES="$value" ;;
             esac
         done < "$config_file"
+    fi
+
+    # Build SSH proxy from MAAS_SSH_BASTION if MAAS_SSH_PROXY not set directly
+    if [[ -z "${MAAS_SSH_PROXY:-}" && -n "${MAAS_SSH_BASTION:-}" ]]; then
+        MAAS_SSH_PROXY="ssh -W %h:%p -q ${MAAS_SSH_BASTION}"
     fi
 
     # Defaults for anything still unset
@@ -93,6 +99,12 @@ load_config() {
     if [[ -z "$MAAS_API_KEY" ]]; then
         echo "ERROR: MAAS_API_KEY not configured"
         echo "Set it in config/maas-inventory.yml or as an environment variable"
+        exit 1
+    fi
+
+    # Validate API key format: exactly 3 non-empty colon-separated parts
+    if [[ ! "$MAAS_API_KEY" =~ ^[^:]+:[^:]+:[^:]+$ ]]; then
+        echo "ERROR: MAAS_API_KEY must be in format consumer_key:token_key:token_secret"
         exit 1
     fi
 }
@@ -149,6 +161,7 @@ parse_args() {
 # --- MAAS API Helpers ---------------------------------------------------------
 
 maas_auth_header() {
+    # API key format already validated in load_config()
     local consumer_key token_key token_secret
     IFS=':' read -r consumer_key token_key token_secret <<< "$MAAS_API_KEY"
     local nonce timestamp
@@ -191,11 +204,10 @@ print(m['status'])
 
 get_ip() {
     local system_id="$1"
-    local network_filter="${MAAS_NETWORK:-}"
-    maas_get "/machines/${system_id}/" | python3 -c "
-import json, sys
+    maas_get "/machines/${system_id}/" | MAAS_NETWORK="${MAAS_NETWORK:-}" python3 -c "
+import json, os, sys
 m = json.load(sys.stdin)
-network = '${network_filter}'
+network = os.environ.get('MAAS_NETWORK', '')
 for iface in m.get('interface_set', []):
     for link in iface.get('links', []):
         ip = link.get('ip_address', '')
