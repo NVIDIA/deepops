@@ -209,10 +209,19 @@
       run_once: true
       when: local_uname.stdout == remote_uname.stdout
 
+    - name: ensure fetched kubectl is executable
+      file:
+        path: "{{ artifacts_dir }}/kubectl"
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
+      when: local_uname.stdout == remote_uname.stdout
+
     - name: get kubectl version for cross-platform download
       command: /usr/local/bin/kubectl version --client -o json
       register: kubectl_ver_json
       run_once: true
+      changed_when: false
       when: local_uname.stdout != remote_uname.stdout
 
     - name: download kubectl for ansible host platform
@@ -225,6 +234,8 @@
         dest: "{{ artifacts_dir }}/kubectl"
         mode: '0755'
         force: yes
+        checksum: "sha256:https://dl.k8s.io/release/{{ kubectl_ver }}/bin/{{ kubectl_os }}/{{ kubectl_arch }}/kubectl.sha256"
+      environment: "{{ proxy_env if proxy_env is defined else {} }}"
       delegate_to: localhost
       run_once: true
       when: local_uname.stdout != remote_uname.stdout
