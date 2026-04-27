@@ -63,8 +63,8 @@ def get_images(url='https://api.ngc.nvidia.com/v2/repos', number_tags=5):
 
 def update_yaml(images, yaml_file):
     with open(yaml_file, 'r') as fname:
-        config = yaml.load(fname.read(), Loader=yaml.FullLoader)
-    ui_config = yaml.load(config['data']['spawner_ui_config.yaml'], Loader=yaml.FullLoader)
+        config = yaml.safe_load(fname.read())
+    ui_config = yaml.safe_load(config['data']['spawner_ui_config.yaml'])
 
     # XXX: the yaml file doesn't read in properly due to the line 'spawner_ui_config.yaml: |'. So we pull it out and put it back later.
     config['data']['spawner_ui_config.yaml'] = ui_config

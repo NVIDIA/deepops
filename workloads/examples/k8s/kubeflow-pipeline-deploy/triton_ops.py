@@ -100,6 +100,6 @@ class TritonService(dsl.ResourceOp):
 
     super(TritonService, self).__init__(
       name=name,
-      k8s_resource=yaml.load(__TRITON_SERVICE_MANIFEST___),
+      k8s_resource=yaml.safe_load(__TRITON_SERVICE_MANIFEST___),
       action='create'
 )
