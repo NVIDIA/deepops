@@ -41,7 +41,7 @@ Example A:
 Example B:
 
     - name: "Deploy NetApp Trident"
-      hosts: kube-master
+      hosts: kube_control_plane
       become: true
       become_method: sudo
       roles:
@@ -50,7 +50,7 @@ Example B:
 Example C:
 
     - name: "Deploy NetApp Trident"
-      hosts: kube-master
+      hosts: kube_control_plane
       become: true
       become_method: sudo
       vars_files:
@@ -88,7 +88,7 @@ all:
       ip: 192.168.1.215
       access_ip: 192.168.1.215
   children:
-    kube-master:
+    kube_control_plane:
       hosts:
         mgmt01:
         mgmt02:

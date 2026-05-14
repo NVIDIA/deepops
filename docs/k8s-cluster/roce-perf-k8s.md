@@ -142,7 +142,7 @@ add switch PFC, ECN configuration
 
    ```bash
    # Modify the Ansible inventory file
-   # Especially the 'all', 'kube-master', 'etcd', 'kube-node' and 'k8s-cluster' sections
+   # Especially the 'all', 'kube_control_plane', 'etcd', 'kube_node' and 'k8s-cluster' sections
    vi config/inventory
    ```
 
@@ -159,10 +159,10 @@ add switch PFC, ECN configuration
    gpu02      ansible_host=192.168.2.11
    ...
 
-   [kube-master]
+   [kube_control_plane]
    mgmt01
 
-   [kube-node]
+   [kube_node]
    gpu01
    gpu02
 

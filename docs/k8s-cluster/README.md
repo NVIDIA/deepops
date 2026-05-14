@@ -123,7 +123,7 @@ Run the following script to create an administrative user and print out the dash
 
 #### NFS Client Provisioner
 
-The default behavior of DeepOps is to setup an NFS server on the first `kube-master` node. This temporary NFS server is used by the `nfs-client-provisioner` which is installed as the default StorageClass of a standard DeepOps deployment.
+The default behavior of DeepOps is to setup an NFS server on the first `kube_control_plane` node. This temporary NFS server is used by the `nfs-client-provisioner` which is installed as the default StorageClass of a standard DeepOps deployment.
 
 To use an existing nfs server server update the `k8s_nfs_server` and `k8s_nfs_export_path` variables in `config/group_vars/k8s-cluster.yml` and set the `k8s_deploy_nfs_server` to false in `config/group_vars/k8s-cluster.yml`. Additionally, the `k8s_nfs_mkdir` variable can be set to `false` if the export directory is already configured on the server.
 
@@ -207,9 +207,9 @@ delete  Legacy positional argument for delete. Same as -d flag.
 
 The services can be reached from the following addresses:
 
-- Grafana: http://\<kube-master\>:30200
-- Prometheus: http://\<kube-master\>:30500
-- Alertmanager: http://\<kube-master\>:30400
+- Grafana: http://\<kube_control_plane\>:30200
+- Prometheus: http://\<kube_control_plane\>:30500
+- Alertmanager: http://\<kube_control_plane\>:30400
 
 We deploy our monitoring services using the [prometheus-operator](https://github.com/prometheus-operator/prometheus-operator) project.
 For documentation on configuring and managing the monitoring services, please see the [prometheus-operator user guides](https://github.com/prometheus-operator/prometheus-operator/tree/master/Documentation/user-guides).
@@ -234,7 +234,7 @@ Follow the [ELK logging Guide](logging.md) to setup logging in the cluster.
 
 The service can be reached from the following address:
 
-- Kibana: http://\<kube-master\>:30700
+- Kibana: http://\<kube_control_plane\>:30700
 
 ### Container Registry
 
@@ -264,7 +264,7 @@ DeepOps uses [Kubespray](https://github.com/kubernetes-sigs/kubespray) to deploy
 
 ### Adding Nodes
 
-To add K8s nodes, modify the `config/inventory` file to include the new nodes under `[all]`. Then list the nodes as relevant under the `[kube-master]`, `[etcd]`, and `[kube-node]` sections. For example, if adding a new master node, list it under kube-master and etcd. A new worker node would go under kube-node.
+To add K8s nodes, modify the `config/inventory` file to include the new nodes under `[all]`. Then list the nodes as relevant under the `[kube_control_plane]`, `[etcd]`, and `[kube_node]` sections. For example, if adding a new control-plane node, list it under `kube_control_plane` and `etcd`. A new worker node would go under `kube_node`.
 
 Then run the Kubespray `scale.yml` playbook...
 

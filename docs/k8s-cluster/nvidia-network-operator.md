@@ -83,9 +83,9 @@ This playbook is developed and tested in following environments:
   gpu01      ansible_host=192.168.2.11
   gpu02      ansible_host=192.168.3.11
   ...
-  [kube-master]
+  [kube_control_plane]
   mgmt01
-  [kube-node]
+  [kube_node]
   gpu01
   gpu02
   ```

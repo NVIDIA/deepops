@@ -62,7 +62,7 @@ my-cluster-compute-02      ansible_host=10.0.0.3
 (Note that, by default, DeepOps will set the hostname of these machines to match the inventory hostname!
 If you don't want this, you can set `deepops_set_hostname: false` using the instructions in [the next section](#modifying-ansible-variables).)
 
-The example DeepOps inventory also includes groups for the different components of Kubernetes clusters (`kube-master`, `etcd`, and `kube-node`),
+The example DeepOps inventory also includes groups for the different components of Kubernetes clusters (`kube_control_plane`, `etcd`, and `kube_node`),
 and groups for the different components of Slurm clusters (`slurm-master` and `slurm-node`).
 These groups are used by DeepOps to determine which playbooks run on which nodes for each type of cluster,
 and you should add nodes to these groups based on how you want to lay out your cluster.

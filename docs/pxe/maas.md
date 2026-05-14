@@ -258,8 +258,8 @@ only need to tag leaf groups.
 
 | Tag | Ansible Group | Used By |
 |-----|--------------|---------|
-| `kube-master` | `[kube-master]` | K8s control plane |
-| `kube-node` | `[kube-node]` | K8s worker nodes |
+| `kube_control_plane` | `[kube_control_plane]` | K8s control plane |
+| `kube_node` | `[kube_node]` | K8s worker nodes |
 | `slurm-master` | `[slurm-master]` | Slurm head node |
 | `slurm-node` | `[slurm-node]` | Slurm compute nodes |
 | `slurm-nfs` | `[slurm-nfs]` | Slurm NFS server |
@@ -276,8 +276,8 @@ ansible-playbook -i scripts/maas_inventory.py playbooks/slurm-cluster.yml
 
 # Later, retag for K8s
 maas admin tag update-nodes slurm-master remove=<vm01_system_id>
-maas admin tag update-nodes kube-master add=<vm01_system_id>
-maas admin tag update-nodes kube-node add=<vm02_system_id> add=<vm03_system_id>
+maas admin tag update-nodes kube_control_plane add=<vm01_system_id>
+maas admin tag update-nodes kube_node add=<vm02_system_id> add=<vm03_system_id>
 
 # Run K8s deployment
 ansible-playbook -i scripts/maas_inventory.py playbooks/k8s-cluster.yml
