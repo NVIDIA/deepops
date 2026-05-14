@@ -56,9 +56,9 @@ roles:
 - src: robertdebock.kibana
   version: "1.2.6"
 
-- src: https://github.com/DeepOps/ansible-maas.git
+- src: https://github.com/mrlesmithjr/ansible-maas.git
   name: ansible-maas
-  version: '632fe9bd1e048b9abb717621dc2d76b19614327b'
+  version: '178a999c9bfc979ef32c42f4f59c034664df10d0'
 
 - src: https://github.com/DeepOps/ansible-role-chrony
   name: DeepOps.chrony
