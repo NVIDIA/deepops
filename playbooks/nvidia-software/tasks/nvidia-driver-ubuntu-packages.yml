@@ -1,0 +1,12 @@
+---
+- name: Select Ubuntu NVIDIA open kernel module packages
+  set_fact:
+    nvidia_driver_ubuntu_packages:
+    - "nvidia-headless-{{ _nvidia_driver_ubuntu_branch }}{{ _nvidia_driver_ubuntu_packages_suffix }}-open"
+    - "nvidia-utils-{{ _nvidia_driver_ubuntu_branch }}{{ _nvidia_driver_ubuntu_packages_suffix }}"
+    - "nvidia-headless-no-dkms-{{ _nvidia_driver_ubuntu_branch }}{{ _nvidia_driver_ubuntu_packages_suffix }}-open"
+    - "nvidia-kernel-source-{{ _nvidia_driver_ubuntu_branch }}{{ _nvidia_driver_ubuntu_packages_suffix }}-open"
+  vars:
+    _nvidia_driver_ubuntu_branch: "{{ nvidia_driver_ubuntu_branch | default(nvidia_driver_branch | default('515')) }}"
+    _nvidia_driver_ubuntu_packages_suffix: "{{ nvidia_driver_ubuntu_packages_suffix | default('-server') }}"
+  when: nvidia_driver_ubuntu_use_open_kernel_modules | default(false) | bool

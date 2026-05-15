@@ -140,6 +140,10 @@ gpu_clock_lock: "1507,1507"
 
 # Debugging var: force install NVIDIA driver even if GPU not detected
 nvidia_driver_force_install: false
+# Default NVIDIA driver branch for generic host driver installs.
+nvidia_driver_branch: "580"
+# Set true on Ubuntu systems that require NVIDIA open kernel modules.
+nvidia_driver_ubuntu_use_open_kernel_modules: false
 
 
 ################################################################################
