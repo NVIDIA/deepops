@@ -22,7 +22,7 @@
     include_role:
       name: nfs
     vars:
-    - nfs_is_server: yes
+      nfs_is_server: yes
     when: k8s_deploy_nfs_server
 
 - hosts: "k8s_cluster"
