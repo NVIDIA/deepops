@@ -84,7 +84,7 @@ Instructions for deploying a GPU cluster with Kubernetes
    # NOTE: If SSH requires a password, add: `-k`
    # NOTE: If sudo on remote machine requires a password, add: `-K`
    # NOTE: If SSH user is different than current user, add: `-u ubuntu`
-   ansible-playbook -l k8s-cluster playbooks/k8s-cluster.yml
+   ansible-playbook -l k8s_cluster playbooks/k8s-cluster.yml
    ```
 
    More information on Kubespray can be found in the official [Getting Started Guide](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md)
@@ -165,7 +165,7 @@ Deploy NetApp Astra Trident for services that require persistent storage (such a
    # NOTE: If SSH requires a password, add: `-k`
    # NOTE: If sudo on remote machine requires a password, add: `-K`
    # NOTE: If SSH user is different than current user, add: `-u ubuntu`
-   ansible-playbook -l k8s-cluster playbooks/k8s-cluster/netapp-trident.yml
+   ansible-playbook -l k8s_cluster playbooks/k8s-cluster/netapp-trident.yml
    ```
 
 3. Verify that Astra Trident is running.
@@ -272,7 +272,7 @@ Then run the Kubespray `scale.yml` playbook...
 # NOTE: If SSH requires a password, add: `-k`
 # NOTE: If sudo on remote machine requires a password, add: `-K`
 # NOTE: If SSH user is different than current user, add: `-u ubuntu`
-ansible-playbook -l k8s-cluster submodules/kubespray/scale.yml
+ansible-playbook -l k8s_cluster submodules/kubespray/scale.yml
 ```
 
 More information on this topic may be found in the [Kubespray docs](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md#adding-nodes).

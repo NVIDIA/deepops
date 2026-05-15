@@ -142,7 +142,7 @@ add switch PFC, ECN configuration
 
    ```bash
    # Modify the Ansible inventory file
-   # Especially the 'all', 'kube_control_plane', 'etcd', 'kube_node' and 'k8s-cluster' sections
+   # Especially the 'all', 'kube_control_plane', 'etcd', 'kube_node' and 'k8s_cluster' sections
    vi config/inventory
    ```
 
@@ -203,7 +203,7 @@ add switch PFC, ECN configuration
    # NOTE: If SSH requires a password, add: `-k`
    # NOTE: If sudo on remote machine requires a password, add: `-K`
    # NOTE: If SSH user is different than current user, add: `-u ubuntu`
-   ansible-playbook -l k8s-cluster playbooks/k8s-cluster.yml
+   ansible-playbook -l k8s_cluster playbooks/k8s-cluster.yml
    ```
 
    Please refer to [DeepOps Kubernetes Deployment Guidehere](https://github.com/NVIDIA/deepops/blob/master/docs/kubernetes-cluster.md) for more information.
@@ -252,7 +252,7 @@ add switch PFC, ECN configuration
    Run following script to deploy SRIOV RoCE functions:
 
    ```bash
-   nvidia@mgmt01:~/deepops_0322$ ansible-playbook -l k8s-cluster playbooks/k8s-cluster/roce.yaml
+   nvidia@mgmt01:~/deepops_0322$ ansible-playbook -l k8s_cluster playbooks/k8s-cluster/roce.yaml
    ```
 
    If using a different username and SSH key-based authentication haven't set up, try to use `-u <user> -k -K` when you run the script.

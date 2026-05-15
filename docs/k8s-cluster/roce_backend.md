@@ -106,7 +106,7 @@ The Role installing following components:
 ## Role deployment
 
 ```bash
-ansible-playbook -l k8s-cluster playbooks/k8s-cluster/roce.yaml
+ansible-playbook -l k8s_cluster playbooks/k8s-cluster/roce.yaml
 ```
 
 ## License

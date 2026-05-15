@@ -7,7 +7,7 @@
       deviceType: netdevice
       mtu: {{ mtu |int }}
       nodeSelector:
-        feature.node.kubernetes.io/network-sriov.capable: "true"
+        feature.node.kubernetes.io/pci-{{ vendor_id }}.present: "true"
       nicSelector:
         vendor: "{{ vendor_id }}"
         pfNames: ["{{ item.pf_name }}"]

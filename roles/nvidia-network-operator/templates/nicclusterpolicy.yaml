@@ -1,0 +1,22 @@
+---
+apiVersion: mellanox.com/v1alpha1
+kind: NicClusterPolicy
+metadata:
+  name: nic-cluster-policy
+spec:
+  secondaryNetwork:
+    cniPlugins:
+      image: plugins
+      repository: nvcr.io/nvidia/mellanox
+      version: {{ nvidia_network_operator_image_tag }}
+    multus:
+      image: multus-cni
+      repository: nvcr.io/nvidia/mellanox
+      version: {{ nvidia_network_operator_image_tag }}
+{% if nvidia_network_operator_ipam_type == "nv-ipam" %}
+  nvIpam:
+    image: nvidia-k8s-ipam
+    repository: nvcr.io/nvidia/mellanox
+    version: {{ nvidia_network_operator_image_tag }}
+    enableWebhook: false
+{% endif %}
