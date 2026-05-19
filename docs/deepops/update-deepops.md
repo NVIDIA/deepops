@@ -160,6 +160,8 @@ In particular,
 
 Additionally, please note that Kubespray can only upgrade between one minor version of Kubernetes at a time.
 This means that you may need to upgrade multiple times between your current version and your desired version of Kubernetes.
+Other cluster components managed by Kubespray may have similar staged-upgrade requirements.
+For example, the network plugin version installed by an older DeepOps release may need to be upgraded through an intermediate DeepOps/Kubespray release before a newer Kubespray release will accept it.
 
 For example, to upgrade from Kubernetes version 1.19.9 and 1.21.1, you might use a workflow like this:
 

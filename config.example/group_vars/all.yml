@@ -263,6 +263,13 @@ maas_single_node_install: true
 
 maas_kvm_management: false
 
+# Avoid installing python-libmaas via pip: it shadows the packaged MAAS CLI
+# with /usr/local/bin/maas, which breaks DeepOps' MAAS operational workflow.
+maas_python_reqs:
+  - jinja2
+  - oauth
+  - pyyaml
+
 ################################################################################
 # NVIDIA Datacenter GPU Manager                                                #
 ################################################################################
