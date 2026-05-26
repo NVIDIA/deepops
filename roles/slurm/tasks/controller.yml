@@ -149,16 +149,30 @@
 - name: create account
   command: sacctmgr -i add account compute-account Description="Compute Accounts" Organization="Prestige"
   register: create_account_result
-  failed_when: "create_account_result.rc != 0 and 'Nothing new added' not in create_account_result.stdout"
-  changed_when: "'Nothing new added' not in create_account_result.stdout"
+  failed_when: >
+    create_account_result.rc != 0 and
+    'Nothing new added' not in create_account_result.stdout and
+    'Nothing added' not in create_account_result.stdout and
+    'Already existing' not in create_account_result.stdout
+  changed_when: >
+    'Nothing new added' not in create_account_result.stdout and
+    'Nothing added' not in create_account_result.stdout and
+    'Already existing' not in create_account_result.stdout
   environment:
     PATH: '{{ slurm_install_prefix }}/bin:{{ ansible_env.PATH }}'
 
 - name: create users
   command: sacctmgr -i create user {{ item }} account=compute-account adminlevel=None
   register: create_user_result
-  failed_when: "create_user_result.rc != 0 and 'Nothing new added' not in create_user_result.stdout"
-  changed_when: "'Nothing new added' not in create_user_result.stdout"
+  failed_when: >
+    create_user_result.rc != 0 and
+    'Nothing new added' not in create_user_result.stdout and
+    'Nothing added' not in create_user_result.stdout and
+    'Already existing' not in create_user_result.stdout
+  changed_when: >
+    'Nothing new added' not in create_user_result.stdout and
+    'Nothing added' not in create_user_result.stdout and
+    'Already existing' not in create_user_result.stdout
   with_items:
     - "{{ user }}"
   environment:

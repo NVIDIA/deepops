@@ -43,7 +43,7 @@ A local checkout of the [Kubeflow manifests](https://github.com/kubeflow/manifes
 
 The services can be reached from the following address:
 
-- Kubeflow: http://\<kube-master\>:31380
+- Kubeflow: http://\<kube_control_plane\>:31380
 
 ## Login information
 

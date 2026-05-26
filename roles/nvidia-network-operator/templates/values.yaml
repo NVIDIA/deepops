@@ -7,21 +7,3 @@ nfd:
   enabled: true
 sriovNetworkOperator:
   enabled: true
-
-# NicClusterPolicy CR values:
-deployCR: true
-ofedDriver:
-  deploy: false
-rdmaSharedDevicePlugin:
-  deploy: false
-sriovDevicePlugin:
-  deploy: false
-
-secondaryNetwork:
-  deploy: true
-  multus:
-    deploy: true
-  cniPlugins:
-    deploy: true
-  ipamPlugin:
-    deploy: true

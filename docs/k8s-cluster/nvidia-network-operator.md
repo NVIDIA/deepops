@@ -83,9 +83,9 @@ This playbook is developed and tested in following environments:
   gpu01      ansible_host=192.168.2.11
   gpu02      ansible_host=192.168.3.11
   ...
-  [kube-master]
+  [kube_control_plane]
   mgmt01
-  [kube-node]
+  [kube_node]
   gpu01
   gpu02
   ```
@@ -123,7 +123,7 @@ This playbook is developed and tested in following environments:
   # NOTE: If SSH requires a password, add: `-k`
   # NOTE: If sudo on remote machine requires a password, add: `-K`
   # NOTE: If SSH user is different than current user, add: `-u ubuntu`
-  ansible-playbook -l k8s-cluster playbooks/k8s-cluster.yml
+  ansible-playbook -l k8s_cluster playbooks/k8s-cluster.yml
   ```
 
   Please refer to [DeepOps Kubernetes Deployment Guidehere](https://github.com/NVIDIA/deepops/blob/master/docs/kubernetes-cluster.md) for more information.

@@ -9,6 +9,7 @@
       systemctl set-property sshd.service DeviceAllow="/dev/nvidiactl"
     fi
   args:
+    executable: /bin/bash
     creates: "{{ '/etc/systemd/system.control/sshd.service.d/50-DeviceAllow.conf' \
                  if ansible_os_family == 'RedHat' else \
                  '/etc/systemd/system.control/ssh.service.d/50-DeviceAllow.conf' }}"

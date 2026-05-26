@@ -4,7 +4,7 @@
 
 - name: label the nodes  # noqa command-instead-of-shell
   shell: kubectl label --overwrite nodes {{ item }} node-role.kubernetes.io/worker=
-  with_items: "{{ groups['kube-node'] }}"
+  with_items: "{{ groups['kube_node'] }}"
   changed_when: false
 
 ## required as the DeepOps openshift role doesn't work
@@ -20,7 +20,7 @@
 - name: Deploy network operator helm chart
   kubernetes.core.helm:
     name: network-operator
-    release_namespace: network-operator
+    release_namespace: "{{ nvidia_network_operator_namespace }}"
     chart_version: "{{ nvidia_network_operator_version }}"
     chart_ref: mellanox/network-operator
     create_namespace: true
@@ -28,7 +28,41 @@
     wait: true
     values: "{{ lookup('template', 'values.yaml') | from_yaml }}"
 
-- name: Create network node poliy
+- name: Create NicClusterPolicy
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'nicclusterpolicy.yaml') | from_yaml }}"
+  run_once: true
+
+- name: Wait for NVIDIA IPAM CRD
+  kubernetes.core.k8s_info:
+    api_version: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+    name: ippools.nv-ipam.nvidia.com
+  register: nvidia_ipam_crd
+  until: nvidia_ipam_crd.resources | length > 0
+  retries: 30
+  delay: 10
+  when: nvidia_network_operator_ipam_type == "nv-ipam"
+  run_once: true
+
+- name: Create NVIDIA IPAM pools
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: nv-ipam.nvidia.com/v1alpha1
+      kind: IPPool
+      metadata:
+        name: "{{ item.ip_pool_name | default(item.res_name) }}"
+        namespace: "{{ nvidia_network_operator_namespace }}"
+      spec:
+        subnet: "{{ item.ip_addr }}"
+        perNodeBlockSize: "{{ nvidia_network_operator_ipam_per_node_block_size | int }}"
+  with_items: "{{ intf_resources }}"
+  when: nvidia_network_operator_ipam_type == "nv-ipam"
+  run_once: true
+
+- name: Create network node policy
   include_tasks: sriovnetworknodepolicy.yaml
   with_items: "{{ intf_resources }}"
 

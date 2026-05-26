@@ -14,6 +14,10 @@
       include_role:
         name: facts
 
+    - name: configure Ubuntu NVIDIA driver packages
+      include_tasks: tasks/nvidia-driver-ubuntu-packages.yml
+      when: ansible_distribution == 'Ubuntu'
+
     - name: install nvidia driver
       include_role:
         name: nvidia.nvidia_driver

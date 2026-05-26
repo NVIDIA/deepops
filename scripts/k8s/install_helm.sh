@@ -35,7 +35,7 @@ case "$ID" in
         ;;
 esac
 
-helm_version=$(helm version --short)
+helm_version=$(helm version --short 2>/dev/null || true)
 helm_min_installed=$(echo -e "${HELM_MINIMUM_VERSION}\n${helm_version}"| sort -V | head -n 1)
 if [ "${HELM_MINIMUM_VERSION}" != "${helm_min_installed}" ]; then
     if [ "${helm_version}" != "" ]; then
@@ -48,6 +48,8 @@ if [ "${HELM_MINIMUM_VERSION}" != "${helm_min_installed}" ]; then
     mkdir -p ${HELM_INSTALL_DIR}
     HELM_INSTALL_DIR=${HELM_INSTALL_DIR} DESIRED_VERSION=v3.17.1 /var/tmp/get_helm.sh # Should match: config/group_vars/k8s-cluster.yml:helm_version:
 fi
+
+sudo chmod 0755 "${HELM_INSTALL_DIR}/helm"
 
 # Display the helm version for better debug
 helm version

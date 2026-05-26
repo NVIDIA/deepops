@@ -140,6 +140,10 @@ gpu_clock_lock: "1507,1507"
 
 # Debugging var: force install NVIDIA driver even if GPU not detected
 nvidia_driver_force_install: false
+# Default NVIDIA driver branch for generic host driver installs.
+nvidia_driver_branch: "580"
+# Set true on Ubuntu systems that require NVIDIA open kernel modules.
+nvidia_driver_ubuntu_use_open_kernel_modules: false
 
 
 ################################################################################
@@ -249,7 +253,7 @@ maas_adminusers:
 maas_dns_domain: 'deepops.local'
 maas_region_controller: '192.168.1.1'
 maas_region_controller_url: 'http://{{ maas_region_controller }}:5240/MAAS'
-maas_repo: 'ppa:maas/2.8'
+maas_repo: 'ppa:maas/3.5'
 
 # Defines if maas user should generate ssh keys
 # Usable for remote KVM/libvirt power actions
@@ -257,7 +261,14 @@ maas_setup_user: false
 
 maas_single_node_install: true
 
-maas_kvm: false
+maas_kvm_management: false
+
+# Avoid installing python-libmaas via pip: it shadows the packaged MAAS CLI
+# with /usr/local/bin/maas, which breaks DeepOps' MAAS operational workflow.
+maas_python_reqs:
+  - jinja2
+  - oauth
+  - pyyaml
 
 ################################################################################
 # NVIDIA Datacenter GPU Manager                                                #
@@ -305,4 +316,3 @@ standalone_container_registry_port: "5000"
 ngc_ready_cuda_container: "nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04"
 ngc_ready_pytorch: "nvcr.io/nvidia/pytorch:24.04-py3"
 ngc_ready_tensorflow: "nvcr.io/nvidia/tensorflow:24.04-tf2-py3"
-

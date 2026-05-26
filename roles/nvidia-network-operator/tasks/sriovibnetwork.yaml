@@ -9,14 +9,8 @@
       networkNamespace: "default"
       ipam: |
         {
-          "type": "whereabouts",
-          "datastore": "kubernetes",
-          "kubernetes": {
-            "kubeconfig": "/etc/cni/net.d/whereabouts.d/whereabouts.kubeconfig"
-           },
-          "range": "{{ item.ip_addr }}",
-          "log_file": "/var/log/whereabouts.log",
-          "log_level": "info"
+          "type": "{{ nvidia_network_operator_ipam_type }}",
+          "poolName": "{{ item.ip_pool_name | default(item.res_name) }}"
         }
   k8s:
     state: present

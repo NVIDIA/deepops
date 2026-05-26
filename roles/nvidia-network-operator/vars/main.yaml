@@ -6,8 +6,12 @@
 # if_name must match k8s network annotation name
 #
 
-nvidia_network_operator_version: "1.2.0"
-nvidia_network_operator_url: "https://mellanox.github.io/network-operator"
+nvidia_network_operator_version: "26.1.1"
+nvidia_network_operator_image_tag: "network-operator-v{{ nvidia_network_operator_version }}"
+nvidia_network_operator_namespace: "network-operator"
+nvidia_network_operator_ipam_type: "nv-ipam"
+nvidia_network_operator_ipam_per_node_block_size: "{{ num_vf }}"
+nvidia_network_operator_url: "https://helm.ngc.nvidia.com/nvidia"
 mpi_operator_version: "v2beta1"
 mpi_raw_url: "https://raw.githubusercontent.com/kubeflow/mpi-operator/master/deploy/v2beta1"
 

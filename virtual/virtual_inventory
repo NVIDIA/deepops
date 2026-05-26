@@ -15,19 +15,19 @@ virtual-gpu01 ansible_host=10.0.0.6 ip=10.0.0.6
 ######
 # KUBERNETES
 ######
-[kube-master]
+[kube_control_plane]
 virtual-mgmt01
 
 [etcd]
 virtual-mgmt01
 
-[kube-node]
+[kube_node]
 virtual-mgmt01
 virtual-gpu01
 
-[k8s-cluster:children]
-kube-master 	 
-kube-node 	 
+[k8s_cluster:children]
+kube_control_plane
+kube_node
 
 ######
 # SLURM
