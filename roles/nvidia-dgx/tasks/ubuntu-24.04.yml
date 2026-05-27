@@ -1,0 +1,92 @@
+---
+- name: Include DGX OS 7 variables
+  include_vars: ubuntu-24.04.yml
+
+- name: Determine DGX OS 7 platform package set
+  set_fact:
+    dgx_os7_platform: "{{ item }}"
+  loop: "{{ dgx_os7_platforms }}"
+  when: ansible_product_name is search(item.match)
+
+- name: Fail if DGX OS 7 platform package set is unknown
+  fail:
+    msg: "Unsupported DGX model for Ubuntu 24.04 DGX OS 7 role path: {{ ansible_product_name }}"
+  when: dgx_os7_platform is not defined
+
+- name: Create temporary DGX OS 7 repository archive path
+  tempfile:
+    state: file
+    suffix: -dgx-repo-files.tgz
+  register: dgx_os7_repo_archive
+
+- name: Download DGX OS 7 repository files
+  get_url:
+    url: "{{ dgx_os7_repo_files_url }}"
+    dest: "{{ dgx_os7_repo_archive.path }}"
+    mode: "0644"
+
+- name: Install DGX OS 7 repository files
+  unarchive:
+    src: "{{ dgx_os7_repo_archive.path }}"
+    dest: /
+    remote_src: true
+
+- name: Remove temporary DGX OS 7 repository archive
+  file:
+    path: "{{ dgx_os7_repo_archive.path }}"
+    state: absent
+
+- name: Update apt cache for DGX OS 7 repositories
+  apt:
+    update_cache: yes
+
+- name: Upgrade packages for DGX OS 7
+  apt:
+    upgrade: dist
+  when: dgx_os7_upgrade_packages
+
+- name: Install DGX OS 7 system packages
+  apt:
+    name: "{{ dgx_os7_system_packages + ([dgx_os7_station_package] if dgx_os7_platform.station else []) }}"
+    state: present
+    update_cache: yes
+
+- name: Install DGX OS 7 kernel tools and peer memory loader
+  apt:
+    name:
+      - "{{ dgx_os7_platform.linux_tools_package }}"
+      - nvidia-peermem-loader
+    state: present
+    update_cache: yes
+
+- name: Install DGX OS 7 NVIDIA driver packages
+  apt:
+    name: "{{ dgx_os7_driver_packages + (dgx_os7_fabricmanager_packages if dgx_os7_platform.nvswitch else []) + (dgx_os7_nvlink5_packages if dgx_os7_platform.nvlink5 else []) + (dgx_os7_imex_packages if dgx_os7_platform.imex else []) }}"
+    state: present
+    update_cache: yes
+  register: install_driver
+  notify: reboot after driver install
+  when: dgx_os7_install_driver
+
+- name: Disable unattended upgrades for DGX OS 7
+  apt:
+    name: unattended-upgrades
+    state: absent
+    purge: yes
+  when: dgx_os7_disable_unattended_upgrades
+
+- name: Populate DGX OS 7 service facts
+  service_facts:
+
+- name: Build DGX OS 7 service list
+  set_fact:
+    dgx_os7_enabled_services: "{{ dgx_os7_base_services + (dgx_os7_fabricmanager_services if dgx_os7_platform.nvswitch else []) + (dgx_os7_imex_services if dgx_os7_platform.imex else []) }}"
+
+- name: Enable available DGX OS 7 services
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  loop: "{{ dgx_os7_enabled_services }}"
+  when: item in ansible_facts.services

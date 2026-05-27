@@ -1,0 +1,139 @@
+---
+- name: Determine Red Hat DGX platform package set
+  set_fact:
+    dgx_redhat_platform: "{{ item }}"
+  loop: "{{ dgx_redhat_platforms }}"
+  when:
+    - ansible_product_name is search(item.match)
+    - ansible_distribution_major_version in item.supported_major_versions
+
+- name: Fail if Red Hat DGX platform package set is unknown
+  fail:
+    msg: "Unsupported DGX model for EL{{ ansible_distribution_major_version }} DGX role path: {{ ansible_product_name }}"
+  when: dgx_redhat_platform is not defined
+
+- name: Enable Red Hat subscription repositories for DGX Software Stack
+  command: "subscription-manager repos --enable={{ item }}"
+  loop: "{{ dgx_redhat_subscription_repos[ansible_distribution_major_version] }}"
+  changed_when: false
+  when:
+    - dgx_redhat_manage_subscription_repos
+    - ansible_distribution == 'RedHat'
+
+- name: Enable Rocky Linux CRB repository for DGX Software Stack
+  command: dnf config-manager --set-enabled crb
+  changed_when: false
+  when:
+    - ansible_distribution == 'Rocky'
+    - ansible_distribution_major_version == '9'
+
+- name: Install NVIDIA DGX repository setup package
+  dnf:
+    name: "{{ dgx_redhat_repo_setup_rpms[ansible_distribution_major_version] }}"
+    state: present
+    disable_gpg_check: yes
+
+- name: Upgrade Red Hat DGX Software Stack packages
+  dnf:
+    name: "*"
+    state: latest
+    nobest: yes
+  when: dgx_redhat_upgrade_packages
+  tags: skip_ansible_lint
+
+- name: Install EL9 kernel development packages for DGX driver builds
+  dnf:
+    name:
+      - "kernel-devel-{{ ansible_kernel }}"
+      - "kernel-headers-{{ ansible_kernel }}"
+    state: present
+  when: ansible_distribution_major_version == '9'
+
+- name: Install Red Hat DGX configuration group
+  dnf:
+    name: "@{{ dgx_redhat_platform.configuration_group }}"
+    state: present
+
+- name: Configure Red Hat DGX driver facts
+  set_fact:
+    dgx_redhat_driver_profile: "{{ 'fm' if dgx_redhat_platform.nvswitch else 'default' }}"
+    dgx_redhat_driver_stream: "{{ dgx_redhat_driver_branch }}{{ '-open' if dgx_redhat_use_open_kernel_modules else '' }}"
+
+- name: Configure Red Hat DGX driver profile list
+  set_fact:
+    dgx_redhat_driver_profiles: >-
+      {{
+        [dgx_redhat_driver_profile, 'src']
+        if ansible_distribution_major_version == '8'
+        and not dgx_redhat_use_open_kernel_modules
+        and 'dkms' not in dgx_redhat_driver_stream
+        else [dgx_redhat_driver_profile]
+      }}
+
+- name: Configure Red Hat DGX driver module specification
+  set_fact:
+    dgx_redhat_driver_module_spec: >-
+      nvidia-driver:{{ dgx_redhat_driver_stream }}/{{ '{' ~ (dgx_redhat_driver_profiles | join(',')) ~ '}' if (dgx_redhat_driver_profiles | length) > 1 else dgx_redhat_driver_profiles[0] }}
+
+- name: Install Red Hat DGX NVIDIA driver module
+  command: "dnf module install --nobest -y {{ dgx_redhat_driver_module_spec }}"
+  register: dgx_redhat_driver_module_install
+  changed_when: "'Nothing to do' not in dgx_redhat_driver_module_install.stdout"
+  notify: reboot after driver install
+  when: dgx_redhat_install_driver
+
+- name: Mark Red Hat DGX driver install state for reboot handler
+  set_fact:
+    install_driver:
+      changed: "{{ dgx_redhat_driver_module_install.changed | default(false) }}"
+  when: dgx_redhat_install_driver
+
+- name: Install Red Hat DGX driver support packages
+  dnf:
+    name: "{{ dgx_redhat_driver_support_packages + (dgx_redhat_fabricmanager_packages if dgx_redhat_platform.nvswitch else dgx_redhat_non_nvswitch_packages) + (dgx_redhat_nvlink5_packages if dgx_redhat_platform.nvlink5 else []) }}"
+    state: present
+  when: dgx_redhat_install_driver
+
+- name: Install Red Hat DGX Station extra driver packages
+  dnf:
+    name: "{{ dgx_redhat_station_packages }}"
+    state: present
+  when:
+    - dgx_redhat_install_driver
+    - dgx_redhat_platform.station
+
+- name: Install Red Hat DGX Docker CE
+  dnf:
+    name: docker-ce
+    state: present
+    allowerasing: yes
+  when:
+    - dgx_redhat_install_container_runtime
+    - dgx_redhat_install_docker_ce
+
+- name: Install Red Hat DGX NVIDIA Container Runtime group
+  dnf:
+    name: "@NVIDIA Container Runtime"
+    state: present
+    allowerasing: yes
+  notify:
+    - restart docker
+  when: dgx_redhat_install_container_runtime
+
+- name: Install Red Hat DGX optional cachefilesd configuration
+  dnf:
+    name: nvidia-conf-cachefilesd
+    state: present
+  when: dgx_redhat_install_cachefilesd
+
+- name: Populate Red Hat DGX service facts
+  service_facts:
+
+- name: Enable available Red Hat DGX services
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  loop: "{{ dgx_redhat_services }}"
+  when: item in ansible_facts.services

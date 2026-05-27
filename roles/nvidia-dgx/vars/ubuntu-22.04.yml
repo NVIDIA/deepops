@@ -1,0 +1,115 @@
+---
+dgx_os6_repo_files_url: https://repo.download.nvidia.com/baseos/ubuntu/jammy/dgx-repo-files.tgz
+
+dgx_os6_upgrade_packages: false
+dgx_os6_install_driver: true
+dgx_os6_install_container_runtime: true
+dgx_os6_install_nvsm: true
+dgx_os6_install_admin_packages: true
+dgx_os6_install_development_packages: true
+dgx_os6_disable_unattended_upgrades: true
+dgx_os6_install_ipmisol: true
+dgx_os6_install_logrotate: true
+
+dgx_os6_driver_branch: "550"
+
+dgx_os6_platforms:
+  - match: "DGX-1"
+    nvswitch: false
+    config_packages:
+      - dgx1-system-configurations
+      - dgx1-system-tools
+      - dgx1-system-tools-extra
+  - match: "DGX-2"
+    nvswitch: true
+    config_packages:
+      - dgx2-system-configurations
+      - dgx2-system-tools
+      - dgx2-system-tools-extra
+  - match: "DGX[ -]?A100|DGXA100"
+    nvswitch: true
+    config_packages:
+      - dgx-a100-system-configurations
+      - dgx-a100-system-tools
+      - dgx-a100-system-tools-extra
+      - "nvidia-utils-{{ dgx_os6_driver_branch }}-server"
+  - match: "DGX[ -]?H100|DGXH100"
+    nvswitch: true
+    config_packages:
+      - dgx-h100-system-configurations
+      - dgx-h100-system-tools
+      - dgx-h100-system-tools-extra
+      - "nvidia-utils-{{ dgx_os6_driver_branch }}-server"
+      - nvfwupd
+  - match: "DGX[ -]?H200|DGXH200"
+    nvswitch: true
+    config_packages:
+      - dgx-h200-system-configurations
+      - dgx-h200-system-tools
+      - dgx-h200-system-tools-extra
+      - "nvidia-utils-{{ dgx_os6_driver_branch }}-server"
+      - nvfwupd
+
+dgx_os6_common_packages:
+  - linux-tools-nvidia
+  - nvidia-peermem-loader
+
+dgx_os6_driver_packages:
+  - "nvidia-driver-{{ dgx_os6_driver_branch }}-server"
+  - "linux-modules-nvidia-{{ dgx_os6_driver_branch }}-server-nvidia"
+  - "libnvidia-nscq-{{ dgx_os6_driver_branch }}"
+  - nvidia-modprobe
+  - nv-persistence-mode
+
+dgx_os6_fabricmanager_packages:
+  - "nvidia-fabricmanager-{{ dgx_os6_driver_branch }}"
+  - nvidia-fm-enable
+
+dgx_os6_container_packages:
+  - docker-ce
+  - nvidia-container-toolkit
+  - nv-docker-options
+
+dgx_os6_nvsm_packages:
+  - nvsm
+  - nvidia-motd
+
+dgx_os6_admin_packages:
+  - chrpath
+  - cifs-utils
+  - fping
+  - gdisk
+  - iperf
+  - ipmitool
+  - lsscsi
+  - net-tools
+  - nfs-common
+  - quota
+  - rasdaemon
+  - pm-utils
+  - samba-common
+  - samba-libs
+  - sysstat
+  - vlan
+
+dgx_os6_development_packages:
+  - build-essential
+  - automake
+  - bison
+  - cmake
+  - dpatch
+  - flex
+  - gcc-multilib
+  - gdb
+  - g++-multilib
+  - libelf-dev
+  - libltdl-dev
+  - linux-tools-generic
+  - m4
+  - swig
+
+dgx_os6_services:
+  - dcgm.service
+  - nvidia-dcgm.service
+  - nvidia-persistenced.service
+  - nvidia-fabricmanager.service

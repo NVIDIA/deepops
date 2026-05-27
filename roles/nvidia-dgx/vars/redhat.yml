@@ -3,3 +3,115 @@ dgx_repo_dir: "rhel{{ ansible_distribution_major_version }}"
 dgx_extra_packages:
   - dgx-conf-cachefilesd
   - kernel-headers
+
+dgx_redhat_manage_subscription_repos: true
+dgx_redhat_upgrade_packages: false
+dgx_redhat_install_driver: true
+dgx_redhat_install_container_runtime: true
+dgx_redhat_install_docker_ce: "{{ ansible_distribution_major_version == '8' }}"
+dgx_redhat_install_cachefilesd: false
+dgx_redhat_driver_branch: "{{ '580' if ansible_distribution_major_version == '9' else ('535-dkms' if dgx_redhat_platform.configuration_group == 'DGX H100 Configurations' else '525') }}"
+dgx_redhat_use_open_kernel_modules: "{{ ansible_distribution_major_version == '9' and dgx_redhat_platform.nvswitch | default(false) }}"
+
+dgx_redhat_repo_setup_rpms:
+  "8": https://repo.download.nvidia.com/baseos/el/el-files/8/nvidia-repo-setup-21.06-1.el8.x86_64.rpm
+  "9": https://repo.download.nvidia.com/baseos/el/el-files/9/nvidia-repo-setup-25.02-1.el9.x86_64.rpm
+
+dgx_redhat_subscription_repos:
+  "8":
+    - rhel-8-for-x86_64-appstream-rpms
+    - rhel-8-for-x86_64-baseos-rpms
+    - codeready-builder-for-rhel-8-x86_64-rpms
+  "9":
+    - rhel-9-for-x86_64-appstream-rpms
+    - rhel-9-for-x86_64-baseos-rpms
+    - codeready-builder-for-rhel-9-x86_64-rpms
+
+dgx_redhat_platforms:
+  - match: "DGX-1"
+    configuration_group: "DGX-1 Configurations"
+    supported_major_versions: ["8"]
+    nvswitch: false
+    nvlink5: false
+    station: false
+  - match: "DGX-2"
+    configuration_group: "DGX-2 Configurations"
+    supported_major_versions: ["8"]
+    nvswitch: true
+    nvlink5: false
+    station: false
+  - match: "DGX[ -]?A100|DGXA100"
+    configuration_group: "DGX A100 Configurations"
+    supported_major_versions: ["8", "9"]
+    nvswitch: true
+    nvlink5: false
+    station: false
+  - match: "DGX[ -]?A800|DGXA800"
+    configuration_group: "DGX A800 Configurations"
+    supported_major_versions: ["8"]
+    nvswitch: true
+    nvlink5: false
+    station: false
+  - match: "DGX[ -]?H100|DGXH100"
+    configuration_group: "DGX H100 Configurations"
+    supported_major_versions: ["8", "9"]
+    nvswitch: true
+    nvlink5: false
+    station: false
+  - match: "DGX[ -]?H200|DGXH200"
+    configuration_group: "DGX H200 Configurations"
+    supported_major_versions: ["9"]
+    nvswitch: true
+    nvlink5: false
+    station: false
+  - match: "DGX[ -]?B200|DGXB200"
+    configuration_group: "DGX B200 Configurations"
+    supported_major_versions: ["9"]
+    nvswitch: true
+    nvlink5: true
+    station: false
+  - match: "DGX[ -]?B300|DGXB300"
+    configuration_group: "DGX B300 Configurations"
+    supported_major_versions: ["9"]
+    nvswitch: true
+    nvlink5: true
+    station: false
+  - match: "DGX Station A100"
+    configuration_group: "DGX Station A100 Configurations"
+    supported_major_versions: ["8", "9"]
+    nvswitch: false
+    nvlink5: false
+    station: true
+  - match: "DGX Station A800"
+    configuration_group: "DGX Station A800 Configurations"
+    supported_major_versions: ["8"]
+    nvswitch: false
+    nvlink5: false
+    station: true
+  - match: "^DGX Station$"
+    configuration_group: "DGX Station Configurations"
+    supported_major_versions: ["8"]
+    nvswitch: false
+    nvlink5: false
+    station: true
+
+dgx_redhat_driver_support_packages:
+  - nv-persistence-mode
+
+dgx_redhat_fabricmanager_packages:
+  - nvidia-fm-enable
+
+dgx_redhat_non_nvswitch_packages:
+  - "libnvidia-nscq-{{ dgx_redhat_driver_branch }}"
+
+dgx_redhat_nvlink5_packages:
+  - nvlsm
+
+dgx_redhat_station_packages:
+  - nvidia-conf-xconfig
+  - nv-docker-gpus
+
+dgx_redhat_services:
+  - docker.service
+  - nvidia-persistenced.service
+  - nvidia-fabricmanager.service
