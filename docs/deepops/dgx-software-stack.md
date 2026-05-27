@@ -67,10 +67,11 @@ The role follows the official Red Hat DGX software guides:
 4. Optionally install the NVIDIA driver module and support packages.
 5. Optionally install Docker CE and the NVIDIA Container Runtime group.
 
-The default driver stream follows the official examples: `525` on most EL8
-systems, `535-dkms` on EL8 DGX H100, and `580` on EL9. EL9 NVSwitch systems
-install the open-kernel-module stream by default. Override the branch when a
-validated DGX release note calls for another stream:
+The default driver stream uses DKMS on EL8 so current EL8 minor kernels can
+build a matching NVIDIA kernel module: `525-dkms` on most EL8 systems,
+`535-dkms` on EL8 DGX H100, and `580` on EL9. EL9 NVSwitch systems install the
+open-kernel-module stream by default. Override the branch when a validated DGX
+release note calls for another stream:
 
 ```yaml
 dgx_redhat_driver_branch: "580"

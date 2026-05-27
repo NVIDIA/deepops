@@ -10,7 +10,8 @@ dgx_redhat_install_driver: true
 dgx_redhat_install_container_runtime: true
 dgx_redhat_install_docker_ce: "{{ ansible_distribution_major_version == '8' }}"
 dgx_redhat_install_cachefilesd: false
-dgx_redhat_driver_branch: "{{ '580' if ansible_distribution_major_version == '9' else ('535-dkms' if dgx_redhat_platform.configuration_group == 'DGX H100 Configurations' else '525') }}"
+dgx_redhat_driver_branch: "{{ '580' if ansible_distribution_major_version == '9' else ('535-dkms' if dgx_redhat_platform.configuration_group == 'DGX H100 Configurations' else '525-dkms') }}"
+dgx_redhat_driver_package_branch: "{{ dgx_redhat_driver_branch | regex_replace('-dkms$', '') }}"
 dgx_redhat_use_open_kernel_modules: "{{ ansible_distribution_major_version == '9' and dgx_redhat_platform.nvswitch | default(false) }}"
 
 dgx_redhat_repo_setup_rpms:
@@ -102,7 +103,7 @@ dgx_redhat_fabricmanager_packages:
   - nvidia-fm-enable
 
 dgx_redhat_non_nvswitch_packages:
-  - "libnvidia-nscq-{{ dgx_redhat_driver_branch }}"
+  - "libnvidia-nscq-{{ dgx_redhat_driver_package_branch }}"
 
 dgx_redhat_nvlink5_packages:
   - nvlsm
@@ -114,4 +115,6 @@ dgx_redhat_station_packages:
 dgx_redhat_services:
   - docker.service
   - nvidia-persistenced.service
+
+dgx_redhat_fabricmanager_services:
   - nvidia-fabricmanager.service

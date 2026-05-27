@@ -41,13 +41,13 @@
   when: dgx_redhat_upgrade_packages
   tags: skip_ansible_lint
 
-- name: Install EL9 kernel development packages for DGX driver builds
+- name: Install kernel development packages for DGX driver builds
   dnf:
     name:
       - "kernel-devel-{{ ansible_kernel }}"
       - "kernel-headers-{{ ansible_kernel }}"
     state: present
-  when: ansible_distribution_major_version == '9'
+  when: ansible_distribution_major_version == '9' or 'dkms' in dgx_redhat_driver_branch
 
 - name: Install Red Hat DGX configuration group
   dnf:
@@ -70,13 +70,21 @@
         else [dgx_redhat_driver_profile]
       }}
 
-- name: Configure Red Hat DGX driver module specification
+- name: Configure Red Hat DGX driver module specifications
   set_fact:
-    dgx_redhat_driver_module_spec: >-
-      nvidia-driver:{{ dgx_redhat_driver_stream }}/{{ '{' ~ (dgx_redhat_driver_profiles | join(',')) ~ '}' if (dgx_redhat_driver_profiles | length) > 1 else dgx_redhat_driver_profiles[0] }}
+    dgx_redhat_driver_module_specs: "{{ dgx_redhat_driver_profiles | map('regex_replace', '^(.*)$', 'nvidia-driver:' ~ dgx_redhat_driver_stream ~ '/\\1') | list }}"
+
+- name: Remove precompiled NVIDIA kmod headers before DKMS driver install
+  dnf:
+    name: nvidia-kmod-headers
+    state: absent
+  when:
+    - dgx_redhat_install_driver
+    - "'dkms' in dgx_redhat_driver_stream"
 
 - name: Install Red Hat DGX NVIDIA driver module
-  command: "dnf module install --nobest -y {{ dgx_redhat_driver_module_spec }}"
+  command: "dnf module install --nobest -y {{ item }}"
+  loop: "{{ dgx_redhat_driver_module_specs }}"
   register: dgx_redhat_driver_module_install
   changed_when: "'Nothing to do' not in dgx_redhat_driver_module_install.stdout"
   notify: reboot after driver install
@@ -135,5 +143,5 @@
     state: started
     enabled: yes
     daemon_reload: yes
-  loop: "{{ dgx_redhat_services }}"
+  loop: "{{ dgx_redhat_services + (dgx_redhat_fabricmanager_services if dgx_redhat_platform.nvswitch else []) }}"
   when: item in ansible_facts.services
