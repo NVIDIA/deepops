@@ -1,0 +1,124 @@
+---
+- name: Include DGX OS 6 variables
+  include_vars: ubuntu-22.04.yml
+
+- name: Determine DGX OS 6 platform package set
+  set_fact:
+    dgx_os6_platform: "{{ item }}"
+  loop: "{{ dgx_os6_platforms }}"
+  when: ansible_product_name is search(item.match)
+
+- name: Fail if DGX OS 6 platform package set is unknown
+  fail:
+    msg: "Unsupported DGX model for Ubuntu 22.04 DGX OS 6 role path: {{ ansible_product_name }}"
+  when: dgx_os6_platform is not defined
+
+- name: Create temporary DGX OS 6 repository archive path
+  tempfile:
+    state: file
+    suffix: -dgx-repo-files.tgz
+  register: dgx_os6_repo_archive
+
+- name: Download DGX OS 6 repository files
+  get_url:
+    url: "{{ dgx_os6_repo_files_url }}"
+    dest: "{{ dgx_os6_repo_archive.path }}"
+    mode: "0644"
+
+- name: Install DGX OS 6 repository files
+  unarchive:
+    src: "{{ dgx_os6_repo_archive.path }}"
+    dest: /
+    remote_src: true
+
+- name: Remove temporary DGX OS 6 repository archive
+  file:
+    path: "{{ dgx_os6_repo_archive.path }}"
+    state: absent
+
+- name: Update apt cache for DGX OS 6 repositories
+  apt:
+    update_cache: yes
+
+- name: Upgrade packages for DGX OS 6
+  apt:
+    upgrade: dist
+  when: dgx_os6_upgrade_packages
+
+- name: Install DGX OS 6 system configurations and tools
+  apt:
+    name: "{{ dgx_os6_platform.config_packages + dgx_os6_common_packages }}"
+    state: present
+    update_cache: yes
+
+- name: Install DGX OS 6 NVIDIA driver packages
+  apt:
+    name: "{{ dgx_os6_driver_packages + (dgx_os6_fabricmanager_packages if dgx_os6_platform.nvswitch else []) }}"
+    state: present
+    update_cache: yes
+  register: install_driver
+  notify: reboot after driver install
+  when: dgx_os6_install_driver
+
+- name: Install DGX OS 6 Docker and NVIDIA container toolkit
+  apt:
+    name: "{{ dgx_os6_container_packages }}"
+    state: present
+    update_cache: yes
+  notify:
+    - restart docker
+  when: dgx_os6_install_container_runtime
+
+- name: Install DGX OS 6 NVSM packages
+  apt:
+    name: "{{ dgx_os6_nvsm_packages }}"
+    state: present
+    update_cache: yes
+  when: dgx_os6_install_nvsm
+
+- name: Install additional DGX OS 6 administration packages
+  apt:
+    name: "{{ dgx_os6_admin_packages }}"
+    state: present
+    update_cache: yes
+  when: dgx_os6_install_admin_packages
+
+- name: Install additional DGX OS 6 development packages
+  apt:
+    name: "{{ dgx_os6_development_packages }}"
+    state: present
+    update_cache: yes
+  when: dgx_os6_install_development_packages
+
+- name: Disable unattended upgrades for DGX OS 6
+  apt:
+    name: unattended-upgrades
+    state: absent
+    purge: yes
+  when: dgx_os6_disable_unattended_upgrades
+
+- name: Install DGX OS 6 serial-over-LAN console package
+  apt:
+    name: nvidia-ipmisol
+    state: present
+    update_cache: yes
+  when: dgx_os6_install_ipmisol
+
+- name: Install DGX OS 6 logrotate package
+  apt:
+    name: nvidia-logrotate
+    state: present
+    update_cache: yes
+  when: dgx_os6_install_logrotate
+
+- name: Populate DGX OS 6 service facts
+  service_facts:
+
+- name: Enable available DGX OS 6 services
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  loop: "{{ dgx_os6_services }}"
+  when: item in ansible_facts.services

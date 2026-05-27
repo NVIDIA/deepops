@@ -1,0 +1,102 @@
+---
+dgx_os7_repo_files_url: "https://repo.download.nvidia.com/baseos/ubuntu/noble/{{ 'arm64' if ansible_architecture in ['aarch64', 'arm64'] else 'x86_64' }}/dgx-repo-files.tgz"
+
+dgx_os7_upgrade_packages: false
+dgx_os7_install_driver: true
+dgx_os7_disable_unattended_upgrades: true
+
+dgx_os7_platforms:
+  - match: "DGX Station A100"
+    station: true
+    nvswitch: false
+    nvlink5: false
+    imex: false
+    linux_tools_package: linux-tools-generic
+  - match: "DGX Station A800"
+    station: true
+    nvswitch: false
+    nvlink5: false
+    imex: false
+    linux_tools_package: linux-tools-generic
+  - match: "DGX Spark"
+    station: true
+    nvswitch: false
+    nvlink5: false
+    imex: false
+    linux_tools_package: linux-tools-nvidia-hwe-24.04
+  - match: "DGX[ -]?A100|DGXA100"
+    station: false
+    nvswitch: true
+    nvlink5: false
+    imex: false
+    linux_tools_package: linux-tools-generic
+  - match: "DGX[ -]?H100|DGXH100"
+    station: false
+    nvswitch: true
+    nvlink5: false
+    imex: false
+    linux_tools_package: linux-tools-generic
+  - match: "DGX[ -]?H200|DGXH200"
+    station: false
+    nvswitch: true
+    nvlink5: false
+    imex: false
+    linux_tools_package: linux-tools-generic
+  - match: "DGX[ -]?B200|DGXB200"
+    station: false
+    nvswitch: true
+    nvlink5: true
+    imex: false
+    linux_tools_package: linux-tools-generic
+  - match: "DGX[ -]?B300|DGXB300"
+    station: false
+    nvswitch: true
+    nvlink5: true
+    imex: false
+    linux_tools_package: linux-tools-generic
+  - match: "DGX[ -]?GB200|DGXGB200"
+    station: false
+    nvswitch: false
+    nvlink5: false
+    imex: true
+    linux_tools_package: linux-tools-nvidia-64k-hwe-24.04
+  - match: "DGX[ -]?GB300|DGXGB300"
+    station: false
+    nvswitch: false
+    nvlink5: false
+    imex: true
+    linux_tools_package: linux-tools-nvidia-64k-hwe-24.04
+
+dgx_os7_system_packages:
+  - nvidia-system-core
+  - nvidia-system-utils
+  - nvidia-system-extra
+
+dgx_os7_station_package: nvidia-system-station
+
+dgx_os7_driver_packages:
+  - nvidia-driver-580-open
+  - libnvidia-nscq
+  - nvidia-modprobe
+  - datacenter-gpu-manager-4-cuda13
+  - nv-persistence-mode
+
+dgx_os7_fabricmanager_packages:
+  - nvidia-fabricmanager
+
+dgx_os7_nvlink5_packages:
+  - nvlsm
+  - libnvsdm
+
+dgx_os7_imex_packages:
+  - nvidia-imex
+
+dgx_os7_base_services:
+  - nvidia-persistenced.service
+  - nvidia-dcgm.service
+
+dgx_os7_fabricmanager_services:
+  - nvidia-fabricmanager.service
+
+dgx_os7_imex_services:
+  - nvidia-imex.service

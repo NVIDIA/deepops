@@ -38,19 +38,21 @@ It is recommended to use the latest release branch for stable code (linked above
 
 The provisioning system is used to orchestrate the running of all playbooks and one will be needed when instantiating Kubernetes or Slurm clusters. Supported operating systems which are tested and supported include:
 
-- NVIDIA DGX OS 4, 5
-- Ubuntu 18.04 LTS, 20.04, 22.04 LTS
+- NVIDIA DGX OS 4, 5, 6, 7
+- Ubuntu 18.04 LTS, 20.04, 22.04 LTS, 24.04 LTS
 - CentOS 7, 8
 
 ### Cluster System
 
 The cluster nodes will follow the requirements described by Slurm or Kubernetes. You may also use a cluster node as a provisioning system but it is not required.
 
-- NVIDIA DGX OS 4, 5
-- Ubuntu 18.04 LTS, 20.04, 22.04 LTS
+- NVIDIA DGX OS 4, 5, 6, 7
+- Ubuntu 18.04 LTS, 20.04, 22.04 LTS, 24.04 LTS
 - CentOS 7, 8
+- Red Hat Enterprise Linux / Rocky Linux 8 and 9 for the DGX software stack through the `nvidia-dgx` role
 
 You may also install a supported operating system on all servers via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)) or utilize the provided [OS install container](docs/pxe/minimal-pxe-container.md).
+For DGX platform software installation on top of vanilla Ubuntu or Red Hat family operating systems, see the [DGX software stack role guide](docs/deepops/dgx-software-stack.md).
 
 ### Kubernetes
 
@@ -77,7 +79,7 @@ For more information on Slurm in general, refer to the [official Slurm docs](htt
 [NVIDIA Bright Cluster Manager](https://www.brightcomputing.com/brightclustermanager) is recommended as an enterprise solution which enables managing multiple workload managers within a single cluster, including Kubernetes, Slurm, Univa Grid Engine, and PBS Pro.
 
 **DeepOps does not test or support a configuration where nodes have a heterogenous OS running.**
-Additional modifications are needed if you plan to use unsupported operating systems such as RHEL.
+The `nvidia-dgx` role can install NVIDIA DGX platform software on supported DGX systems running Red Hat Enterprise Linux / Rocky Linux 8 or 9; broader Kubernetes or Slurm cluster support on RHEL still requires site-specific validation.
 
 ### Virtual
 
