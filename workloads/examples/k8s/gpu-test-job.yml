@@ -5,11 +5,10 @@ metadata:
 spec:
   containers:
     - name: cuda-container
-      image: nvcr.io/nvidia/cuda:10.0-devel
+      image: nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04
       command: ["sleep", "6000"]
       args:
       resources:
         limits:
           nvidia.com/gpu: 1
   restartPolicy: Never
-

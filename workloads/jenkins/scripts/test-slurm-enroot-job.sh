@@ -9,5 +9,5 @@ ssh -v \
 	-i "${HOME}/.ssh/id_rsa" \
 	"10.0.0.5${GPU01}" \
 	srun -N1 -G1 \
-	--container-image="nvcr.io#nvidia/cuda:10.2-base-ubuntu18.04" \
+	--container-image="nvcr.io#nvidia/cuda:12.4.1-base-ubuntu22.04" \
 	nvidia-smi -L

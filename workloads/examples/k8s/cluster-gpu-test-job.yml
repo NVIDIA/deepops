@@ -10,7 +10,7 @@ spec:
     spec:
       containers:
         - name: cluster-gpu-tests
-          image: nvcr.io/nvidia/cuda:9.0-base 
+          image: nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04
           command: ["/bin/bash","-c","nvidia-smi && sleep 10"]
           args:
           resources:
