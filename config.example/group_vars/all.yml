@@ -253,7 +253,9 @@ maas_adminusers:
 maas_dns_domain: 'deepops.local'
 maas_region_controller: '192.168.1.1'
 maas_region_controller_url: 'http://{{ maas_region_controller }}:5240/MAAS'
-maas_repo: 'ppa:maas/3.5'
+# MAAS 3.7 is the current Ubuntu 24.04 line. Keep the 3.5 PPA when the MAAS
+# controller itself still runs Ubuntu 22.04.
+maas_repo: "{{ 'ppa:maas/3.7' if ansible_distribution_version is version('24.04', '>=') else 'ppa:maas/3.5' }}"
 
 # Defines if maas user should generate ssh keys
 # Usable for remote KVM/libvirt power actions

@@ -35,7 +35,8 @@ Instructions for deploying a GPU cluster with Kubernetes
 
 1. Install a supported operating system on all nodes.
 
-   Install a supported operating system on all servers via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)) or utilize the provided [OS install container](../pxe).
+   Install a supported operating system on all servers via a 3rd-party solution such as [MAAS](https://maas.io/) or [Foreman](https://www.theforeman.org/), or via an existing site-standard automated installer.
+   For new Ubuntu 24.04 or DGX OS 7 deployments, prefer Ubuntu autoinstall/cloud-init or MAAS and then apply DeepOps after the OS is present.
 
 2. Set up your provisioning machine.
 

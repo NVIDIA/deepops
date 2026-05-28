@@ -212,7 +212,7 @@ deb http://archive.ubuntu.com/ubuntu noble-security main restricted universe mul
 deb http://archive.ubuntu.com/ubuntu noble-updates main restricted universe multiverse
 deb http://archive.ubuntu.com/ubuntu noble-proposed main restricted universe multiverse
 deb http://archive.ubuntu.com/ubuntu noble-backports main restricted universe multiverse
-deb http://ppa.launchpad.net/maas/3.5/ubuntu noble main
+deb http://ppa.launchpad.net/maas/3.7/ubuntu noble main
 deb http://archive.canonical.com/ubuntu noble partner
 
 deb-src http://archive.ubuntu.com/ubuntu noble main restricted universe multiverse
