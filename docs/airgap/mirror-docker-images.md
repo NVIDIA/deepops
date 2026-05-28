@@ -42,9 +42,8 @@ Then, for each image you want to download, you should pull the image from the re
 In this example, we're saving all our Docker images to `/tmp/images`:
 
 ```
-$ docker pull nvidia/cuda:11.1-devel-ubuntu20.04
-$ docker save -o /tmp/images/nvidia-cuda-11.1-devel-ubuntu20.04.tar nvidia/cuda:11.1-devel-ubuntu20.04 
->>>>>>> e1d0a775 (Airgap documentation update.)
+$ docker pull nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04
+$ docker save -o /tmp/images/nvidia-cuda-12.4.1-base-ubuntu22.04.tar nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04
 ```
 
 Additionally, you should download and save the [`registry` image](https://hub.docker.com/_/registry) so that you can deploy a local registry on the offline network.
@@ -76,13 +75,8 @@ Additionally, we assume that the `registry` image was included when you transfer
 
 Load the registry image into the Docker image cache of your container registry host:
 
-<<<<<<< HEAD
 ```bash
-docker load < /tmp/images/registry-2.7.tar
-=======
-```
-$ docker load -i /tmp/images/registry-2.7.tar
->>>>>>> e1d0a775 (Airgap documentation update.)
+$ docker load -i /tmp/images/registry-3.1.1.tar
 ```
 
 Then create a Docker volume to store your container images:
@@ -99,7 +93,7 @@ docker run -d \
     --restart=always \
     --name registry \
     -v registry-images:/var/lib/registry \
-    registry:2.7
+    registry:3.1.1
 ```
 
 ## Configuring your hosts to use the offline container registry
@@ -121,7 +115,7 @@ docker_insecure_registries:
 Once your registry is running and you've configured your hosts to access it, you can load additional images and push them to the offline registry:
 
 ```bash
-docker load < /tmp/images/nvidia-cuda-11.1-devel-ubuntu20.04.tar
-docker tag nvidia/cuda:11.1-devel-ubuntu20.04 registry-host:5000/nvidia/cuda:11.1-devel-ubuntu20.04
-docker push registry-host:5000/nvidia/cuda:11.1-devel-ubuntu20.04
+docker load -i /tmp/images/nvidia-cuda-12.4.1-base-ubuntu22.04.tar
+docker tag nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04 registry-host:5000/nvidia/cuda:12.4.1-base-ubuntu22.04
+docker push registry-host:5000/nvidia/cuda:12.4.1-base-ubuntu22.04
 ```
