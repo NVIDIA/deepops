@@ -1,0 +1,6 @@
+---
+- name: restart docker
+  ansible.builtin.service:
+    name: docker
+    state: restarted
+  when: nvidia_container_toolkit_restart_docker | bool

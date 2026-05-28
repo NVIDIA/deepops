@@ -51,6 +51,8 @@ A short description of the nightly testing is outlined below. The full suit of t
 | --------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------ |
 | Ubuntu 18.04                                        | x                                         | x                                                      | x                                                                       |                                      |
 | Ubuntu 20.04                                        |                                           | x                                                      | x                                                                       |                                      |
+| Ubuntu 22.04                                        |                                           |                                                        |                                                                         | setup.sh and Molecule GitHub Actions |
+| Ubuntu 24.04                                        |                                           |                                                        |                                                                         | setup.sh and Molecule GitHub Actions |
 | CentOS 7                                            |                                           | x                                                      | x                                                                       |                                      |
 | CentOS                                              |                                           |                                                        | x                                                                       |                                      |
 | DGX OS                                              |                                           |                                                        |                                                                         | Syntax-checked only; full validation requires DGX hardware |
@@ -118,7 +120,8 @@ molecule init scenario -r <your-role> --driver-name docker
 ```
 
 4. In the file `molecule/default/molecule.yml`, define the list of platforms to be tested.
-   DeepOps currently supports operating systems based on Ubuntu 18.04, Ubuntu 20.04, EL7, and EL8.
+   DeepOps currently supports operating systems based on Ubuntu 18.04, Ubuntu 20.04, Ubuntu 22.04, Ubuntu 24.04, EL7, and EL8.
+   The DGX software stack role also supports Red Hat Enterprise Linux / Rocky Linux 8 and 9 for DGX platform software installation.
    To test these stacks, the following `platforms` stanza can be used.
 
 ```yaml
@@ -128,6 +131,12 @@ platforms:
     pre_build_image: true
   - name: ubuntu-2004
     image: geerlingguy/docker-ubuntu2004-ansible
+    pre_build_image: true
+  - name: ubuntu-2204
+    image: geerlingguy/docker-ubuntu2204-ansible
+    pre_build_image: true
+  - name: ubuntu-2404
+    image: geerlingguy/docker-ubuntu2404-ansible
     pre_build_image: true
   - name: centos-7
     image: geerlingguy/docker-centos7-ansible

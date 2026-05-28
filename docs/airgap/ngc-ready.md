@@ -24,7 +24,7 @@ The following Apt repositories will need to be mirrored in the offline environme
 
 - Ubuntu distribution repositories
 - Docker CE repository
-- nvidia-docker repositories
+- NVIDIA container runtime repositories
 
 For instructions on mirroring these repositories, see the [doc on Apt mirrors](./mirror-apt-repos.md).
 
@@ -49,7 +49,7 @@ The following RPM repositories will need to be mirrored in the offline environme
 
 - Enterprise Linux distribution repositories (RHEL or CentOS, depending on your distro)
 - Docker CE repository
-- nvidia-docker repositories
+- NVIDIA container runtime repositories
 
 For instructions on mirroring these repositories, see the [doc on RPM mirrors](./mirror-rpm-repos.md).
 
@@ -123,7 +123,7 @@ In all cases, you should edit the URLs appropriately to ensure they can download
 
 ### Configure DeepOps to use your mirrors for non-distribution package repositories
 
-The NGC-Ready playbook depends on the Docker CE and nvidia-docker package repositories.
+The NGC-Ready playbook depends on the Docker CE and NVIDIA container runtime package repositories.
 DeepOps sets up these repositories automatically during the installation.
 
 To configure alternate URLs for these repositories, set the following variables in your DeepOps configuration:
