@@ -16,10 +16,19 @@
         state: absent
       when: docker_install | default('yes')
 
+    - name: install NVIDIA Container Toolkit on Ubuntu 24.04 and newer
+      include_role:
+        name: nvidia_container_toolkit
+      when:
+        - ansible_local['gpus']['count'] and ansible_distribution == "Ubuntu"
+        - ansible_distribution_version is version('24.04', '>=')
+        - docker_install | default('yes')
+
     - name: install nvidia-docker
       include_role:
         name: nvidia.nvidia_docker
       when:
         - ansible_local['gpus']['count'] and (ansible_distribution == "Ubuntu" or ansible_os_family == "RedHat")
+        - not (ansible_distribution == "Ubuntu" and ansible_distribution_version is version('24.04', '>='))
         - docker_install | default('yes')
   environment: "{{ proxy_env if proxy_env is defined else {} }}"

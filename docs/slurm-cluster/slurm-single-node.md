@@ -15,7 +15,7 @@ Single Node Slurm Deployment Guide
 
 ## Introduction
 
-The general requirements and procedure for Slurm setup via deepops is documented in the [README.md](README.md) for the slurm-cluster. The instructions below outline the steps to deviate from the general setup to enable single node DeepOps Slurm setup. The machine on which Slurm is being deployed should be up to date in a stable state with GPU drivers already installed and functional. The supported Operating Systems are Ubuntu (version 18 and 20), CentOS and RHEL (version 7 and 8 albeit version 8 is preferred).
+The general requirements and procedure for Slurm setup via deepops is documented in the [README.md](README.md) for the slurm-cluster. The instructions below outline the steps to deviate from the general setup to enable single node DeepOps Slurm setup. The machine on which Slurm is being deployed should be up to date in a stable state with GPU drivers already installed and functional. The supported operating systems are Ubuntu 18.04, 20.04, 22.04, and 24.04; CentOS 7 and 8; and RHEL 7 and 8, with RHEL 8 preferred among the RHEL paths.
 
 ## Deployment Procedure
 

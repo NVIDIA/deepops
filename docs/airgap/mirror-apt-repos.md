@@ -15,7 +15,7 @@ Set up offline repositoriy mirrors for Aptitude
     - [NVIDIA CUDA repository](#nvidia-cuda-repository)
       - [APT Configuration](#apt-configuration-1)
       - [GPG Key Validation](#gpg-key-validation-1)
-    - [nvidia-docker](#nvidia-docker)
+    - [NVIDIA Container Toolkit](#nvidia-container-toolkit)
       - [APT Configuration](#apt-configuration-2)
       - [GPG Key Validation](#gpg-key-validation-2)
     - [Additional DEB packages](#additional-deb-packages)
@@ -57,7 +57,7 @@ deb http://archive.ubuntu.com/ubuntu/ <release-name>-updates main multiverse uni
 ```
 
 where `<release-name>` is the name of the Ubuntu release you want to mirror.
-This is `bionic` for Ubuntu 18.04, and `focal` for Ubuntu 20.04.
+This is `bionic` for Ubuntu 18.04, `focal` for Ubuntu 20.04, `jammy` for Ubuntu 22.04, and `noble` for Ubuntu 24.04.
 
 ### Docker repository
 
@@ -74,7 +74,7 @@ https://download.docker.com/linux/ubuntu/gpg
 ```
 
 where `<release-name>` is the name of the Ubuntu release you want to mirror.
-This is `bionic` for Ubuntu 18.04, and `focal` for Ubuntu 20.04.
+This is `bionic` for Ubuntu 18.04, `focal` for Ubuntu 20.04, `jammy` for Ubuntu 22.04, and `noble` for Ubuntu 24.04.
 
 ### NVIDIA CUDA repository
 
@@ -92,6 +92,18 @@ deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804
 deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004
 ```
 
+**Ubuntu 22.04**
+
+```bash
+deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64 /
+```
+
+**Ubuntu 24.04**
+
+```bash
+deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64 /
+```
+
 #### GPG Key Validation
 
 **Ubuntu 18.04**
@@ -106,30 +118,30 @@ https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2a
 https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
 ```
 
-### nvidia-docker
+**Ubuntu 22.04**
+
+```bash
+https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub
+```
+
+**Ubuntu 24.04**
+
+```bash
+https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/3bf863cc.pub
+```
+
+### NVIDIA Container Toolkit
 
 #### APT Configuration
 
-**Ubuntu 18.04**
-
 ```bash
-deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /
-deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu18.04/$(ARCH) /
-deb https://nvidia.github.io/nvidia-docker/ubuntu18.04/$(ARCH)
-```
-
-**Ubuntu 20.04**
-
-```bash
-deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /
-deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu18.04/$(ARCH) /
-deb https://nvidia.github.io/nvidia-docker/ubuntu18.04/$(ARCH)
+deb https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /
 ```
 
 #### GPG Key Validation
 
 ```bash
-https://nvidia.github.io/nvidia-docker/gpgkey
+https://nvidia.github.io/libnvidia-container/gpgkey
 ```
 
 ### Additional DEB packages
@@ -161,7 +173,7 @@ After installing `apt-mirror`, edit the `/etc/apt/mirror.list` file make the fol
 - Set the `base_path` to the desired download path for your mirror (here, `/var/repos`)
 - Add a list of APT configuration lines for each repo you wish to mirror
 
-For example, if we just want to mirror the Docker and NVIDIA Docker repositories, this configuration would work:
+For example, if we just want to mirror the Docker and NVIDIA Container Toolkit repositories, this configuration would work:
 
 ```
 ############# config ##################
@@ -172,11 +184,11 @@ set _tilde 0
 #
 ############# end config ##############
 
-deb https://download.docker.com/linux/ubuntu bionic stable
-deb https://nvidia.github.io/nvidia-docker/ubuntu20.04/amd64 /
+deb https://download.docker.com/linux/ubuntu noble stable
+deb https://nvidia.github.io/libnvidia-container/stable/deb/amd64 /
 ```
 
-The full mirror.list file for Deepops:
+The full mirror.list file for DeepOps:
 
 ```
 ############# config ##################
@@ -195,29 +207,27 @@ set _tilde 0
 #
 ############# end config ##############
 
-deb http://archive.ubuntu.com/ubuntu focal main restricted universe multiverse
-deb http://archive.ubuntu.com/ubuntu focal-security main restricted universe multiverse
-deb http://archive.ubuntu.com/ubuntu focal-updates main restricted universe multiverse
-deb http://archive.ubuntu.com/ubuntu focal-proposed main restricted universe multiverse
-deb http://archive.ubuntu.com/ubuntu focal-backports main restricted universe multiverse
-deb http://ppa.launchpad.net/maas/2.9/ubuntu focal main
-deb http://archive.canonical.com/ubuntu focal partner
+deb http://archive.ubuntu.com/ubuntu noble main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu noble-security main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu noble-updates main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu noble-proposed main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu noble-backports main restricted universe multiverse
+deb http://ppa.launchpad.net/maas/3.5/ubuntu noble main
+deb http://archive.canonical.com/ubuntu noble partner
 
-deb-src http://archive.ubuntu.com/ubuntu focal main restricted universe multiverse
-deb-src http://archive.ubuntu.com/ubuntu focal-security main restricted universe multiverse
-deb-src http://archive.ubuntu.com/ubuntu focal-updates main restricted universe multiverse
-deb-src http://archive.ubuntu.com/ubuntu focal-proposed main restricted universe multiverse
-deb-src http://archive.ubuntu.com/ubuntu focal-backports main restricted universe multiverse
+deb-src http://archive.ubuntu.com/ubuntu noble main restricted universe multiverse
+deb-src http://archive.ubuntu.com/ubuntu noble-security main restricted universe multiverse
+deb-src http://archive.ubuntu.com/ubuntu noble-updates main restricted universe multiverse
+deb-src http://archive.ubuntu.com/ubuntu noble-proposed main restricted universe multiverse
+deb-src http://archive.ubuntu.com/ubuntu noble-backports main restricted universe multiverse
 
-deb https://download.docker.com/linux/ubuntu focal stable
-deb https://nvidia.github.io/nvidia-docker/ubuntu20.04/amd64 /
-deb https://nvidia.github.io/libnvidia-container/stable/ubuntu20.04/amd64 /
-deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu20.04/amd64 /
+deb https://download.docker.com/linux/ubuntu noble stable
+deb https://nvidia.github.io/libnvidia-container/stable/deb/amd64 /
 
-deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 /
+deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64 /
 
-deb http://repo.download.nvidia.com/baseos/ubuntu/focal/x86_64/ focal common dgx
-deb http://repo.download.nvidia.com/baseos/ubuntu/focal/x86_64/ focal-updates common dgx
+deb http://repo.download.nvidia.com/baseos/ubuntu/noble/x86_64/ noble common dgx
+deb http://repo.download.nvidia.com/baseos/ubuntu/noble/x86_64/ noble-updates common dgx
 
 clean http://archive.ubuntu.com/ubuntu
 clean https://download.docker.com
@@ -266,10 +276,10 @@ sudo mkdir /var/www/html/repos
 
 Then, from the extracted mirror directory,
 copy the directories for each repository into the web root.
-For example, assuming the extracted mirror directory is `/var/repos` and the repository is `nvidia-docker`:
+For example, assuming the extracted mirror directory is `/var/repos` and the repository is `libnvidia-container`:
 
 ```bash
-sudo cp -r /var/repos/mirror/nvidia.github.com/nvidia-docker/ /var/www/html/repos/nvidia-docker/
+sudo cp -r /var/repos/mirror/nvidia.github.io/libnvidia-container/ /var/www/html/repos/libnvidia-container/
 ```
 
 At this point, the downloaded package repositories should be available on your offline network via the package server.
@@ -278,29 +288,27 @@ You can then add these downloaded repos to the `/etc/apt/sources.list` configura
  Line added to `/etc/apt/sources.list`:
 
 ```
-deb http://repo-server/ubuntu focal main restricted universe multiverse
-deb http://repo-server/ubuntu focal-updates main restricted universe multiverse
-deb http://repo-server/ubuntu focal-backports main restricted universe multiverse
-deb http://repo-server/ubuntu focal-security main restricted universe multiverse
+deb http://repo-server/ubuntu noble main restricted universe multiverse
+deb http://repo-server/ubuntu noble-updates main restricted universe multiverse
+deb http://repo-server/ubuntu noble-backports main restricted universe multiverse
+deb http://repo-server/ubuntu noble-security main restricted universe multiverse
 ```
 
 Lines added to `/etc/apt/sources.list.d/dgx.list`:
 
 ```
-deb http://repo-server/baseos/ubuntu/focal/x86_64/ focal common dgx
-deb http://repo-server/baseos/ubuntu/focal/x86_64/ focal-updates common dgx
+deb http://repo-server/baseos/ubuntu/noble/x86_64/ noble common dgx
+deb http://repo-server/baseos/ubuntu/noble/x86_64/ noble-updates common dgx
 ```
 
 Lines added to `/etc/apt/sources.list.d/cuda-compute-repo.list`:
 
 ```
-deb http://repo-server/cuda/repos/ubuntu2004/x86_64/ /
+deb http://repo-server/cuda/repos/ubuntu2404/x86_64/ /
 ```
 
-Lines add to `/etc/apt/sources.list.d/nvidia-docker.list`:
+Lines add to `/etc/apt/sources.list.d/nvidia-container-toolkit.list`:
 
 ```
-deb  [trusted=yes] http://repo-server/libnvidia-container/stable/ubuntu20.04/amd64 /
-deb  [trusted=yes] http://repo-server/nvidia-container-runtime/stable/ubuntu20.04/amd64 /
-deb  [trusted=yes] http://repo-server/nvidia-docker/ubuntu20.04/amd64 /
+deb  [trusted=yes] http://repo-server/libnvidia-container/stable/deb/amd64 /
 ```

@@ -1,0 +1,114 @@
+---
+- name: Ubuntu | verify supported distribution
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == "Ubuntu"
+    fail_msg: "The nvidia_container_toolkit role currently supports Ubuntu only."
+
+- name: Ubuntu | set package architecture
+  ansible.builtin.set_fact:
+    nvidia_container_toolkit_deb_arch: "{{ _nvidia_container_toolkit_arch_map.get(ansible_architecture, ansible_architecture) }}"
+  vars:
+    _nvidia_container_toolkit_arch_map:
+      aarch64: arm64
+      arm64: arm64
+      x86_64: amd64
+
+- name: Ubuntu | install repository prerequisites
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - gnupg
+    state: present
+    update_cache: true
+  when: nvidia_container_toolkit_repo_base_url | length > 0
+
+- name: Ubuntu | ensure keyring directory exists
+  ansible.builtin.file:
+    path: "{{ nvidia_container_toolkit_keyring_path | dirname }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Ubuntu | check NVIDIA Container Toolkit keyring
+  ansible.builtin.stat:
+    path: "{{ nvidia_container_toolkit_keyring_path }}"
+  register: nvidia_container_toolkit_keyring
+
+- name: Ubuntu | download NVIDIA Container Toolkit GPG key
+  ansible.builtin.get_url:
+    url: "{{ nvidia_container_toolkit_repo_gpg_url }}"
+    dest: "{{ nvidia_container_toolkit_keyring_ascii_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  register: nvidia_container_toolkit_key
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
+
+- name: Ubuntu | install NVIDIA Container Toolkit GPG keyring
+  ansible.builtin.command:
+    cmd: "gpg --dearmor --yes -o {{ nvidia_container_toolkit_keyring_path }} {{ nvidia_container_toolkit_keyring_ascii_path }}"
+  when: nvidia_container_toolkit_key.changed or not nvidia_container_toolkit_keyring.stat.exists
+  register: nvidia_container_toolkit_keyring_install
+  changed_when: true
+
+- name: Ubuntu | set NVIDIA Container Toolkit GPG keyring permissions
+  ansible.builtin.file:
+    path: "{{ nvidia_container_toolkit_keyring_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Ubuntu | configure NVIDIA Container Toolkit APT repository
+  ansible.builtin.copy:
+    content: |
+      deb [signed-by={{ nvidia_container_toolkit_keyring_path }}] {{ nvidia_container_toolkit_repo_base_url }}/stable/deb/{{ nvidia_container_toolkit_deb_arch }} /
+    dest: "{{ nvidia_container_toolkit_apt_source_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  register: nvidia_container_toolkit_apt_source
+
+- name: Ubuntu | install NVIDIA Container Toolkit
+  ansible.builtin.apt:
+    name: "{{ nvidia_container_toolkit_package }}"
+    state: present
+    update_cache: "{{ nvidia_container_toolkit_apt_source.changed or nvidia_container_toolkit_keyring_install.changed | default(false) }}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
+
+- name: Docker | ensure Docker configuration directory exists
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: nvidia_container_toolkit_configure_docker | bool
+
+- name: Docker | check NVIDIA runtime configuration
+  ansible.builtin.command:
+    cmd: >-
+      python3 -c 'import json, pathlib, sys;
+      p = pathlib.Path("/etc/docker/daemon.json");
+      required_default = {{ nvidia_container_toolkit_set_as_default_runtime | bool | ternary("True", "False") }};
+      data = {};
+      text = p.read_text().strip() if p.exists() else "";
+      data = json.loads(text) if text else {};
+      runtime = data.get("runtimes", {}).get("nvidia", {});
+      ok = runtime.get("path") in ("nvidia-container-runtime", "/usr/bin/nvidia-container-runtime");
+      ok = ok and (not required_default or data.get("default-runtime") == "nvidia");
+      sys.exit(0 if ok else 1)'
+  register: nvidia_container_toolkit_docker_runtime
+  failed_when: false
+  changed_when: false
+  when: nvidia_container_toolkit_configure_docker | bool
+
+- name: Docker | configure NVIDIA runtime
+  ansible.builtin.command:
+    cmd: "nvidia-ctk runtime configure --runtime=docker{{ ' --set-as-default' if nvidia_container_toolkit_set_as_default_runtime | bool else '' }}"
+  when:
+    - nvidia_container_toolkit_configure_docker | bool
+    - nvidia_container_toolkit_docker_runtime.rc != 0
+  changed_when: true
+  notify: restart docker
