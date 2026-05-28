@@ -1,9 +1,11 @@
 # DeepOps Virtual
 
-Set up a virtual cluster with DeepOps. Useful for...
+Set up a virtual cluster with DeepOps. This is a legacy/community-supported lab
+path for learning and local experimentation; it is not the release validation
+path for current GPU clusters. Useful for...
 
 1. Learning how to deploy DeepOps on limited hardware
-2. Testing new features in DeepOps
+2. Testing small changes in a local lab before validating on real systems
 3. Tailoring DeepOps in a local environment before deploying it to the production cluster
 
 ## Requirements
@@ -26,6 +28,8 @@ If deploying kubeflow or another resource-intensive application in this environm
 
 Running DeepOps virtually assumes that the host machine's OS is an approved OS. If this is not the case, the scripts used in the steps below may be modified to work with a different OS.
 
+The Vagrantfiles currently cover Ubuntu 18.04, Ubuntu 20.04, Ubuntu 22.04, CentOS 7, and CentOS 8. The startup script defaults to Ubuntu 20.04. Newer operating systems should be validated on real target systems unless the Vagrantfiles have been refreshed and tested for that release.
+
 Also, using VMs and optionally GPU passthrough assumes that the host machine has been configured to enable virtualization in the BIOS. For instructions on how to accomplish this, refer to the sections at the bottom of this README: [Enabling virtualization and GPU passthrough](#enabling-virtualization-and-gpu-passthrough).
 
 ## Start the Virtual Cluster
@@ -41,7 +45,7 @@ Also, using VMs and optionally GPU passthrough assumes that the host machine has
 2. In the virtual directory, startup vagrant. This will start 3 VMs by default.
 
    ```sh
-   # NOTE: The default VM OS is Ubuntu. If you wish the VMs to spawn CentOS,
+   # NOTE: The default VM OS is Ubuntu 20.04. If you wish the VMs to spawn CentOS,
    #       configure the DEEPOPS_VAGRANT_FILE variable accordingly...
    #       export DEEPOPS_VAGRANT_FILE=$(pwd)/Vagrantfile-centos
    # NOTE: virtual-gpu01 requires GPU passthrough, by default it is not enabled
@@ -135,7 +139,7 @@ $ lspci -nnk | grep NVIDIA
 
 In this example, the GPU at `08:00.0` is chosen.
 
-In the `Vagrantfile` there is a "magic string" `#BUS-GPU01` that is utilized in Jenkins automation. This can be updated manually.
+In the `Vagrantfile` there is a "magic string" `#BUS-GPU01` that was used by the legacy Jenkins automation. This can be updated manually.
 
 Uncomment the `#BUS-GPU01 v.pci` configuration and update it with a mapping to the bus discovered with `lspci`...
 
@@ -159,7 +163,7 @@ The default Vagrantfiles create VMs that are very minimal in terms of resources 
 
 ### Specify the cluster Operating System
 
-By default, all virtual nodes will deploy with Ubuntu 18.04. This can be changed by overriding the environment variables `DEEPOPS_VAGRANT_OS` and `DEEPOPS_OS_VERSION`. Supported OS versions are Ubuntu 18.04, Ubuntu 20.04, CentOS 7, and CentOS 8.
+By default, all virtual nodes deploy with Ubuntu 20.04. This can be changed by overriding the environment variables `DEEPOPS_VAGRANT_OS` and `DEEPOPS_OS_VERSION`. Available Vagrantfiles include Ubuntu 18.04, Ubuntu 20.04, Ubuntu 22.04, CentOS 7, and CentOS 8.
 
 ```sh
 export DEEPOPS_VAGRANT_OS=centos
@@ -353,6 +357,5 @@ $ lspci -nnk -d 10de:1db1
 	Kernel driver in use: vfio-pci
 	Kernel modules: nvidiafb, nouveau, nvidia_drm, nvidia_vgpu_vfio, nvidia
 ```
-
 
 
