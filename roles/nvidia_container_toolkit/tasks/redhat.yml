@@ -1,0 +1,23 @@
+---
+- name: Red Hat | install repository prerequisites
+  ansible.builtin.dnf:
+    name: "{{ nvidia_container_toolkit_rpm_prerequisites }}"
+    state: present
+  when: nvidia_container_toolkit_repo_base_url | length > 0
+
+- name: Red Hat | configure NVIDIA Container Toolkit Yum repository
+  ansible.builtin.get_url:
+    url: "{{ nvidia_container_toolkit_rpm_repo_url }}"
+    dest: "{{ nvidia_container_toolkit_yum_repo_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  register: nvidia_container_toolkit_yum_repo
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
+
+- name: Red Hat | install NVIDIA Container Toolkit
+  ansible.builtin.dnf:
+    name: "{{ nvidia_container_toolkit_package }}"
+    state: present
+    update_cache: "{{ nvidia_container_toolkit_yum_repo.changed }}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"

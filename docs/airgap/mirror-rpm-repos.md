@@ -25,17 +25,16 @@ If you do not already have mirrors of the distribution repositories available, p
 The following additional RPM repositories are commonly used for GPU-enabled systems deployed by DeepOps:
 
 - [Fedora Extra Packages for Enterprise Linux (EPEL)](https://fedoraproject.org/wiki/EPEL)
-- NVIDIA CUDA repository: [repo file for EL7](https://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/cuda-rhel7.repo), [repo file for EL8](https://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/cuda-rhel8.repo)
-- NVIDIA container repositories: [repo file for EL7](https://raw.githubusercontent.com/NVIDIA/nvidia-docker/gh-pages/centos7/nvidia-docker.repo), [repo file for EL8](https://raw.githubusercontent.com/NVIDIA/nvidia-docker/gh-pages/centos8/nvidia-docker.repo)
+- NVIDIA CUDA repository: [repo file for EL8](https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo), [repo file for EL9](https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo)
+- NVIDIA Container Toolkit repository: [repo file for RPM-based distributions](https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo)
 - Docker CE repository: [repo file](https://download.docker.com/linux/centos/docker-ce.repo)
 
 These repo files provide the following repository IDs, which will be needed by `reposync` below:
 
 - epel
-- cuda-rhel7-x86_64 or cuda-rhel8-x86_64
+- cuda-rhel8-x86_64 or cuda-rhel9-x86_64
 - libnvidia-container
-- nvidia-container-runtime
-- nvidia-docker
+- nvidia-container-toolkit
 - docker-ce-stable
 
 To discover a complete list of repositories needed for your particular workload,
@@ -49,10 +48,11 @@ On a RHEL or CentOS machine with Internet access, install the `yum-utils` and `c
 sudo yum install yum-utils createrepo
 ```
 
-Then install the EPEL repository:
+Then install the EPEL repository if your workload requires EPEL packages.
+For example, on EL9:
 
 ```bash
-sudo yum install  https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
 ```
 
 Then, for each of the other repo files, install the file into the `/etc/yum.repos.d` directory.
@@ -61,8 +61,8 @@ For example, if using the list of repositories from the previous section:
 ```bash
 cd /etc/yum.repos.d
 sudo wget https://download.docker.com/linux/centos/docker-ce.repo
-sudo wget https://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/cuda-rhel7.repo
-sudo wget https://raw.githubusercontent.com/NVIDIA/nvidia-docker/gh-pages/centos7/nvidia-docker.repo
+sudo wget https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo
+sudo wget https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo
 ```
 
 For each of the repositories you wish to mirror, run the `reposync` command to download the contents of the repository.
@@ -80,7 +80,7 @@ At this point, you should have one subdirectory for each of the repositories you
 
 ```bash
 ls /var/repos/
-docker-ce-stable  nvidia-docker
+docker-ce-stable  libnvidia-container  nvidia-container-toolkit
 ```
 
 For each of these directories, run the `createrepo` command to generate repository metadata:

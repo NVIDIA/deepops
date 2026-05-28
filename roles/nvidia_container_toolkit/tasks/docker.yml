@@ -1,0 +1,32 @@
+---
+- name: Docker | ensure Docker configuration directory exists
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Docker | check NVIDIA runtime configuration
+  ansible.builtin.command:
+    cmd: >-
+      python3 -c 'import json, pathlib, sys;
+      p = pathlib.Path("/etc/docker/daemon.json");
+      required_default = {{ nvidia_container_toolkit_set_as_default_runtime | bool | ternary("True", "False") }};
+      data = {};
+      text = p.read_text().strip() if p.exists() else "";
+      data = json.loads(text) if text else {};
+      runtime = data.get("runtimes", {}).get("nvidia", {});
+      ok = runtime.get("path") in ("nvidia-container-runtime", "/usr/bin/nvidia-container-runtime");
+      ok = ok and (not required_default or data.get("default-runtime") == "nvidia");
+      sys.exit(0 if ok else 1)'
+  register: nvidia_container_toolkit_docker_runtime
+  failed_when: false
+  changed_when: false
+
+- name: Docker | configure NVIDIA runtime
+  ansible.builtin.command:
+    cmd: "nvidia-ctk runtime configure --runtime=docker{{ ' --set-as-default' if nvidia_container_toolkit_set_as_default_runtime | bool else '' }}"
+  when: nvidia_container_toolkit_docker_runtime.rc != 0
+  changed_when: true
+  notify: restart docker
