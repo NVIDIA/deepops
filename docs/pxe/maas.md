@@ -3,7 +3,8 @@
 OS Provisioning with MAAS
 
 - [MAAS](#maas)
-  - [Summary](#summary)
+  - [Introduction](#introduction)
+  - [DeepOps and MAAS operating model](#deepops-and-maas-operating-model)
   - [Pre-requisites](#pre-requisites)
   - [Installing MAAS with DeepOps](#installing-maas-with-deepops)
   - [Configuring MAAS](#configuring-maas)
@@ -33,11 +34,29 @@ This guide was originally written using MAAS 2.8; current MAAS releases are 3.x.
 MAAS has a lot of different configuration options which are outside the scope of this guide.
 For the best reference on how to use MAAS in general, see the [documentation on maas.io](https://maas.io/docs).
 
+## DeepOps and MAAS operating model
+
+DeepOps should stay modular and simple: MAAS is the source of truth for bare-metal provisioning state, while DeepOps consumes that state through small, understandable scripts and Ansible inventory.
+MAAS owns machine lifecycle, power control, PXE/DHCP behavior, OS images, commissioning, deployment, release, pools, zones, and machine tags.
+DeepOps should not run a second reconciliation loop for those responsibilities or become a replacement for BCM.
+
+The DeepOps-owned state should stay deliberately small:
+
+- MAAS tags that map deployed machines into DeepOps inventory groups, such as `kube_control_plane`, `kube_node`, `slurm-master`, and `slurm-node`.
+- A dynamic inventory view from `scripts/maas_inventory.py`, derived from deployed MAAS machines and tags.
+- Explicit deploy, tag, status, and release operations through `scripts/maas_deploy.sh`.
+- Ansible run artifacts and validation results that record what DeepOps last applied and observed.
+
+This keeps DeepOps useful for lightweight cluster setup without competing with larger cluster managers.
+It also keeps the contribution surface accessible: tags, inventory output, and playbook artifacts are easy for new contributors to inspect, reproduce, and improve.
+If a site already uses BCM or another fleet manager, keep that system authoritative and use DeepOps only for the roles and playbooks the site intentionally delegates.
+
 ## Pre-requisites
 
 In order to set up and use MAAS, you should at minimum have the following components:
 
-- An Ubuntu 22.04 or 24.04 server which you can use to run MAAS
+- An Ubuntu 22.04 or 24.04 server which you can use to run MAAS.
+  MAAS 3.7 is the current Ubuntu 24.04 line; use MAAS 3.5 if the controller itself remains on Ubuntu 22.04.
 - One or more servers which you will manage using MAAS
 - A network connection between all the servers on which you can safely run DHCP. This is needed so that MAAS can provision IP addresses to the nodes it manages.
 - A network connection which you can use to log into the MAAS server. This may be the same network as the inter-node network, or it may be a separate network.
@@ -73,8 +92,10 @@ Please consult your hypervisor documentation for instructions on doing this.
    maas_dns_domain: 'deepops.local'
    maas_region_controller: '192.168.1.1'
    maas_region_controller_url: 'http://{{ maas_region_controller }}:5240/MAAS'
-   maas_repo: 'ppa:maas/3.5'
+   maas_repo: "{{ 'ppa:maas/3.7' if ansible_distribution_version is version('24.04', '>=') else 'ppa:maas/3.5' }}"
    ```
+   If you know every MAAS controller host is running Ubuntu 24.04, you can set this directly to `ppa:maas/3.7`.
+   If the controller is still Ubuntu 22.04, keep `ppa:maas/3.5`.
 1. Run the Ansible playbook to install:
    ```bash
    ansible-playbook -l <name-of-maas-node> playbooks/provisioning/maas.yml

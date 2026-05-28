@@ -14,10 +14,10 @@ Most of the playbooks in DeepOps are agnostic to the OS install tooling, assumin
 For example, DeepOps can be used to deploy a [Slurm cluster](../slurm-cluster/) or a [Kubernetes cluster](../k8s-cluster) regardless of how the OS was installed.
 This makes it relatively easy to integrate with an existing datacenter environment.
 
-However, DeepOps does provide tooling for several PXE installation mechanisms which can be used if an existing tool isn't already deployed.
-These include:
+DeepOps does not try to replace a site provisioning system.
+For environments without an existing bare-metal provisioning workflow, DeepOps provides MAAS setup guidance:
 
 - [MAAS](./maas.md), an open-source bare-metal provisioning tool developed by [Canonical](https://canonical.com/)
-- [DGXIE](./dgxie-container.md), a containerized deployment tool developed specifically to deploy NVIDIA DGX OS
-  - [DGXIE on Kubernetes](./dgxie-on-k8s.md)
-- A minimal [PXE container](./minimal-pxe-container.md) which wraps [Pixiecore](https://github.com/danderson/netboot/tree/master/pixiecore), an open source tool for network booting
+
+For new Ubuntu 24.04 or DGX OS 7 cluster deployments, prefer MAAS, an existing site provisioning system, or Ubuntu autoinstall/cloud-init.
+NVIDIA DGX OS 7 supports installing the DGX Software Stack on regular Ubuntu 24.04 for cluster deployments, which is a better fit for current automated installation tooling than the retired legacy DGX OS installer workflows.

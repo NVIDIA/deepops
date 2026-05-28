@@ -51,7 +51,8 @@ The cluster nodes will follow the requirements described by Slurm or Kubernetes.
 - CentOS 7, 8
 - Red Hat Enterprise Linux / Rocky Linux 8 and 9 for the DGX software stack through the `nvidia-dgx` role
 
-You may also install a supported operating system on all servers via a 3rd-party solution (i.e. [MAAS](https://maas.io/), [Foreman](https://www.theforeman.org/)) or utilize the provided [OS install container](docs/pxe/minimal-pxe-container.md).
+You may also install a supported operating system on all servers via a 3rd-party solution such as [MAAS](https://maas.io/) or [Foreman](https://www.theforeman.org/), or via an existing site-standard automated installer.
+For new Ubuntu 24.04 or DGX OS 7 deployments, prefer Ubuntu autoinstall/cloud-init or MAAS and then apply DeepOps roles after the OS is present.
 For DGX platform software installation on top of vanilla Ubuntu or Red Hat family operating systems, see the [DGX software stack role guide](docs/deepops/dgx-software-stack.md).
 
 ### Kubernetes
