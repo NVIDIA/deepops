@@ -1,24 +1,13 @@
-# Base our new image on the CUDA 9.2 RAPIDS image from upstream
-FROM nvcr.io/nvidia/rapidsai/rapidsai:cuda9.2-runtime-ubuntu16.04
+# Base the example on the current RAPIDS notebooks image from NGC.
+FROM nvcr.io/nvidia/rapidsai/notebooks:26.04-cuda12-py3.13
 
-# Fix font-manager package
+USER root
+
 RUN apt-get update && \
-    apt-get install -y --fix-missing font-manager && \
+    apt-get install -y --no-install-recommends font-manager && \
     rm -rf /var/lib/apt/lists/*
 
-# The name of the Anaconda Python environment we'll use (from upstream)
-ENV CONDA_ENV rapids
-
-# Install additional Python packages into the environment
-# (If you want to install more packages, add them here!)
-RUN source activate $CONDA_ENV && \
-    conda install -y unzip python-graphviz && \
-    pip install ipyvolume dask-kubernetes matplotlib cupy-cuda92
+USER rapids
 
 # Copy the parallel sum notebook in
-COPY ParallelSum.ipynb /rapids/notebooks/ParallelSum.ipynb
-
-# Set up image to be run
-COPY prepare.sh /usr/bin/prepare.sh
-CMD ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root", "--no-browser", "--NotebookApp.token='dask'"]
-ENTRYPOINT ["tini", "--", "/usr/bin/prepare.sh"]
+COPY --chown=rapids:conda ParallelSum.ipynb /home/rapids/notebooks/ParallelSum.ipynb

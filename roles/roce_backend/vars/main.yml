@@ -31,18 +31,12 @@ vendor: "15b3"
 dev_id: "101c"
 num_vf: 8
 
-#Mellanox OFED parameters
-mofed_version: "4.7-3.2.9.0"
-mofed_site_place: "MLNX_OFED-4.7-3.2.9.0"
-mofed_file_name: "MLNX_OFED_LINUX-4.7-3.2.9.0-ubuntu18.04-x86_64.iso"
+# NVIDIA OFED parameters. Prefer NVIDIA Network Operator with DOCA-OFED for
+# new Kubernetes RDMA/RoCE deployments; this role is a legacy direct-host path.
+mofed_version: "24.10-4.1.4.0"
+mofed_site_place: "MLNX_OFED-24.10-4.1.4.0"
+mofed_file_name: "MLNX_OFED_LINUX-24.10-4.1.4.0-ubuntu24.04-x86_64.iso"
 
-# before K8s 1.16
-multus_ds: "https://raw.githubusercontent.com/intel/multus-cni/master/images/multus-daemonset-pre-1.16.yml"
-sriov_dp_ds: "https://raw.githubusercontent.com/intel/sriov-network-device-plugin/master/deployments/k8s-v1.10-v1.15/sriovdp-daemonset.yaml"
-sriov_cni_ds: "https://raw.githubusercontent.com/intel/sriov-cni/master/images/k8s-v1.10-v1.15/sriov-cni-daemonset.yaml"
-
-# from K8s 1.16
-# multus_ds: "https://raw.githubusercontent.com/intel/multus-cni/master/images/multus-daemonset.yml"
-# sriov_dp_ds: "https://raw.githubusercontent.com/intel/sriov-network-device-plugin/master/deployments/k8s-v1.16/sriovdp-daemonset.yaml"
-# sriov_cni_ds: "https://raw.githubusercontent.com/intel/sriov-cni/master/images/k8s-v1.16/sriov-cni-daemonset.yaml"
-
+multus_ds: "https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/master/deployments/multus-daemonset.yml"
+sriov_dp_ds: "https://raw.githubusercontent.com/k8snetworkplumbingwg/sriov-network-device-plugin/master/deployments/sriovdp-daemonset.yaml"
+sriov_cni_ds: "https://raw.githubusercontent.com/k8snetworkplumbingwg/sriov-cni/master/images/sriov-cni-daemonset.yaml"

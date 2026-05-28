@@ -27,11 +27,9 @@ if [ "$EXTRA_PIP_PACKAGES" ]; then
 fi
 
 # Activate the specified or default conda environment
-#conda_env="rapids"
-#if [ "$CONDA_ENV" ]; then
-#    conda_env="$CONDA_ENV"
-#fi
-source activate $CONDA_ENV
+CONDA_ENV="${CONDA_ENV:-base}"
+source /opt/conda/etc/profile.d/conda.sh
+conda activate "$CONDA_ENV"
 
 # Run pre-commands
 if [ "$PRE_RUN_HOOK" ]; then

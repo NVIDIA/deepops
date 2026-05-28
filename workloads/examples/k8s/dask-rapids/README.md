@@ -34,6 +34,8 @@ DeepOps includes support for running a local registry, but configuration of that
 In my workflow below, I am pushing the image to [Docker Hub](https://hub.docker.com).
 If you haven't used Docker Hub before, the [quickstart documentation](https://docs.docker.com/docker-hub/) provides a good tutorial.
 
+The included Dockerfile extends the current NGC RAPIDS notebooks image, `nvcr.io/nvidia/rapidsai/notebooks:26.04-cuda12-py3.13`, which provides RAPIDS, Dask CUDA, and JupyterLab on Ubuntu 24.04. If you move to a newer RAPIDS release, update both the Dockerfile and Helm values together.
+
 ### Editing the deployment scripts
 
 We'll deploy the RAPIDS/Dask container in one step using the `deploy.sh` script.
@@ -140,9 +142,8 @@ Feel free to adjust the number of CPU cores or GPUs used and the parameters for 
 
 ## Experimenting further
 
-The base container we used for this benchmark contains more examples using RAPIDS in the `cuml/` directory,
-as well as an end-to-end workflow example based on a Fannie Mae mortgage dataset in the `mortgage/` directory.
-Both directories can be accessed easily via JupyterLab.
+The base container used for this benchmark includes RAPIDS libraries, Dask CUDA, and JupyterLab.
+For more examples and current image tags, use the RAPIDS documentation and NGC container catalog.
 
 You can also experiment with the custom container by making changes to the `Dockerfile` used to create it,
 in `examples/k8s/dask-rapids/docker`.
