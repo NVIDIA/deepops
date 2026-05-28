@@ -524,7 +524,7 @@ systemctl restart docker.node-exporter
 For the NVIDIA DCGM Exporter, we do pin a particular version of the container. To update to a newer version, edit your DeepOps configuration to specify a new container tag:
 
 ```
-nvidia_dcgm_container_version: "2.1.8-2.4.0-rc.2-ubuntu20.04"
+nvidia_dcgm_container_version: "4.5.3-4.8.2-distroless"
 ```
 
 Then re-run the playbook:

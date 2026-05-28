@@ -22,7 +22,7 @@ $ sudo docker ps
 CONTAINER ID        IMAGE                              COMMAND                  CREATED             STATUS
 PORTS                    NAMES
 139fe402640f        quay.io/prometheus/node-exporter   "/bin/node_exporter …"   56 minutes ago      Up 56 minutes                                docker.node-exporter.service
-0da9e3f1a7c8        nvidia/dcgm-exporter               "/usr/bin/dcgm-expor…"   56 minutes ago      Up 56 minutes       0.0.0.0:9400->9400/tcp   docker.dcgm-exporter.service
+0da9e3f1a7c8        nvcr.io/nvidia/k8s/dcgm-exporter   "/usr/bin/dcgm-expor…"   56 minutes ago      Up 56 minutes       0.0.0.0:9400->9400/tcp   docker.dcgm-exporter.service
 ```
 
 ## Grafana
