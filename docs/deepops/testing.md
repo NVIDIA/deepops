@@ -27,25 +27,28 @@ This can be useful for excluding specific roles that have known issues or are st
 
 ## DeepOps end-to-end testing
 
-The DeepOps project leverages a private Jenkins server to run continuous integration tests. Testing is done using the [virtual](../../virtual) deployment mechanism. Several Vagrant VMs are created, the cluster is deployed, tests are executed, and then the VMs are destroyed.
+Public DeepOps pull requests are validated with GitHub Actions for setup, linting, CodeQL, and selected Molecule role tests. Those checks catch many packaging and role-regression issues, but they do not replace deployment validation on real GPU systems.
 
-The goal of the DeepOps CI is to prevent bugs from being introduced into the code base and to identify when changes in 3rd party platforms have occurred or impacted the DeepOps deployment mechanisms. In general, K8s and Slurm deployment issues are detected and resolved with urgency. Many components of DeepOps are 3rd party open source tools that may silently fail or suddenly change without notice. The team will make a best-effort to resolve these issues and include regression tests, however there may be times where a fix is unavailable. Historically, this has been an issue with Rook-Ceph and Kubeflow, and those GitHub communities are best equipped to help with resolutions.
+DeepOps also retains a legacy Jenkins/Vagrant test harness in the [jenkins](../../workloads/jenkins) and [virtual](../../virtual) directories. Treat those files as community-supported reference material unless maintainers explicitly say a Jenkins job is still authoritative. New release validation should record the exact environment, operating system, GPU stack, and workload checks used for the pull request or release.
+
+The goal of DeepOps validation is to prevent bugs from being introduced into the code base and to identify when changes in third-party platforms have affected the DeepOps deployment mechanisms. In general, Kubernetes and Slurm deployment issues are detected and resolved with urgency. Many components of DeepOps are third-party open source tools that may silently fail or change without notice. The team will make a best-effort to resolve these issues and include regression tests, however there may be times where a fix is unavailable. Historically, this has been an issue with Rook-Ceph and Kubeflow, and those GitHub communities are best equipped to help with resolutions.
 
 ### Testing Method
 
-DeepOps CI contains two types of automated tests:
+DeepOps currently uses these testing layers:
 
-- Nightly tests. These are more exhaustive and run on a nightly basis against the `master` branch.
+- GitHub Actions for public pull request checks, including setup, linting, CodeQL, and selected Molecule role tests.
+- Focused local validation for changed playbooks, roles, scripts, and documentation before opening or updating a pull request.
+- GPU-backed deployment validation for changes that affect Slurm, Kubernetes, drivers, container runtimes, DGX platform software, or workload examples.
+- Legacy Jenkins/Vagrant jobs as reference material for operators who still run that harness.
 
-- PR tests. These are faster and are executed against every open PR when commits are made to `master`. They are also when a commit is made to any DeepOps branch (`release-20.12`, `master`, etc.). Results are integrated into GitHub.
-
-In addition to the automated tests, we also provide developers the a method to manually kick off a test run against one or more deployment configurations in parallel from the below testing matrix through the [Jenkins-matrix](../../workloads/jenkins/Jenkinsfile-matrix) Jenkinsfile.
+If a change requires GPU-backed validation, document the validation environment and results in the pull request. If that validation cannot be run, state the gap explicitly instead of relying on the legacy Jenkins matrix.
 
 ### Tests
 
-A short description of the nightly testing is outlined below. The full suit of tests can be reviewed in the [jenkins](../../workloads/jenkins) directory. Additional details can be found [here](../../workloads/jenkins/README.md).
+A short description of the historical Jenkins test matrix is outlined below. The full suite of legacy jobs can be reviewed in the [jenkins](../../workloads/jenkins) directory. These rows are not a promise of current public CI coverage; check the pull request's GitHub Actions and validation notes for current status.
 
-**Testing Matrix**
+**Legacy Jenkins Testing Matrix**
 
 | Test                                                | [PR](../../workloads/jenkins/Jenkinsfile) | [Nightly](../../workloads/jenkins/Jenkinsfile-nightly) | [Nightly Multi-node](../../workloads/jenkins/Jenkinsfile-multi-nightly) | Comments                             |
 | --------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------ |

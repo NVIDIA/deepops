@@ -84,7 +84,7 @@ The `nvidia-dgx` role can install NVIDIA DGX platform software on supported DGX 
 
 ### Virtual
 
-To try DeepOps before deploying it on an actual cluster, a virtualized version of DeepOps may be deployed on a single node using Vagrant. This can be used for testing, adding new features, or configuring DeepOps to meet deployment-specific needs.
+To try DeepOps before deploying it on an actual cluster, a virtualized version of DeepOps may be deployed on a single node using Vagrant. This path is useful for learning and local experimentation, but it is a legacy/community-supported lab path and should not be treated as release-grade validation for current GPU clusters.
 
 Consult the [Virtual DeepOps Deployment Guide](virtual/README.md) to build a GPU-enabled virtual cluster with DeepOps.
 
