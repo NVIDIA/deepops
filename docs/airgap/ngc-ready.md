@@ -28,9 +28,8 @@ The following Apt repositories will need to be mirrored in the offline environme
 
 For instructions on mirroring these repositories, see the [doc on Apt mirrors](./mirror-apt-repos.md).
 
-The following files will need to be downloaded and made available in an HTTP mirror:
+The following files may need to be downloaded and made available in an HTTP mirror:
 
-- nvidia-docker wrapper (found [here](https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/nvidia-docker))
 - DCGM package (optional)
 
 For instructions on setting up an HTTP mirror, see the [doc on HTTP mirrors](./mirror-http-files.md).
@@ -53,10 +52,9 @@ The following RPM repositories will need to be mirrored in the offline environme
 
 For instructions on mirroring these repositories, see the [doc on RPM mirrors](./mirror-rpm-repos.md).
 
-The following files will need to be downloaded and made available in an HTTP mirror:
+The following files may need to be downloaded and made available in an HTTP mirror:
 
 - EPEL package (found [here](https://fedoraproject.org/wiki/EPEL))
-- nvidia-docker wrapper (found [here](https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/nvidia-docker))
 - DCGM package (optional)
 
 For instructions on setting up an HTTP mirror, see the [doc on HTTP mirrors](./mirror-http-files.md).
@@ -134,8 +132,8 @@ To configure alternate URLs for these repositories, set the following variables 
 docker_ubuntu_repo_base_url: "http://<your-package-mirror>/<your-path-to-docker-repo>"
 docker_ubuntu_repo_gpgkey: "http://<your-package-mirror>/<your-path-to-docker-gpgkey>"
 
-nvidia_docker_repo_base_url: "http://<your-package-mirror>/<your-path-to-nvidia-docker-base-dir>"
-nvidia_docker_repo_gpg_url: "http://<your-package-mirror>/<your-path-to-nvidia-docker-gpgkey>"
+nvidia_container_toolkit_repo_base_url: "http://<your-package-mirror>/<your-path-to-libnvidia-container>"
+nvidia_container_toolkit_repo_gpg_url: "http://<your-package-mirror>/<your-path-to-libnvidia-container-gpgkey>"
 ```
 
 **Enterprise Linux**
@@ -144,17 +142,13 @@ nvidia_docker_repo_gpg_url: "http://<your-package-mirror>/<your-path-to-nvidia-d
 docker_rh_repo_base_url: "http://<your-package-mirror>/<your-path-to-docker-repo>"
 docker_rh_repo_gpgkey: "http://<your-package-mirror>/<your-path-to-docker-gpgkey>"
 
-nvidia_docker_repo_base_url: "http://<your-package-mirror>/<your-path-to-nvidia-docker-base-dir>"
-nvidia_docker_repo_gpg_url: "http://<your-package-mirror>/<your-path-to-nvidia-docker-gpgkey>"
+nvidia_container_toolkit_rpm_repo_url: "http://<your-package-mirror>/<your-path-to-nvidia-container-toolkit.repo>"
 ```
 
 ### Configure DeepOps to use your mirrors for HTTP downloads
 
-In all cases, you will need to provide a URL to download the nvidia-docker wrapper:
-
-```bash
-nvidia_docker_wrapper_url: "http://<your-http-mirror>/<your-path>/nvidia-docker"
-```
+Current NVIDIA Container Toolkit installs do not need a standalone `nvidia-docker` wrapper file.
+Use this section only for other direct HTTP downloads required by the roles you enable.
 
 If installing on Enterprise Linux, you will need to provide a URL for the EPEL package.
 For example,
