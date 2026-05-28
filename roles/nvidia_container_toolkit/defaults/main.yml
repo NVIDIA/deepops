@@ -4,6 +4,10 @@ nvidia_container_toolkit_repo_gpg_url: "{{ nvidia_container_toolkit_repo_base_ur
 nvidia_container_toolkit_keyring_ascii_path: "/usr/share/keyrings/nvidia-container-toolkit-keyring.asc"
 nvidia_container_toolkit_keyring_path: "/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg"
 nvidia_container_toolkit_apt_source_path: "/etc/apt/sources.list.d/nvidia-container-toolkit.list"
+nvidia_container_toolkit_rpm_repo_url: "{{ nvidia_container_toolkit_repo_base_url }}/stable/rpm/nvidia-container-toolkit.repo"
+nvidia_container_toolkit_yum_repo_path: "/etc/yum.repos.d/nvidia-container-toolkit.repo"
+nvidia_container_toolkit_rpm_prerequisites:
+  - ca-certificates
 nvidia_container_toolkit_package: "nvidia-container-toolkit"
 nvidia_container_toolkit_configure_docker: true
 nvidia_container_toolkit_set_as_default_runtime: true
