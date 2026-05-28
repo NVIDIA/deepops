@@ -48,16 +48,16 @@ If a change requires GPU-backed validation, document the validation environment 
 
 A short description of the historical Jenkins test matrix is outlined below. The full suite of legacy jobs can be reviewed in the [jenkins](../../workloads/jenkins) directory. These rows are not a promise of current public CI coverage; check the pull request's GitHub Actions and validation notes for current status.
 
-**Legacy Jenkins Testing Matrix**
+**Validation Matrix**
 
 | Test                                                | [PR](../../workloads/jenkins/Jenkinsfile) | [Nightly](../../workloads/jenkins/Jenkinsfile-nightly) | [Nightly Multi-node](../../workloads/jenkins/Jenkinsfile-multi-nightly) | Comments                             |
 | --------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------ |
-| Ubuntu 18.04                                        | x                                         | x                                                      | x                                                                       |                                      |
-| Ubuntu 20.04                                        |                                           | x                                                      | x                                                                       |                                      |
+| Ubuntu 18.04                                        | x                                         | x                                                      | x                                                                       | Legacy Jenkins/Vagrant reference only |
+| Ubuntu 20.04                                        |                                           | x                                                      | x                                                                       | Legacy Jenkins/Vagrant reference only |
 | Ubuntu 22.04                                        |                                           |                                                        |                                                                         | setup.sh and Molecule GitHub Actions |
 | Ubuntu 24.04                                        |                                           |                                                        |                                                                         | setup.sh and Molecule GitHub Actions |
-| CentOS 7                                            |                                           | x                                                      | x                                                                       |                                      |
-| CentOS                                              |                                           |                                                        | x                                                                       |                                      |
+| CentOS 7                                            |                                           | x                                                      | x                                                                       | Legacy Jenkins/Vagrant reference only |
+| CentOS 8                                            |                                           |                                                        | x                                                                       | Legacy Jenkins/Vagrant reference only |
 | DGX OS                                              |                                           |                                                        |                                                                         | Syntax-checked only; full validation requires DGX hardware |
 | RHEL                                                |                                           |                                                        |                                                                         | DGX software-stack role syntax-checked only; full validation requires DGX hardware and subscriptions |
 | 1 mgmt node                                         | x                                         | x                                                      |                                                                         |                                      |
@@ -123,29 +123,18 @@ molecule init scenario -r <your-role> --driver-name docker
 ```
 
 4. In the file `molecule/default/molecule.yml`, define the list of platforms to be tested.
-   DeepOps currently supports operating systems based on Ubuntu 18.04, Ubuntu 20.04, Ubuntu 22.04, Ubuntu 24.04, EL7, and EL8.
-   The DGX software stack role also supports Red Hat Enterprise Linux / Rocky Linux 8 and 9 for DGX platform software installation.
-   To test these stacks, the following `platforms` stanza can be used.
+   DeepOps currently uses Ubuntu 22.04 and Ubuntu 24.04 for setup and Molecule GitHub Actions.
+   Add Red Hat family images only for roles that explicitly support them, and validate the image choice for that role.
+   Keep Ubuntu 18.04, Ubuntu 20.04, CentOS 7, and CentOS 8 scenarios in separately named legacy test scenarios when maintaining older compatibility paths.
+   To test the current Ubuntu stacks, the following `platforms` stanza can be used.
 
 ```yaml
 platforms:
-  - name: ubuntu-1804
-    image: geerlingguy/docker-ubuntu1804-ansible
-    pre_build_image: true
-  - name: ubuntu-2004
-    image: geerlingguy/docker-ubuntu2004-ansible
-    pre_build_image: true
   - name: ubuntu-2204
     image: geerlingguy/docker-ubuntu2204-ansible
     pre_build_image: true
   - name: ubuntu-2404
     image: geerlingguy/docker-ubuntu2404-ansible
-    pre_build_image: true
-  - name: centos-7
-    image: geerlingguy/docker-centos7-ansible
-    pre_build_image: true
-  - name: centos-8
-    image: geerlingguy/docker-centos8-ansible
     pre_build_image: true
 ```
 

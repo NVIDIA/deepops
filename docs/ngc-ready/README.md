@@ -14,10 +14,11 @@ These instructions assume the following:
 
 - You have a NGC-Ready server. To determine if your server is NGC-Ready, please review the list of validated servers at the NGC-Ready Server documentation page - https://docs.nvidia.com/certification-programs/ngc-ready-systems/index.html
 - Your NGC-Ready Server has a compatible Linux distribution installed:
-  - Ubuntu Server 20.04 LTS
   - Ubuntu Server 22.04 LTS
   - Ubuntu Server 24.04 LTS
-  - CentOS 7
+  - Red Hat Enterprise Linux / Rocky Linux 8 or 9 when the referenced roles are validated for your server
+
+Legacy Ubuntu 20.04 and CentOS 7 environments may still work for existing deployments, but they are not current release validation targets.
 
 ## Setup
 
@@ -41,7 +42,7 @@ This process will install the latest NVIDIA GPU Drivers, and Docker with the NVI
 #   <ip-of-host>: IP of NGC-Ready server, or localhost. The trailing comma is required
 # If SSH requires a password, add: -k
 # If sudo requires a password, add: -K
-ansible-playbook -u <ssh-user> -i <ip-of-host>, playbooks/ngc-ready.yml
+ansible-playbook -u <ssh-user> -i <ip-of-host>, playbooks/ngc-ready-server.yml
 ```
 
 ## Testing
@@ -55,5 +56,5 @@ This process will test the functionality of the NGC-Ready server by running a fu
 #   <ip-of-host>: IP of NGC-Ready server, or localhost. The trailing comma is required
 # If SSH requires a password, add: -k
 # If sudo requires a password, add: -K
-ansible-playbook -u <ssh-user> -i <ip-of-host>, playbooks/ngc-ready.yml --tags test
+ansible-playbook -u <ssh-user> -i <ip-of-host>, playbooks/ngc-ready-server.yml --tags test
 ```
