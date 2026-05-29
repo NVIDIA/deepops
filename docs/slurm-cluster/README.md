@@ -87,7 +87,7 @@ default parameters that can be overriden:
 ```bash
     # String; Container for nccl performance/validation tests. Either docker
     #   tag or can be path to sqsh file.
-    base_container: "nvcr.io/nvidia/tensorflow:21.09-tf2-py3"
+    base_container: "nvcr.io/nvidia/pytorch:26.04-py3"
 
     # String; Container to be created or one that might exist with nccl tests.
     #   If `compile_nccl_tests` is True, it must be a sqsh file.
@@ -166,17 +166,17 @@ NOTE: This will use Pyxis to download a container.
 
    ```bash
    ansible-playbook -l slurm-cluster playbooks/slurm-cluster/slurm-validation.yml \
-     -e '{base_container: nvcr.io/nvidia/pytorch:21.09-py3}' \
+     -e '{base_container: nvcr.io/nvidia/pytorch:26.04-py3}' \
      -e '{nccl_tests_container: "${HOME}/enroot_images/nccl_tests_torch_val.sqsh"}' \
      -e '{num_nodes: 2}' \
      -e '{srun_exports: "NCCL_DEBUG=INFO,OMPI_MCA_pml=^ucx,OMPI_MCA_coll=^hcoll"}' \
      -e '{cleanup: True}'
    ```
 
-3. Example to run on 1 node using existing NCCL container from a docker repo.
+3. Example to run on 1 node using an existing NCCL test container from a site registry.
    ```bash
    ansible-playbook -l slurm-cluster playbooks/slurm-cluster/slurm-validation.yml \
-     -e '{nccl_tests_container: deepops/nccl-tests-tf20.06-ubuntu18.04:latest}' \
+     -e '{nccl_tests_container: registry.example.com/hpc/nccl-tests:latest}' \
      -e '{compile_nccl_tests: False}' \
      -e '{num_nodes: 1}'
    ```

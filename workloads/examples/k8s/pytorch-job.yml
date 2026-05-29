@@ -8,9 +8,9 @@ spec:
     spec:
       containers:
         - name: pytorch-container
-          image: nvcr.io/nvidia/pytorch:19.02-py3
+          image: nvcr.io/nvidia/pytorch:26.04-py3
           command: ["/bin/sh"]
-          args: ["-c", "python /workspace/examples/upstream/mnist/main.py"]
+          args: ["-c", "python -c 'import torch; print(\"cuda_available=\", torch.cuda.is_available()); print(\"device_count=\", torch.cuda.device_count())'"]
           resources:
             limits:
               nvidia.com/gpu: 1

@@ -42,8 +42,8 @@ The following variables are the most common configuration you may want to adjust
 
 | Variable                                   | Default value                            | Description                                                                   |
 | ------------------------------------------ | ---------------------------------------- | ----------------------------------------------------------------------------- |
-| `nginx_docker_cache_image`                 | `"rpardini/docker-registry-proxy:0.6.1"` | Container image used to deploy the proxy                                      |
-| `nginx_docker_cache_registry_string`       | `"quay.io k8s.gcr.io gcr.io nvcr.io"`    | Space-separated list of registries to proxy                                   |
+| `nginx_docker_cache_image`                 | `"rpardini/docker-registry-proxy:0.6.5"` | Container image used to deploy the proxy                                      |
+| `nginx_docker_cache_registry_string`       | `"registry.k8s.io quay.io k8s.gcr.io gcr.io nvcr.io"` | Space-separated list of registries to proxy; `k8s.gcr.io` is retained for older clusters while current Kubernetes images use `registry.k8s.io` |
 | `nginx_docker_cache_manifests`             | `"false"`                                | Flag to determine whether to cache image manifests                            |
 | `nginx_docker_cache_manifest_default_time` | "1h"                                     | If manifests are cached, time to cache them                                   |
 | `nginx_docker_cache_hostgroup`             | `"cache"`                                | Ansible inventory host group where proxy is deployed                          |

@@ -5,9 +5,12 @@ USER root
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends font-manager && \
+    mkdir -p /opt/rapids/notebooks && \
+    chown -R rapids:conda /opt/rapids && \
     rm -rf /var/lib/apt/lists/*
 
 USER rapids
+WORKDIR /opt/rapids/notebooks
 
 # Copy the parallel sum notebook in
-COPY --chown=rapids:conda ParallelSum.ipynb /home/rapids/notebooks/ParallelSum.ipynb
+COPY --chown=rapids:conda ParallelSum.ipynb ./ParallelSum.ipynb

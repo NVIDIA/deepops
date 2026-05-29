@@ -10,7 +10,7 @@ Kubernetes Usage Guide
 
 ## Introduction
 
-Most of the following examples can be configured and executed through the Kubernetes Dashboard. For a basic run-through on how to leverage the Kubernetes Dashboard, please see the [official documentation](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/). The following examples `kubectl` on the master node instead.
+Most of the following examples can be configured and executed through the Kubernetes Dashboard. For a basic run-through on how to leverage the Kubernetes Dashboard, please see the [official documentation](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/). The following examples use `kubectl` on the master node instead.
 
 ## Simple Commands
 
@@ -63,12 +63,12 @@ kubectl get pods --all-namespaces
 4. Delete the job (and the corresponding pod).
 
    ```bash
-   kubectl delete job cuda-job
+   kubectl delete job pytorch-job
    ```
 
 ## Using NGC Containers with Kubernetes and Launching Jobs
 
-[NVIDIA GPU Cloud (NGC)](https://docs.nvidia.com/ngc/ngc-introduction) manages a catalog of fully integrated and optimized DL framework containers that take full advantage of NVIDIA GPUs in both single and multi-GPU configurations. They include NVIDIA CUDA® Toolkit, DIGITS workflow, and the following DL frameworks: NVCaffe, Caffe2, Microsoft Cognitive Toolkit (CNTK), MXNet, PyTorch, TensorFlow, Theano, and Torch. These framework containers are delivered ready-to-run, including all necessary dependencies such as the CUDA runtime and NVIDIA libraries.
+[NVIDIA GPU Cloud (NGC)](https://docs.nvidia.com/ngc/ngc-introduction) manages a catalog of optimized GPU containers for CUDA, PyTorch, TensorFlow, Triton Inference Server, RAPIDS, and other NVIDIA software. Use the NGC catalog and the NVIDIA framework container release notes to choose the current image for your workload.
 
 To access the NGC container registry via Kubernetes, add a secret which will be employed when Kubernetes asks NGC to pull container images from it.
 
@@ -105,9 +105,9 @@ To access the NGC container registry via Kubernetes, add a secret which will be 
            - name: nvcr.dgxkey
          containers:
            - name: pytorch-container
-             image: nvcr.io/nvidia/pytorch:19.02-py3
+             image: nvcr.io/nvidia/pytorch:26.04-py3
              command: ["/bin/sh"]
-             args: ["-c", "python /workspace/examples/upstream/mnist/main.py"]
+             args: ["-c", "python -c 'import torch; print(\"cuda_available=\", torch.cuda.is_available()); print(\"device_count=\", torch.cuda.device_count())'"]
              resources:
                limits:
                  nvidia.com/gpu: 1

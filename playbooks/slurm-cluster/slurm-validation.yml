@@ -11,7 +11,7 @@
   vars:
     # String; Container for nccl performance/validation tests. Either docker
     #   repo or can be path to sqsh file.
-    base_container: "nvcr.io/nvidia/tensorflow:21.09-tf2-py3"
+    base_container: "nvcr.io/nvidia/pytorch:26.04-py3"
     # String; Container to be created or one that might exist with nccl tests.
     #   If `compile_nccl_tests` is True, it must be a sqsh file.
     nccl_tests_container: "${HOME}/enroot_images/nccl_tests_slurm_val.sqsh"
