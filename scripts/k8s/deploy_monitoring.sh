@@ -235,7 +235,7 @@ function install_dependencies() {
 
     # Install/initialize Helm if needed
     ./scripts/k8s/install_helm.sh
-    # StorageClasse (for volumes and MySQL DB)
+    # StorageClass (for volumes and MySQL DB)
     kubectl get storageclass 2>&1 | grep "(default)" >/dev/null 2>&1
     if [ $? -ne 0 ] ; then
         echo "No storageclass found"
@@ -247,7 +247,7 @@ function install_dependencies() {
 	else
             echo "To continue without persistent storage, run '${0} -x'"
             echo "To setup the nfs-client-provisioner (preferred), run: ansible-playbook playbooks/k8s-cluster/nfs-client-provisioner.yml"
-            echo "To provision Ceph storage, run: ./scripts/k8s/deploy_rook.sh"
+            echo "The Rook/Ceph helper is deprecated; use a site-owned StorageClass or see docs/k8s-cluster/README.md before using it."
             exit 1
 	fi
     fi

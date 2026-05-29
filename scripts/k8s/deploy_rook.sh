@@ -39,10 +39,12 @@ function help_me() {
   echo "Usage:"
   echo "-h    This message."
   echo "-p    Print out the connection info for Rook-Ceph."
-  echo "-d    Delete Rook from your system (this delete any created volumes)."
+  echo "-d    Delete Rook from your system (this deletes any created volumes)."
   echo "-w    Poll for rook-ceph to reach a healthy and initialized state."
   echo "-u    Create a new dashboard user (default username: 'admin' password: 'deepops', set with env variables DEEPOPS_ROOK_USER/DEEPOPS_ROOK_PASS)."
   echo "-x    Install Rook-Ceph, but do not set it as the Default StorageClass."
+  echo
+  echo "This helper is deprecated. New installs require DEEPOPS_ENABLE_DEPRECATED_ROOK=true."
 }
 
 
@@ -141,6 +143,12 @@ function get_opts() {
 
 
 function install_rook() {
+  if [ "${DEEPOPS_ENABLE_DEPRECATED_ROOK}" != "true" ]; then
+    echo "DEPRECATION NOTICE: deploy_rook.sh is deprecated and community-supported."
+    echo "Set DEEPOPS_ENABLE_DEPRECATED_ROOK=true only for legacy environments that still need this helper."
+    exit 1
+  fi
+
   # Install Helm if it is not already installed
   ${SCRIPT_DIR}/install_helm.sh
 

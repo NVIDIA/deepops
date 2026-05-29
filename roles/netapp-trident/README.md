@@ -3,6 +3,8 @@ netapp-trident
 
 Ansible role that can be used to deploy NetApp Trident within a Kubernetes cluster.
 
+This role is optional and community-supported in DeepOps. Use it only when a site storage owner can validate the NetApp backend, StorageClass, and snapshot policy against current NetApp documentation.
+
 Requirements
 ------------
 
@@ -15,7 +17,7 @@ Requirements
 Role Variables
 --------------
 
-See defaults/main.yml, vars/main.yml
+See defaults/main.yml and `config.example/group_vars/netapp-trident.yml`.
 
 Dependencies
 ------------

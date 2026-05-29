@@ -37,4 +37,4 @@ Before executing the scripts to continue setting up and installing services you 
 1. Run the `scripts/deepops/proxy.sh` script to setup environment variables. Then continue running all the scripts necessary for your environment.
 
 2. Rather than setup the variables for your current shell, you can run each script to use the proxy without impacting your current env. For example:
-   `. scripts/deepops/proxy.sh && scripts/k8s/deploy_rook.sh`
+   `. scripts/deepops/proxy.sh && DEEPOPS_ENABLE_DEPRECATED_ROOK=true scripts/k8s/deploy_rook.sh`
