@@ -23,12 +23,9 @@ If deploying kubeflow or another resource-intensive application in this environm
 
 ### Operating System Requirements
 
-* Ubuntu 18.04 (or greater)
-* CentOS 7.6 (or greater)
+Running DeepOps virtually assumes that the host machine's OS is suitable for Vagrant, libvirt, and any optional GPU passthrough configuration. Ubuntu 22.04 LTS is the preferred host path for this legacy lab workflow.
 
-Running DeepOps virtually assumes that the host machine's OS is an approved OS. If this is not the case, the scripts used in the steps below may be modified to work with a different OS.
-
-The Vagrantfiles currently cover Ubuntu 18.04, Ubuntu 20.04, Ubuntu 22.04, CentOS 7, and CentOS 8. The startup script defaults to Ubuntu 20.04. Newer operating systems should be validated on real target systems unless the Vagrantfiles have been refreshed and tested for that release.
+The Vagrantfiles currently cover Ubuntu 18.04, Ubuntu 20.04, Ubuntu 22.04, CentOS 7, and CentOS 8. The startup script defaults to Ubuntu 20.04. Treat these Vagrantfiles as legacy/community-supported lab references; validate current release work on real target systems unless the Vagrantfiles have been refreshed and tested for that release.
 
 Also, using VMs and optionally GPU passthrough assumes that the host machine has been configured to enable virtualization in the BIOS. For instructions on how to accomplish this, refer to the sections at the bottom of this README: [Enabling virtualization and GPU passthrough](#enabling-virtualization-and-gpu-passthrough).
 
@@ -163,7 +160,7 @@ The default Vagrantfiles create VMs that are very minimal in terms of resources 
 
 ### Specify the cluster Operating System
 
-By default, all virtual nodes deploy with Ubuntu 20.04. This can be changed by overriding the environment variables `DEEPOPS_VAGRANT_OS` and `DEEPOPS_OS_VERSION`. Available Vagrantfiles include Ubuntu 18.04, Ubuntu 20.04, Ubuntu 22.04, CentOS 7, and CentOS 8.
+By default, all virtual nodes deploy with Ubuntu 20.04. This can be changed by overriding the environment variables `DEEPOPS_VAGRANT_OS` and `DEEPOPS_OS_VERSION`. Available Vagrantfiles include Ubuntu 18.04, Ubuntu 20.04, Ubuntu 22.04, CentOS 7, and CentOS 8. These operating system choices are maintained as legacy lab fixtures, not as release validation targets.
 
 ```sh
 export DEEPOPS_VAGRANT_OS=centos
@@ -357,5 +354,4 @@ $ lspci -nnk -d 10de:1db1
 	Kernel driver in use: vfio-pci
 	Kernel modules: nvidiafb, nouveau, nvidia_drm, nvidia_vgpu_vfio, nvidia
 ```
-
 

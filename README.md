@@ -36,20 +36,22 @@ It is recommended to use the latest release branch for stable code (linked above
 
 ### Provisioning System
 
-The provisioning system is used to orchestrate the running of all playbooks and one will be needed when instantiating Kubernetes or Slurm clusters. Supported operating systems which are tested and supported include:
+The provisioning system is used to orchestrate the running of all playbooks and one will be needed when instantiating Kubernetes or Slurm clusters. Current release validation focuses on:
 
-- NVIDIA DGX OS 4, 5, 6, 7
-- Ubuntu 18.04 LTS, 20.04, 22.04 LTS, 24.04 LTS
-- CentOS 7, 8
+- Ubuntu 22.04 LTS and 24.04 LTS
+- NVIDIA DGX OS 6 and 7
+
+DeepOps still retains legacy/community-maintained paths for older environments such as DGX OS 4/5, Ubuntu 18.04/20.04, and CentOS 7/8. Treat those paths as compatibility references unless your site validates them for the release you deploy.
 
 ### Cluster System
 
-The cluster nodes will follow the requirements described by Slurm or Kubernetes. You may also use a cluster node as a provisioning system but it is not required.
+The cluster nodes will follow the requirements described by Slurm or Kubernetes. You may also use a cluster node as a provisioning system but it is not required. Current release validation focuses on:
 
-- NVIDIA DGX OS 4, 5, 6, 7
-- Ubuntu 18.04 LTS, 20.04, 22.04 LTS, 24.04 LTS
-- CentOS 7, 8
-- Red Hat Enterprise Linux / Rocky Linux 8 and 9 for the DGX software stack through the `nvidia-dgx` role
+- Ubuntu 22.04 LTS and 24.04 LTS for generic Kubernetes and Slurm deployments
+- NVIDIA DGX OS 6 and 7 for DGX systems
+- Red Hat Enterprise Linux / Rocky Linux 8 and 9 for DGX platform software installation through the `nvidia-dgx` role
+
+DeepOps still retains legacy/community-maintained paths for older environments such as DGX OS 4/5, Ubuntu 18.04/20.04, CentOS 7/8, and the historical DGX EL7 stack. Treat those paths as compatibility references unless your site validates them for the release you deploy.
 
 You may also install a supported operating system on all servers via a 3rd-party solution such as [MAAS](https://maas.io/) or [Foreman](https://www.theforeman.org/), or via an existing site-standard automated installer.
 For new Ubuntu 24.04 or DGX OS 7 deployments, prefer Ubuntu autoinstall/cloud-init or MAAS and then apply DeepOps roles after the OS is present.

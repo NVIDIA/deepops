@@ -1,5 +1,5 @@
 ---
-- name: centos 8 - ensure powertools installed
+- name: legacy CentOS 8 - ensure powertools installed
   block:
     - name: ensure prereq packages installed
       yum:
