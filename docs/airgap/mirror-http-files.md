@@ -34,8 +34,7 @@ Then, for any files you need to make available for download, simply copy these f
 To configure DeepOps to make use of this server, you will need to configure the specific variables for the download URL of each file.
 The best place to find these variables is the `defaults/main.yml` file of each role you plan to make use of.
 
-For example, in the [nvidia-docker role](https://github.com/NVIDIA/ansible-role-nvidia-docker), the wrapper script is downloaded from the [nvidia-docker Github repositories](https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/nvidia-docker).
-
-To mirror this file offline, you would download the script and place it on your offline repo server, then configure the `nvidia_docker_wrapper_url` variable with the alternate URL.
+Current NVIDIA Container Toolkit installs use package repositories and `nvidia-ctk` runtime configuration rather than a standalone wrapper script.
+Mirror those package repositories with the Apt or RPM mirror workflows, then point the `nvidia_container_toolkit_*` repository variables at your local mirrors.
 
 Documentation on specific offline workflows (such as the [NGC ready offline doc](./ngc-ready.md)) may list specific files that need to be downloaded for those workflows.
