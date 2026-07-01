@@ -3,7 +3,7 @@
 import json
 
 from collections import OrderedDict
-from sys import argv
+from sys import argv, exit
 
 
 def return_json(payload):
@@ -173,6 +173,11 @@ if argv[1] == 'parse_versioning':
             manifest_json = json.loads(line)
         except ValueError:
             pass
+
+    if not isinstance(manifest_json, dict):
+        print('No JSON could be loaded, is the container already running?')
+        exit(1)
+
     try:
         if manifest_json['ErrorWritingVersioning']:
             print('No JSON could be loaded, is the container already running?')
