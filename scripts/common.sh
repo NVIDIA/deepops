@@ -19,5 +19,11 @@ else
   source ${DEEPOPS_CONFIG_DIR}/env.sh
 fi
 
+# Determine the DeepOps version for debug output.
+# Can be overridden in config/env.sh; defaults to the checkout's git tag description.
+if [ -z "${DEEPOPS_VERSION}" ]; then
+  DEEPOPS_VERSION="$(git -C "${ROOT_DIR}" describe --tags --always 2>/dev/null || echo unknown)"
+fi
+
 # Print out base debug
 echo "Starting '${0}';  DeepOps version '${DEEPOPS_VERSION}'"
