@@ -46,8 +46,10 @@ dashboard_metrics_scraper_repo: "kubernetesui/metrics-scraper"
 # Ensure hosts file generation only runs across k8s cluster
 hosts_add_ansible_managed_hosts_groups: ["k8s_cluster"]
 
-# NFS Client Provisioner 
+# NFS Client Provisioner
 # Playbook: nfs-client-provisioner.yml
+# This convenience default creates a non-HA NFS export on the first control-plane
+# node. For production clusters, point this at site-owned storage or disable it.
 k8s_nfs_client_provisioner: true
 k8s_deploy_nfs_server: true
 k8s_nfs_mkdir: true # Set to false if an export dir is already configured with proper permissions

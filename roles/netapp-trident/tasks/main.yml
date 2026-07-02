@@ -1,31 +1,36 @@
 ---
 # tasks file for netapp-trident role
 
+- name: Add Trident Helm repo
+  command: '/usr/local/bin/helm repo add --force-update {{ trident_helm_repo_name }} {{ trident_helm_repo_url }}'
+  run_once: true
+  changed_when: false
+
+- name: Update Helm repos
+  command: /usr/local/bin/helm repo update
+  run_once: true
+  changed_when: false
+
+- name: Install Trident using Helm
+  command: '/usr/local/bin/helm upgrade --install {{ trident_helm_release_name }} {{ trident_helm_chart_name }} --namespace {{ trident_namespace }} --create-namespace --version {{ trident_helm_chart_version }} --wait'
+  run_once: true
+  changed_when: false
+
+- name: Create Trident working directory
+  file:
+    path: '{{ deepops_dir }}/trident-installer'
+    state: directory
+    mode: "0755"
+  when: create_backends or create_StorageClasses or enable_volume_snapshots or copy_tridentctl_to_localhost
+  run_once: true
+
 - name: Download and extract Trident installer
   unarchive:
     src: '{{ trident_installer_url }}'
     dest: '{{ deepops_dir }}'
     remote_src: yes
-
-- name: Copy namespace config file to control node
-  template:
-    src: namespace.j2
-    dest: '{{ deepops_dir }}/trident-installer/namespace.yaml'
-    mode: "0644"
+  when: create_backends or copy_tridentctl_to_localhost
   run_once: true
-
-- name: Create Trident namespace
-  kube:
-    state: present
-    resource: Namespace
-    name: trident
-    filename: '{{ deepops_dir }}/trident-installer/namespace.yaml'
-  run_once: true
-
-- name: Install Trident using Helm
-  command: '/usr/local/bin/helm -n {{ trident_namespace }} install trident {{ deepops_dir }}/trident-installer/helm/trident-operator-{{ trident_version }}.tgz'
-  run_once: true
-  changed_when: false
 
 - name: Copy backend config file(s) to control node
   template:
@@ -35,6 +40,7 @@
   with_items: '{{ backends_to_create }}'
   when: create_backends
   run_once: true
+  no_log: "{{ trident_hide_backend_details | bool }}"
 
 - name: Create Trident backend(s)
   command: '{{ deepops_dir }}/trident-installer/tridentctl -n {{ trident_namespace }} create backend -f {{ deepops_dir }}/trident-installer/backend-{{ item.backendName }}.json'
@@ -45,10 +51,11 @@
   until: result.rc == 0
   when: create_backends
   run_once: true
+  no_log: "{{ trident_hide_backend_details | bool }}"
 
 - name: Copy StorageClass config file(s) to control node
   copy:
-    content: '{{ item }}'
+    content: '{{ item | to_nice_yaml }}'
     dest: '{{ deepops_dir }}/trident-installer/sc-{{ item.metadata.name }}.yaml'
     mode: "0644"
   with_items: '{{ storageClasses_to_create }}'
@@ -56,34 +63,29 @@
   run_once: true
 
 - name: Create StorageClasses
-  kube:
-    state: present
-    resource: StorageClass
-    name: '{{ item.metadata.name }}'
-    filename: '{{ deepops_dir }}/trident-installer/sc-{{ item.metadata.name }}.yaml'
+  command: 'kubectl apply -f {{ deepops_dir }}/trident-installer/sc-{{ item.metadata.name }}.yaml'
   with_items: '{{ storageClasses_to_create }}'
   when: create_StorageClasses
   run_once: true
+  changed_when: false
 
 - name: Create volume snapshot CRDs
-  kube:
-    state: present
-    filename: '{{ item }}'
+  command: 'kubectl apply -f {{ item }}'
   with_items: '{{ volume_snapshot_CRD_manifest_URLs }}'
   when: enable_volume_snapshots
   run_once: true
+  changed_when: false
 
 - name: Create snapshot controller
-  kube:
-    state: present
-    filename: '{{ item }}'
+  command: 'kubectl apply -f {{ item }}'
   with_items: '{{ snapshot_controller_manifest_URLs }}'
   when: enable_volume_snapshots
   run_once: true
+  changed_when: false
 
 - name: Copy volume snapshot class config file(s) to control node
   copy:
-    content: '{{ item }}'
+    content: '{{ item | to_nice_yaml }}'
     dest: '{{ deepops_dir }}/trident-installer/snapclass-{{ item.metadata.name }}.yaml'
     mode: "0644"
   with_items: '{{ volume_snapshot_classes_to_create }}'
@@ -91,14 +93,11 @@
   run_once: true
 
 - name: Create volume snapshot classes
-  kube:
-    state: present
-    resource: VolumeSnapshotClass
-    name: '{{ item.metadata.name }}'
-    filename: '{{ deepops_dir }}/trident-installer/snapclass-{{ item.metadata.name }}.yaml'
+  command: 'kubectl apply -f {{ deepops_dir }}/trident-installer/snapclass-{{ item.metadata.name }}.yaml'
   with_items: '{{ volume_snapshot_classes_to_create }}'
   when: enable_volume_snapshots
   run_once: true
+  changed_when: false
 
 - name: Fetch tridentctl from control node
   fetch:

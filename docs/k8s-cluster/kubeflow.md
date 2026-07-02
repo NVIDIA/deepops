@@ -29,7 +29,7 @@ As part of the Kubeflow installation, the MPI Operator will also be installed. T
 
 Deploy Kubernetes by following the [DeepOps Kubernetes Deployment Guide](README.md)
 
-Kubeflow requires a DefaultStorageClass to be defined. By default DeepOps installs the `nfs-client-provisioner` using the [nfs-client-provisioner.yml playbook](../../playbooks/k8s-cluster/nfs-client-provisioner.yml). This playbook can re run manually. As an NFS alternative [Ceph](../../scripts/k8s/deploy_rook.sh), [Trident](../../playbooks/k8s-cluster/netapp-trident.yml) or an alternative StorageClass can be used.
+Kubeflow requires a DefaultStorageClass to be defined. By default DeepOps installs the `nfs-client-provisioner` using the [nfs-client-provisioner.yml playbook](../../playbooks/k8s-cluster/nfs-client-provisioner.yml). This playbook can be rerun manually. For production or HA storage, use a site-owned StorageClass. The legacy [Ceph](../../scripts/k8s/deploy_rook.sh) helper is deprecated, and [Trident](../../playbooks/k8s-cluster/netapp-trident.yml) is optional and community-supported unless a site storage owner validates it.
 
 Deploy Kubeflow:
 
@@ -125,6 +125,6 @@ To correct this issue:
 
 1. Uninstall Rook/Ceph: `./scripts/k8s/deploy_rook.sh -d`
 2. Uninstall Kubeflow: `./scripts/k8s/deploy_kubeflow.sh -d`
-3. Re-install Rook/ceph: `./scripts/k8s/deploy_rook.sh`
+3. Re-install Rook/Ceph: `DEEPOPS_ENABLE_DEPRECATED_ROOK=true ./scripts/k8s/deploy_rook.sh`
 4. Poll for Ceph to initialize (wait for this script to exit): `./scripts/k8s/deploy_rook.sh -w`
 5. Re-install Kubeflow: `./scripts/k8s/deploy_kubeflow.sh`

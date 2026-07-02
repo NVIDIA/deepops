@@ -106,7 +106,7 @@ function install_dependencies() {
   if [ $? -ne 0 ] ; then
       echo "No storageclass found"
       echo "To setup the nfs-client-provisioner (preferred), run: ansible-playbook playbooks/k8s-cluster/nfs-client-provisioner.yml"
-      echo "To provision Ceph storage, run: ./scripts/k8s/deploy_rook.sh"
+      echo "The Rook/Ceph helper is deprecated; use a site-owned StorageClass or see docs/k8s-cluster/README.md before using it."
       exit 1
   fi
   

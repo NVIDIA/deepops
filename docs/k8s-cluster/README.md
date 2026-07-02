@@ -11,7 +11,7 @@ Instructions for deploying a GPU cluster with Kubernetes
     - [Persistent Storage](#persistent-storage)
       - [NFS Client Provisioner](#nfs-client-provisioner)
       - [Ceph Cluster (deprecated)](#ceph-cluster-deprecated)
-      - [NetApp Astra Trident](#netapp-astra-trident)
+      - [NetApp Trident](#netapp-trident)
     - [Monitoring](#monitoring)
     - [Logging](#logging)
       - [Centralized syslog](#centralized-syslog)
@@ -124,9 +124,9 @@ Run the following script to create an administrative user and print out the dash
 
 #### NFS Client Provisioner
 
-The default behavior of DeepOps is to setup an NFS server on the first `kube_control_plane` node. This temporary NFS server is used by the `nfs-client-provisioner` which is installed as the default StorageClass of a standard DeepOps deployment.
+The default DeepOps Kubernetes storage path is the `nfs-subdir-external-provisioner` chart, backed by an NFS export on the first `kube_control_plane` node. This is a convenience default for examples, smoke tests, and small internal clusters. It is not a highly available production storage design.
 
-To use an existing nfs server server update the `k8s_nfs_server` and `k8s_nfs_export_path` variables in `config/group_vars/k8s-cluster.yml` and set the `k8s_deploy_nfs_server` to false in `config/group_vars/k8s-cluster.yml`. Additionally, the `k8s_nfs_mkdir` variable can be set to `false` if the export directory is already configured on the server.
+To use an existing NFS server, update the `k8s_nfs_server` and `k8s_nfs_export_path` variables in `config/group_vars/k8s-cluster.yml` and set `k8s_deploy_nfs_server` to `false`. Additionally, set `k8s_nfs_mkdir` to `false` if the export directory is already configured on the server.
 
 To manually install or re-install the `nfs-client-provisioner` run:
 
@@ -134,13 +134,16 @@ To manually install or re-install the `nfs-client-provisioner` run:
 ansible-playbook playbooks/k8s-cluster/nfs-client-provisioner.yml
 ```
 
-To skip this installation set `k8s_nfs_client_provisioner` to `false`.
+To skip this installation, set `k8s_nfs_client_provisioner` to `false`.
 
 #### Ceph Cluster (deprecated)
 
-For a non-nfs based alternative, deploy a Ceph cluster running on Kubernetes for services that require persistent storage (such as Kubeflow):
+The Rook/Ceph helper is deprecated and community-supported. It predates the current Rook Helm chart layout and should not be used as a new production storage path without a site-owned Rook/Ceph design and validation plan.
+
+For legacy environments that still use this helper, deploy a Ceph cluster running on Kubernetes with:
 
 ```bash
+export DEEPOPS_ENABLE_DEPRECATED_ROOK=true
 ./scripts/k8s/deploy_rook.sh
 ```
 
@@ -150,9 +153,9 @@ Poll the Ceph status by running (this script will return when Ceph initializatio
 ./scripts/k8s/deploy_rook.sh -w
 ```
 
-#### NetApp Astra Trident
+#### NetApp Trident
 
-Deploy NetApp Astra Trident for services that require persistent storage (such as Kubeflow). Note that you must have a supported NetApp storage system/instance/service in order to use Astra Trident to provision persistent storage.
+The Trident role is optional and community-supported in DeepOps. Use it only when the site already has a supported NetApp storage system or service and a storage owner who can validate the backend, StorageClass, and snapshot policy against current NetApp documentation.
 
 1. Set configuration parameters.
 
@@ -160,7 +163,9 @@ Deploy NetApp Astra Trident for services that require persistent storage (such a
    vi config/group_vars/netapp-trident.yml
    ```
 
-2. Deploy Astra Trident using Ansible.
+   By default, the example configuration installs Trident but does not create a backend, StorageClass, or snapshot controller. Set `create_backends`, `create_StorageClasses`, or `enable_volume_snapshots` to `true` only after replacing the example backend values with site-specific storage details and auth values.
+
+2. Deploy Trident using Ansible.
 
    ```bash
    # NOTE: If SSH requires a password, add: `-k`
@@ -169,7 +174,7 @@ Deploy NetApp Astra Trident for services that require persistent storage (such a
    ansible-playbook -l k8s_cluster playbooks/k8s-cluster/netapp-trident.yml
    ```
 
-3. Verify that Astra Trident is running.
+3. Verify that Trident is running.
 
    ```bash
    ./tridentctl -n deepops-trident version
@@ -181,11 +186,11 @@ Deploy NetApp Astra Trident for services that require persistent storage (such a
    +----------------+----------------+
    | SERVER VERSION | CLIENT VERSION |
    +----------------+----------------+
-   | 22.01.0        | 22.01.0        |
+   | 26.02.1        | 26.02.1        |
    +----------------+----------------+
    ```
 
-For more information on Astra Trident, please refer to the [official documentation](https://docs.netapp.com/us-en/trident/index.html).
+For more information on Trident, refer to the [official documentation](https://docs.netapp.com/us-en/trident/index.html).
 
 ### Monitoring
 
