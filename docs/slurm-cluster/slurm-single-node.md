@@ -368,11 +368,11 @@ compute-session:start_rootless_docker.sh
 ```
 
 An option “--quiet” can be passed to the “start_rootless_docker.sh” script to
-hide rootless docker messages. Pull/run a docker image:
+hide rootless docker messages. Pull/run a site-maintained NCCL tests image:
 
 ```bash
 compute-session:docker run --gpus=all --rm -it \
-  deepops/nccl-tests-tf20.06-ubuntu18.04:latest \
+  registry.example.com/hpc/nccl-tests:latest \
   mpirun --allow-run-as-root -np 2  all_reduce_perf -b 1M -e 4G -f 2 -g 1
 ```
 
@@ -386,7 +386,7 @@ module load rootless-docker
 
 start_rootless_docker.sh --quiet
 
-docker run --gpus=all --rm -t deepops/nccl-tests-tf20.06-ubuntu18.04:latest \
+docker run --gpus=all --rm -t registry.example.com/hpc/nccl-tests:latest \
   mpirun --allow-run-as-root -np 2  all_reduce_perf -b 1M -e 4G -f 2 -g 1
 
 stop_rootless_docker.sh
@@ -403,7 +403,7 @@ starting the container and checking the number of GPUs and CPUs available.
 
 ```bash
 compute-session:docker run --gpus=all --rm -it \
-  deepops/nccl-tests-tf20.06-ubuntu18.04:latest \
+  registry.example.com/hpc/nccl-tests:latest \
   bash -c 'echo NGPUS: $(nvidia-smi -L | wc -l) NCPUS: $(nproc)'
 NGPUS: 2 NCPUS: 2
 ```
@@ -416,7 +416,7 @@ already does not have permission to outside of the container.
 
 ```bash
 compute-session:docker run --gpus=all --rm -it -v ${PWD}:${PWD} --workdir=${PWD} \
-  deepops/nccl-tests-tf20.06-ubuntu18.04:latest bash -c 'touch somefile-in-container'
+  registry.example.com/hpc/nccl-tests:latest bash -c 'touch somefile-in-container'
 ```
 
 Then outside of the container.
@@ -434,7 +434,7 @@ outside of the container.
 
 ```bash
 compute-session:docker run --gpus=all --rm -it -v /etc/slurm:/slurm --workdir=${PWD} \
-  deepops/nccl-tests-tf20.06-ubuntu18.04:latest bash -c 'cat /slurm/slurmdbd.conf'
+  registry.example.com/hpc/nccl-tests:latest bash -c 'cat /slurm/slurmdbd.conf'
 cat: /slurm/slurmdbd.conf: Permission denied
 ```
 
@@ -464,13 +464,15 @@ Singularity and enroot could also be deployed via DeepOps. These would be
 useful for multi-node jobs if running on more than one DGX system.
 Enroot with pyxis can be tested by running:
 
+The examples below use `registry.example.com/hpc/nccl-tests:latest` as a placeholder for a site-maintained NCCL tests image.
+
 ```bash
 login-session:srun --mpi=pmi2 --ntasks=2 --gpus-per-task=1 \
-  --container-image=deepops/nccl-tests-tf20.06-ubuntu18.04:latest \
+  --container-image=registry.example.com/hpc/nccl-tests:latest \
   all_reduce_perf -b 1M -e 4G -f 2 -g 1
 ```
 
-The pyxis+enroot is invoked via option “ --container-image=deepops/nccl-tests-tf20.06-ubuntu18.04:latest”
+The pyxis+enroot is invoked via option “ --container-image=registry.example.com/hpc/nccl-tests:latest”
 to run the “all_reduce_perf” nccl test. Refer to enroot and pyxis documentation
 for further details.
 
@@ -490,7 +492,7 @@ Then invoke as:
 
 ```bash
 login-session:srun --ntasks=2 --gpus-per-task=1 --no-container-remap-root \
-  --container-image=deepops/nccl-tests-tf20.06-ubuntu18.04:latest --container-workdir=${PWD} \
+  --container-image=registry.example.com/hpc/nccl-tests:latest --container-workdir=${PWD} \
   test-allreduce.sh
 ```
 
@@ -507,7 +509,7 @@ Singularity could be used in a similar fashion to enroot. Don’t forget the
 
 ```bash
 login-session:srun --mpi=pmi2 --ntasks=2 --gpus-per-task=1 \
-  singularity exec --nv docker://deepops/nccl-tests-tf20.06-ubuntu18.04:latest \
+  singularity exec --nv docker://registry.example.com/hpc/nccl-tests:latest \
     all_reduce_perf -b 1M -e 4G -f 2 -g 1
 ```
 
@@ -516,7 +518,7 @@ with enroot):
 
 ```bash
 login-session:srun --ntasks=2 --gpus-per-task=1 \
-  singularity exec --nv docker://deepops/nccl-tests-tf20.06-ubuntu18.04:latest \
+  singularity exec --nv docker://registry.example.com/hpc/nccl-tests:latest \
     ${PWD}/test_allreduce.sh
 ```
 

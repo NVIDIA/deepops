@@ -80,11 +80,15 @@ dev_id: 101c
 
 num_vf: 8
 
-5. Mellanox Ofed place and image name - mofed_site_place, mofed_file_name.
+5. NVIDIA OFED version, site place and image name - mofed_version, mofed_site_place, mofed_file_name.
 
-mofed_site_place: "MLNX_OFED-4.6-1.0.1.1"
+For new Kubernetes RDMA/RoCE deployments, prefer NVIDIA Network Operator coverage with DOCA-OFED driver management. This DeepOps role remains a legacy direct-host install path for environments that still need it, so verify the OFED package against your exact operating system and kernel before using it in production.
 
-mofed_file_name: "MLNX_OFED_LINUX-4.6-1.0.1.1-ubuntu18.04-x86_64.iso"
+mofed_version: "24.10-4.1.4.0"
+
+mofed_site_place: "MLNX_OFED-24.10-4.1.4.0"
+
+mofed_file_name: "MLNX_OFED_LINUX-24.10-4.1.4.0-ubuntu24.04-x86_64.iso"
 
 ## Dependencies
 

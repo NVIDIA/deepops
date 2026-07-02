@@ -77,7 +77,7 @@ module load rootless-docker
 
 start_rootless_docker.sh # specify --quiet option to hide rootles docker messages
 
-docker run --gpus all -it --rm nvcr.io/nvidia/cuda:11.0-base-ubuntu18.04
+docker run --gpus all -it --rm nvcr.io/nvidia/cuda:13.0.2-base-ubuntu24.04
 
 root@445bf5cca686:/# echo NGPUS: $(nvidia-smi -L | wc -l)
 NGPUS: 1

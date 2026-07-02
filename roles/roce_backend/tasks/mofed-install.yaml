@@ -22,7 +22,7 @@
       shell: |
         cd /tmp
         rm -f /tmp/{{ mofed_file_name }}
-        wget http://content.mellanox.com/ofed/{{ mofed_site_place }}/{{ mofed_file_name }}
+        wget https://content.mellanox.com/ofed/{{ mofed_site_place }}/{{ mofed_file_name }}
         mkdir -p /mnt/iso
         mount -o loop /tmp/{{ mofed_file_name }} /mnt/iso
         /mnt/iso/mlnxofedinstall --all -q
