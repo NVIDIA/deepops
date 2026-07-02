@@ -6,7 +6,7 @@
 # if_name must match k8s network annotation name
 #
 
-nvidia_network_operator_version: "26.1.1"
+nvidia_network_operator_version: "26.4.0"
 nvidia_network_operator_image_tag: "network-operator-v{{ nvidia_network_operator_version }}"
 nvidia_network_operator_namespace: "network-operator"
 nvidia_network_operator_ipam_type: "nv-ipam"
