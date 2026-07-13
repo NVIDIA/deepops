@@ -214,7 +214,7 @@ def main():
         rc, out, _ = run(
             [
                 "ansible", "all", "-i", inventory, "-m", "shell", "-o",
-                "-a", "ls /etc/systemd/system/ssh.service.d /etc/systemd/system/sshd.service.d 2>/dev/null | wc -l",
+                "-a", "systemctl show ssh.service sshd.service -p DeviceAllow 2>/dev/null | grep -ci nvidiactl || true",
             ],
             timeout=300,
         )
@@ -223,9 +223,9 @@ def main():
             checks,
             "ssh_gpu_visibility_override",
             True,
-            "%d host(s) have sshd systemd overrides; on Slurm nodes GPUs are hidden "
-            "outside srun jobs and direct nvidia-smi over SSH is expected to fail"
-            % overrides,
+            "%d host(s) restrict GPU device access for SSH sessions (Slurm login "
+            "GPU hiding); on those hosts direct nvidia-smi over SSH is expected to "
+            "fail and srun is the authoritative GPU test" % overrides,
         )
 
     ok = all(c["ok"] for c in checks)
