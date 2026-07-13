@@ -5,7 +5,6 @@ Run with: python3 -m unittest discover scripts/validation/tests
 
 import importlib.util
 import os
-import sys
 import unittest
 
 SCRIPTS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

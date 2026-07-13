@@ -156,7 +156,9 @@ def main():
                 hosts_total, groups = count_inventory_hosts(json.loads(out))
                 parsed_ok = True
             except json.JSONDecodeError:
-                pass
+                # Leave parsed_ok False; the inventory_parses check below
+                # reports the failure with the ansible-inventory context.
+                parsed_ok = False
         check(
             checks,
             "inventory_parses",

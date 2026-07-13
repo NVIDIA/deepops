@@ -54,7 +54,9 @@ def summarize_nodes(nodes_json):
         try:
             gpus += int(alloc.get("nvidia.com/gpu", "0"))
         except ValueError:
-            pass
+            # A malformed allocatable value counts as zero GPUs; the
+            # gpus_allocatable check will then fail loudly for this cluster.
+            continue
     return total, ready, gpus
 
 
@@ -214,7 +216,9 @@ def main():
             try:
                 pods_total, pods_ready = summarize_gpu_pods(json.loads(out))
             except json.JSONDecodeError:
-                pass
+                # Best-effort check: unparseable pod output leaves the counts
+                # at zero; the authoritative GPU signal is gpus_allocatable.
+                pods_total = pods_ready = 0
         result["gpu_stack_pods_total"] = pods_total
         result["gpu_stack_pods_ready"] = pods_ready
         if pods_total and pods_ready < pods_total:
