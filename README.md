@@ -32,6 +32,8 @@ Latest release: [DeepOps 26.05 Release](https://github.com/NVIDIA/deepops/releas
 
 It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally [functional](docs/deepops/testing.md) but may change significantly between releases.
 
+Operating this repository with an AI agent (or onboarding as a new human)? Start with [AGENTS.md](AGENTS.md) for the golden paths, operating rules, and [machine-readable validation tools](docs/deepops/validation.md), and [skills/](skills/README.md) for step-by-step procedures.
+
 ## Deployment Requirements
 
 ### Provisioning System
