@@ -1,2 +1,5 @@
 #!/bin/bash
-echo "{ \"total_mb\": $(free -m | grep Mem: | awk '{print $2*0.95}') }"
+# printf "%d" keeps the value an integer regardless of locale: the default
+# awk print emits a float whose decimal separator follows LC_NUMERIC, which
+# on comma-decimal locales produces invalid JSON and breaks the local fact.
+echo "{ \"total_mb\": $(free -m | awk '/^Mem:/ {printf "%d", $2*0.95}') }"
