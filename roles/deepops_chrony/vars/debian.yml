@@ -1,0 +1,6 @@
+---
+chrony_service_name: chrony
+chrony_config_location: /etc/chrony/chrony.conf
+chrony_config_driftfile: /var/lib/chrony/chrony.drift
+chrony_config_keyfile: /etc/chrony/chrony.keys
+chrony_tzdata_package: tzdata

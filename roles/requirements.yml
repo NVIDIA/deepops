@@ -15,14 +15,6 @@ collections:
 
 roles:
 
-- src: https://github.com/DeepOps/ansible-role-users
-  name: DeepOps.users
-  version: 'e67df1db28bf099aa06d0ab250478963532b4d29'
-
-- src: https://github.com/DeepOps/ansible-role-hosts.git
-  version: 'c21a676088c07db3db3ac9332cf584eeb068e3fd'
-  name: DeepOps.hosts
-
 - src: geerlingguy.ntp
   version: "4.0.0"
 
