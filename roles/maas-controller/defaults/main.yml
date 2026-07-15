@@ -1,0 +1,15 @@
+---
+# MAAS 3.7 is the current Ubuntu 24.04 line. Keep the 3.5 PPA when the MAAS
+# controller itself still runs Ubuntu 22.04.
+maas_repo: "{{ 'ppa:maas/3.7' if ansible_distribution_version is version('24.04', '>=') else 'ppa:maas/3.5' }}"
+
+# This role installs a single-node MAAS controller only. Multi-node
+# region/rack topologies are site-owned; see docs/pxe/maas.md.
+maas_single_node_install: true
+
+# Admin accounts to create on first install. Define real credentials in
+# config/group_vars; see config.example/group_vars/all.yml.
+maas_adminusers: []
+
+# URL the region controller advertises to nodes.
+maas_region_controller_url: "http://{{ ansible_default_ipv4.address }}:5240/MAAS"
