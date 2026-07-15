@@ -51,7 +51,6 @@ Pre-configured NodePorts for [DeepOps default service specs](/services) include:
 - `tcp/30500`: Prometheus
 - `tcp/30400`: AlertManager
 - `tcp/30200`: Grafana
-- `tcp/30700`: Kibana
 - `tcp/30000`: Apt mirror
 
 If a service is not listed here, it will use a random port from the range.
