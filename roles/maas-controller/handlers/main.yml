@@ -1,0 +1,5 @@
+---
+- name: restart maas-regiond
+  service:
+    name: maas-regiond
+    state: restarted

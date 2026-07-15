@@ -1,0 +1,51 @@
+---
+- name: check supported install mode
+  assert:
+    that: maas_single_node_install | bool
+    fail_msg: >-
+      This role installs a single-node MAAS controller only. Multi-node
+      region/rack topologies should be deployed per the upstream MAAS
+      documentation.
+
+- name: add MAAS repository
+  apt_repository:
+    repo: "{{ maas_repo }}"
+    state: present
+
+- name: install MAAS
+  apt:
+    name: maas
+    state: present
+    update_cache: true
+
+- name: check whether admin accounts were created
+  stat:
+    path: /etc/maas/.admin_account_created
+  register: maas_admin_account_check
+
+- name: create MAAS admin accounts
+  command: >-
+    maas createadmin
+    --username {{ item.username }}
+    --email {{ item.email }}
+    --password {{ item.password }}
+  loop: "{{ maas_adminusers }}"
+  loop_control:
+    label: "{{ item.username }}"
+  no_log: true
+  register: maas_admin_account_created
+  when: not maas_admin_account_check.stat.exists
+
+- name: mark admin accounts as created
+  file:
+    path: /etc/maas/.admin_account_created
+    state: touch
+    mode: "0644"
+  when: maas_admin_account_created is changed
+
+- name: configure region controller URL
+  lineinfile:
+    path: /etc/maas/regiond.conf
+    regexp: '^maas_url:'
+    line: "maas_url: {{ maas_region_controller_url }}"
+  notify: restart maas-regiond
