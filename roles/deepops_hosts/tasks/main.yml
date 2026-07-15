@@ -1,0 +1,48 @@
+# roles/hosts/tasks/main.yml
+---
+- name: Gather facts again
+  setup:
+
+- name: register hosts list if ansible group limit is specified
+  set_fact:
+    hosts_add_ansible_managed_hosts_groups:
+      - "{{ ansible_limit }}"
+  when: ansible_limit is defined
+
+- name: Install user-defined custom hosts file
+  copy:
+    src: "{{ hosts_file_src }}"
+    dest: "{{ hosts_file }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: "{{ host_file_backup }}"
+  tags: hosts
+  when: hosts_file_src is defined
+
+- name: Install custom hosts file
+  template:
+    src: etc_hosts.j2
+    dest: "{{ hosts_file }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: "{{ host_file_backup }}"
+  tags: hosts
+  when: hosts_file_src is not defined
+
+- name: render custom hosts template
+  set_fact: 
+    custom_hosts: "{{ lookup('template', 'custom_hosts.j2') }}"
+  tags: hosts
+  when: (hosts_file_src is not defined) and (hosts_entries|length>0)
+
+- name: Add Managed Block to {{ hosts_file }}
+  blockinfile:
+    path: "{{ hosts_file }}"
+    owner: root
+    group: root
+    content: "{{ custom_hosts }}"
+    marker: "# {{ hosts_custom_hosts_marker }} {mark}"
+  tags: hosts
+  when: (hosts_file_src is not defined) and (hosts_entries|length>0)

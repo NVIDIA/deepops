@@ -1,0 +1,7 @@
+# roles/hosts/handlers/main.yml
+---
+
+- name: restart hosts
+  service:
+    name: hostsd
+    state: restarted

@@ -1,0 +1,26 @@
+---
+language: python
+services: docker
+
+env:
+  global:
+    - ROLE_NAME: chrony
+
+install:
+  # Install test dependencies.
+  - pip install molecule docker testinfra
+
+before_script:
+  # Use actual Ansible Galaxy role name for the project directory.
+  - cd ../
+  - mv ansible-role-$ROLE_NAME unxnn.$ROLE_NAME
+  - cd unxnn.$ROLE_NAME
+
+script:
+  # Run tests.
+  - ansible --version
+  - molecule --version
+  - molecule test
+
+notifications:
+  webhooks: https://galaxy.ansible.com/api/v1/notifications/

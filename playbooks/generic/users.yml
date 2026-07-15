@@ -25,4 +25,4 @@
 
     - name: Set user password
       include_role:
-        name: DeepOps.users
+        name: deepops_users

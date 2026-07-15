@@ -1,0 +1,11 @@
+---
+- name: Install the required packages in Redhat derivatives
+  yum: name=chrony state={{ chrony_pkg_state }}
+
+- name: Check if ntpd service exists
+  stat: path="/usr/lib/systemd/system/ntpd.service"
+  register: ntpd_service_status
+
+- name: Stop and mask ntpd service
+  systemd: name=ntpd state=stopped masked=yes
+  when: ntpd_service_status.stat.exists
