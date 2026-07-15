@@ -2,6 +2,7 @@
 Description=NVIDIA DCGM Exporter
 After=docker.service
 Requires=docker.service
+PartOf=docker.service
 
 [Service]
 TimeoutStartSec=0
