@@ -1,7 +1,7 @@
 # Built locally from the bundled Dockerfile by default; set
 # slurm_exporter_build_image: false and point slurm_exporter_container at a
 # site image to use a registry instead.
-slurm_exporter_container: "deepops/prometheus-slurm-exporter:0.20-1"
+slurm_exporter_container: "deepops/prometheus-slurm-exporter:2.0.0"
 slurm_exporter_build_image: true
 slurm_exporter_build_dir: /opt/deepops/build/slurm-exporter
 slurm_exporter_svc_name: "docker.slurm-exporter.service"

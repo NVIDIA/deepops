@@ -58,6 +58,14 @@
   register: slurm_exporter_dockerfile
   when: slurm_exporter_build_image
 
+- name: copy exporter source
+  copy:
+    src: exporter/
+    dest: "{{ slurm_exporter_build_dir }}/exporter/"
+    mode: "0644"
+  register: slurm_exporter_source
+  when: slurm_exporter_build_image
+
 - name: check for existing exporter image
   command: docker image inspect {{ slurm_exporter_container }}
   register: slurm_exporter_image_check
@@ -69,7 +77,7 @@
   command: docker build -t {{ slurm_exporter_container }} {{ slurm_exporter_build_dir }}
   when: >
     slurm_exporter_build_image and
-    (slurm_exporter_image_check.rc != 0 or slurm_exporter_dockerfile.changed)
+    (slurm_exporter_image_check.rc != 0 or slurm_exporter_dockerfile.changed or slurm_exporter_source.changed)
   notify: restart slurm-exporter
 
 - name: install systemd unit file
