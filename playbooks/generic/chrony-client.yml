@@ -5,4 +5,4 @@
   tasks:
     - name: Configure Chrony client
       include_role:
-        name: DeepOps.chrony
+        name: deepops_chrony

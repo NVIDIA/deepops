@@ -1,0 +1,3 @@
+---
+- name: Install the require packages in Debian derivatives
+  apt: name=chrony state={{ chrony_pkg_state }}

@@ -1,0 +1,84 @@
+# Hosts file -- Don't edit manually!
+#
+# {{ ansible_managed }}
+{% if hosts_network_interface -%}
+{% set def_interface = hosts_network_interface -%}
+{% else -%}
+{% set def_interface = ansible_default_ipv4['interface']|default(None) -%}
+{% endif -%}
+
+# Localhost
+{% if def_interface and hosts_add_ansible_managed_hosts -%}
+127.0.0.1  localhost.localdomain  localhost
+{% else -%}
+127.0.0.1  localhost.localdomain  localhost {{ ansible_fqdn }} {{ansible_hostname }}
+{% endif -%}
+
+{% if hosts_add_basic_ipv6 %}
+# Basic IPv6 entries
+::1      localhost6.localdomain6  localhost6  ip6-localhost  ip6-loopback
+fe00::0  ip6-localnet
+ff00::0  ip6-mcastprefix
+ff02::1  ip6-allnodes
+ff02::2  ip6-allrouters
+{% endif %}
+
+{% if hosts_add_ansible_managed_hosts %}
+# 
+# Hosts managed by Ansible
+#
+{% for group in hosts_add_ansible_managed_hosts_groups %}
+{% for host in groups[group]|sort %}
+# {{ host }}
+{% set my_interfaces = hostvars[host]['ansible_interfaces']|select('match', '(?!^(' + hosts_exclude_interfaces|join('|') + ')).*')|default(None) -%}
+  {% if hosts_network_interface[host] is defined -%}
+      {% set di = hosts_network_interface[host] -%}
+  {% elif ((hosts_network_interface is not mapping) and hosts_network_interface) -%}
+      {% set di = hosts_network_interface -%}
+  {% else -%}
+    {% set di = hostvars[host]['ansible_default_' + hosts_ip_protocol]['interface']|default(None) -%}
+  {% endif -%}
+  {% for interface in my_interfaces|sort -%}
+    {% set addr = hostvars[host]['ansible_' + interface][hosts_ip_protocol]['address']|default(None) -%}
+    {% if addr -%}
+{% if interface == di -%}
+{% if hosts_interface_domain[host][interface] is defined -%}
+{{ addr }}    {{ host }}.{{ hosts_interface_domain[host][interface] }} {{ host }}-{{ interface }}  {{ host }}
+{% elif hosts_interface_domain[interface] is defined -%}
+{{ addr }}    {{ host }}.{{ hosts_interface_domain[interface] }} {{ host }}-{{ interface }}  {{ host }}
+{% elif hosts_default_domain -%}
+{{ addr }}    {{ host }}.{{ hosts_default_domain }} {{ host }}-{{ interface }}  {{ host }}
+{% else -%}
+{{ addr }}    {{ hostvars[host]['ansible_fqdn'] }} {{ host }}-{{ interface }}  {{ host }}
+{% endif -%}
+{% else -%}
+{% if hosts_interface_domain[host][interface] is defined -%}
+{{ addr }}    {{ host }}.{{ hosts_interface_domain[host][interface] }}    {{ host }}-{{ interface }}
+{% elif hosts_interface_domain[interface] is defined -%}
+{{ addr }}    {{ host }}.{{ hosts_interface_domain[interface] }}    {{ host }}-{{ interface }}
+{% else -%}
+{{ addr }}    {{ host }}-{{ interface }}
+{% endif -%}
+{% endif -%}
+    {% endif -%}
+  {% endfor -%}
+{% endfor -%}
+{% endfor -%}
+{% endif -%}
+
+{% if hosts_entries|length != 0 %}
+# Custom entries
+{% for host in hosts_entries %}
+{{ host.ip }}  {{ host.name }} {{ host.aliases | default('') | join(' ') }}
+{% endfor %}
+{% endif %}
+
+{% if hosts_file_snippets|length != 0 %}
+#
+# Hosts file snippets
+#
+{% for snippet in hosts_file_snippets %}
+{% include snippet %}
+
+{% endfor %}
+{% endif %}

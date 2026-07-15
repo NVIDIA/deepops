@@ -1,0 +1,51 @@
+# roles/hosts/defaults/main.yml
+---
+
+hosts_playbook_version: "1.0.1"
+
+# If set to true, basic IPv6 entries (localhost6, ip6-localnet, etc) are added.
+hosts_add_basic_ipv6: false
+
+# If set to true, an entry for every host managed by Ansible is added. Remark that this makes `hosts_add_default_ipv4` unnecessary, as it will be added as wel by this setting.
+hosts_add_ansible_managed_hosts: false
+
+# Select specific groups of Ansible managed hosts to be added in the hosts file.
+hosts_add_ansible_managed_hosts_groups: ['all']
+
+# Custom hosts entries to be added
+hosts_entries: []
+
+# Custom host file snippets to be added
+hosts_file_snippets: []
+
+# IP protocol to use
+hosts_ip_protocol: 'ipv4'
+
+
+# Network interface to use. Can be set either globally or per host
+# If empty, the default adapter will be used for all systems. If set per host, hosts not specified will use the default adapter
+# NOTE: the global method only works if all nodes in your inventory have an adapter with the same name.
+# hosts_network_interface: { head: eth0 }
+hosts_network_interface: ''
+
+# If hosts_default_domain is set, the default interface entry in the hosts file
+# will have the default domain used for it.  Otherwise, ansible_fqdn will be used
+# for the default entry
+hosts_default_domain: ''
+
+# This variable can be set either per interface, or per interface per host
+# hosts_interface_domain: { head: { eth1: yourdomain.com } }
+# hosts_interface_domain: { eth1: yourdomain.com }
+hosts_interface_domain: ''
+
+
+#Which interfaces should be excluded from the hosts file generation
+hosts_exclude_interfaces:
+ - lo
+ - docker
+ - nodelocaldns
+
+# Backup of previous host
+host_file_backup: no
+
+hosts_custom_hosts_marker: "Custom Hosts Managed Block"

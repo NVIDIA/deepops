@@ -1,0 +1,29 @@
+---
+galaxy_info:
+  author: unxnn
+  role_name: chrony
+  description: This role enables users to install and configure chrony on their hosts.
+  license: MIT
+  min_ansible_version: 2.4
+  platforms:
+    - name: EL
+      versions:
+        - 7
+        - 8
+    - name: Debian
+      versions:
+        - jessie
+        - stretch
+        - buster
+    - name: Ubuntu
+      versions:
+        - bionic
+        - cosmic
+        - disco
+        - eoan
+  galaxy_tags:
+    - system
+    - chrony
+    - ntp
+    - time
+dependencies: []

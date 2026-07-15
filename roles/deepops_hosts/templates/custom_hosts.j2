@@ -1,0 +1,3 @@
+{% for host in hosts_entries %}
+{{ host.ip }} {{ host.name.split(".")[0] }} {{ host.name }}
+{% endfor %}

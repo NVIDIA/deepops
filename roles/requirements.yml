@@ -15,14 +15,6 @@ collections:
 
 roles:
 
-- src: https://github.com/DeepOps/ansible-role-users
-  name: DeepOps.users
-  version: 'e67df1db28bf099aa06d0ab250478963532b4d29'
-
-- src: https://github.com/DeepOps/ansible-role-hosts.git
-  version: 'c21a676088c07db3db3ac9332cf584eeb068e3fd'
-  name: DeepOps.hosts
-
 - src: geerlingguy.ntp
   version: "4.0.0"
 
@@ -59,10 +51,6 @@ roles:
 - src: https://github.com/mrlesmithjr/ansible-maas.git
   name: ansible-maas
   version: '178a999c9bfc979ef32c42f4f59c034664df10d0'
-
-- src: https://github.com/DeepOps/ansible-role-chrony
-  name: DeepOps.chrony
-  version: 'c9022153036dfdde4e2b313aecde4a46cd6f6687'
 
 - src: https://github.com/OSC/ood-ansible.git
   version: 'v3.0.3'
