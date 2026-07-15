@@ -43,6 +43,35 @@
     - slurm-dashboard.json
   notify: restart grafana
 
+- name: create image build dir
+  file:
+    path: "{{ slurm_exporter_build_dir }}"
+    state: directory
+    mode: "0755"
+  when: slurm_exporter_build_image
+
+- name: copy image build context
+  copy:
+    src: docker/Dockerfile
+    dest: "{{ slurm_exporter_build_dir }}/Dockerfile"
+    mode: "0644"
+  register: slurm_exporter_dockerfile
+  when: slurm_exporter_build_image
+
+- name: check for existing exporter image
+  command: docker image inspect {{ slurm_exporter_container }}
+  register: slurm_exporter_image_check
+  failed_when: false
+  changed_when: false
+  when: slurm_exporter_build_image
+
+- name: build exporter image
+  command: docker build -t {{ slurm_exporter_container }} {{ slurm_exporter_build_dir }}
+  when: >
+    slurm_exporter_build_image and
+    (slurm_exporter_image_check.rc != 0 or slurm_exporter_dockerfile.changed)
+  notify: restart slurm-exporter
+
 - name: install systemd unit file
   template:
     src: templates/docker.slurm-exporter.service.j2
