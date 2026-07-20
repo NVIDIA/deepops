@@ -1,6 +1,4 @@
 ---
-- name: Ensure OpenShift packages are installed
-  import_playbook: ../bootstrap/bootstrap-openshift.yml
 
 # GPU operator
 - hosts: kube_control_plane[0]

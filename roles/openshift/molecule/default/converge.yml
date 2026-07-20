@@ -1,7 +1,0 @@
----
-- name: Converge
-  hosts: all
-  tasks:
-    - name: "Include openshift"
-      include_role:
-        name: "openshift"

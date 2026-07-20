@@ -1,9 +1,0 @@
----
-- hosts: all
-  become: yes
-  tasks:
-
-  - name: ensure apt cache is updated
-    apt:
-      update_cache: true
-    when: ansible_distribution == "Ubuntu"

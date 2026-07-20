@@ -59,11 +59,6 @@
   import_playbook: generic/chrony-client.yml
   when: chrony_install|default(true)
 
-- name: Install the OpenShift API libraries required by the GPU plugin
-  import_playbook: bootstrap/bootstrap-openshift.yml
-  tags:
-    - bootstrap
-
 - name: Configure hostnames, /etc/hosts
   import_playbook: generic/hosts.yml
 
