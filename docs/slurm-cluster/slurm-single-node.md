@@ -11,7 +11,7 @@ Single Node Slurm Deployment Guide
     - [Allocating GPUs](#allocating-gpus)
     - [Running Containers](#running-containers)
       - [Rootless Docker](#rootless-docker)
-    - [Enroot and Singularity](#enroot-and-singularity)
+    - [Enroot and Pyxis](#enroot-and-pyxis)
 
 ## Introduction
 
@@ -92,7 +92,7 @@ The general requirements and procedure for Slurm setup via deepops is documented
 
    b. Configuring `"config/group_vars/slurm-cluster.yml"`
 
-   Typically users cannot ssh as local users directly to compute nodes in a Slurm cluster without a Slurm reservation. However, since in this deployment a compute node also functions as a login node we need to add users to slurm configuration for the ability to ssh as local users. Again, this is needed when a compute node also functions as a login node. Additionally, set the singularity install option (which is no by default). Singularity can be used to run containers and it will be used to set up rootless options as well. Do not set a default NFS with single node deployment.
+   Typically users cannot ssh as local users directly to compute nodes in a Slurm cluster without a Slurm reservation. However, since in this deployment a compute node also functions as a login node we need to add users to slurm configuration for the ability to ssh as local users. Again, this is needed when a compute node also functions as a login node. Do not set a default NFS with single node deployment.
 
    ```bash
    vi config/group_vars/slurm-cluster.yml
@@ -101,7 +101,6 @@ The general requirements and procedure for Slurm setup via deepops is documented
    ```yaml
    slurm_enable_nfs_server: false
    slurm_enable_nfs_client_nodes: false
-   slurm_cluster_install_singularity: yes
 
    slurm_login_on_compute: true
 
@@ -331,8 +330,8 @@ attach to the tmux session in the adopted ssh session.
 
 ### Running Containers
 
-DeepOps enables running containers with several containerization platforms:
-docker, singularity, and enroot with pyxis.
+DeepOps enables running containers on Slurm with rootless Docker and with
+Enroot/Pyxis, which is installed by default.
 
 #### Rootless Docker
 
@@ -441,7 +440,7 @@ cat: /slurm/slurmdbd.conf: Permission denied
 Rootless docker supports building containers and many standard docker features
 with a few limitations. These limitations can make it challenging to run
 multi node Slurm jobs, therefore for multi node jobs on Slurm the recommended
-approach is via enroot or singularity.
+approach is via Enroot/Pyxis.
 
 A user can explicitly stop the rootless docker daemon with “stop_rootless_docker.sh”
 script, or just exit the Slurm session. Upon exit from a slurm session the
@@ -458,11 +457,11 @@ login-session:$
 These scripts “start_rootless_docker.sh” and “stop_rootless_docker.sh” appear
 on a user's path upon loading the rootless docker module.
 
-### Enroot and Singularity
+### Enroot and Pyxis
 
-Singularity and enroot could also be deployed via DeepOps. These would be
-useful for multi-node jobs if running on more than one DGX system.
-Enroot with pyxis can be tested by running:
+Enroot with Pyxis is installed by DeepOps by default and is the supported
+container runtime for multi-node jobs across more than one DGX system.
+It can be tested by running:
 
 The examples below use `registry.example.com/hpc/nccl-tests:latest` as a placeholder for a site-maintained NCCL tests image.
 
@@ -504,25 +503,10 @@ will typically be inferred from the environment. Calling mpirun approach could
 be useful, because certain binding options are not available to srun directly,
 but can be set via mpirun.
 
-Singularity could be used in a similar fashion to enroot. Don’t forget the
-“--nv” option for GPUs.
-
-```bash
-login-session:srun --mpi=pmi2 --ntasks=2 --gpus-per-task=1 \
-  singularity exec --nv docker://registry.example.com/hpc/nccl-tests:latest \
-    all_reduce_perf -b 1M -e 4G -f 2 -g 1
-```
-
-Similarly to invoke mpirun with singularity run script (same script as was used
-with enroot):
-
-```bash
-login-session:srun --ntasks=2 --gpus-per-task=1 \
-  singularity exec --nv docker://registry.example.com/hpc/nccl-tests:latest \
-    ${PWD}/test_allreduce.sh
-```
-
-Refer to singularity documentation for further details. Building containers with
-singularity is permitted to non-privileged users via the “--fakeroot” option.
-Enroot and singularity excel at running containerized multi node jobs, which is
-somewhat difficult and less convenient to do using docker on Slurm.
+The DeepOps Singularity wrapper role has been retired, so DeepOps no longer
+installs Singularity. Singularity lives on upstream as
+[Apptainer](https://apptainer.org/); if your site installs Apptainer/Singularity
+separately, it can run the same containers with `singularity exec --nv` (remember
+the “--nv” option for GPUs). Enroot/Pyxis is the supported path and excels at
+running containerized multi node jobs, which is somewhat difficult and less
+convenient to do using docker on Slurm.

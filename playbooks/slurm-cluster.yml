@@ -137,10 +137,6 @@
     hostlist: "{{ rsyslog_client_group | default('slurm-node') }}"
   when: slurm_enable_rsyslog_client|default(true)
 
-- name: Install Singularity
-  import_playbook: container/singularity.yml
-  when: slurm_cluster_install_singularity|default(true)
-
 - name: Install Open OnDemand
   import_playbook: slurm-cluster/open-ondemand.yml
   when: install_open_ondemand
