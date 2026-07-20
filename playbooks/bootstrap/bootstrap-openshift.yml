@@ -1,7 +1,0 @@
----
-- hosts: kube_control_plane
-  become: true
-  tasks:
-    - name: Install required Python OpenShift packages/libraries
-      include_role:
-        name: openshift
