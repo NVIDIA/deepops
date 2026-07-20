@@ -30,32 +30,6 @@ roles:
 - src: nvidia.enroot
   version: "v0.5.0"
 
-- src: https://github.com/mrlesmithjr/ansible-maas.git
-  name: ansible-maas
-  version: '178a999c9bfc979ef32c42f4f59c034664df10d0'
-  
-- src: geerlingguy.filebeat
-  version: "3.5.0"
-
-- src: robertdebock.java
-  version: "4.2.0"
-
-- src: robertdebock.elastic_repo
-  version: "1.1.0"
-
-- src: robertdebock.logstash
-  version: "1.1.3"
-
-- src: robertdebock.elasticsearch
-  version: "1.1.6"
-
-- src: robertdebock.kibana
-  version: "1.2.6"
-
-- src: https://github.com/DeepOps/ansible-role-chrony
-  name: DeepOps.chrony
-  version: 'c9022153036dfdde4e2b313aecde4a46cd6f6687'
-
 - src: https://github.com/OSC/ood-ansible.git
   version: 'v3.0.3'
 
