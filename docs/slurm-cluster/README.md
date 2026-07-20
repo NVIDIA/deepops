@@ -187,7 +187,7 @@ Pay attention to the playbook output in the terminal. The NCCL compilation and s
 
 Now that Slurm is installed, try a ["Hello World" example using MPI](../../workloads/examples/slurm/mpi-hello/README.md).
 
-Read through the [slurm usage guide](slurm-usage.md) and [Open OnDemand guide](ood.md) for more information.
+Read through the [slurm usage guide](slurm-usage.md) for more information.
 
 ## Prolog and Epilog
 
@@ -232,9 +232,9 @@ For information about configuring a shared NFS filesystem on your Slurm cluster,
 You may optionally choose to install a tool for managing additional packages on your Slurm cluster.
 See the documentation on [software modules](./software-modules.md) for information on how to set this up.
 
-## Installing Open on Demand
+## Open OnDemand
 
-[Open OnDemand](https://openondemand.org/) can be installed by setting the `install_open_ondemand` variable to yes before running the `slurm-cluster.yml` playbook.
+DeepOps no longer bundles an Open OnDemand installer. Sites that want the [Open OnDemand](https://openondemand.org/) HPC portal on their Slurm cluster should deploy it directly from the upstream project, following its own [installation documentation](https://osc.github.io/ood-documentation/latest/installation.html).
 
 ## Pyxis, Enroot, and Singularity
 

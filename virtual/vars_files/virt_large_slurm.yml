@@ -18,7 +18,6 @@ rsyslog_client_tcp_host: "{{ groups['slurm-metric'][0] }}"
 # Don't install these packages by default on large cluster
 slurm_cluster_install_singularity: false
 slurm_cluster_install_cuda: false
-install_open_ondemand: false
 
 # HPC SDK install
 sm_install_host: "{{ groups['slurm-login'][0] }}"

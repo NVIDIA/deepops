@@ -162,6 +162,6 @@ galaxy_info:
 
 The Slurm and Kubernetes deployment guides both document cluster verification steps. These should be run during the installation process to validate a GPU workload can be executed on the cluster.
 
-Additional services such as Kubeflow, Open OnDemand, or Monitoring may have additional validation steps that are documented in the corresponding DeepOps READMEs and the official documentation.
+Additional services such as Kubeflow or Monitoring may have additional validation steps that are documented in the corresponding DeepOps READMEs and the official documentation.
 
 For workloads that can be used as post-deployment validation, see the example workloads for [k8s](../../workloads/examples/k8s/) and [slurm](../../workloads/examples/slurm).
