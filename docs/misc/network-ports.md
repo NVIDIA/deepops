@@ -52,4 +52,3 @@ or listing known ports that we configure within DeepOps itself.
   - Grafana web interface: 3000/tcp
   - Prometheus node exporter: 9100/tcp
   - DCGM node exporter: 9400/tcp
-- Open OnDemand: 9050/tcp
