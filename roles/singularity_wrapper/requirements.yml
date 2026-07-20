@@ -1,4 +1,0 @@
----
-roles:
-- name: Setup singularity roles
-  include_tasks: roles.yml

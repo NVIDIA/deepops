@@ -128,12 +128,13 @@ scancel JOBID
 To run a deep learning job with multiple processes, use MPI:
 
 ```bash
-srun -p PARTITION --pty /bin/bash
-singularity pull docker://nvcr.io/nvidia/tensorflow:19.05-py3
-singularity run docker://nvcr.io/nvidia/tensorflow:19.05-py3
-cd /opt/tensorflow/nvidia-examples/cnn/
-mpiexec --allow-run-as-root -np 2 python resnet.py --layers=50 --batch_size=32 --precision=fp16 --num_iter=50
+srun -p PARTITION --gpus-per-task=1 \
+  --container-image=nvcr.io/nvidia/tensorflow:19.05-py3 \
+  bash -c "cd /opt/tensorflow/nvidia-examples/cnn/ && \
+    mpiexec --allow-run-as-root -np 2 python resnet.py --layers=50 --batch_size=32 --precision=fp16 --num_iter=50"
 ```
+
+The `--container-image` flag runs the job inside the image using Pyxis/Enroot, which DeepOps installs by default.
 
 ## Additional Resources
 

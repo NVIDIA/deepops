@@ -14,7 +14,7 @@ Instructions for deploying a GPU cluster with Slurm
   - [Configuring shared filesystems](#configuring-shared-filesystems)
   - [Installing tools and applications](#installing-tools-and-applications)
   - [Installing Open on Demand](#installing-open-on-demand)
-  - [Pyxis, Enroot, and Singularity](#pyxis-enroot-and-singularity)
+  - [Pyxis and Enroot](#pyxis-and-enroot)
   - [Large deployments](#large-deployments)
 
 ## Requirements
@@ -236,9 +236,11 @@ See the documentation on [software modules](./software-modules.md) for informati
 
 [Open OnDemand](https://openondemand.org/) can be installed by setting the `install_open_ondemand` variable to yes before running the `slurm-cluster.yml` playbook.
 
-## Pyxis, Enroot, and Singularity
+## Pyxis and Enroot
 
-[Pyxis](https://github.com/NVIDIA/pyxis) and [Enroot](https://github.com/NVIDIA/enroot) are installed by default and can be disabled by setting `slurm_install_enroot` and `slurm_install_pyxis` to no. Singularity can be installed by setting the `slurm_cluster_install_singularity` variable to yes before running the `slurm-cluster.yml` playbook.
+[Pyxis](https://github.com/NVIDIA/pyxis) and [Enroot](https://github.com/NVIDIA/enroot) are installed by default and can be disabled by setting `slurm_install_enroot` and `slurm_install_pyxis` to no. They are the supported, release-validated container runtime for Slurm in DeepOps.
+
+The DeepOps Singularity wrapper role has been retired. Singularity lives on upstream as [Apptainer](https://apptainer.org/); sites that still want it can install Apptainer/Singularity separately.
 
 ## Large deployments
 
