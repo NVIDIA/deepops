@@ -99,7 +99,6 @@ Roles run as part of the various playbooks. Includes default values and tasks as
 │   ├── nvidia-mig-manager
 │   ├── nvidia-network-operator
 │   ├── nvidia-peer-memory
-│   ├── ood-wrapper
 │   ├── openmpi
 │   ├── openshift
 │   ├── prometheus
