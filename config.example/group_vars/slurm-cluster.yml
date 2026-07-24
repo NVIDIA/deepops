@@ -66,7 +66,6 @@ dns_late: false
 slurm_configure_etc_hosts: yes
 slurm_cluster_install_cuda: yes
 slurm_cluster_install_nvidia_driver: yes
-slurm_cluster_install_singularity: no
 
 ################################################################################
 # NFS                                                                          #
@@ -164,7 +163,10 @@ openmpi_configure: "./configure --prefix={{ openmpi_install_prefix }} --disable-
 # Open OnDemand                                                                #
 ################################################################################
 install_open_ondemand: no
-# OOD Linux-host adapter requires `slurm_cluster_install_singularity` to be true
+# The OOD Linux-host adapter runs interactive apps inside an Apptainer/Singularity
+# container. DeepOps no longer installs Singularity (the wrapper role is retired;
+# Enroot/Pyxis is the supported Slurm runtime), so install Apptainer/Singularity on
+# the login nodes yourself before enabling this adapter.
 ood_install_linuxhost_adapter: no
 
 servername: '{{ ansible_fqdn }}'

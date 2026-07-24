@@ -109,7 +109,6 @@ Roles run as part of the various playbooks. Includes default values and tasks as
 │   ├── roce_backend
 │   ├── rsyslog_client
 │   ├── rsyslog_server
-│   ├── singularity_wrapper
 │   ├── slurm
 │   ├── spack
 │   └── standalone-container-registry

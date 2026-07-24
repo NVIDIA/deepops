@@ -2,5 +2,5 @@
 # Example of a host-specific variable file
 # These variables would only be used for a host named "gpu01"
 
-# Don't install Singularity on this host
-#slurm_cluster_install_singularity: false
+# Don't install the CUDA toolkit on this host
+#slurm_cluster_install_cuda: false

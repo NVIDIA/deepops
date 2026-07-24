@@ -43,11 +43,11 @@ The [Kubernetes documentation](https://kubernetes.io/docs/tasks/configure-pod-co
 
 ## Slurm jobs using private registries
 
-The process for using private registries is different depending on whether you are using Singularity or Enroot as your container runtime.
+The process for using private registries depends on your container runtime. Enroot/Pyxis is the runtime DeepOps installs and validates for Slurm; the Singularity/Apptainer notes below apply only if your site provides that runtime separately.
 
 ### Singularity
 
-[Singularity](https://sylabs.io/singularity/) gets container pull credentials using environment variables:
+DeepOps no longer installs Singularity (the wrapper role is retired; Singularity lives on upstream as [Apptainer](https://apptainer.org/), and Enroot/Pyxis is the supported Slurm runtime). If your site provides Apptainer/Singularity, it gets container pull credentials using environment variables:
 
 ```bash
 export SINGULARITY_DOCKER_USERNAME=<username>
