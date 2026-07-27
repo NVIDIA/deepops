@@ -30,5 +30,3 @@ roles:
 - src: nvidia.enroot
   version: "v0.5.0"
 
-- src: https://github.com/OSC/ood-ansible.git
-  version: 'v3.0.3'

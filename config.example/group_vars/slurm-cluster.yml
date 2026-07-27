@@ -71,7 +71,7 @@ slurm_cluster_install_nvidia_driver: yes
 # NFS                                                                          #
 ################################################################################
 # Default exports:
-# - /home: shared home directories, needed for Open OnDemand and best practice
+# - /home: shared home directories, best practice for a Slurm cluster
 # - /sw:   shared space for software installs, used for Spack or EasyBuild
 nfs_exports:
   - path: /home
@@ -158,24 +158,6 @@ slurm_cluster_install_openmpi: false
 #openmpi_version:
 openmpi_install_prefix: "/usr/local"
 openmpi_configure: "./configure --prefix={{ openmpi_install_prefix }} --disable-dependency-tracking --disable-getpwuid --with-pmix={{ pmix_install_prefix }} --with-hwloc={{ hwloc_install_prefix }} --with-pmi={{ slurm_install_prefix }} --with-slurm={{ slurm_install_prefix }} --with-libevent=/usr"
-
-################################################################################
-# Open OnDemand                                                                #
-################################################################################
-install_open_ondemand: no
-# The OOD Linux-host adapter runs interactive apps inside an Apptainer/Singularity
-# container. DeepOps no longer installs Singularity (the wrapper role is retired;
-# Enroot/Pyxis is the supported Slurm runtime), so install Apptainer/Singularity on
-# the login nodes yourself before enabling this adapter.
-ood_install_linuxhost_adapter: no
-
-servername: '{{ ansible_fqdn }}'
-httpd_port: 9050
-httpd_listen_addr_port:
-  - 9050
-httpd_use_rewrites: false
-node_uri: /node
-rnode_uri: /rnode
 
 ################################################################################
 # Allow the User Permission to Set GPU Clocks                                  #
