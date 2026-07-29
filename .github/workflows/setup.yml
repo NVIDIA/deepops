@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: run setup.sh
-        run: bash scripts/setup.sh
+        run: ./scripts/setup.sh </dev/null
 
       - name: verify ansible in venv
         run: |

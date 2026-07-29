@@ -1,4 +1,4 @@
-#!/bin/bash --init-file
+#!/usr/bin/env bash
 
 # DeepOps setup/bootstrap script
 #   This script installs required dependencies on a system so it can run Ansible
@@ -39,8 +39,8 @@ export DEBIAN_FRONTEND=noninteractive
 
 # Exit if run as root
 if [ $(id -u) -eq 0 ] ; then
-    echo "Please run as a regular user"
-    exit
+    echo "Please run as a regular user" >&2
+    exit 1
 fi
 
 # Proxy wrapper
@@ -74,8 +74,14 @@ case "$ID" in
         as_sudo "apt-get -yq install ${DEPS_DEB[@]}"
         ;;
     *)
-        echo "Unsupported Operating System $ID_LIKE"
-        echo "Please install ${DEPS_RPM[@]} manually"
+        # Not an error: this branch is an escape hatch. Everything after this
+        # case is distro-agnostic, so the run continues and the hard gate on
+        # `virtualenv` below reports a genuine missing dependency. Keeping it
+        # non-fatal is what lets Rocky, AlmaLinux, Debian and friends work.
+        echo "WARNING: no automatic dependency install for OS '${ID}' (ID_LIKE='${ID_LIKE:-none}')" >&2
+        echo "If setup fails below, install these manually and re-run:" >&2
+        echo "  RPM-based: ${DEPS_EL[*]}" >&2
+        echo "  DEB-based: ${DEPS_DEB[*]}" >&2
         ;;
 esac
 
