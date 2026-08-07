@@ -37,16 +37,17 @@ do not mirror a mutable `latest` tag.
 Install Skopeo by following its
 [installation guide](https://github.com/podman-container-tools/skopeo/blob/main/install.md).
 In local testing with Skopeo 1.22.2, a direct copy of a Docker-media-type
-multi-architecture index to `oci-archive:` could not preserve the source digest,
-even with `--preserve-digests`. This limitation is scoped to Skopeo 1.22.2 and
-that source-media-type/archive-transport combination; do not assume that it
-applies to other versions or image formats. The workflow below instead copies
-to a tagged `oci:` image-layout directory, verifies its digest, and archives the
-directory with `tar`.
+multi-architecture index to either `oci-archive:` or `oci:` could not preserve
+the source digest, even with `--preserve-digests`: conversion to an OCI index
+would change the manifest-list digest. This limitation is scoped to Skopeo
+1.22.2 and that source-media-type/OCI-transport combination; do not assume that
+it applies to other versions or image formats. The workflow below instead uses
+the `dir:` transport, which stores the original manifest bytes without that
+conversion, verifies the copied digest, and archives the directory with `tar`.
 
 The following example authenticates to NGC without putting the API key in a
 command argument, resolves the requested tag to an immutable digest, preserves
-the complete image index in an OCI image-layout directory, and creates a
+the complete image index in an exact manifest directory, and creates a
 checksummed archive for transfer:
 
 ```bash
@@ -59,7 +60,7 @@ SOURCE_TAG="12.4.1-base-ubuntu22.04"
 IMAGE_NAME="nvidia-cuda-${SOURCE_TAG}"
 TRANSFER_ROOT="/tmp/images"
 WORK_DIR="$(mktemp -d)"
-OCI_DIR="${WORK_DIR}/${IMAGE_NAME}"
+IMAGE_DIR="${WORK_DIR}/${IMAGE_NAME}"
 ARCHIVE="${TRANSFER_ROOT}/${IMAGE_NAME}.tar"
 NGC_AUTH_FILE="${WORK_DIR}/auth.json"
 
@@ -84,16 +85,18 @@ SOURCE_DIGEST="$(
 )"
 printf '%s\n' "${SOURCE_DIGEST}" \
     > "${WORK_DIR}/${IMAGE_NAME}.source-digest"
+printf '%s\n' "${SOURCE_DIGEST}" \
+    > "/trusted/${IMAGE_NAME}.source-digest"
 
 skopeo copy \
     --authfile "${NGC_AUTH_FILE}" \
     --all \
     --preserve-digests \
     "docker://${SOURCE_REPOSITORY}@${SOURCE_DIGEST}" \
-    "oci:${OCI_DIR}:${SOURCE_TAG}"
+    "dir:${IMAGE_DIR}"
 
 test "${SOURCE_DIGEST}" = "$(
-    skopeo inspect --format '{{.Digest}}' "oci:${OCI_DIR}:${SOURCE_TAG}"
+    skopeo inspect --format '{{.Digest}}' "dir:${IMAGE_DIR}"
 )"
 
 tar -C "${WORK_DIR}" -cf "${ARCHIVE}" \
@@ -102,11 +105,12 @@ tar -C "${WORK_DIR}" -cf "${ARCHIVE}" \
 (
     cd "${TRANSFER_ROOT}"
     sha256sum "${IMAGE_NAME}.tar" > "${IMAGE_NAME}.tar.sha256"
+    cp "${IMAGE_NAME}.tar.sha256" "/trusted/${IMAGE_NAME}.tar.sha256"
 )
 )
 ```
 
-The OCI image-layout directory plus ordinary tar archive is intentional. A
+The exact manifest directory plus ordinary tar archive is intentional. A
 successful archive checksum proves only that the transferred archive is intact;
 it does not prove that the image kept its registry identity. Do not accept the
 mirror until the import procedure below copies it to the offline registry and
@@ -162,16 +166,32 @@ docker logout nvcr.io
 
 Additionally, download and save the
 [`registry` image](https://hub.docker.com/_/registry) so that you can deploy a
-local registry on the offline network.
+local registry on the offline network. Docker saves only the platform pulled
+for the connected staging host, so the staging host and offline registry host
+must use the same CPU architecture for this fallback. For a different target
+architecture, use an architecture-matched staging host or mirror the registry
+image with the multi-architecture Skopeo `dir:` workflow above. Resolve and
+record the registry image digest independently before transfer:
 
 ```bash
-docker pull registry:3.1.1
-docker save -o /tmp/images/registry-3.1.1.tar registry:3.1.1
+REGISTRY_SOURCE="docker.io/library/registry:3.1.1"
+REGISTRY_DIGEST="$(skopeo inspect --format '{{.Digest}}' "docker://${REGISTRY_SOURCE}")"
+printf '%s\n' "${REGISTRY_DIGEST}" > /trusted/registry-3.1.1.source-digest
+
+docker pull "registry@${REGISTRY_DIGEST}"
+docker save -o /tmp/images/registry-3.1.1.tar "registry@${REGISTRY_DIGEST}"
 (
+    set -euo pipefail
     cd /tmp/images
     sha256sum registry-3.1.1.tar > registry-3.1.1.tar.sha256
+    cp registry-3.1.1.tar.sha256 /trusted/registry-3.1.1.tar.sha256
 )
 ```
+
+Retain `/trusted/registry-3.1.1.tar.sha256` and the recorded source digest in a
+separate trusted system or signed manifest. The checksum copy carried on the
+same removable media detects accidental corruption but does not prove
+authenticity if that media is replaced.
 
 ## Transferring images to offline network
 
@@ -189,10 +209,12 @@ and Rock Ridge. List the archives and checksums explicitly so temporary
 unpacked image directories or unrelated files are not included:
 
 ```bash
-sudo apt install genisoimage
-
-# Run the remaining commands as an unprivileged user.
+(
+set -euo pipefail
 umask 077
+
+# Install the ISO tool separately, then run the remaining commands unprivileged.
+sudo apt install genisoimage
 TRANSFER_ROOT="/tmp/images"
 CUDA_NAME="nvidia-cuda-12.4.1-base-ubuntu22.04"
 REGISTRY_NAME="registry-3.1.1"
@@ -208,6 +230,7 @@ genisoimage \
     "${REGISTRY_NAME}.tar=${TRANSFER_ROOT}/${REGISTRY_NAME}.tar" \
     "${REGISTRY_NAME}.tar.sha256=${TRANSFER_ROOT}/${REGISTRY_NAME}.tar.sha256"
 printf 'ISO written to %s\n' "${ISO_STAGING_DIR}/images.iso"
+)
 ```
 
 Add each additional image archive and checksum to this explicit list. Before
@@ -238,11 +261,19 @@ host:
 
 ```bash
 (
-    cd /tmp/images
-    sha256sum --check registry-3.1.1.tar.sha256
+set -euo pipefail
+cd /tmp/images
+sha256sum --check /trusted/registry-3.1.1.tar.sha256
+EXPECTED_REGISTRY_DIGEST="$(cat /trusted/registry-3.1.1.source-digest)"
+docker load -i registry-3.1.1.tar
+LOADED_REGISTRY_ID="$(docker image inspect --format '{{.Id}}' "registry@${EXPECTED_REGISTRY_DIGEST}")"
+test -n "${LOADED_REGISTRY_ID}"
 )
-docker load -i /tmp/images/registry-3.1.1.tar
 ```
+
+`/trusted/registry-3.1.1.source-digest` represents the separately retained or
+signed digest record from the connected side; do not source it from the same
+untrusted transfer media as the archive.
 
 Then create a Docker volume to store your container images:
 
@@ -267,6 +298,18 @@ Before binding the registry to a network-reachable address, follow the
 [official deployment guide](https://distribution.github.io/distribution/about/deploying/)
 to configure both TLS and access control. Do not expose the test configuration
 on a shared or untrusted network.
+
+Before loading application images, complete the registry handoff and require all
+of these checks:
+
+- bind the registry to its intended network address;
+- configure TLS and access control, and install the registry CA on clients;
+- verify `curl --fail --cacert <ca-file> https://registry-host:5000/v2/`
+  succeeds from every provisioning/cluster network that must pull images;
+- verify an authenticated test push and pull from a non-registry host.
+
+Do not configure cluster hosts for `registry-host:5000` until this checklist
+passes.
 
 ## Configuring your hosts to use the offline container registry
 
@@ -302,7 +345,7 @@ SOURCE_TAG="12.4.1-base-ubuntu22.04"
 IMAGE_NAME="nvidia-cuda-${SOURCE_TAG}"
 TRANSFER_ROOT="/tmp/images"
 IMPORT_ROOT="$(mktemp -d)"
-OCI_DIR="${IMPORT_ROOT}/${IMAGE_NAME}"
+IMAGE_DIR="${IMPORT_ROOT}/${IMAGE_NAME}"
 DESTINATION_REGISTRY="registry-host:5000"
 DESTINATION_IMAGE="${DESTINATION_REGISTRY}/nvidia/cuda:${SOURCE_TAG}"
 DESTINATION_AUTH_FILE="${IMPORT_ROOT}/auth.json"
@@ -314,28 +357,28 @@ cleanup_import_root() {
 trap cleanup_import_root EXIT
 
 cd "${TRANSFER_ROOT}"
-sha256sum --check "${IMAGE_NAME}.tar.sha256"
-test ! -e "${OCI_DIR}"
+sha256sum --check "/trusted/${IMAGE_NAME}.tar.sha256"
+test ! -e "${IMAGE_DIR}"
 tar --no-same-owner --no-same-permissions \
     -C "${IMPORT_ROOT}" \
     -xf "${IMAGE_NAME}.tar"
-test -f "${OCI_DIR}/oci-layout"
+test -f "${IMAGE_DIR}/manifest.json"
 
 skopeo login \
     --authfile "${DESTINATION_AUTH_FILE}" \
     "${DESTINATION_REGISTRY}"
 
-SOURCE_DIGEST="$(cat "${IMPORT_ROOT}/${IMAGE_NAME}.source-digest")"
+SOURCE_DIGEST="$(cat /trusted/${IMAGE_NAME}.source-digest)"
 test "${SOURCE_DIGEST}" = "$(
     skopeo inspect \
         --format '{{.Digest}}' \
-        "oci:${OCI_DIR}:${SOURCE_TAG}"
+        "dir:${IMAGE_DIR}"
 )"
 skopeo copy \
     --all \
     --preserve-digests \
     --dest-authfile "${DESTINATION_AUTH_FILE}" \
-    "oci:${OCI_DIR}:${SOURCE_TAG}" \
+    "dir:${IMAGE_DIR}" \
     "docker://${DESTINATION_IMAGE}"
 
 DESTINATION_DIGEST="$(
@@ -352,6 +395,11 @@ The final equality test is the required round-trip acceptance gate. Treat a
 mismatch as a failed mirror even if the archive checksum passed and the copy
 command reported success.
 
+For the production path, `/trusted/${IMAGE_NAME}.tar.sha256` and
+`/trusted/${IMAGE_NAME}.source-digest` are the separately retained or signed
+records from the connected side. Do not source either trust anchor from the
+same removable media as the archive.
+
 For the loopback-only, unauthenticated test registry above, omit `skopeo login`
 and both auth-file options, use `localhost:5000` as the destination, add
 `--dest-tls-verify=false` to `skopeo copy`, and add `--tls-verify=false` to
@@ -362,6 +410,7 @@ with Docker:
 
 ```bash
 (
+set -euo pipefail
 cd /tmp/images
 sha256sum --check nvidia-cuda-12.4.1-base-ubuntu22.04.tar.sha256
 docker load -i /tmp/images/nvidia-cuda-12.4.1-base-ubuntu22.04.tar
