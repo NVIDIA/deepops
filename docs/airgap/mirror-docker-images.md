@@ -179,7 +179,8 @@ REGISTRY_DIGEST="$(skopeo inspect --format '{{.Digest}}' "docker://${REGISTRY_SO
 printf '%s\n' "${REGISTRY_DIGEST}" > /trusted/registry-3.1.1.source-digest
 
 docker pull "registry@${REGISTRY_DIGEST}"
-docker save -o /tmp/images/registry-3.1.1.tar "registry@${REGISTRY_DIGEST}"
+docker tag "registry@${REGISTRY_DIGEST}" registry:3.1.1
+docker save -o /tmp/images/registry-3.1.1.tar registry:3.1.1
 (
     set -euo pipefail
     cd /tmp/images
@@ -265,15 +266,20 @@ set -euo pipefail
 cd /tmp/images
 sha256sum --check /trusted/registry-3.1.1.tar.sha256
 EXPECTED_REGISTRY_DIGEST="$(cat /trusted/registry-3.1.1.source-digest)"
+case "${EXPECTED_REGISTRY_DIGEST}" in sha256:[0-9a-f][0-9a-f]*) ;; *) exit 1 ;; esac
 docker load -i registry-3.1.1.tar
-LOADED_REGISTRY_ID="$(docker image inspect --format '{{.Id}}' "registry@${EXPECTED_REGISTRY_DIGEST}")"
+LOADED_REGISTRY_ID="$(docker image inspect --format '{{.Id}}' registry:3.1.1)"
 test -n "${LOADED_REGISTRY_ID}"
 )
 ```
 
 `/trusted/registry-3.1.1.source-digest` represents the separately retained or
-signed digest record from the connected side; do not source it from the same
-untrusted transfer media as the archive.
+signed digest record from the connected side. The archive checksum binds the
+loaded `registry:3.1.1` tag to the connected-side archive; Docker's save format
+does not preserve repository-digest metadata, so the separately retained digest
+remains provenance evidence rather than an offline `RepoDigests` assertion. Do
+not source either trust anchor from the same untrusted transfer media as the
+archive.
 
 Then create a Docker volume to store your container images:
 
