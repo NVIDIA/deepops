@@ -8,7 +8,8 @@ Setting up an offline mirror for Docker container images
   - [Downloading container images with Docker](#downloading-container-images-with-docker)
   - [Transferring images to offline network](#transferring-images-to-offline-network)
   - [Set up a container registry on the offline network](#set-up-a-container-registry-on-the-offline-network)
-  - [Configuring your hosts to use the offline container registry](#configuring-your-hosts-to-use-the-offline-container-registry)
+  - [Configuring your hosts to use the offline container
+    registry](#configuring-your-hosts-to-use-the-offline-container-registry)
   - [Loading images into the container registry](#loading-images-into-the-container-registry)
 
 ## Identifying images to mirror
@@ -26,24 +27,27 @@ Then determine the list of images by:
 ## Downloading images with Skopeo
 
 For a repeatable mirror, use [Skopeo](https://github.com/podman-container-tools/skopeo).
-It copies images without a Docker daemon and can preserve every platform in a
-multi-architecture image. Select exact image tags in the
+It copies images without a Docker daemon and can preserve the complete image
+index, including every platform in a multi-architecture image. Select exact
+image tags in the
 [NGC Catalog](https://catalog.ngc.nvidia.com/) or with the
 [NGC CLI](https://docs.nvidia.com/ngc/latest/ngc-catalog-user-guide.html#introduction-to-the-ngc-catalog-and-ngc-clis);
 do not mirror a mutable `latest` tag.
 
 Install Skopeo by following its
 [installation guide](https://github.com/podman-container-tools/skopeo/blob/main/install.md).
-In local testing with Skopeo 1.22.2, converting a Docker-media-type
+In local testing with Skopeo 1.22.2, a direct copy of a Docker-media-type
 multi-architecture index to `oci-archive:` could not preserve the source digest,
-even with `--preserve-digests`. This limitation is specific to the tested Skopeo
-version, source media type, and archive transport; do not assume that it applies
-to other versions or image formats.
+even with `--preserve-digests`. This limitation is scoped to Skopeo 1.22.2 and
+that source-media-type/archive-transport combination; do not assume that it
+applies to other versions or image formats. The workflow below instead copies
+to a tagged `oci:` image-layout directory, verifies its digest, and archives the
+directory with `tar`.
 
 The following example authenticates to NGC without putting the API key in a
 command argument, resolves the requested tag to an immutable digest, preserves
-all image platforms in Skopeo's directory format, and creates a checksummed
-archive for transfer:
+the complete image index in an OCI image-layout directory, and creates a
+checksummed archive for transfer:
 
 ```bash
 (
@@ -55,12 +59,11 @@ SOURCE_TAG="12.4.1-base-ubuntu22.04"
 IMAGE_NAME="nvidia-cuda-${SOURCE_TAG}"
 TRANSFER_ROOT="/tmp/images"
 WORK_DIR="$(mktemp -d)"
-IMAGE_DIR="${WORK_DIR}/${IMAGE_NAME}"
+OCI_DIR="${WORK_DIR}/${IMAGE_NAME}"
 ARCHIVE="${TRANSFER_ROOT}/${IMAGE_NAME}.tar"
 NGC_AUTH_FILE="${WORK_DIR}/auth.json"
 
 mkdir -p "${TRANSFER_ROOT}"
-mkdir "${IMAGE_DIR}"
 
 cleanup_mirror_workdir() {
     find "${WORK_DIR}" -mindepth 1 -delete
@@ -87,10 +90,10 @@ skopeo copy \
     --all \
     --preserve-digests \
     "docker://${SOURCE_REPOSITORY}@${SOURCE_DIGEST}" \
-    "dir:${IMAGE_DIR}"
+    "oci:${OCI_DIR}:${SOURCE_TAG}"
 
 test "${SOURCE_DIGEST}" = "$(
-    skopeo inspect --format '{{.Digest}}' "dir:${IMAGE_DIR}"
+    skopeo inspect --format '{{.Digest}}' "oci:${OCI_DIR}:${SOURCE_TAG}"
 )"
 
 tar -C "${WORK_DIR}" -cf "${ARCHIVE}" \
@@ -103,12 +106,13 @@ tar -C "${WORK_DIR}" -cf "${ARCHIVE}" \
 )
 ```
 
-The directory transport is intentional. A successful archive checksum proves
-only that the transferred archive is intact; it does not prove that the image
-kept its registry identity. Do not accept the mirror until the import procedure
-below copies it to the offline registry and confirms that the destination digest
-exactly equals the recorded source digest. Repeat this process for every exact
-image tag. For larger, explicit image lists, see
+The OCI image-layout directory plus ordinary tar archive is intentional. A
+successful archive checksum proves only that the transferred archive is intact;
+it does not prove that the image kept its registry identity. Do not accept the
+mirror until the import procedure below copies it to the offline registry and
+confirms that the destination digest exactly equals the recorded source digest.
+Repeat this process for every exact image tag. For larger, explicit image lists,
+see
 [`skopeo sync`](https://github.com/podman-container-tools/skopeo/blob/main/docs/skopeo-sync.1.md);
 use an auth file and do not store credentials in its YAML source file.
 
@@ -298,7 +302,7 @@ SOURCE_TAG="12.4.1-base-ubuntu22.04"
 IMAGE_NAME="nvidia-cuda-${SOURCE_TAG}"
 TRANSFER_ROOT="/tmp/images"
 IMPORT_ROOT="$(mktemp -d)"
-IMAGE_DIR="${IMPORT_ROOT}/${IMAGE_NAME}"
+OCI_DIR="${IMPORT_ROOT}/${IMAGE_NAME}"
 DESTINATION_REGISTRY="registry-host:5000"
 DESTINATION_IMAGE="${DESTINATION_REGISTRY}/nvidia/cuda:${SOURCE_TAG}"
 DESTINATION_AUTH_FILE="${IMPORT_ROOT}/auth.json"
@@ -311,20 +315,27 @@ trap cleanup_import_root EXIT
 
 cd "${TRANSFER_ROOT}"
 sha256sum --check "${IMAGE_NAME}.tar.sha256"
-test ! -e "${IMAGE_DIR}"
-tar -C "${IMPORT_ROOT}" -xf "${IMAGE_NAME}.tar"
-test -d "${IMAGE_DIR}"
+test ! -e "${OCI_DIR}"
+tar --no-same-owner --no-same-permissions \
+    -C "${IMPORT_ROOT}" \
+    -xf "${IMAGE_NAME}.tar"
+test -f "${OCI_DIR}/oci-layout"
 
 skopeo login \
     --authfile "${DESTINATION_AUTH_FILE}" \
     "${DESTINATION_REGISTRY}"
 
 SOURCE_DIGEST="$(cat "${IMPORT_ROOT}/${IMAGE_NAME}.source-digest")"
+test "${SOURCE_DIGEST}" = "$(
+    skopeo inspect \
+        --format '{{.Digest}}' \
+        "oci:${OCI_DIR}:${SOURCE_TAG}"
+)"
 skopeo copy \
     --all \
     --preserve-digests \
     --dest-authfile "${DESTINATION_AUTH_FILE}" \
-    "dir:${IMAGE_DIR}" \
+    "oci:${OCI_DIR}:${SOURCE_TAG}" \
     "docker://${DESTINATION_IMAGE}"
 
 DESTINATION_DIGEST="$(
