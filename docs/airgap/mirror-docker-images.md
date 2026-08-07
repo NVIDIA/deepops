@@ -34,6 +34,12 @@ do not mirror a mutable `latest` tag.
 
 Install Skopeo by following its
 [installation guide](https://github.com/podman-container-tools/skopeo/blob/main/install.md).
+In local testing with Skopeo 1.22.2, converting a Docker-media-type
+multi-architecture index to `oci-archive:` could not preserve the source digest,
+even with `--preserve-digests`. This limitation is specific to the tested Skopeo
+version, source media type, and archive transport; do not assume that it applies
+to other versions or image formats.
+
 The following example authenticates to NGC without putting the API key in a
 command argument, resolves the requested tag to an immutable digest, preserves
 all image platforms in Skopeo's directory format, and creates a checksummed
@@ -97,9 +103,12 @@ tar -C "${WORK_DIR}" -cf "${ARCHIVE}" \
 )
 ```
 
-The directory transport is intentional: it preserves the original manifest
-and digest. Repeat this process for every exact image tag. For larger,
-explicit image lists, see
+The directory transport is intentional. A successful archive checksum proves
+only that the transferred archive is intact; it does not prove that the image
+kept its registry identity. Do not accept the mirror until the import procedure
+below copies it to the offline registry and confirms that the destination digest
+exactly equals the recorded source digest. Repeat this process for every exact
+image tag. For larger, explicit image lists, see
 [`skopeo sync`](https://github.com/podman-container-tools/skopeo/blob/main/docs/skopeo-sync.1.md);
 use an auth file and do not store credentials in its YAML source file.
 
@@ -177,27 +186,31 @@ unpacked image directories or unrelated files are not included:
 
 ```bash
 sudo apt install genisoimage
+
+# Run the remaining commands as an unprivileged user.
+umask 077
 TRANSFER_ROOT="/tmp/images"
 CUDA_NAME="nvidia-cuda-12.4.1-base-ubuntu22.04"
 REGISTRY_NAME="registry-3.1.1"
-ISO_OUTPUT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/deepops-image-iso.XXXXXX")"
-chmod 0700 "${ISO_OUTPUT_DIR}"
+ISO_STAGING_DIR="$(mktemp -d "${TMPDIR:-/tmp}/deepops-image-iso.XXXXXX")"
+chmod 0700 "${ISO_STAGING_DIR}"
 genisoimage \
     -iso-level 3 \
     -R \
     -graft-points \
-    -o "${ISO_OUTPUT_DIR}/images.iso" \
+    -o "${ISO_STAGING_DIR}/images.iso" \
     "${CUDA_NAME}.tar=${TRANSFER_ROOT}/${CUDA_NAME}.tar" \
     "${CUDA_NAME}.tar.sha256=${TRANSFER_ROOT}/${CUDA_NAME}.tar.sha256" \
     "${REGISTRY_NAME}.tar=${TRANSFER_ROOT}/${REGISTRY_NAME}.tar" \
     "${REGISTRY_NAME}.tar.sha256=${TRANSFER_ROOT}/${REGISTRY_NAME}.tar.sha256"
-printf 'ISO written to %s\n' "${ISO_OUTPUT_DIR}/images.iso"
+printf 'ISO written to %s\n' "${ISO_STAGING_DIR}/images.iso"
 ```
 
 Add each additional image archive and checksum to this explicit list. Before
 transfer, verify that the output filesystem and media can hold both the total
 ISO and its largest individual archive. FAT32 media cannot store files larger
-than 4 GiB.
+than 4 GiB. Keep ISO creation unprivileged and keep the ISO in the private
+mode-0700 staging directory until it is transferred.
 
 ## Set up a container registry on the offline network
 
@@ -323,6 +336,10 @@ DESTINATION_DIGEST="$(
 test "${SOURCE_DIGEST}" = "${DESTINATION_DIGEST}"
 )
 ```
+
+The final equality test is the required round-trip acceptance gate. Treat a
+mismatch as a failed mirror even if the archive checksum passed and the copy
+command reported success.
 
 For the loopback-only, unauthenticated test registry above, omit `skopeo login`
 and both auth-file options, use `localhost:5000` as the destination, add
