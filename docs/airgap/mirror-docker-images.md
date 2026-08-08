@@ -37,23 +37,30 @@ do not mirror a mutable `latest` tag.
 Install Skopeo by following its
 [installation guide](https://github.com/podman-container-tools/skopeo/blob/main/install.md).
 In local testing with Skopeo 1.22.2, a direct copy of a Docker-media-type
-multi-architecture index to either `oci-archive:` or `oci:` could not preserve
-the source digest, even with `--preserve-digests`: conversion to an OCI index
-would change the manifest-list digest. This limitation is scoped to Skopeo
-1.22.2 and that source-media-type/OCI-transport combination; do not assume that
-it applies to other versions or image formats. Reproduce the check against your
-own Skopeo version before relying on either transport — the copied digest must
-equal the source digest:
+multi-architecture index to `oci-archive:` could not preserve the source
+digest, even with `--preserve-digests`: conversion to an OCI index changed the
+manifest-list digest. This limitation is scoped to Skopeo 1.22.2 and that
+source-media-type/transport combination; do not assume that it applies to
+other versions, transports, or image formats. Before relying on any transport,
+reproduce the check against your own Skopeo version — the copied digest must
+equal the source digest or the transport is unsuitable for this workflow:
 
 ```bash
+(
+set -euo pipefail
 SOURCE="docker://nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04"
-OCI_TEST_DIR="$(mktemp -d)"
-skopeo inspect --format '{{.Digest}}' "${SOURCE}"
-skopeo copy --all --preserve-digests "${SOURCE}" "oci:${OCI_TEST_DIR}/oci-copy"
-skopeo inspect --format '{{.Digest}}' "oci:${OCI_TEST_DIR}/oci-copy"
-skopeo copy --all --preserve-digests "${SOURCE}" "dir:${OCI_TEST_DIR}/dir-copy"
-skopeo inspect --format '{{.Digest}}' "dir:${OCI_TEST_DIR}/dir-copy"
-rm -rf "${OCI_TEST_DIR}"
+CHECK_DIR="$(mktemp -d)"
+trap 'rm -rf "${CHECK_DIR}"' EXIT
+SOURCE_DIGEST="$(skopeo inspect --format '{{.Digest}}' "${SOURCE}")"
+
+skopeo copy --all --preserve-digests "${SOURCE}" "dir:${CHECK_DIR}/dir-copy"
+test "${SOURCE_DIGEST}" = "$(skopeo inspect --format '{{.Digest}}' "dir:${CHECK_DIR}/dir-copy")"
+
+# Expected to FAIL the equality test on Skopeo 1.22.2 for Docker-media-type
+# multi-architecture indexes; rerun to evaluate your own version:
+skopeo copy --all --preserve-digests "${SOURCE}" "oci-archive:${CHECK_DIR}/oci-copy.tar"
+test "${SOURCE_DIGEST}" = "$(skopeo inspect --format '{{.Digest}}' "oci-archive:${CHECK_DIR}/oci-copy.tar")"
+)
 ```
 
 The workflow below instead uses
