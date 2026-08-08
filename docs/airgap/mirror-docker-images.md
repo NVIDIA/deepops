@@ -59,12 +59,15 @@ SOURCE_REPOSITORY="nvcr.io/nvidia/cuda"
 SOURCE_TAG="12.4.1-base-ubuntu22.04"
 IMAGE_NAME="nvidia-cuda-${SOURCE_TAG}"
 TRANSFER_ROOT="/tmp/images"
+TRUSTED_RECORD_DIR="${TRUSTED_RECORD_DIR:-${HOME}/deepops-trusted-records}"
 WORK_DIR="$(mktemp -d)"
 IMAGE_DIR="${WORK_DIR}/${IMAGE_NAME}"
 ARCHIVE="${TRANSFER_ROOT}/${IMAGE_NAME}.tar"
 NGC_AUTH_FILE="${WORK_DIR}/auth.json"
 
 mkdir -p "${TRANSFER_ROOT}"
+mkdir -p "${TRUSTED_RECORD_DIR}"
+chmod 0700 "${TRUSTED_RECORD_DIR}"
 
 cleanup_mirror_workdir() {
     find "${WORK_DIR}" -mindepth 1 -delete
@@ -86,7 +89,7 @@ SOURCE_DIGEST="$(
 printf '%s\n' "${SOURCE_DIGEST}" \
     > "${WORK_DIR}/${IMAGE_NAME}.source-digest"
 printf '%s\n' "${SOURCE_DIGEST}" \
-    > "/trusted/${IMAGE_NAME}.source-digest"
+    > "${TRUSTED_RECORD_DIR}/${IMAGE_NAME}.source-digest"
 
 skopeo copy \
     --authfile "${NGC_AUTH_FILE}" \
@@ -105,10 +108,17 @@ tar -C "${WORK_DIR}" -cf "${ARCHIVE}" \
 (
     cd "${TRANSFER_ROOT}"
     sha256sum "${IMAGE_NAME}.tar" > "${IMAGE_NAME}.tar.sha256"
-    cp "${IMAGE_NAME}.tar.sha256" "/trusted/${IMAGE_NAME}.tar.sha256"
+    cp "${IMAGE_NAME}.tar.sha256" "${TRUSTED_RECORD_DIR}/${IMAGE_NAME}.tar.sha256"
 )
 )
 ```
+
+`TRUSTED_RECORD_DIR` holds the digest and checksum records that anchor the
+verification below. It defaults to `~/deepops-trusted-records` on the staging
+host; point it at storage you control (for example, a signed manifest store or
+a separate encrypted volume). Its contents must reach the offline side through
+a path you trust independently — never on the same removable media as the
+image archives, because a swapped medium could then forge both.
 
 The exact manifest directory plus ordinary tar archive is intentional. A
 successful archive checksum proves only that the transferred archive is intact;
@@ -174,23 +184,28 @@ image with the multi-architecture Skopeo `dir:` workflow above. Resolve and
 record the registry image digest independently before transfer:
 
 ```bash
+(
+set -euo pipefail
+TRUSTED_RECORD_DIR="${TRUSTED_RECORD_DIR:-${HOME}/deepops-trusted-records}"
+mkdir -p "${TRUSTED_RECORD_DIR}"
+chmod 0700 "${TRUSTED_RECORD_DIR}"
 REGISTRY_SOURCE="docker.io/library/registry:3.1.1"
 REGISTRY_DIGEST="$(skopeo inspect --format '{{.Digest}}' "docker://${REGISTRY_SOURCE}")"
-printf '%s\n' "${REGISTRY_DIGEST}" > /trusted/registry-3.1.1.source-digest
+printf '%s\n' "${REGISTRY_DIGEST}" > "${TRUSTED_RECORD_DIR}/registry-3.1.1.source-digest"
 
 docker pull "registry@${REGISTRY_DIGEST}"
 docker tag "registry@${REGISTRY_DIGEST}" registry:3.1.1
 docker save -o /tmp/images/registry-3.1.1.tar registry:3.1.1
 (
-    set -euo pipefail
     cd /tmp/images
     sha256sum registry-3.1.1.tar > registry-3.1.1.tar.sha256
-    cp registry-3.1.1.tar.sha256 /trusted/registry-3.1.1.tar.sha256
+    cp registry-3.1.1.tar.sha256 "${TRUSTED_RECORD_DIR}/registry-3.1.1.tar.sha256"
+)
 )
 ```
 
-Retain `/trusted/registry-3.1.1.tar.sha256` and the recorded source digest in a
-separate trusted system or signed manifest. The checksum copy carried on the
+Retain `${TRUSTED_RECORD_DIR}/registry-3.1.1.tar.sha256` and the recorded
+source digest in a separate trusted system or signed manifest. The checksum copy carried on the
 same removable media detects accidental corruption but does not prove
 authenticity if that media is replaced.
 
@@ -263,9 +278,10 @@ host:
 ```bash
 (
 set -euo pipefail
+TRUSTED_RECORD_DIR="${TRUSTED_RECORD_DIR:-${HOME}/deepops-trusted-records}"
 cd /tmp/images
-sha256sum --check /trusted/registry-3.1.1.tar.sha256
-EXPECTED_REGISTRY_DIGEST="$(cat /trusted/registry-3.1.1.source-digest)"
+sha256sum --check "${TRUSTED_RECORD_DIR}/registry-3.1.1.tar.sha256"
+EXPECTED_REGISTRY_DIGEST="$(cat "${TRUSTED_RECORD_DIR}/registry-3.1.1.source-digest")"
 case "${EXPECTED_REGISTRY_DIGEST}" in sha256:[0-9a-f][0-9a-f]*) ;; *) exit 1 ;; esac
 docker load -i registry-3.1.1.tar
 LOADED_REGISTRY_ID="$(docker image inspect --format '{{.Id}}' registry:3.1.1)"
@@ -273,8 +289,9 @@ test -n "${LOADED_REGISTRY_ID}"
 )
 ```
 
-`/trusted/registry-3.1.1.source-digest` represents the separately retained or
-signed digest record from the connected side. The archive checksum binds the
+`${TRUSTED_RECORD_DIR}/registry-3.1.1.source-digest` is the separately retained
+or signed digest record from the connected side, delivered to this host through
+an independently trusted path (set `TRUSTED_RECORD_DIR` to where you placed it). The archive checksum binds the
 loaded `registry:3.1.1` tag to the connected-side archive; Docker's save format
 does not preserve repository-digest metadata, so the separately retained digest
 remains provenance evidence rather than an offline `RepoDigests` assertion. Do
@@ -350,6 +367,7 @@ umask 077
 SOURCE_TAG="12.4.1-base-ubuntu22.04"
 IMAGE_NAME="nvidia-cuda-${SOURCE_TAG}"
 TRANSFER_ROOT="/tmp/images"
+TRUSTED_RECORD_DIR="${TRUSTED_RECORD_DIR:-${HOME}/deepops-trusted-records}"
 IMPORT_ROOT="$(mktemp -d)"
 IMAGE_DIR="${IMPORT_ROOT}/${IMAGE_NAME}"
 DESTINATION_REGISTRY="registry-host:5000"
@@ -363,7 +381,7 @@ cleanup_import_root() {
 trap cleanup_import_root EXIT
 
 cd "${TRANSFER_ROOT}"
-sha256sum --check "/trusted/${IMAGE_NAME}.tar.sha256"
+sha256sum --check "${TRUSTED_RECORD_DIR}/${IMAGE_NAME}.tar.sha256"
 test ! -e "${IMAGE_DIR}"
 tar --no-same-owner --no-same-permissions \
     -C "${IMPORT_ROOT}" \
@@ -374,7 +392,7 @@ skopeo login \
     --authfile "${DESTINATION_AUTH_FILE}" \
     "${DESTINATION_REGISTRY}"
 
-SOURCE_DIGEST="$(cat /trusted/${IMAGE_NAME}.source-digest)"
+SOURCE_DIGEST="$(cat "${TRUSTED_RECORD_DIR}/${IMAGE_NAME}.source-digest")"
 test "${SOURCE_DIGEST}" = "$(
     skopeo inspect \
         --format '{{.Digest}}' \
@@ -401,10 +419,11 @@ The final equality test is the required round-trip acceptance gate. Treat a
 mismatch as a failed mirror even if the archive checksum passed and the copy
 command reported success.
 
-For the production path, `/trusted/${IMAGE_NAME}.tar.sha256` and
-`/trusted/${IMAGE_NAME}.source-digest` are the separately retained or signed
-records from the connected side. Do not source either trust anchor from the
-same removable media as the archive.
+For the production path, `${TRUSTED_RECORD_DIR}/${IMAGE_NAME}.tar.sha256` and
+`${TRUSTED_RECORD_DIR}/${IMAGE_NAME}.source-digest` are the separately retained
+or signed records from the connected side, delivered through an independently
+trusted path (set `TRUSTED_RECORD_DIR` to where you placed them). Do not source
+either trust anchor from the same removable media as the archive.
 
 For the loopback-only, unauthenticated test registry above, omit `skopeo login`
 and both auth-file options, use `localhost:5000` as the destination, add
