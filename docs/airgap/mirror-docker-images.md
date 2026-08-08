@@ -41,7 +41,22 @@ multi-architecture index to either `oci-archive:` or `oci:` could not preserve
 the source digest, even with `--preserve-digests`: conversion to an OCI index
 would change the manifest-list digest. This limitation is scoped to Skopeo
 1.22.2 and that source-media-type/OCI-transport combination; do not assume that
-it applies to other versions or image formats. The workflow below instead uses
+it applies to other versions or image formats. Reproduce the check against your
+own Skopeo version before relying on either transport — the copied digest must
+equal the source digest:
+
+```bash
+SOURCE="docker://nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04"
+OCI_TEST_DIR="$(mktemp -d)"
+skopeo inspect --format '{{.Digest}}' "${SOURCE}"
+skopeo copy --all --preserve-digests "${SOURCE}" "oci:${OCI_TEST_DIR}/oci-copy"
+skopeo inspect --format '{{.Digest}}' "oci:${OCI_TEST_DIR}/oci-copy"
+skopeo copy --all --preserve-digests "${SOURCE}" "dir:${OCI_TEST_DIR}/dir-copy"
+skopeo inspect --format '{{.Digest}}' "dir:${OCI_TEST_DIR}/dir-copy"
+rm -rf "${OCI_TEST_DIR}"
+```
+
+The workflow below instead uses
 the `dir:` transport, which stores the original manifest bytes without that
 conversion, verifies the copied digest, and archives the directory with `tar`.
 
