@@ -275,16 +275,33 @@ reference host; distribution repositories remain a separate prerequisite.
    variables to that URL.
 
 3. Generate and collect the exact Kubespray file and image set from the pinned
-   submodule. Run its checked-in scripts with the DeepOps inventory so feature
-   and version overrides are reflected. Then render the enabled DeepOps charts
-   with the same default values used by their roles and append their images to
-   Kubespray's list before creating the image archive:
+   submodule. `generate_list.yml` runs only against `localhost`; passing
+   `-i config/inventory` alone does **not** apply variables from DeepOps'
+   `k8s_cluster` group. Export the effective variables for one representative
+   Kubernetes host, review the selected versions, and pass that JSON as
+   extra-vars so the localhost play uses the deployment's resolved overrides.
+   Kubernetes download versions must be cluster-wide; stop if control-plane and
+   worker hosts resolve different artifact-selection variables. Then render the
+   enabled DeepOps charts with the same values used by their roles and append
+   their images to Kubespray's list before creating the image archive:
 
    ```bash
    task_deepops_root=$(pwd)
    task_offline_dir="${task_deepops_root}/submodules/kubespray/contrib/offline"
+   task_kube_host=kube01 # replace with one real kube_control_plane or kube_node host
+   ansible-inventory -i config/inventory --host "${task_kube_host}" \
+     > /tmp/kubespray-effective-vars.json
+   python3 - /tmp/kubespray-effective-vars.json <<'PY'
+   import json
+   import sys
+
+   variables = json.load(open(sys.argv[1], encoding="utf-8"))
+   for name in ("kube_version", "container_manager", "etcd_deployment_type"):
+       print(f"{name}={variables.get(name, '<Kubespray default>')}")
+   PY
    cd "${task_offline_dir}"
-   ./generate_list.sh -i "${task_deepops_root}/config/inventory"
+   ./generate_list.sh -i "${task_deepops_root}/config/inventory" \
+     -e "@/tmp/kubespray-effective-vars.json"
    test -s temp/files.list
    test -s temp/images.list
    NO_HTTP_SERVER=1 ./manage-offline-files.sh
@@ -357,8 +374,11 @@ reference host; distribution repositories remain a separate prerequisite.
    internal registry mirror can serve the paths that the GPU Operator chart
    requests. If NFS is disabled, omit its `helm template` command. If site
    overrides change any GPU Operator flag, render with those values instead.
-   Treat an empty list, a failed pull, or an unparseable rendered image as a
-   collection failure; do not continue with a partial archive.
+   The inventory path is still required by the generator, but the explicit
+   effective-variable JSON is what makes group/host version overrides visible
+   to its localhost play. Treat a missing representative host, an empty list, a
+   failed pull, or an unparseable rendered image as a collection failure; do not
+   continue with a partial archive.
 
 4. Pull and archive the CUDA validator plus the images used by enabled Slurm
    monitoring/registry roles. For the current validator and registry images:
@@ -540,7 +560,12 @@ sha256sum -c SHA256SUMS
    Preserve GPG verification.
 
 3. Load the registry image and start the isolated registry if the site does
-   not already provide one:
+   not already provide one. Run this fallback on the registry host itself. It
+   is plain HTTP, so the imports below push through Docker's IPv4 loopback
+   exception (`127.0.0.1:5000`); cluster nodes use the reachable
+   `registry-host:5000` name configured later. Do not push to
+   `registry-host:5000` from the importer unless that Docker daemon has been
+   separately and deliberately configured for the insecure endpoint:
 
    ```bash
    docker load -i /tmp/images/registry-3.1.1.tar
@@ -549,28 +574,31 @@ sha256sum -c SHA256SUMS
      -v registry-images:/var/lib/registry registry:3.1.1
    ```
 
-4. Import, retag, and push every archived image. Preserve the complete path
-   expected by the consuming chart or role:
+4. Import, retag, and push every archived image on that registry host. Preserve
+   the complete repository path expected by the consuming chart or role. The
+   hostname used for the push is not part of the stored repository path, so a
+   cluster pull of `registry-host:5000/nvidia/cuda:...` resolves the image
+   pushed as `127.0.0.1:5000/nvidia/cuda:...`:
 
    ```bash
    docker load -i /tmp/images/nvidia-cuda-12.4.1-base-ubuntu22.04.tar
    docker tag nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04 \
-     registry-host:5000/nvidia/cuda:12.4.1-base-ubuntu22.04
-   docker push registry-host:5000/nvidia/cuda:12.4.1-base-ubuntu22.04
+     127.0.0.1:5000/nvidia/cuda:12.4.1-base-ubuntu22.04
+   docker push 127.0.0.1:5000/nvidia/cuda:12.4.1-base-ubuntu22.04
    docker load -i /tmp/images/prometheus-slurm-exporter-2.0.0.tar
    docker tag deepops/prometheus-slurm-exporter:2.0.0 \
-     registry-host:5000/deepops/prometheus-slurm-exporter:2.0.0
-   docker push registry-host:5000/deepops/prometheus-slurm-exporter:2.0.0
+     127.0.0.1:5000/deepops/prometheus-slurm-exporter:2.0.0
+   docker push 127.0.0.1:5000/deepops/prometheus-slurm-exporter:2.0.0
    docker load -i /tmp/images/slurm-monitoring.tar
    while read -r source target; do
      docker tag "${source}" "${target}"
      docker push "${target}"
    done <<'EOF'
-   prom/prometheus:v3.13.0 registry-host:5000/prom/prometheus:v3.13.0
-   grafana/grafana:13.1.0 registry-host:5000/grafana/grafana:13.1.0
-   prom/alertmanager:v0.33.0 registry-host:5000/prom/alertmanager:v0.33.0
-   quay.io/prometheus/node-exporter:v1.11.1 registry-host:5000/prometheus/node-exporter:v1.11.1
-   nvcr.io/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless registry-host:5000/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless
+   prom/prometheus:v3.13.0 127.0.0.1:5000/prom/prometheus:v3.13.0
+   grafana/grafana:13.1.0 127.0.0.1:5000/grafana/grafana:13.1.0
+   prom/alertmanager:v0.33.0 127.0.0.1:5000/prom/alertmanager:v0.33.0
+   quay.io/prometheus/node-exporter:v1.11.1 127.0.0.1:5000/prometheus/node-exporter:v1.11.1
+   nvcr.io/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless 127.0.0.1:5000/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless
    EOF
    ```
 
@@ -599,10 +627,13 @@ sha256sum -c SHA256SUMS
    Mirror the matching archive for another provisioning platform; do not use
    the amd64 archive there.
 
-6. Publish the Kubespray static-file tree, then register every Kubespray, GPU
-   Operator, and NFS image collected in step 3 into the existing internal
-   registry. The checked-in manager reads `container-images.tar.gz` from its
-   own directory:
+6. Publish the Kubespray static-file tree, then import every Kubespray, GPU
+   Operator, and NFS image collected in step 3 into the registry. Do **not** run
+   the pinned manager's `register` action: before importing, it overwrites
+   `/etc/docker/daemon.json` or `/etc/containers/registries.conf`, substitutes
+   the importer's hostname instead of `DESTINATION_REGISTRY`, and does not back
+   up, restore, or restart the runtime. Extract its archive and perform the same
+   load/tag/push loop without changing host configuration:
 
    ```bash
    sudo install -d /var/www/html/kubespray
@@ -610,18 +641,34 @@ sha256sum -c SHA256SUMS
      -C /var/www/html/kubespray
    test -d /var/www/html/kubespray/offline-files
 
-   cp /tmp/kubespray-offline/container-images.tar.gz \
-     submodules/kubespray/contrib/offline/container-images.tar.gz
-   cd submodules/kubespray/contrib/offline
-   DESTINATION_REGISTRY=registry-host:5000 \
-     ./manage-offline-container-images.sh register
-   cd ../../../..
+   task_kubespray_import=$(mktemp -d)
+   (
+     set -euo pipefail
+     trap 'rm -rf "${task_kubespray_import}"' EXIT
+     tar -xzf /tmp/kubespray-offline/container-images.tar.gz \
+       -C "${task_kubespray_import}"
+     while read -r archive repository; do
+       test -n "${archive}" && test -n "${repository}"
+       load_line=$(docker load \
+         -i "${task_kubespray_import}/container-images/${archive}" | sed -n '1p')
+       source_ref=$(printf '%s\n' "${load_line}" | awk '{print $3}')
+       if [ "${source_ref}" = ID: ]; then
+         source_ref=$(printf '%s\n' "${load_line}" | awk '{print $4}')
+       fi
+       image_id=$(docker image inspect --format '{{.Id}}' "${source_ref}")
+       test -n "${image_id}"
+       docker tag "${image_id}" "127.0.0.1:5000/${repository}"
+       docker push "127.0.0.1:5000/${repository}"
+     done < "${task_kubespray_import}/container-images/container-images.txt"
+   )
    ```
 
-   Run the registration script only on a dedicated importer after reviewing
-   it: the pinned script configures that host's container-runtime registry
-   settings. Setting `DESTINATION_REGISTRY` prevents it from creating another
-   registry when the site supplies one.
+   These commands assume the fallback plain-HTTP registry is local to the
+   importer. For a site registry on another host, require trusted TLS or have
+   the site administrator configure and restart the importer's runtime under
+   site change control before substituting that registry endpoint. Confirm the
+   imported repositories through the registry's normal catalog or pull checks
+   before deployment.
 
 ## 5. Configure DeepOps for internal endpoints
 
@@ -829,6 +876,9 @@ the success gate.
 - Remove secrets and site inventory from transfer staging. Retain the manifest,
   checksums, exact DeepOps commit, mirror snapshot/version, play recap, and
   validator JSON according to site policy.
+- Delete `/tmp/kubespray-effective-vars.json` after artifact collection. It is a
+  resolved inventory export and may contain site variables that do not belong in
+  the transfer set or retained validation evidence.
 
 ## Source-derived failure branches
 
@@ -842,6 +892,17 @@ not claims that this complete procedure was live-tested in an air gap.
   fails on `kubespray_defaults` imports:** transfer an archive made after
   `git submodule update --init --recursive`; do not fetch from the isolated
   side.
+- **Generated Kubernetes lists contain a default version instead of the
+  configured override:** confirm that the representative host resolves the
+  override, regenerate its effective-variable JSON, and pass it with `-e @...`.
+  The generator's localhost play does not inherit `k8s_cluster` variables from
+  `-i` alone.
+- **An image push reports an HTTPS response error against the fallback HTTP
+  registry:** perform the import on the registry host through
+  `127.0.0.1:5000`. For a remote registry, use trusted TLS or stop until the
+  importer's runtime is deliberately configured and restarted for that exact
+  endpoint; the target-node `docker_insecure_registries` value does not change
+  the importer.
 - **Package task tries a public URL or reports a missing package:** the mirror
   set or variable override is incomplete for the enabled profile. Add the exact
   repository/file to the connected-side manifest, transfer a new signed
