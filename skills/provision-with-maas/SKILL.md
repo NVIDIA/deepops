@@ -57,7 +57,7 @@ deployed machine tags into Ansible inventory.
    api_url: "http://maas-server:5240/MAAS/api/2.0"
    api_key: "consumer_key:token_key:token_secret"
    ssh_user: "ubuntu"
-   network: "10.0.0"
+   network: "192.0.2"
    ssh_bastion: "user@bastion-host"
    machines: "node01 node02 node03"
    ```
@@ -94,7 +94,10 @@ Use these canonical role tags:
 | Slurm | `slurm-master`, `slurm-node`, optionally `slurm-nfs`, `slurm-cache`, `slurm-metric`, `slurm-login` |
 
 Legacy `kube-master`, `kube-node`, and `k8s-cluster` tags are accepted and
-aliased to canonical group names. Other tags become same-named Ansible groups.
+aliased to canonical group names. The deploy helper does not remove these
+legacy tags when applying a profile, so remove them manually in MAAS before a
+role change. Otherwise a target can remain in Kubernetes inventory groups after
+switching to the Slurm profile. Other tags become same-named Ansible groups.
 
 For the built-in profiles, ordering is significant: the first hostname in
 `machines` becomes the Kubernetes control-plane/etcd node or Slurm master;
@@ -106,9 +109,10 @@ MAAS_MACHINES="node01 node02 node03" \
   ./scripts/maas_deploy.sh --profile k8s --tags-only
 ```
 
-Before applying the profile, this command removes all known Kubernetes and
-Slurm test tags from every listed target. It does not remove unrelated MAAS
-tags. Use MAAS directly for a custom role layout, for example:
+Before applying the profile, this command removes the canonical Kubernetes and
+Slurm test tags from every listed target. It does not remove legacy Kubernetes
+tags or unrelated MAAS tags. Use MAAS directly for a custom role layout, for
+example:
 
 ```bash
 maas admin tag update-nodes slurm-master add=<node01-system-id>
@@ -178,7 +182,9 @@ script is waiting.
   request lifecycle changes.
 - Use `--tags-only` to change between the built-in Kubernetes and Slurm layouts
   without reinstalling. Recheck hostname ordering first because it selects the
-  control-plane or master node.
+  control-plane or master node. Inspect each target for legacy `kube-master`,
+  `kube-node`, or `k8s-cluster` tags and remove them manually in MAAS before the
+  change; `--tags-only` does not clear them.
 - Treat a rerun of the deploy command as a fresh reinstall, not an idempotent
   resume. It releases all listed deployed machines, including machines that
   succeeded during a partially failed multi-machine run.
@@ -234,5 +240,7 @@ ownership.
   after deciding whether reinstalling every listed target is acceptable.
 - **`--tags-only` fails immediately:** supply `--profile k8s` or
   `--profile slurm`; other profile names are rejected. If groups are still
-  wrong, inspect tag names and target ordering, reapply the profile, and then
-  regenerate inventory.
+  wrong, inspect tag names and target ordering. Remove legacy `kube-master`,
+  `kube-node`, and `k8s-cluster` tags manually in MAAS because reapplying a
+  profile will not clear them; then reapply the intended profile and regenerate
+  inventory.
