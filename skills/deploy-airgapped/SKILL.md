@@ -608,9 +608,9 @@ sha256sum -c SHA256SUMS
 5. Extract the initialized DeepOps checkout on the provisioning machine:
 
    ```bash
-   mkdir -p /opt/deepops-src
-   tar -xzf /path/to/import/deepops-source.tar.gz -C /opt/deepops-src
-   cd /opt/deepops-src/deepops
+   mkdir -p "$HOME/deepops-src"
+   tar -xzf /path/to/import/deepops-source.tar.gz -C "$HOME/deepops-src"
+   cd "$HOME/deepops-src/deepops"
    ```
 
    Activate the provisioning environment prepared before isolation (or install
