@@ -149,24 +149,86 @@ reference host; distribution repositories remain a separate prerequisite.
 
 ## 3. Mirror direct files, charts, and images
 
-1. Copy direct-download files into the HTTP mirror and override the
-   corresponding variables in `config/group_vars/`. For the default Slurm path,
-   inspect and account for at least these current variables:
+1. Download the direct files selected by the current default Slurm profile.
+   These names and versions come from the checked-in role defaults:
 
-   - `slurm_src_url`, `hwloc_src_url`, and `pmix_src_url`
-   - `nhc_src_url` when `slurm_install_nhc: true`
-   - `slurm_pyxis_tarball_url` when Enroot/Pyxis is enabled
-   - the direct package URLs exposed by the installed `nvidia.enroot` Galaxy
-     role when Enroot is enabled by default (`slurm_install_enroot: true`):
-     after `./scripts/setup.sh`, inspect
-     `roles/galaxy/nvidia.enroot/defaults/main.yml` at the pin in
-     `roles/requirements.yml`, mirror its selected target-OS packages, and set
-     only variables actually defined by that pinned role to internal URLs
-   - `hpcsdk_download_url` when `slurm_install_hpcsdk: true`
-   - `epel_package` **and** `epel_key_url` on Enterprise Linux — several
-     default roles import the EPEL GPG key directly from
-     `dl.fedoraproject.org`; mirror the key file and override `epel_key_url`
-     or the play fails offline at key import
+   ```bash
+   sudo install -d -m 0755 /var/repos/downloads
+   while read -r url name; do
+     sudo curl -fL "${url}" -o "/var/repos/downloads/${name}"
+   done <<'EOF'
+   https://download.schedmd.com/slurm/slurm-26.05.1.tar.bz2 slurm-26.05.1.tar.bz2
+   https://download.open-mpi.org/release/hwloc/v2.5/hwloc-2.5.0.tar.gz hwloc-2.5.0.tar.gz
+   https://github.com/openpmix/openpmix/releases/download/v3.2.3/pmix-3.2.3.tar.bz2 pmix-3.2.3.tar.bz2
+   https://github.com/mej/nhc/releases/download/1.4.3/lbnl-nhc-1.4.3.tar.xz lbnl-nhc-1.4.3.tar.xz
+   https://github.com/NVIDIA/pyxis/archive/v0.11.1.tar.gz pyxis-0.11.1.tar.gz
+   https://developer.download.nvidia.com/hpc-sdk/23.7/nvhpc_2023_237_Linux_x86_64_cuda_12.2.tar.gz nvhpc_2023_237_Linux_x86_64_cuda_12.2.tar.gz
+   https://get.helm.sh/helm-v3.17.1-linux-amd64.tar.gz helm-v3.17.1-linux-amd64.tar.gz
+   EOF
+   for name in slurm-26.05.1.tar.bz2 hwloc-2.5.0.tar.gz \
+     pmix-3.2.3.tar.bz2 lbnl-nhc-1.4.3.tar.xz pyxis-0.11.1.tar.gz \
+     nvhpc_2023_237_Linux_x86_64_cuda_12.2.tar.gz \
+     helm-v3.17.1-linux-amd64.tar.gz; do
+     test -s "/var/repos/downloads/${name}"
+   done
+   ```
+
+   Enroot is also enabled by default, but its package filenames are owned by
+   the pinned `nvidia.enroot` Galaxy role rather than this repository. After
+   `./scripts/setup.sh`, use that installed role's real package list to
+   download the target-OS packages and generate the matching Ansible override.
+   Choose `enroot_deb_packages` for Ubuntu or `enroot_rpm_packages` for
+   Enterprise Linux; repeat for both when the inventory mixes OS families:
+
+   ```bash
+   test -s roles/galaxy/nvidia.enroot/defaults/main.yml
+   cat >/tmp/deepops-mirror-enroot.yml <<'EOF'
+   ---
+   - hosts: localhost
+     connection: local
+     gather_facts: true
+     become: true
+     vars_files:
+       - "{{ deepops_root }}/roles/galaxy/nvidia.enroot/defaults/main.yml"
+     tasks:
+       - name: Download the pinned Enroot packages
+         get_url:
+           url: "{{ item }}"
+           dest: "/var/repos/downloads/{{ item | basename }}"
+           mode: "0644"
+         loop: "{{ lookup('vars', enroot_package_list_var) }}"
+       - name: Write the matching offline override
+         copy:
+           dest: "/var/repos/downloads/{{ enroot_package_list_var }}-offline.yml"
+           mode: "0644"
+           content: |
+             {{ enroot_package_list_var }}:
+             {% for package_url in lookup('vars', enroot_package_list_var) %}
+               - "{{ offline_http_base }}/{{ package_url | basename }}"
+             {% endfor %}
+   EOF
+   ansible-playbook -i localhost, /tmp/deepops-mirror-enroot.yml \
+     -e "deepops_root=$(pwd)" \
+     -e enroot_package_list_var=enroot_deb_packages \
+     -e offline_http_base=http://package-server/downloads
+   ```
+
+   Replace `package-server` before running the generator. Verify every file is
+   nonempty. Use these exact overrides with the published paths:
+
+   ```yaml
+   slurm_src_url: "http://package-server/downloads/slurm-26.05.1.tar.bz2"
+   hwloc_src_url: "http://package-server/downloads/hwloc-2.5.0.tar.gz"
+   pmix_src_url: "http://package-server/downloads/pmix-3.2.3.tar.bz2"
+   nhc_src_url: "http://package-server/downloads/lbnl-nhc-1.4.3.tar.xz"
+   slurm_pyxis_tarball_url: "http://package-server/downloads/pyxis-0.11.1.tar.gz"
+   hpcsdk_download_url: "http://package-server/downloads/nvhpc_2023_237_Linux_x86_64_cuda_12.2.tar.gz"
+   ```
+
+   Add the generated Enroot YAML list to `config/group_vars/all.yml`. On
+   Enterprise Linux, also override `epel_package` and `epel_key_url`; several
+   default roles import the EPEL key directly, so mirroring packages alone is
+   insufficient.
 
    DCGM needs no separate file mirror: the `nvidia_dcgm` role installs
    `dcgm_pkg_name` (`datacenter-gpu-manager`) from the CUDA package
@@ -192,10 +254,7 @@ reference host; distribution repositories remain a separate prerequisite.
    profile. The default tree references the stable Helm repository, GPU
    Operator `v26.3.3`, and, when enabled, NFS subdir external provisioner
    `4.0.18`. Set `gpu_operator_helm_repo` and
-   `k8s_nfs_client_helm_repo` to internal chart repositories. Read
-   `submodules/kubespray/docs/operations/offline-environment.md` from the
-   pinned, initialized submodule and mirror its exact file/image list; do not
-   use an offline list from a different Kubespray revision.
+   `k8s_nfs_client_helm_repo` to internal chart repositories.
 
    Archive the chart versions selected by current DeepOps defaults on the
    connected side:
@@ -215,10 +274,94 @@ reference host; distribution repositories remain a separate prerequisite.
    `/tmp/charts` from an internal HTTP service and set the two repository
    variables to that URL.
 
-3. Determine the container set from a connected reference deployment with the
-   same features. Include images used by Kubespray, enabled charts, the GPU
-   stack, validation, and any Slurm monitoring/registry roles. Pull and archive
-   each image. For the current CUDA validator image:
+3. Generate and collect the exact Kubespray file and image set from the pinned
+   submodule. Run its checked-in scripts with the DeepOps inventory so feature
+   and version overrides are reflected. Then render the enabled DeepOps charts
+   with the same default values used by their roles and append their images to
+   Kubespray's list before creating the image archive:
+
+   ```bash
+   task_deepops_root=$(pwd)
+   task_offline_dir="${task_deepops_root}/submodules/kubespray/contrib/offline"
+   cd "${task_offline_dir}"
+   ./generate_list.sh -i "${task_deepops_root}/config/inventory"
+   test -s temp/files.list
+   test -s temp/images.list
+   NO_HTTP_SERVER=1 ./manage-offline-files.sh
+
+   helm template nvidia-gpu-operator \
+     /tmp/charts/gpu-operator-v26.3.3.tgz \
+     --namespace gpu-operator \
+     --set driver.version=580.126.20 \
+     --set mig.strategy=mixed \
+     --set driver.enabled=false \
+     --set toolkit.enabled=true \
+     --set dcgm.enabled=false \
+     --set migManager.enabled=true \
+     > /tmp/gpu-operator-rendered.yml
+   helm template nfs-subdir-external-provisioner \
+     /tmp/charts/nfs-subdir-external-provisioner-4.0.18.tgz \
+     > /tmp/nfs-provisioner-rendered.yml
+   python3 - /tmp/gpu-operator-rendered.yml \
+     /tmp/nfs-provisioner-rendered.yml <<'PY' >> temp/images.list
+   import sys
+   import yaml
+
+   images = set()
+
+   def walk(value):
+       if isinstance(value, dict):
+           repository = value.get("repository")
+           image = value.get("image")
+           version = value.get("version", value.get("tag"))
+           if isinstance(repository, str) and isinstance(image, str) and version:
+               reference = f"{repository.rstrip('/')}/{image.lstrip('/')}"
+               if "@" not in reference and ":" not in reference.rsplit("/", 1)[-1]:
+                   separator = "@" if str(version).startswith("sha256:") else ":"
+                   reference = f"{reference}{separator}{version}"
+               images.add(reference)
+           if isinstance(image, str):
+               tail = image.rsplit("/", 1)[-1]
+               if "@" in image or ":" in tail:
+                   images.add(image)
+           for child in value.values():
+               walk(child)
+       elif isinstance(value, list):
+           for child in value:
+               walk(child)
+
+   for manifest_path in sys.argv[1:]:
+       with open(manifest_path, encoding="utf-8") as stream:
+           for document in yaml.safe_load_all(stream):
+               walk(document)
+
+   if not images:
+       raise SystemExit("no chart images found")
+   print("\n".join(sorted(images)))
+   PY
+   sort -u -o temp/images.list temp/images.list
+   test -z "$(grep -Ev \
+     '^[^[:space:]]+(:[^/[:space:]]+|@sha256:[0-9a-f]+)$' \
+     temp/images.list)"
+
+   PRIVATE_REGISTRY=nvcr.io IMAGES_FROM_FILE="${task_offline_dir}/temp/images.list" \
+     ./manage-offline-container-images.sh create
+   install -d /tmp/kubespray-offline
+   cp offline-files.tar.gz container-images.tar.gz temp/files.list \
+     temp/images.list /tmp/kubespray-offline/
+   cd "${task_deepops_root}"
+   ```
+
+   The `PRIVATE_REGISTRY=nvcr.io` setting makes the checked-in image manager
+   strip `nvcr.io/` just as it strips the Kubespray source registries, so an
+   internal registry mirror can serve the paths that the GPU Operator chart
+   requests. If NFS is disabled, omit its `helm template` command. If site
+   overrides change any GPU Operator flag, render with those values instead.
+   Treat an empty list, a failed pull, or an unparseable rendered image as a
+   collection failure; do not continue with a partial archive.
+
+4. Pull and archive the CUDA validator plus the images used by enabled Slurm
+   monitoring/registry roles. For the current validator and registry images:
 
    ```bash
    mkdir -p /tmp/images
@@ -259,7 +402,7 @@ reference host; distribution repositories remain a separate prerequisite.
    environment unless an approved internal build setup supplies both base
    images and APT sources.
 
-4. Archive the initialized checkout separately from site secrets. **Keep
+5. Archive the initialized checkout separately from site secrets. **Keep
    `.git` in the archive**: `playbooks/k8s-cluster.yml` unconditionally runs
    `git submodule update --init` from the repository root, so an extracted
    tree without Git metadata fails before Kubespray starts. With submodules
@@ -278,7 +421,7 @@ reference host; distribution repositories remain a separate prerequisite.
    Kubernetes path working. Excluding `deepops/config` still keeps site
    secrets out of the transfer artifact.
 
-5. Package repositories and images for approved removable-media transfer and
+6. Package repositories and images for approved removable-media transfer and
    create checksums. Substitute a protected, user-owned staging directory for
    `/path/to/staging`; create the ISO files without elevated privileges:
 
@@ -286,10 +429,11 @@ reference host; distribution repositories remain a separate prerequisite.
    genisoimage -o /path/to/staging/packages.iso /var/repos
    genisoimage -o /path/to/staging/images.iso /tmp/images
    genisoimage -o /path/to/staging/charts.iso /tmp/charts
+   genisoimage -o /path/to/staging/kubespray-offline.iso /tmp/kubespray-offline
    genisoimage -o /path/to/staging/keys.iso /var/repos/keys
    cp /tmp/deepops-source.tar.gz /path/to/staging/
    cd /path/to/staging
-   sha256sum packages.iso images.iso charts.iso keys.iso \
+   sha256sum packages.iso images.iso charts.iso kubespray-offline.iso keys.iso \
      deepops-source.tar.gz > SHA256SUMS
    ```
 
@@ -309,16 +453,19 @@ sha256sum -c SHA256SUMS
 
    ```bash
    sudo mkdir -p /mnt/deepops-packages /mnt/deepops-images \
-     /mnt/deepops-charts /mnt/deepops-keys
+     /mnt/deepops-charts /mnt/deepops-kubespray /mnt/deepops-keys
    sudo mount -o loop /path/to/import/packages.iso /mnt/deepops-packages
    sudo mount -o loop /path/to/import/images.iso /mnt/deepops-images
    sudo mount -o loop /path/to/import/charts.iso /mnt/deepops-charts
+   sudo mount -o loop /path/to/import/kubespray-offline.iso /mnt/deepops-kubespray
    sudo mount -o loop /path/to/import/keys.iso /mnt/deepops-keys
    sudo mkdir -p /var/repos /var/www/html/charts
    mkdir -p /tmp/images
    sudo cp -a /mnt/deepops-packages/. /var/repos/
    cp -a /mnt/deepops-images/. /tmp/images/
    sudo cp -a /mnt/deepops-charts/. /var/www/html/charts/
+   mkdir -p /tmp/kubespray-offline
+   cp -a /mnt/deepops-kubespray/. /tmp/kubespray-offline/
    ```
 
 2. Publish signing keys first, and fail if any expected file is missing. This
@@ -345,6 +492,16 @@ sha256sum -c SHA256SUMS
    test -d /var/repos/mirror/nvidia.github.io/libnvidia-container/stable/deb/amd64
    test -d /var/repos/mirror/developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64
    sudo cp -a /var/repos/mirror/. /var/www/html/repos/
+   ```
+
+   Publish the direct Slurm/Enroot files under the paths used by the generated
+   overrides:
+
+   ```bash
+   test -d /var/repos/downloads
+   sudo install -d /var/www/html/downloads
+   sudo cp -a /var/repos/downloads/. /var/www/html/downloads/
+   test -z "$(find /var/www/html/downloads -maxdepth 1 -type f -size 0 -print -quit)"
    ```
 
    For RPM, publish the exact top-level repo-ID directories, EPEL bootstrap
@@ -427,7 +584,44 @@ sha256sum -c SHA256SUMS
 
    Activate the provisioning environment prepared before isolation (or install
    it from approved internal indexes), then copy and edit `config.example/` if
-   site configuration was not transferred separately.
+   site configuration was not transferred separately. Install the mirrored
+   Helm version expected by `scripts/k8s/install_helm.sh` on an amd64 Linux
+   provisioning host so that script does not fetch its public installer:
+
+   ```bash
+   mkdir -p /tmp/deepops-helm
+   tar -xzf /var/repos/downloads/helm-v3.17.1-linux-amd64.tar.gz \
+     -C /tmp/deepops-helm
+   sudo install -m 0755 /tmp/deepops-helm/linux-amd64/helm /usr/local/bin/helm
+   helm version --short | grep '^v3.17.1'
+   ```
+
+   Mirror the matching archive for another provisioning platform; do not use
+   the amd64 archive there.
+
+6. Publish the Kubespray static-file tree, then register every Kubespray, GPU
+   Operator, and NFS image collected in step 3 into the existing internal
+   registry. The checked-in manager reads `container-images.tar.gz` from its
+   own directory:
+
+   ```bash
+   sudo install -d /var/www/html/kubespray
+   sudo tar -xzf /tmp/kubespray-offline/offline-files.tar.gz \
+     -C /var/www/html/kubespray
+   test -d /var/www/html/kubespray/offline-files
+
+   cp /tmp/kubespray-offline/container-images.tar.gz \
+     submodules/kubespray/contrib/offline/container-images.tar.gz
+   cd submodules/kubespray/contrib/offline
+   DESTINATION_REGISTRY=registry-host:5000 \
+     ./manage-offline-container-images.sh register
+   cd ../../../..
+   ```
+
+   Run the registration script only on a dedicated importer after reviewing
+   it: the pinned script configures that host's container-runtime registry
+   settings. Setting `DESTINATION_REGISTRY` prevents it from creating another
+   registry when the site supplies one.
 
 ## 5. Configure DeepOps for internal endpoints
 
@@ -480,9 +674,69 @@ features, for example `slurm_enable_monitoring`, `slurm_install_hpcsdk`,
 `slurm_install_nhc`, `slurm_install_enroot`, or `slurm_install_pyxis`. Do not
 disable a required feature merely to make a playbook pass.
 
-For Kubernetes, set the pinned Kubespray offline variables from its checked-in
-offline guide, internal Helm repository URLs, and internal image registry
-rewrites. Set `k8s_nfs_client_provisioner: false` only if the cluster uses a
+For Kubernetes, add the pinned Kubespray offline rewrites and the DeepOps chart
+repositories. This layout matches the static-file extraction and image-manager
+registration commands above:
+
+```yaml
+registry_host: "registry-host:5000"
+registry_addr: "registry-host:5000"
+files_repo: "http://package-server/kubespray/offline-files"
+
+kube_image_repo: "{{ registry_host }}"
+gcr_image_repo: "{{ registry_host }}"
+docker_image_repo: "{{ registry_host }}"
+quay_image_repo: "{{ registry_host }}"
+github_image_repo: "{{ registry_host }}"
+github_url: "{{ files_repo }}/github.com"
+dl_k8s_io_url: "{{ files_repo }}/dl.k8s.io"
+storage_googleapis_url: "{{ files_repo }}/storage.googleapis.com"
+get_helm_url: "{{ files_repo }}/get.helm.sh"
+local_path_provisioner_helper_image_repo: "{{ registry_host }}/busybox"
+
+gpu_operator_helm_repo: "http://package-server/charts"
+k8s_nfs_client_helm_repo: "http://package-server/charts"
+
+containerd_registries_mirrors:
+  - prefix: "{{ registry_addr }}"
+    mirrors:
+      - host: "http://{{ registry_addr }}"
+        capabilities: ["pull", "resolve"]
+        skip_verify: true
+  - prefix: "nvcr.io"
+    mirrors:
+      - host: "http://{{ registry_addr }}"
+        capabilities: ["pull", "resolve"]
+        skip_verify: true
+  - prefix: "registry.k8s.io"
+    mirrors:
+      - host: "http://{{ registry_addr }}"
+        capabilities: ["pull", "resolve"]
+        skip_verify: true
+  - prefix: "docker.io"
+    mirrors:
+      - host: "http://{{ registry_addr }}"
+        capabilities: ["pull", "resolve"]
+        skip_verify: true
+  - prefix: "quay.io"
+    mirrors:
+      - host: "http://{{ registry_addr }}"
+        capabilities: ["pull", "resolve"]
+        skip_verify: true
+  - prefix: "gcr.io"
+    mirrors:
+      - host: "http://{{ registry_addr }}"
+        capabilities: ["pull", "resolve"]
+        skip_verify: true
+  - prefix: "ghcr.io"
+    mirrors:
+      - host: "http://{{ registry_addr }}"
+        capabilities: ["pull", "resolve"]
+        skip_verify: true
+```
+
+Use trusted TLS and `skip_verify: false` when the internal registry provides
+it. Set `k8s_nfs_client_provisioner: false` only if the cluster uses a
 site-owned storage path or intentionally has no dynamic NFS provisioner.
 
 The current top-level Kubernetes playbook invokes a Helm installer URL and
@@ -566,6 +820,7 @@ the success gate.
   sudo umount /mnt/deepops-packages
   sudo umount /mnt/deepops-images
   sudo umount /mnt/deepops-charts
+  sudo umount /mnt/deepops-kubespray
   sudo umount /mnt/deepops-keys
   ```
 
