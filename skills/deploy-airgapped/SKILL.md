@@ -96,27 +96,56 @@ sudo mkdir -p /var/repos
 sudo apt-mirror
 ```
 
-Preserve and verify the repository signing keys alongside the mirror, including
-the Docker, CUDA, and NVIDIA Container Toolkit keys documented in
-`docs/airgap/mirror-apt-repos.md`.
+Download the signing material that DeepOps fetches directly, plus the RPM
+bootstrap files when building an Enterprise Linux mirror. Keep these outside
+`mirror/` so their archive paths are deterministic:
+
+```bash
+sudo mkdir -p /var/repos/keys /var/repos/bootstrap
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+  -o /var/repos/keys/docker-ubuntu.asc
+sudo curl -fsSL https://download.docker.com/linux/centos/gpg \
+  -o /var/repos/keys/docker-rpm.asc
+sudo curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey \
+  -o /var/repos/keys/libnvidia-container.asc
+sudo curl -fsSL \
+  https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/3bf863cc.pub \
+  -o /var/repos/keys/cuda-ubuntu2404-3bf863cc.pub
+sudo curl -fsSL \
+  https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/D42D0685.pub \
+  -o /var/repos/keys/cuda-rhel9-D42D0685.pub
+sudo curl -fsSL \
+  https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-9 \
+  -o /var/repos/keys/RPM-GPG-KEY-EPEL-9
+sudo curl -fsSL \
+  https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
+  -o /var/repos/bootstrap/epel-release-latest-9.noarch.rpm
+gpg --show-keys --with-fingerprint /var/repos/keys/*
+```
+
+Replace `ubuntu2404`, `rhel9`, and `9` together for another supported target.
+Verify the downloaded fingerprints against the vendor's published values under
+the site's package-trust process before transfer; do not turn off GPG checking.
 
 ### Enterprise Linux/RPM
 
-Configure the target distribution repositories plus the required EPEL, Docker
-CE, CUDA (`cuda-rhel8-x86_64` or `cuda-rhel9-x86_64`),
-`libnvidia-container`, and `nvidia-container-toolkit` repositories. Download
-each enabled repository ID and generate metadata; repeat these commands for
-every ID:
+Configure the target distribution repositories plus EPEL, Docker CE, CUDA,
+`libnvidia-container`, and `nvidia-container-toolkit`. For EL9, download the
+checked-in documentation's complete additional-repository set into the
+top-level repo-ID directories created by `reposync`:
 
 ```bash
-sudo reposync -l --repoid=docker-ce-stable --downloadcomps \
-  --download-metadata --download_path=/var/repos
-sudo createrepo /var/repos/docker-ce-stable
+for repo_id in epel docker-ce-stable cuda-rhel9-x86_64 \
+  libnvidia-container nvidia-container-toolkit; do
+  sudo reposync -l --repoid="${repo_id}" --downloadcomps \
+    --download-metadata --download_path=/var/repos
+  sudo createrepo "/var/repos/${repo_id}"
+done
 ```
 
-Do not infer completeness from that example. Compare the final repository IDs
-with `/etc/yum.repos.d/` on an Internet-connected reference host configured for
-the same workload.
+Use `cuda-rhel8-x86_64` instead on EL8. Compare the final IDs and package
+contents with `/etc/yum.repos.d/` and the enabled workload on a connected
+reference host; distribution repositories remain a separate prerequisite.
 
 ## 3. Mirror direct files, charts, and images
 
@@ -127,11 +156,12 @@ the same workload.
    - `slurm_src_url`, `hwloc_src_url`, and `pmix_src_url`
    - `nhc_src_url` when `slurm_install_nhc: true`
    - `slurm_pyxis_tarball_url` when Enroot/Pyxis is enabled
-   - `enroot_deb_packages` (Ubuntu) or `enroot_rpm_packages` (Enterprise
-     Linux) — Enroot is enabled by default (`slurm_install_enroot: true`)
-     and both lists point at `github.com/NVIDIA/enroot` release downloads;
-     mirror the exact package files for the pinned `enroot_version` and
-     override the full lists with internal URLs
+   - the direct package URLs exposed by the installed `nvidia.enroot` Galaxy
+     role when Enroot is enabled by default (`slurm_install_enroot: true`):
+     after `./scripts/setup.sh`, inspect
+     `roles/galaxy/nvidia.enroot/defaults/main.yml` at the pin in
+     `roles/requirements.yml`, mirror its selected target-OS packages, and set
+     only variables actually defined by that pinned role to internal URLs
    - `hpcsdk_download_url` when `slurm_install_hpcsdk: true`
    - `epel_package` **and** `epel_key_url` on Enterprise Linux — several
      default roles import the EPEL GPG key directly from
@@ -202,7 +232,32 @@ the same workload.
    When Slurm monitoring stays enabled, also mirror the images selected by
    `prometheus_container`, `grafana_container`, `alertmanager_container`,
    `node_exporter_container`, and `nvidia_dcgm_container`, then override those
-   variables with their internal registry paths.
+   variables with their internal registry paths. The Slurm exporter is a
+   special case: its default `slurm_exporter_build_image: true` builds from
+   `golang:1.24` and `ubuntu:24.04`, and the runtime stage runs `apt-get`.
+   Build it while connected, archive it with the other images, and use the
+   prebuilt image offline:
+
+   ```bash
+   for image in prom/prometheus:v3.13.0 grafana/grafana:13.1.0 \
+     prom/alertmanager:v0.33.0 quay.io/prometheus/node-exporter:v1.11.1 \
+     nvcr.io/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless; do
+     docker pull "${image}"
+   done
+   docker save -o /tmp/images/slurm-monitoring.tar \
+     prom/prometheus:v3.13.0 grafana/grafana:13.1.0 \
+     prom/alertmanager:v0.33.0 quay.io/prometheus/node-exporter:v1.11.1 \
+     nvcr.io/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless
+   docker build -t deepops/prometheus-slurm-exporter:2.0.0 \
+     roles/prometheus-slurm-exporter/files/docker
+   docker save -o /tmp/images/prometheus-slurm-exporter-2.0.0.tar \
+     deepops/prometheus-slurm-exporter:2.0.0
+   ```
+
+   This connected-side build obtains the two base images and runtime APT
+   packages. Do not leave the default local build enabled in the isolated
+   environment unless an approved internal build setup supplies both base
+   images and APT sources.
 
 4. Archive the initialized checkout separately from site secrets. **Keep
    `.git` in the archive**: `playbooks/k8s-cluster.yml` unconditionally runs
@@ -238,8 +293,8 @@ the same workload.
      deepops-source.tar.gz > SHA256SUMS
    ```
 
-Transfer the ISO files, checkout archive, detached signing keys, and checksum
-file through the site's approved boundary process. Verify the checksums again
+Transfer the ISO files, checkout archive, and checksum file through the site's
+approved boundary process. Verify the checksums again
 inside the isolated network before importing anything:
 
 ```bash
@@ -253,10 +308,12 @@ sha256sum -c SHA256SUMS
    working directories:
 
    ```bash
-   sudo mkdir -p /mnt/deepops-packages /mnt/deepops-images /mnt/deepops-charts
+   sudo mkdir -p /mnt/deepops-packages /mnt/deepops-images \
+     /mnt/deepops-charts /mnt/deepops-keys
    sudo mount -o loop /path/to/import/packages.iso /mnt/deepops-packages
    sudo mount -o loop /path/to/import/images.iso /mnt/deepops-images
    sudo mount -o loop /path/to/import/charts.iso /mnt/deepops-charts
+   sudo mount -o loop /path/to/import/keys.iso /mnt/deepops-keys
    sudo mkdir -p /var/repos /var/www/html/charts
    mkdir -p /tmp/images
    sudo cp -a /mnt/deepops-packages/. /var/repos/
@@ -264,37 +321,66 @@ sha256sum -c SHA256SUMS
    sudo cp -a /mnt/deepops-charts/. /var/www/html/charts/
    ```
 
-2. Publish extracted APT/RPM content and signing keys from an internal
-   package server. Every URL used in the configuration example in step 5
-   must resolve to content published here — publish one path per referenced
-   repository, not just the Container Toolkit:
+2. Publish signing keys first, and fail if any expected file is missing. This
+   EL9/Ubuntu 24.04 example corresponds exactly to the connected-side commands:
 
    ```bash
-   sudo mkdir -p /var/www/html/repos /var/www/html/keys
-   sudo cp -r /var/repos/mirror/nvidia.github.io/libnvidia-container/ \
-     /var/www/html/repos/libnvidia-container/
-   sudo cp -r /var/repos/mirror/download.docker.com/ \
-     /var/www/html/repos/docker/
-   sudo cp -r /var/repos/mirror/developer.download.nvidia.com/cuda-ubuntu/ \
-     /var/www/html/repos/cuda-ubuntu/
-   sudo cp -r /var/repos/mirror/developer.download.nvidia.com/cuda-rhel/ \
-     /var/www/html/repos/cuda-rhel/
-   sudo cp -r /var/repos/mirror/epel/ /var/www/html/repos/epel/
-   sudo cp /mnt/deepops-keys/*.gpg /mnt/deepops-keys/*.pub \
-     /mnt/deepops-keys/RPM-GPG-KEY-* /var/www/html/keys/ 2>/dev/null || true
-   ls /var/www/html/keys/   # verify every key referenced in step 5 is present
+   sudo install -d /var/www/html/keys
+   for key in docker-ubuntu.asc docker-rpm.asc libnvidia-container.asc \
+     cuda-ubuntu2404-3bf863cc.pub cuda-rhel9-D42D0685.pub \
+     RPM-GPG-KEY-EPEL-9; do
+     test -s "/mnt/deepops-keys/${key}"
+     sudo install -m 0644 "/mnt/deepops-keys/${key}" "/var/www/html/keys/${key}"
+   done
+   gpg --show-keys --with-fingerprint /var/www/html/keys/*
+   sha256sum /var/www/html/keys/*
    ```
 
-   Adjust source paths to match how the connected-side mirror step actually
-   laid out `/var/repos`; the destination paths must match the URLs in
-   step 5 exactly. Verify each with
-   `curl -fsI http://package-server/repos/<repo>/` and
-   `curl -fsI http://package-server/keys/<key-file>` before deploying.
-   Point Ubuntu targets at the internal `deb` URLs. On Enterprise Linux,
-   create repo files with `baseurl=http://<package-server>/repos/<repo-id>` and
-   remove/disable upstream `mirrorlist` entries. Preserve GPG verification;
-   use `trusted=yes` only when the site's package trust policy explicitly
-   permits it.
+   For APT, preserve `apt-mirror`'s hostname and path layout verbatim:
+
+   ```bash
+   sudo install -d /var/www/html/repos
+   test -d /var/repos/mirror/archive.ubuntu.com/ubuntu/dists/noble
+   test -d /var/repos/mirror/download.docker.com/linux/ubuntu/dists/noble
+   test -d /var/repos/mirror/nvidia.github.io/libnvidia-container/stable/deb/amd64
+   test -d /var/repos/mirror/developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64
+   sudo cp -a /var/repos/mirror/. /var/www/html/repos/
+   ```
+
+   For RPM, publish the exact top-level repo-ID directories, EPEL bootstrap
+   RPM, and a rewritten Container Toolkit repo file whose base URLs are
+   internal:
+
+   ```bash
+   for repo_id in epel docker-ce-stable cuda-rhel9-x86_64 \
+     libnvidia-container nvidia-container-toolkit; do
+     test -d "/var/repos/${repo_id}/repodata"
+     sudo cp -a "/var/repos/${repo_id}" /var/www/html/repos/
+   done
+   test -s /var/repos/bootstrap/epel-release-latest-9.noarch.rpm
+   sudo install -m 0644 /var/repos/bootstrap/epel-release-latest-9.noarch.rpm \
+     /var/www/html/repos/epel-release-latest-9.noarch.rpm
+   sudo tee /var/www/html/repos/nvidia-container-toolkit.repo >/dev/null <<'EOF'
+   [libnvidia-container]
+   name=libnvidia-container
+   baseurl=http://package-server/repos/libnvidia-container
+   enabled=1
+   gpgcheck=1
+   gpgkey=http://package-server/keys/libnvidia-container.asc
+
+   [nvidia-container-toolkit]
+   name=nvidia-container-toolkit
+   baseurl=http://package-server/repos/nvidia-container-toolkit
+   enabled=1
+   gpgcheck=1
+   gpgkey=http://package-server/keys/libnvidia-container.asc
+   EOF
+   ```
+
+   Replace `package-server` with the real internal DNS name in both the repo
+   file and step 5. Verify every configured file URL with `curl -fsS` and every
+   APT/RPM metadata path with the target package manager before deployment.
+   Preserve GPG verification.
 
 3. Load the registry image and start the isolated registry if the site does
    not already provide one:
@@ -314,6 +400,21 @@ sha256sum -c SHA256SUMS
    docker tag nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04 \
      registry-host:5000/nvidia/cuda:12.4.1-base-ubuntu22.04
    docker push registry-host:5000/nvidia/cuda:12.4.1-base-ubuntu22.04
+   docker load -i /tmp/images/prometheus-slurm-exporter-2.0.0.tar
+   docker tag deepops/prometheus-slurm-exporter:2.0.0 \
+     registry-host:5000/deepops/prometheus-slurm-exporter:2.0.0
+   docker push registry-host:5000/deepops/prometheus-slurm-exporter:2.0.0
+   docker load -i /tmp/images/slurm-monitoring.tar
+   while read -r source target; do
+     docker tag "${source}" "${target}"
+     docker push "${target}"
+   done <<'EOF'
+   prom/prometheus:v3.13.0 registry-host:5000/prom/prometheus:v3.13.0
+   grafana/grafana:13.1.0 registry-host:5000/grafana/grafana:13.1.0
+   prom/alertmanager:v0.33.0 registry-host:5000/prom/alertmanager:v0.33.0
+   quay.io/prometheus/node-exporter:v1.11.1 registry-host:5000/prometheus/node-exporter:v1.11.1
+   nvcr.io/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless registry-host:5000/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless
+   EOF
    ```
 
 5. Extract the initialized DeepOps checkout on the provisioning machine:
@@ -334,26 +435,26 @@ Set mirror overrides in `config/group_vars/all.yml` (or a narrower group file).
 Use values matching the paths actually published by the site:
 
 ```yaml
-docker_ubuntu_repo_base_url: "http://package-server/repos/docker"
-docker_ubuntu_repo_gpgkey: "http://package-server/keys/docker.gpg"
-nvidia_container_toolkit_repo_base_url: "http://package-server/repos/libnvidia-container"
-nvidia_container_toolkit_repo_gpg_url: "http://package-server/keys/libnvidia-container.gpg"
+docker_ubuntu_repo_base_url: "http://package-server/repos/download.docker.com/linux/ubuntu"
+docker_ubuntu_repo_gpgkey: "http://package-server/keys/docker-ubuntu.asc"
+nvidia_container_toolkit_repo_base_url: "http://package-server/repos/nvidia.github.io/libnvidia-container"
+nvidia_container_toolkit_repo_gpg_url: "http://package-server/keys/libnvidia-container.asc"
 
-docker_rh_repo_base_url: "http://package-server/repos/docker"
-docker_rh_repo_gpgkey: "http://package-server/keys/docker.gpg"
+docker_rh_repo_base_url: "http://package-server/repos/docker-ce-stable"
+docker_rh_repo_gpgkey: "http://package-server/keys/docker-rpm.asc"
 nvidia_container_toolkit_rpm_repo_url: "http://package-server/repos/nvidia-container-toolkit.repo"
 
 docker_insecure_registries:
   - "registry-host:5000"
 
 # CUDA repository mirror (required by the default Slurm path; see step 3)
-nvidia_driver_ubuntu_cuda_repo_baseurl: "http://package-server/repos/cuda-ubuntu"
-nvidia_driver_ubuntu_cuda_keyring_url: "http://package-server/repos/cuda-ubuntu/cuda-keyring_1.1-1_all.deb"
-nvidia_driver_rhel_cuda_repo_baseurl: "http://package-server/repos/cuda-rhel/"
-nvidia_driver_rhel_cuda_repo_gpgkey: "http://package-server/keys/cuda-D42D0685.pub"
+nvidia_driver_ubuntu_cuda_repo_baseurl: "http://package-server/repos/developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64"
+nvidia_driver_ubuntu_cuda_keyring_url: "http://package-server/repos/developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb"
+nvidia_driver_rhel_cuda_repo_baseurl: "http://package-server/repos/cuda-rhel9-x86_64/"
+nvidia_driver_rhel_cuda_repo_gpgkey: "http://package-server/keys/cuda-rhel9-D42D0685.pub"
 
 # EPEL mirror (Enterprise Linux; key import fails offline without this)
-epel_package: "http://package-server/repos/epel/epel-release-latest-9.noarch.rpm"
+epel_package: "http://package-server/repos/epel-release-latest-9.noarch.rpm"
 epel_key_url: "http://package-server/keys/RPM-GPG-KEY-EPEL-9"
 ```
 
@@ -364,6 +465,13 @@ profile is:
 ```yaml
 slurm_enable_container_registry: false
 standalone_container_registry_cache_enable: false
+slurm_exporter_build_image: false
+slurm_exporter_container: "registry-host:5000/deepops/prometheus-slurm-exporter:2.0.0"
+prometheus_container: "registry-host:5000/prom/prometheus:v3.13.0"
+grafana_container: "registry-host:5000/grafana/grafana:13.1.0"
+alertmanager_container: "registry-host:5000/prom/alertmanager:v0.33.0"
+node_exporter_container: "registry-host:5000/prometheus/node-exporter:v1.11.1"
+nvidia_dcgm_container: "registry-host:5000/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless"
 ```
 
 Mirror and override the Slurm source/archive variables listed above. If their
@@ -458,6 +566,7 @@ the success gate.
   sudo umount /mnt/deepops-packages
   sudo umount /mnt/deepops-images
   sudo umount /mnt/deepops-charts
+  sudo umount /mnt/deepops-keys
   ```
 
   Do not remove the internal mirrors or registry: deployed nodes continue to
@@ -466,7 +575,10 @@ the success gate.
   checksums, exact DeepOps commit, mirror snapshot/version, play recap, and
   validator JSON according to site policy.
 
-## Observed failure branches
+## Source-derived failure branches
+
+These branches follow from checked-in tasks, defaults, and validators; they are
+not claims that this complete procedure was live-tested in an air gap.
 
 - **`build_offline_cache.sh` fails because
   `playbooks/airgap/build-offline-cache.yml` is missing:** this automation was

@@ -21,5 +21,5 @@ Start with [AGENTS.md](../AGENTS.md) at the repository root for orientation,
 golden paths, and operating rules.
 
 Contributions should keep skills honest: every command must work as written
-from a clean checkout, and failure branches should come from real observed
-failures, not speculation.
+from a clean checkout, and failure branches must be labeled as observed or
+source-derived according to their evidence.
