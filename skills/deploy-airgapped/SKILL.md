@@ -128,9 +128,24 @@ the same workload.
    - `nhc_src_url` when `slurm_install_nhc: true`
    - `slurm_pyxis_tarball_url` when Enroot/Pyxis is enabled
    - `hpcsdk_download_url` when `slurm_install_hpcsdk: true`
-   - `epel_package` on Enterprise Linux
+   - `epel_package` **and** `epel_key_url` on Enterprise Linux — several
+     default roles import the EPEL GPG key directly from
+     `dl.fedoraproject.org`; mirror the key file and override `epel_key_url`
+     or the play fails offline at key import
    - `dcgm_deb_package` or `dcgm_rpm_package` when using a locally downloaded
      DCGM package
+
+   The default Slurm configuration also enables CUDA installation, whose
+   Ubuntu and Enterprise Linux tasks fetch the CUDA repository and its
+   signing material from `developer.download.nvidia.com` through their own
+   variables. Mirroring the CUDA packages alone does not redirect these
+   tasks; mirror the repository metadata, keyring package, and GPG key, then
+   override:
+
+   - `nvidia_driver_ubuntu_cuda_repo_baseurl` and
+     `nvidia_driver_ubuntu_cuda_keyring_url` (Ubuntu)
+   - `nvidia_driver_rhel_cuda_repo_baseurl` and
+     `nvidia_driver_rhel_cuda_repo_gpgkey` (Enterprise Linux)
 
    Either mirror and override every enabled dependency or explicitly disable
    the optional component. Do not silently fall back to its public URL.
@@ -294,6 +309,16 @@ nvidia_container_toolkit_rpm_repo_url: "http://package-server/repos/nvidia-conta
 
 docker_insecure_registries:
   - "registry-host:5000"
+
+# CUDA repository mirror (required by the default Slurm path; see step 3)
+nvidia_driver_ubuntu_cuda_repo_baseurl: "http://package-server/repos/cuda-ubuntu"
+nvidia_driver_ubuntu_cuda_keyring_url: "http://package-server/repos/cuda-ubuntu/cuda-keyring_1.1-1_all.deb"
+nvidia_driver_rhel_cuda_repo_baseurl: "http://package-server/repos/cuda-rhel/"
+nvidia_driver_rhel_cuda_repo_gpgkey: "http://package-server/keys/cuda-D42D0685.pub"
+
+# EPEL mirror (Enterprise Linux; key import fails offline without this)
+epel_package: "http://package-server/repos/epel/epel-release-latest-9.noarch.rpm"
+epel_key_url: "http://package-server/keys/RPM-GPG-KEY-EPEL-9"
 ```
 
 For Slurm, disable the default pull-through registry cache when upstream
