@@ -127,13 +127,21 @@ the same workload.
    - `slurm_src_url`, `hwloc_src_url`, and `pmix_src_url`
    - `nhc_src_url` when `slurm_install_nhc: true`
    - `slurm_pyxis_tarball_url` when Enroot/Pyxis is enabled
+   - `enroot_deb_packages` (Ubuntu) or `enroot_rpm_packages` (Enterprise
+     Linux) — Enroot is enabled by default (`slurm_install_enroot: true`)
+     and both lists point at `github.com/NVIDIA/enroot` release downloads;
+     mirror the exact package files for the pinned `enroot_version` and
+     override the full lists with internal URLs
    - `hpcsdk_download_url` when `slurm_install_hpcsdk: true`
    - `epel_package` **and** `epel_key_url` on Enterprise Linux — several
      default roles import the EPEL GPG key directly from
      `dl.fedoraproject.org`; mirror the key file and override `epel_key_url`
      or the play fails offline at key import
-   - `dcgm_deb_package` or `dcgm_rpm_package` when using a locally downloaded
-     DCGM package
+
+   DCGM needs no separate file mirror: the `nvidia_dcgm` role installs
+   `dcgm_pkg_name` (`datacenter-gpu-manager`) from the CUDA package
+   repository, so it is covered by the CUDA repository mirror below — verify
+   the DCGM package is present in the mirrored CUDA repo content.
 
    The default Slurm configuration also enables CUDA installation, whose
    Ubuntu and Enterprise Linux tasks fetch the CUDA repository and its
@@ -155,9 +163,9 @@ the same workload.
    Operator `v26.3.3`, and, when enabled, NFS subdir external provisioner
    `4.0.18`. Set `gpu_operator_helm_repo` and
    `k8s_nfs_client_helm_repo` to internal chart repositories. Read
-   `submodules/kubespray/docs/offline-environment.md` from the pinned,
-   initialized submodule and mirror its exact file/image list; do not use an
-   offline list from a different Kubespray revision.
+   `submodules/kubespray/docs/operations/offline-environment.md` from the
+   pinned, initialized submodule and mirror its exact file/image list; do not
+   use an offline list from a different Kubespray revision.
 
    Archive the chart versions selected by current DeepOps defaults on the
    connected side:
@@ -223,10 +231,11 @@ the same workload.
    genisoimage -o /path/to/staging/packages.iso /var/repos
    genisoimage -o /path/to/staging/images.iso /tmp/images
    genisoimage -o /path/to/staging/charts.iso /tmp/charts
+   genisoimage -o /path/to/staging/keys.iso /var/repos/keys
    cp /tmp/deepops-source.tar.gz /path/to/staging/
    cd /path/to/staging
-   sha256sum packages.iso images.iso charts.iso deepops-source.tar.gz \
-     > SHA256SUMS
+   sha256sum packages.iso images.iso charts.iso keys.iso \
+     deepops-source.tar.gz > SHA256SUMS
    ```
 
 Transfer the ISO files, checkout archive, detached signing keys, and checksum
@@ -255,15 +264,32 @@ sha256sum -c SHA256SUMS
    sudo cp -a /mnt/deepops-charts/. /var/www/html/charts/
    ```
 
-2. Publish extracted APT/RPM content from an internal package server. For the
-   minimal Apache layout used by the repository docs:
+2. Publish extracted APT/RPM content and signing keys from an internal
+   package server. Every URL used in the configuration example in step 5
+   must resolve to content published here — publish one path per referenced
+   repository, not just the Container Toolkit:
 
    ```bash
-   sudo mkdir -p /var/www/html/repos
+   sudo mkdir -p /var/www/html/repos /var/www/html/keys
    sudo cp -r /var/repos/mirror/nvidia.github.io/libnvidia-container/ \
      /var/www/html/repos/libnvidia-container/
+   sudo cp -r /var/repos/mirror/download.docker.com/ \
+     /var/www/html/repos/docker/
+   sudo cp -r /var/repos/mirror/developer.download.nvidia.com/cuda-ubuntu/ \
+     /var/www/html/repos/cuda-ubuntu/
+   sudo cp -r /var/repos/mirror/developer.download.nvidia.com/cuda-rhel/ \
+     /var/www/html/repos/cuda-rhel/
+   sudo cp -r /var/repos/mirror/epel/ /var/www/html/repos/epel/
+   sudo cp /mnt/deepops-keys/*.gpg /mnt/deepops-keys/*.pub \
+     /mnt/deepops-keys/RPM-GPG-KEY-* /var/www/html/keys/ 2>/dev/null || true
+   ls /var/www/html/keys/   # verify every key referenced in step 5 is present
    ```
 
+   Adjust source paths to match how the connected-side mirror step actually
+   laid out `/var/repos`; the destination paths must match the URLs in
+   step 5 exactly. Verify each with
+   `curl -fsI http://package-server/repos/<repo>/` and
+   `curl -fsI http://package-server/keys/<key-file>` before deploying.
    Point Ubuntu targets at the internal `deb` URLs. On Enterprise Linux,
    create repo files with `baseurl=http://<package-server>/repos/<repo-id>` and
    remove/disable upstream `mirrorlist` entries. Preserve GPG verification;
