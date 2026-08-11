@@ -196,14 +196,24 @@ the same workload.
    `node_exporter_container`, and `nvidia_dcgm_container`, then override those
    variables with their internal registry paths.
 
-4. Archive the initialized checkout separately from site secrets. Run this
-   from the checkout's parent directory after `setup.sh` has populated its
-   Galaxy dependencies and submodules:
+4. Archive the initialized checkout separately from site secrets. **Keep
+   `.git` in the archive**: `playbooks/k8s-cluster.yml` unconditionally runs
+   `git submodule update --init` from the repository root, so an extracted
+   tree without Git metadata fails before Kubespray starts. With submodules
+   already initialized at the pinned commits, that task is an offline no-op.
+   Run this from the checkout's parent directory after `setup.sh` has
+   populated its Galaxy dependencies and
+   `git submodule update --init --recursive` has completed:
 
    ```bash
-   tar --exclude='deepops/.git' --exclude='deepops/config' \
+   git -C deepops submodule status --recursive   # every line must start with a space (initialized, pinned)
+   tar --exclude='deepops/config' \
      -czf /tmp/deepops-source.tar.gz deepops
    ```
+
+   The archive is larger with Git metadata included; that is the price of the
+   Kubernetes path working. Excluding `deepops/config` still keeps site
+   secrets out of the transfer artifact.
 
 5. Package repositories and images for approved removable-media transfer and
    create checksums. Substitute a protected, user-owned staging directory for
@@ -342,7 +352,13 @@ rewrites. Set `k8s_nfs_client_provisioner: false` only if the cluster uses a
 site-owned storage path or intentionally has no dynamic NFS provisioner.
 
 The current top-level Kubernetes playbook invokes a Helm installer URL and
-adds `https://charts.helm.sh/stable`; its containerd local-registry settings
+adds `https://charts.helm.sh/stable`; when the Ansible host platform differs
+from the cluster nodes (for example a macOS or arm64 control machine), its
+artifact step also downloads `kubectl` and its checksum directly from
+`https://dl.k8s.io`. Run the deployment from a control host matching the
+cluster platform so the playbook fetches `kubectl` from a cluster node
+instead, or pre-approve an internal mirror for that URL. Its containerd
+local-registry settings
 also carry an explicit TODO in `config.example/group_vars/k8s_cluster.yml`.
 Therefore, before declaring a fully disconnected Kubernetes run ready, prove
 that these references are satisfied by approved internal endpoints or obtain a
