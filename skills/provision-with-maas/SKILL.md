@@ -162,19 +162,25 @@ script is waiting.
    ansible-inventory -i scripts/maas_inventory.py --graph
    ```
 
-   Require exactly the intended deployed machines in `all`, the expected leaf
-   groups, and the correct first-host/worker split. Inspect `ansible_host` and
-   `maas_*` host variables in `--list` when anything is unexpected.
+   This inventory is controller-wide: it includes every `Deployed` machine
+   visible through the configured MAAS API, not only the hostnames in
+   `machines` or `MAAS_MACHINES`. Require each operation-owned target to be
+   present with the expected leaf groups and correct first-host/worker split;
+   unrelated deployed machines may also appear in `all`. Inspect
+   `ansible_host` and `maas_*` host variables in `--list` when anything is
+   unexpected.
 
-3. Prove Ansible can reach every inventoried machine:
+3. Prove Ansible can reach the operation-owned machines only:
 
    ```bash
-   ansible -i scripts/maas_inventory.py all -m ping
+   ansible -i scripts/maas_inventory.py 'node01:node02:node03' -m ping
    ```
 
-   Require `SUCCESS` and `"ping": "pong"` for every target. This validates
-   provisioning and control-plane access; it does not validate a Slurm or
-   Kubernetes deployment.
+   Build the host pattern from the same reviewed hostname list used for the
+   deploy or tag operation; do not target `all` on a shared controller. Require
+   `SUCCESS` and `"ping": "pong"` for every operation-owned target. This
+   validates provisioning and control-plane access; it does not validate a
+   Slurm or Kubernetes deployment.
 
 ### Reruns and role changes
 
