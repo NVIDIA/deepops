@@ -13,6 +13,7 @@ agent (or person) can simply read the relevant `SKILL.md` before acting.
 |-------|----------|
 | [deploy-slurm-cluster](deploy-slurm-cluster/SKILL.md) | Deploying or rebuilding a Slurm GPU cluster. |
 | [deploy-k8s-gpu-cluster](deploy-k8s-gpu-cluster/SKILL.md) | Deploying or rebuilding a Kubernetes GPU cluster. |
+| [deploy-airgapped](deploy-airgapped/SKILL.md) | Preparing mirrors and deploying Slurm or Kubernetes without Internet access. |
 | [validate-gpu-cluster](validate-gpu-cluster/SKILL.md) | Health checks and post-deploy verification. |
 | [diagnose-driver-install](diagnose-driver-install/SKILL.md) | NVIDIA driver failures, `nvidia-smi` errors, GPU pods crash-looping. |
 
