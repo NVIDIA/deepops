@@ -6,8 +6,8 @@ Run this on a Slurm controller, login, or compute node after deploying
 health, GPU (GRES) configuration, and optionally runs a single-GPU job.
 
 The default output is one human-readable line per check. With ``--json`` the
-script prints a single flat JSON object with stable field names so automation
-and AI agents can consume the result directly.
+script prints a JSON object with stable field names so automation and AI
+agents can consume the result directly.
 
 Exit codes: 0 = all checks passed, 1 = one or more checks failed,
 2 = usage or environment error (Slurm commands not found).
@@ -39,6 +39,24 @@ def run(cmd, timeout=60):
         return 127, "", "command not found: %s" % cmd[0]
 
 
+def normalize_sinfo_state(state):
+    """Return a lowercase Slurm state without trailing status flags."""
+    return state.strip().rstrip("*+~#!%$@^-").lower()
+
+
+def parse_sinfo_node_states(output):
+    """Parse node states, keeping the first row for each unique node."""
+    nodes = {}
+    for line in output.splitlines():
+        parts = line.split()
+        if len(parts) != 2:
+            continue
+        node, state = parts
+        if node not in nodes:
+            nodes[node] = normalize_sinfo_state(state)
+    return nodes
+
+
 def parse_sinfo_states(output):
     """Parse ``sinfo -h -N -o '%n %T'`` output into node-state counts.
 
@@ -46,35 +64,46 @@ def parse_sinfo_states(output):
     states maps state name (lowercase, trailing '*' stripped) to a count.
     """
     states = {}
-    seen = set()
-    for line in output.splitlines():
-        parts = line.split()
-        if len(parts) != 2:
-            continue
-        node, state = parts
-        if node in seen:
-            continue
-        seen.add(node)
-        state = state.strip().rstrip("*+~#!%$@^-").lower()
+    nodes = parse_sinfo_node_states(output)
+    for state in nodes.values():
         states[state] = states.get(state, 0) + 1
     available_states = ("idle", "mixed", "allocated", "completing")
     available = sum(states.get(s, 0) for s in available_states)
-    total = len(seen)
+    total = len(nodes)
     return total, available, total - available, states
+
+
+def parse_gres_gpu_counts(output):
+    """Parse configured GPU counts, keeping one value per unique node."""
+    nodes = {}
+    for line in output.splitlines():
+        parts = line.split(None, 1)
+        if len(parts) != 2 or parts[0] in nodes:
+            continue
+        count = 0
+        for match in re.finditer(r"gpu(?::[^:,(\s]+)?:(\d+)", parts[1]):
+            count += int(match.group(1))
+        nodes[parts[0]] = count
+    return nodes
 
 
 def parse_gres_gpus(output):
     """Parse ``sinfo -h -N -o '%n %G'`` output into a total GPU count."""
-    total = 0
-    seen = set()
-    for line in output.splitlines():
-        parts = line.split(None, 1)
-        if len(parts) != 2 or parts[0] in seen:
-            continue
-        seen.add(parts[0])
-        for match in re.finditer(r"gpu(?::[^:,(\s]+)?:(\d+)", parts[1]):
-            total += int(match.group(1))
-    return total
+    return sum(parse_gres_gpu_counts(output).values())
+
+
+def build_node_details(states_output, gres_output):
+    """Return stable per-node state and configured GPU details."""
+    states = parse_sinfo_node_states(states_output)
+    gpu_counts = parse_gres_gpu_counts(gres_output)
+    return [
+        {
+            "name": name,
+            "state": states[name],
+            "gpus_configured": gpu_counts.get(name, 0),
+        }
+        for name in sorted(states)
+    ]
 
 
 def main():
@@ -117,6 +146,7 @@ def main():
         "nodes_available": 0,
         "nodes_unavailable": 0,
         "node_states": {},
+        "nodes": [],
         "gpus_configured": 0,
         "gpu_job_ran": False,
         "gpu_job_ok": False,
@@ -128,10 +158,12 @@ def main():
     if rc == 0 and out:
         result["slurm_version"] = out.split()[-1]
 
+    states_output = ""
     rc, out, err = run(["sinfo", "-h", "-N", "-o", "%n %T"])
     if rc != 0:
         result["failures"].append("sinfo failed: %s" % (err or "rc=%s" % rc))
     else:
+        states_output = out
         result["controller_reachable"] = True
         total, avail, unavail, states = parse_sinfo_states(out)
         result["nodes_total"] = total
@@ -146,9 +178,12 @@ def main():
                 % (unavail, ", ".join(sorted(k for k in states if k not in ("idle", "mixed", "allocated", "completing"))))
             )
 
+    gres_output = ""
     rc, out, _ = run(["sinfo", "-h", "-N", "-o", "%n %G"])
     if rc == 0:
+        gres_output = out
         result["gpus_configured"] = parse_gres_gpus(out)
+    result["nodes"] = build_node_details(states_output, gres_output)
     if result["controller_reachable"] and result["gpus_configured"] == 0:
         result["failures"].append("no GPUs (gres/gpu) configured on any node")
 
