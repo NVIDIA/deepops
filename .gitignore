@@ -7,6 +7,10 @@
 # virtualenv
 /.venv/
 
+# python bytecode
+__pycache__/
+*.py[cod]
+
 # claude code
 /CLAUDE.md
 /tasks/
