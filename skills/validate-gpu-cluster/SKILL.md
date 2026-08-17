@@ -35,6 +35,9 @@ contract: `docs/deepops/validation.md`.
      (`nodes_total`, `gpus_configured`/`gpus_allocatable`).
    - `ok: false` — report each entry in `failures` verbatim; they name the
      failing subsystem and the next diagnostic step.
+   - Use the name-sorted `nodes` list to identify individual failures. Slurm
+     entries report `name`, normalized `state`, and `gpus_configured`;
+     Kubernetes entries report `name`, `ready`, and `gpus_allocatable`.
 
 3. When a GPU check fails, do not conclude "driver broken" from a bare
    `nvidia-smi` over SSH — on Slurm nodes GPUs are hidden outside jobs.

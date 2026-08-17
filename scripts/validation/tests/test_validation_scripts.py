@@ -51,18 +51,37 @@ class TestSlurmParsers(unittest.TestCase):
         out = "node1 gpu:4\nnode1 gpu:4\n"
         self.assertEqual(validate_slurm.parse_gres_gpus(out), 4)
 
+    def test_node_details_are_unique_normalized_and_sorted(self):
+        states = "node-b down*\nnode-a IDLE+\nnode-b idle\n"
+        gres = "node-b gpu:h100:8(S:0-1)\nnode-a gpu:2\nnode-b gpu:4\n"
+        self.assertEqual(
+            validate_slurm.build_node_details(states, gres),
+            [
+                {"name": "node-a", "state": "idle", "gpus_configured": 2},
+                {"name": "node-b", "state": "down", "gpus_configured": 8},
+            ],
+        )
+
+    def test_node_details_default_missing_gres_to_zero(self):
+        self.assertEqual(
+            validate_slurm.build_node_details("node1 mixed\n", ""),
+            [{"name": "node1", "state": "mixed", "gpus_configured": 0}],
+        )
+
 
 class TestK8sParsers(unittest.TestCase):
     def test_summarize_nodes(self):
         doc = {
             "items": [
                 {
+                    "metadata": {"name": "node-a"},
                     "status": {
                         "conditions": [{"type": "Ready", "status": "True"}],
                         "allocatable": {"nvidia.com/gpu": "8"},
                     }
                 },
                 {
+                    "metadata": {"name": "node-b"},
                     "status": {
                         "conditions": [{"type": "Ready", "status": "False"}],
                         "allocatable": {},
@@ -70,8 +89,57 @@ class TestK8sParsers(unittest.TestCase):
                 },
             ]
         }
-        total, ready, gpus = validate_k8s.summarize_nodes(doc)
+        total, ready, gpus, nodes = validate_k8s.summarize_nodes(doc)
         self.assertEqual((total, ready, gpus), (2, 1, 8))
+        self.assertEqual(
+            nodes,
+            [
+                {"name": "node-a", "ready": True, "gpus_allocatable": 8},
+                {"name": "node-b", "ready": False, "gpus_allocatable": 0},
+            ],
+        )
+
+    def test_summarize_nodes_details_are_sorted_and_malformed_gpus_are_zero(self):
+        doc = {
+            "items": [
+                {
+                    "metadata": {"name": "node-b"},
+                    "status": {
+                        "conditions": [{"type": "Ready", "status": "False"}],
+                        "allocatable": {"nvidia.com/gpu": None},
+                    },
+                },
+                {
+                    "metadata": {"name": "node-a"},
+                    "status": {
+                        "conditions": [{"type": "Ready", "status": "True"}],
+                        "allocatable": {"nvidia.com/gpu": "not-a-count"},
+                    },
+                },
+                {
+                    "metadata": {"name": "node-c"},
+                    "status": {
+                        "conditions": [{"type": "Ready", "status": "True"}],
+                        "allocatable": {"nvidia.com/gpu": "4"},
+                    },
+                },
+            ]
+        }
+        total, ready, gpus, nodes = validate_k8s.summarize_nodes(doc)
+        self.assertEqual((total, ready, gpus), (3, 2, 4))
+        self.assertEqual(
+            nodes,
+            [
+                {"name": "node-a", "ready": True, "gpus_allocatable": 0},
+                {"name": "node-b", "ready": False, "gpus_allocatable": 0},
+                {"name": "node-c", "ready": True, "gpus_allocatable": 4},
+            ],
+        )
+
+    def test_parse_gpu_count_rejects_other_malformed_values(self):
+        for value in (True, -1, "-2", 1.5, [], {}):
+            with self.subTest(value=value):
+                self.assertEqual(validate_k8s.parse_gpu_count(value), 0)
 
     def test_summarize_gpu_pods(self):
         doc = {

@@ -7,8 +7,8 @@ Run this anywhere ``kubectl`` can reach the cluster after deploying
 CUDA smoke pod that requests one GPU.
 
 The default output is one human-readable line per check. With ``--json`` the
-script prints a single flat JSON object with stable field names so automation
-and AI agents can consume the result directly.
+script prints a JSON object with stable field names so automation and AI
+agents can consume the result directly.
 
 Exit codes: 0 = all checks passed, 1 = one or more checks failed,
 2 = usage or environment error (kubectl not found).
@@ -38,26 +38,47 @@ def run(cmd, timeout=60, input_text=None):
         return 127, "", "command not found: %s" % cmd[0]
 
 
+def parse_gpu_count(value):
+    """Return a non-negative integer GPU count, or zero if malformed."""
+    if isinstance(value, bool) or not isinstance(value, (int, str)):
+        return 0
+    try:
+        count = int(value)
+    except (ValueError, OverflowError):
+        return 0
+    return count if count >= 0 else 0
+
+
 def summarize_nodes(nodes_json):
     """Summarize a ``kubectl get nodes -o json`` document.
 
-    Returns (nodes_total, nodes_ready, gpus_allocatable).
+    Returns (nodes_total, nodes_ready, gpus_allocatable, nodes), where nodes
+    is a stable name-sorted list of per-node details.
     """
     total = ready = gpus = 0
+    nodes = []
     for item in nodes_json.get("items", []):
         total += 1
+        node_ready = False
         for cond in item.get("status", {}).get("conditions", []):
             if cond.get("type") == "Ready" and cond.get("status") == "True":
                 ready += 1
+                node_ready = True
                 break
         alloc = item.get("status", {}).get("allocatable", {})
-        try:
-            gpus += int(alloc.get("nvidia.com/gpu", "0"))
-        except ValueError:
-            # A malformed allocatable value counts as zero GPUs; the
-            # gpus_allocatable check will then fail loudly for this cluster.
-            continue
-    return total, ready, gpus
+        # A malformed allocatable value counts as zero GPUs; the aggregate
+        # gpus_allocatable check will then fail loudly for this cluster.
+        node_gpus = parse_gpu_count(alloc.get("nvidia.com/gpu", "0"))
+        gpus += node_gpus
+        nodes.append(
+            {
+                "name": item.get("metadata", {}).get("name", ""),
+                "ready": node_ready,
+                "gpus_allocatable": node_gpus,
+            }
+        )
+    nodes.sort(key=lambda node: node["name"])
+    return total, ready, gpus, nodes
 
 
 def summarize_gpu_pods(pods_json):
@@ -172,6 +193,7 @@ def main():
         "api_reachable": False,
         "nodes_total": 0,
         "nodes_ready": 0,
+        "nodes": [],
         "gpus_allocatable": 0,
         "gpu_stack_pods_total": 0,
         "gpu_stack_pods_ready": 0,
@@ -187,12 +209,14 @@ def main():
     else:
         result["api_reachable"] = True
         try:
-            total, ready, gpus = summarize_nodes(json.loads(out))
+            total, ready, gpus, nodes = summarize_nodes(json.loads(out))
         except json.JSONDecodeError:
             result["failures"].append("could not parse kubectl node output")
             total = ready = gpus = 0
+            nodes = []
         result["nodes_total"] = total
         result["nodes_ready"] = ready
+        result["nodes"] = nodes
         result["gpus_allocatable"] = gpus
         if total == 0:
             result["failures"].append("cluster reports zero nodes")
