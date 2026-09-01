@@ -9,7 +9,15 @@
 
 - name: add MAAS repository
   apt_repository:
-    repo: "{{ maas_repo }}"
+    # MAAS 3.5 has no Noble repository. Normalize the legacy override used by
+    # existing automation while preserving custom repositories.
+    repo: >-
+      {{
+        'ppa:maas/3.7'
+        if ansible_distribution_version is version('24.04', '>=')
+        and maas_repo == 'ppa:maas/3.5'
+        else maas_repo
+      }}
     state: present
 
 - name: install MAAS
