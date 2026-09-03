@@ -13,6 +13,28 @@
   with_items: "{{ pyxis_el_deps }}"
   when: ansible_os_family == "RedHat"
 
+# Ubuntu 23.10 and later set kernel.apparmor_restrict_unprivileged_userns=1
+# by default, which makes enroot-nsenter fail under pyxis with
+# "failed to create user namespace: Permission denied". Detect the knob by
+# its presence in /proc rather than by distribution version, so the task is
+# a no-op on kernels built without it.
+- name: check for AppArmor unprivileged user namespace restriction
+  stat:
+    path: /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+  register: apparmor_userns_knob
+  when: is_compute
+
+- name: allow unprivileged user namespaces for enroot
+  ansible.posix.sysctl:
+    name: kernel.apparmor_restrict_unprivileged_userns
+    value: "0"
+    sysctl_file: /etc/sysctl.d/60-enroot-userns.conf
+    state: present
+    reload: yes
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+
 - name: install slurm-pmi hook
   file:
     path: /etc/enroot/hooks.d/50-slurm-pmi.sh
