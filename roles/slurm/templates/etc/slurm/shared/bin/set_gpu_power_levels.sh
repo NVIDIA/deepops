@@ -1,24 +1,38 @@
 #!/usr/bin/env bash
 set -e
 
-gpu_count="$(nvidia-smi -L | wc -l)"
+case "$1" in
+    max)
+        query=power.max_limit
+        ;;
+    default)
+        query=power.default_limit
+        ;;
+    min)
+        query=power.min_limit
+        ;;
+    *)
+        echo "Usage: $0 [max,default,min]"
+        exit 1
+        ;;
+esac
 
-for i in $(seq 0 "$(( gpu_count - 1 ))" )
+# Query every GPU in a single call instead of one call per GPU.
+readarray -t limits < <(nvidia-smi --query-gpu="$query" --format=csv,noheader,nounits)
+
+# "nvidia-smi -pl" takes roughly a second per GPU, so applying the limits
+# serially adds ~8 s to the prolog of every full-node job on an 8-GPU node.
+# Apply them in parallel and collect the exit status of each child.
+pids=()
+for i in "${!limits[@]}"
 do
-    case "$1" in
-        max)
-            next="$(nvidia-smi -i "$i" --query-gpu=power.max_limit --format=csv,noheader,nounits)"
-            ;;
-        default)
-            next="$(nvidia-smi -i "$i" --query-gpu=power.default_limit --format=csv,noheader,nounits)"
-            ;;
-        min)
-            next="$(nvidia-smi -i "$i" --query-gpu=power.min_limit --format=csv,noheader,nounits)"
-            ;;
-        *)
-            echo "Usage: $0 [max,default,min]"
-            exit 1
-            ;;
-    esac
-    nvidia-smi -i "$i" -pl "$next"
+    nvidia-smi -i "$i" -pl "${limits[$i]}" >/dev/null &
+    pids+=("$!")
 done
+
+rc=0
+for pid in "${pids[@]}"
+do
+    wait "$pid" || rc=1
+done
+exit "$rc"
