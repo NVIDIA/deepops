@@ -4,11 +4,32 @@
     path: /etc/dgx-release
   register: is_dgx
 
+# Driver R470.42.01 and later ship nvidia_peermem in-tree. On those
+# systems the out-of-tree nv_peer_mem DKMS module does not exist.
+- name: Check for in-tree nvidia_peermem module
+  command: modinfo nvidia_peermem
+  register: nvidia_peermem_info
+  failed_when: false
+  changed_when: false
+  when:
+    - ansible_local['gpus']['count']
+    - is_dgx.stat.exists
+
+- name: Load in-tree nvidia_peermem
+  modprobe:
+    name: nvidia_peermem
+    state: present
+  when:
+    - ansible_local['gpus']['count']
+    - is_dgx.stat.exists
+    - nvidia_peermem_info.rc == 0
+
 - name: Autoinstall DKMS modules
   command: dkms autoinstall
   when:
     - ansible_local['gpus']['count']
     - is_dgx.stat.exists
+    - nvidia_peermem_info.rc != 0
 
 - name: Modprobe nv_peer_mem
   modprobe:
@@ -17,6 +38,7 @@
   when:
     - ansible_local['gpus']['count']
     - is_dgx.stat.exists
+    - nvidia_peermem_info.rc != 0
 
 - name: Start nv_peer_mem service
   service:
@@ -25,3 +47,4 @@
   when:
     - ansible_local['gpus']['count']
     - is_dgx.stat.exists
+    - nvidia_peermem_info.rc != 0
