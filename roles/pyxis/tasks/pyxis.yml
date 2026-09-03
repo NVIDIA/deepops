@@ -33,7 +33,7 @@
       - make
       - -j
   environment:
-    CPPFLAGS: "-I {{ slurm_install_prefix }}/include/slurm"
+    CPPFLAGS: "-I {{ slurm_install_prefix }}/include"
   register: result
   changed_when: "result.stdout != \"make: Nothing to be done for 'all'.\""
   notify:
