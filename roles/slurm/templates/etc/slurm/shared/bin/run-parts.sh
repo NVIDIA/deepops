@@ -13,17 +13,27 @@ log () {
     logger -s -t slurm "$@"
 }
 
-# Find out if we are running in exclusive mode
+# Use an absolute path: slurmd's PATH does not include a custom
+# slurm_install_prefix, and with an empty command result both sides of the
+# comparison below were "" and every job was treated as exclusive.
+squeue_bin="{{ slurm_install_prefix }}/bin/squeue"
+
+# Find out if we are running in exclusive mode.
+# Ask squeue for allocated CPUs and node count directly instead of parsing
+# "scontrol show job": on recent Slurm the pattern TRES=cpu= matched both the
+# ReqTRES= and AllocTRES= lines, yielding a multi-line value that never
+# compared equal, so exclusive jobs were never detected.
 exclusive=0
-numcpus_sys=$(( $(grep -c ^processor /proc/cpuinfo) * $(scontrol show job "$SLURM_JOBID" | grep -Eio "TRES=.*node=[0-9]+" | cut -d= -f5) ))
-numcpus_job=$(scontrol show job "$SLURM_JOBID" | grep -Eio "TRES=cpu=[0-9]+" | cut -d= -f3)
-if [ "$numcpus_sys" == "$numcpus_job" ] ; then
+numcpus_job=$("$squeue_bin" -h -j "$SLURM_JOBID" -o %C 2>/dev/null)
+numnodes_job=$("$squeue_bin" -h -j "$SLURM_JOBID" -o %D 2>/dev/null)
+numcpus_sys=$(( $(grep -c ^processor /proc/cpuinfo) * ${numnodes_job:-1} ))
+if [ -n "$numcpus_job" ] && [ "$numcpus_sys" -eq "$numcpus_job" ] 2>/dev/null ; then
     exclusive=1
 fi
 
 # Find out if there are any more jobs on this node for this user
 last_user_job=0
-num_jobs=$(squeue -h -u "$SLURM_JOB_USER" -w "$HOSTNAME" -t running | wc -l)
+num_jobs=$("$squeue_bin" -h -u "$SLURM_JOB_USER" -w "$HOSTNAME" -t running | wc -l)
 if [ "$num_jobs" -eq 0 ]; then
     last_user_job=1
 fi
