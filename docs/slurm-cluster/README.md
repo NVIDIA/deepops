@@ -240,6 +240,12 @@ DeepOps no longer bundles an Open OnDemand installer. Sites that want the [Open 
 
 [Pyxis](https://github.com/NVIDIA/pyxis) and [Enroot](https://github.com/NVIDIA/enroot) are installed by default and can be disabled by setting `slurm_install_enroot` and `slurm_install_pyxis` to no. They are the supported, release-validated container runtime for Slurm in DeepOps.
 
+On Ubuntu systems that restrict unprivileged user namespaces, DeepOps installs
+a command-scoped AppArmor profile for `/usr/bin/enroot-nsenter`. This preserves
+the host-wide security default while allowing Pyxis jobs to create their user
+namespace. Set `pyxis_configure_enroot_apparmor_userns: false` only when site
+policy provides an equivalent profile.
+
 The DeepOps Singularity wrapper role has been retired. Singularity lives on upstream as [Apptainer](https://apptainer.org/); sites that still want it can install Apptainer/Singularity separately.
 
 ## Large deployments

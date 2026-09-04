@@ -1,5 +1,6 @@
 ---
 dcgm_pkg_name: "datacenter-gpu-manager"
+dcgm_dgx_cuda13_pkg_name: "datacenter-gpu-manager-4-cuda13"
 
 # RedHat family
 epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"

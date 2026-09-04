@@ -4,6 +4,8 @@
 
 - name: Install NVIDIA driver
   import_playbook: ../nvidia-software/nvidia-driver.yml
+  vars:
+    nvidia_driver_test_enabled: "{{ nvidia_dcgm_exporter_driver_test_enabled | default(true) }}"
 
 - name: Install NVIDIA container runtime
   import_playbook: ../container/nvidia-docker.yml

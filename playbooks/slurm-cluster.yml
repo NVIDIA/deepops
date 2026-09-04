@@ -123,6 +123,10 @@
 
 - name: Install monitoring exporters | Install nvidia dcgm exporter
   import_playbook: slurm-cluster/nvidia-dcgm-exporter.yml
+  vars:
+    # The driver was already validated before Slurm enabled the direct-login
+    # GPU guard. The final allocated srun validator is the authoritative proof.
+    nvidia_dcgm_exporter_driver_test_enabled: false
   when: slurm_enable_monitoring
 
 - name: Set up rsyslog forwarding from compute nodes to head node | Install rsyslog server

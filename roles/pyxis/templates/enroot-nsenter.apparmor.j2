@@ -1,0 +1,10 @@
+# This profile grants only enroot-nsenter the user namespace permission that
+# Ubuntu otherwise restricts for unconfined applications.
+
+include <tunables/global>
+
+profile enroot-nsenter /usr/bin/enroot-nsenter flags=(unconfined) {
+  userns,
+
+  include if exists <local/enroot-nsenter>
+}

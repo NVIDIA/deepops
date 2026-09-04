@@ -29,4 +29,5 @@
       when:
         - ansible_local['gpus']['count']
         - is_dgx.stat.exists == False
+        - nvidia_driver_test_enabled | default(true) | bool
   environment: "{{proxy_env if proxy_env is defined else{}}}"
