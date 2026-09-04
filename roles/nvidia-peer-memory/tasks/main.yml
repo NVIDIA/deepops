@@ -22,14 +22,14 @@
   when:
     - ansible_local['gpus']['count']
     - is_dgx.stat.exists
-    - nvidia_peermem_info.rc == 0
+    - nvidia_peermem_info.rc | default(1) == 0
 
 - name: Autoinstall DKMS modules
   command: dkms autoinstall
   when:
     - ansible_local['gpus']['count']
     - is_dgx.stat.exists
-    - nvidia_peermem_info.rc != 0
+    - nvidia_peermem_info.rc | default(1) != 0
 
 - name: Modprobe nv_peer_mem
   modprobe:
@@ -38,7 +38,7 @@
   when:
     - ansible_local['gpus']['count']
     - is_dgx.stat.exists
-    - nvidia_peermem_info.rc != 0
+    - nvidia_peermem_info.rc | default(1) != 0
 
 - name: Start nv_peer_mem service
   service:
@@ -47,4 +47,4 @@
   when:
     - ansible_local['gpus']['count']
     - is_dgx.stat.exists
-    - nvidia_peermem_info.rc != 0
+    - nvidia_peermem_info.rc | default(1) != 0
