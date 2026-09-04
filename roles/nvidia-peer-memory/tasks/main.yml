@@ -4,19 +4,76 @@
     path: /etc/dgx-release
   register: is_dgx
 
-- name: Autoinstall DKMS modules
-  command: dkms autoinstall
+- name: Check for in-tree nvidia_peermem module
+  command: modinfo nvidia_peermem
+  register: nvidia_peermem_info
+  failed_when: false
+  changed_when: false
   when:
     - ansible_local['gpus']['count']
     - is_dgx.stat.exists
 
-- name: Modprobe nv_peer_mem
+- name: Collect service state before selecting peer-memory implementation
+  service_facts:
+  when:
+    - ansible_local['gpus']['count']
+    - is_dgx.stat.exists
+    - nvidia_peermem_info.rc | default(1) == 0
+
+- name: Stop and disable legacy nv_peer_mem service
+  service:
+    name: nv_peer_mem
+    state: stopped
+    enabled: false
+  when:
+    - ansible_local['gpus']['count']
+    - is_dgx.stat.exists
+    - nvidia_peermem_info.rc | default(1) == 0
+    - "'nv_peer_mem.service' in ansible_facts.services or 'nv_peer_mem' in ansible_facts.services"
+
+- name: Check whether legacy nv_peer_mem module is loaded
+  stat:
+    path: /sys/module/nv_peer_mem
+  register: nv_peer_mem_loaded
+  when:
+    - ansible_local['gpus']['count']
+    - is_dgx.stat.exists
+    - nvidia_peermem_info.rc | default(1) == 0
+
+- name: Unload legacy nv_peer_mem module before using nvidia_peermem
+  modprobe:
+    name: nv_peer_mem
+    state: absent
+  when:
+    - ansible_local['gpus']['count']
+    - is_dgx.stat.exists
+    - nvidia_peermem_info.rc | default(1) == 0
+    - nv_peer_mem_loaded.stat.exists | default(false)
+
+- name: Load in-tree nvidia_peermem module
+  modprobe:
+    name: nvidia_peermem
+    state: present
+  when:
+    - ansible_local['gpus']['count']
+    - is_dgx.stat.exists
+    - nvidia_peermem_info.rc | default(1) == 0
+
+- name: Autoinstall legacy nv_peer_mem DKMS module
+  command: dkms autoinstall
+  when:
+    - ansible_local['gpus']['count']
+    - is_dgx.stat.exists
+    - nvidia_peermem_info.rc | default(1) != 0
+
+- name: Load legacy nv_peer_mem module
   modprobe:
     name: nv_peer_mem
     state: present
   when:
     - ansible_local['gpus']['count']
     - is_dgx.stat.exists
+    - nvidia_peermem_info.rc | default(1) != 0
 
 - name: Start nv_peer_mem service
   service:
@@ -25,3 +82,4 @@
   when:
     - ansible_local['gpus']['count']
     - is_dgx.stat.exists
+    - nvidia_peermem_info.rc | default(1) != 0

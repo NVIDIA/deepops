@@ -9,9 +9,15 @@ is_compute: no
 
 pyxis_ubuntu_deps:
 - "bsdmainutils"
+- "apparmor"
 
 pyxis_el_deps:
 - "util-linux"
+
+# Ubuntu restricts unprivileged user namespaces when this kernel knob exists.
+# Install a command-scoped AppArmor profile instead of weakening the host-wide
+# setting. Disable only when site policy supplies an equivalent profile.
+pyxis_configure_enroot_apparmor_userns: true
 
 # /run is default partition of pyxis runtime_path
 resize_run_partition: false

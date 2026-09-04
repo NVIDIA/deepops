@@ -1,18 +1,18 @@
 ---
 
-- name: Hide GPUs for regular user logins via sshd.service.
+- name: Hide GPUs for regular user logins via the platform SSH service
+  vars:
+    ssh_unit: "{{ 'sshd.service' if ansible_os_family == 'RedHat' else 'ssh.service' }}"
   shell: |
     set -o pipefail
-    deviceprop=$(systemctl show sshd.service -p DeviceAllow | grep -i nvidiactl)
+    deviceprop=$(systemctl show {{ ssh_unit }} -p DeviceAllow | grep -i nvidiactl)
 
     if [ -z "$deviceprop" ] ; then
-      systemctl set-property sshd.service DeviceAllow="/dev/nvidiactl"
+      systemctl set-property {{ ssh_unit }} DeviceAllow="/dev/nvidiactl"
     fi
   args:
     executable: /bin/bash
-    creates: "{{ '/etc/systemd/system.control/sshd.service.d/50-DeviceAllow.conf' \
-                 if ansible_os_family == 'RedHat' else \
-                 '/etc/systemd/system.control/ssh.service.d/50-DeviceAllow.conf' }}"
+    creates: "/etc/systemd/system.control/{{ ssh_unit }}.d/50-DeviceAllow.conf"
   when: is_controller
   tags:
     - config
