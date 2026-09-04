@@ -13,6 +13,38 @@
   with_items: "{{ pyxis_el_deps }}"
   when: ansible_os_family == "RedHat"
 
+- name: Check for AppArmor unprivileged user namespace restriction
+  stat:
+    path: /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+  register: apparmor_userns_knob
+  when:
+    - ansible_distribution == "Ubuntu"
+    - is_compute
+    - pyxis_configure_enroot_apparmor_userns | bool
+
+- name: Install command-scoped AppArmor profile for enroot-nsenter
+  template:
+    src: enroot-nsenter.apparmor.j2
+    dest: /etc/apparmor.d/enroot-nsenter
+    owner: root
+    group: root
+    mode: "0644"
+  register: enroot_apparmor_profile
+  when:
+    - ansible_distribution == "Ubuntu"
+    - is_compute
+    - pyxis_configure_enroot_apparmor_userns | bool
+    - apparmor_userns_knob.stat.exists | default(false)
+
+- name: Load command-scoped AppArmor profile for enroot-nsenter
+  command: apparmor_parser -r /etc/apparmor.d/enroot-nsenter
+  changed_when: enroot_apparmor_profile.changed
+  when:
+    - ansible_distribution == "Ubuntu"
+    - is_compute
+    - pyxis_configure_enroot_apparmor_userns | bool
+    - apparmor_userns_knob.stat.exists | default(false)
+
 - name: install slurm-pmi hook
   file:
     path: /etc/enroot/hooks.d/50-slurm-pmi.sh

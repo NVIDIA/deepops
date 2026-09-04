@@ -1,5 +1,24 @@
 ---
-- name: install DCGM from repos
+- name: Select DGX-compatible DCGM package
+  set_fact:
+    dcgm_dgx_selected_pkg_name: >-
+      {{ dcgm_dgx_cuda13_pkg_name
+         if ansible_distribution == 'Ubuntu' and
+            ansible_distribution_version is version('24.04', '>=')
+         else dcgm_pkg_name }}
+
+- name: Install the selected DGX-compatible DCGM package
   package:
-    name: "datacenter-gpu-manager"
+    name: "{{ dcgm_dgx_selected_pkg_name }}"
     state: present
+
+- name: Refresh package facts after DCGM convergence
+  package_facts:
+    manager: auto
+
+- name: Verify the selected DGX-compatible DCGM package is installed
+  assert:
+    that:
+      - dcgm_dgx_selected_pkg_name in ansible_facts.packages
+    fail_msg: >-
+      Required DGX DCGM package {{ dcgm_dgx_selected_pkg_name }} is not installed

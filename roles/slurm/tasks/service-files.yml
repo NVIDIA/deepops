@@ -21,3 +21,24 @@
     - slurmd.service
   when: is_compute
   failed_when: false
+
+- name: Create slurmd systemd override directory
+  file:
+    path: /etc/systemd/system/slurmd.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: is_compute
+
+- name: Put custom-prefix Slurm clients on the slurmd PATH
+  copy:
+    dest: /etc/systemd/system/slurmd.service.d/10-slurm-path.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Service]
+      Environment="PATH={{ slurm_install_prefix }}/bin:{{ slurm_install_prefix }}/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  when: is_compute
+  notify: restart slurmd
