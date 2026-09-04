@@ -1,5 +1,12 @@
 ---
+# DGX OS ships its own DCGM (4.x on DGX OS 7). Never replace it with the
+# unversioned 3.x metapackage; only install when nothing is present.
+- name: gather package facts
+  package_facts:
+    manager: auto
+
 - name: install DCGM from repos
   package:
-    name: "datacenter-gpu-manager"
+    name: "{{ dcgm_pkg_name }}"
     state: present
+  when: ansible_facts.packages | select('match', '^datacenter-gpu-manager') | list | length == 0
