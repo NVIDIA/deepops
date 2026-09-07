@@ -3,7 +3,12 @@
 
 # Check node state
 - name: check for MIG capable devices
-  shell: set -o pipefail && nvidia-smi --query-gpu=mig.mode.current --format=csv,noheader | grep -v 'N/A'
+  become: true
+  shell: >-
+    set -o pipefail &&
+    systemd-run --wait --pipe --collect --quiet --
+    nvidia-smi --query-gpu=mig.mode.current --format=csv,noheader |
+    grep -E '^(Enabled|Disabled)$'
   args:
     executable: "/bin/bash"
   register: has_mig
@@ -29,5 +34,6 @@
     name: "{{ mig_manager_url_rpm }}"
     state: present
   when:
+    - has_mig.rc == 0
     - has_mig_parted.rc != 0
     - ansible_os_family == "RedHat"

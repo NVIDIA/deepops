@@ -7,9 +7,10 @@
         name: facts
 
     - name: set GPU clocks permissions
-      command: nvidia-smi -acp UNRESTRICTED
+      command: >-
+        systemd-run --wait --pipe --collect --quiet --
+        nvidia-smi -acp UNRESTRICTED
       changed_when: false
       when:
         - ansible_local['gpus']['count']
   environment: "{{proxy_env if proxy_env is defined else{}}}"
-

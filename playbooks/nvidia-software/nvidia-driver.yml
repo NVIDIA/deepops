@@ -24,7 +24,9 @@
       when: (ansible_local['gpus']['count'] and is_dgx.stat.exists == False) or (nvidia_driver_force_install|default(false))
 
     - name: test nvidia-smi
-      command: nvidia-smi
+      command: >-
+        systemd-run --wait --pipe --collect --quiet --
+        nvidia-smi
       changed_when: false
       when:
         - ansible_local['gpus']['count']

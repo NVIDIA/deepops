@@ -5,9 +5,13 @@
   become: yes
   tasks:
     - name: set the gpu clock to a specified amount
-      shell: "nvidia-smi -lgc {{ gpu_clock_lock }}"
+      command: >-
+        systemd-run --wait --pipe --collect --quiet --
+        nvidia-smi -lgc {{ gpu_clock_lock }}
       when: not gpu_clock_reset
 
     - name: reset the gpu clock to the default
-      shell: "nvidia-smi -rgc"
+      command: >-
+        systemd-run --wait --pipe --collect --quiet --
+        nvidia-smi -rgc
       when: gpu_clock_reset

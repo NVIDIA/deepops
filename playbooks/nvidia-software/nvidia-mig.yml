@@ -6,11 +6,18 @@
 
 # Check if MIG capabilities and software on nodes
 - hosts: all
+  become: true
   vars:
     mig_manager_reboot_timeout: 900
   tasks:
     - name: check for MIG capable devices
-      shell: nvidia-smi --query-gpu=mig.mode.current --format=csv,noheader | grep -v 'N/A'
+      shell: >-
+        set -o pipefail &&
+        systemd-run --wait --pipe --collect --quiet --
+        nvidia-smi --query-gpu=mig.mode.current --format=csv,noheader |
+        grep -E '^(Enabled|Disabled)$'
+      args:
+        executable: /bin/bash
       register: has_mig
       failed_when: false
 
@@ -28,7 +35,10 @@
       when: has_mig.rc == 0
 
     - name: Apply MIG configuration
-      command: nvidia-mig-parted apply -f {{ mig_manager_config }} -c {{ mig_manager_profile }} -k {{ mig_manager_hooks }}
+      command: >-
+        systemd-run --wait --pipe --collect --quiet --
+        nvidia-mig-parted apply -f {{ mig_manager_config }}
+        -c {{ mig_manager_profile }} -k {{ mig_manager_hooks }}
       when: has_mig.rc == 0
 
     # Reboot nodes if necessary and poll for them to come up
@@ -49,5 +59,8 @@
         - has_mig.rc == 0
 
     - name: Assert MIG configuration was applied
-      command: nvidia-mig-parted assert -f {{ mig_manager_config }} -c {{ mig_manager_profile }}
+      command: >-
+        systemd-run --wait --pipe --collect --quiet --
+        nvidia-mig-parted assert -f {{ mig_manager_config }}
+        -c {{ mig_manager_profile }}
       when: has_mig.rc == 0
