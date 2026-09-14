@@ -158,6 +158,38 @@
   tags:
     - localusers
 
+# slurm_pam_lib_dir is architecture-derived, so an existing installation can
+# hold its module at a path this run no longer selects. build.yml skips the
+# rebuild when the installed version already matches, which would otherwise
+# leave PAM pointing at a file that is not there -- and a wrong -account line
+# in /etc/pam.d/sshd locks operators out of the node. Check the module before
+# writing either block, and name the rebuild switch in the failure.
+- name: locate the pam_slurm_adopt module
+  stat:
+    path: "{{ slurm_pam_lib_dir }}/pam_slurm_adopt.so"
+    follow: true
+  register: slurm_pam_adopt_module
+  tags:
+    - config
+  when: slurm_enable_pam_slurm_adopt
+
+- name: fail when pam_slurm_adopt is missing from the selected directory
+  fail:
+    msg: >-
+      {{ slurm_pam_lib_dir }}/pam_slurm_adopt.so is not an existing regular
+      file, so /etc/pam.d/sshd will not be pointed at it. A dangling symlink,
+      a directory or a FIFO at that path fails this check as well.
+      This usually means Slurm was
+      built against a different PAM directory and build.yml skipped the
+      rebuild because the installed version already matches. Rebuild with
+      slurm_force_rebuild=true, or set slurm_pam_lib_dir to the directory the
+      installed module actually lives in.
+  tags:
+    - config
+  when:
+  - slurm_enable_pam_slurm_adopt
+  - not slurm_pam_adopt_module.stat.exists or not (slurm_pam_adopt_module.stat.isreg | default(false))
+
 - name: configure /etc/pam.d/sshd to restrict node access without jobs
   blockinfile:
     path: /etc/pam.d/sshd

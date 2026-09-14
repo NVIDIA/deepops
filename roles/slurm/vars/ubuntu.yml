@@ -1,5 +1,17 @@
 ---
-slurm_pam_lib_dir: /lib/x86_64-linux-gnu/security
+# Debian multiarch tuple for the PAM module directory. This is an explicit map
+# because the tuple is not derivable from ansible_architecture: armv7l maps to
+# arm-linux-gnueabihf and ppc64le to powerpc64le-linux-gnu, neither of which
+# follows the "<arch>-linux-gnu" shape. Add an entry here for a new architecture.
+# 'arm64' matches existing practice in roles/nvidia-dgx/vars/ubuntu-24.04.yml.
+slurm_pam_arch_map:
+  x86_64: x86_64-linux-gnu
+  aarch64: aarch64-linux-gnu
+  arm64: aarch64-linux-gnu
+  armv7l: arm-linux-gnueabihf
+  ppc64le: powerpc64le-linux-gnu
+
+slurm_pam_lib_dir: "/lib/{{ slurm_pam_arch_map.get(ansible_architecture, ansible_architecture + '-linux-gnu') }}/security"
 
 slurm_build_deps:
   - build-essential
