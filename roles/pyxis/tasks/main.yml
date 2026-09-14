@@ -13,6 +13,218 @@
   with_items: "{{ pyxis_el_deps }}"
   when: ansible_os_family == "RedHat"
 
+# Ubuntu 23.10 and later set kernel.apparmor_restrict_unprivileged_userns=1
+# by default, which makes enroot-nsenter fail under pyxis with
+# "failed to create user namespace: Permission denied". Detect the knob by
+# its presence in /proc rather than by distribution version, so these tasks are
+# a no-op on kernels built without it.
+- name: check for AppArmor unprivileged user namespace restriction
+  stat:
+    path: /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+  register: apparmor_userns_knob
+  when: is_compute
+
+# The profile is the default path, so its userspace is a dependency of this
+# role rather than something to skip over when it is missing.
+- name: install the AppArmor userspace (Ubuntu)
+  apt:
+    name: apparmor
+    state: present
+  when:
+    - is_compute
+    - ansible_distribution == "Ubuntu"
+    - apparmor_userns_knob.stat.exists | default(false)
+    - not pyxis_userns_allow_globally
+
+- name: check for apparmor_parser
+  stat:
+    path: /sbin/apparmor_parser
+  register: apparmor_parser_bin
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+
+# Without this the scoped path is skipped silently and enroot keeps failing
+# with the very error this role exists to prevent.
+- name: fail when the AppArmor userspace is unavailable
+  fail:
+    msg: >-
+      kernel.apparmor_restrict_unprivileged_userns is active but
+      /sbin/apparmor_parser is not present, so the scoped enroot-nsenter
+      profile cannot be loaded and enroot would fail with "failed to create
+      user namespace: Permission denied". Install the AppArmor userspace, or
+      set pyxis_userns_allow_globally=true to clear the restriction for the
+      whole host instead.
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+    - not pyxis_userns_allow_globally
+    - not apparmor_parser_bin.stat.exists | default(false)
+
+# Grant the capability to the one executable that needs it rather than clearing
+# the restriction for the whole host.
+- name: install the enroot-nsenter AppArmor profile
+  copy:
+    src: etc/apparmor.d/enroot-nsenter
+    dest: /etc/apparmor.d/enroot-nsenter
+    owner: root
+    group: root
+    mode: "0644"
+  register: enroot_userns_profile
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+    - not pyxis_userns_allow_globally
+
+# Loading only on a file change leaves a node unrepaired when the first load
+# failed, or when the profile was unloaded by hand while the file stayed as it
+# was. The kernel's own list decides, so a rerun converges either way.
+- name: check whether the enroot-nsenter profile is loaded
+  command: grep -q "^enroot-nsenter " /sys/kernel/security/apparmor/profiles
+  register: enroot_userns_loaded
+  changed_when: false
+  failed_when: false
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+    - not pyxis_userns_allow_globally
+
+- name: load the enroot-nsenter AppArmor profile
+  command: apparmor_parser -r /etc/apparmor.d/enroot-nsenter
+  register: enroot_userns_load
+  failed_when: false
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+    - not pyxis_userns_allow_globally
+    - (enroot_userns_profile.changed | default(false))
+      or (enroot_userns_loaded.rc | default(1) != 0)
+
+- name: report a failure to load the enroot-nsenter AppArmor profile
+  fail:
+    msg: >-
+      Could not load /etc/apparmor.d/enroot-nsenter:
+      {{ enroot_userns_load.stderr | default('') }}.
+      The "userns" rule and the "unconfined" flag need AppArmor 4.0 or later.
+      Set pyxis_userns_allow_globally=true to clear
+      kernel.apparmor_restrict_unprivileged_userns for the whole host instead.
+  when: enroot_userns_load.rc | default(0) != 0
+
+# Opt-in fallback for installations where the profile cannot be used. This
+# lowers the security default for every process on the host, so it is off by
+# default and has to be requested explicitly.
+- name: allow unprivileged user namespaces host-wide
+  ansible.posix.sysctl:
+    name: kernel.apparmor_restrict_unprivileged_userns
+    value: "0"
+    sysctl_file: /etc/sysctl.d/60-enroot-userns.conf
+    state: present
+    reload: yes
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+    - pyxis_userns_allow_globally
+
+# Flipping the fallback back off has to take its setting with it, otherwise the
+# host keeps the lowered default that the profile was meant to replace.
+- name: drop the host-wide user namespace sysctl when the fallback is off
+  ansible.posix.sysctl:
+    name: kernel.apparmor_restrict_unprivileged_userns
+    sysctl_file: /etc/sysctl.d/60-enroot-userns.conf
+    state: absent
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+    - not pyxis_userns_allow_globally
+
+# The running kernel decides, not the file. A run interrupted or failed between
+# the removal above and the restoration below leaves the file gone and the
+# restriction still disabled; keying the restoration off "the file changed"
+# would skip it on the next run and leave the node in that state for good.
+- name: read the effective user namespace restriction
+  slurp:
+    src: /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+  register: enroot_userns_effective
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+    - not pyxis_userns_allow_globally
+
+- name: locate systemd-sysctl
+  stat:
+    path: "{{ item }}"
+  register: systemd_sysctl_bin
+  loop:
+    - /usr/lib/systemd/systemd-sysctl
+    - /lib/systemd/systemd-sysctl
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+    - not pyxis_userns_allow_globally
+    - (enroot_userns_effective.content | default('MQ==') | b64decode | trim) != "1"
+
+# Reapply this one key from whatever configuration remains. Unlike
+# "sysctl --system" this replays no unrelated host-wide policy, and it honours
+# the precedence of any other file that legitimately declares the key.
+- name: reapply the owned sysctl key from the remaining configuration
+  command: "{{ (systemd_sysctl_bin.results | selectattr('stat', 'defined') | selectattr('stat.exists') | first).stat.path }} --prefix=kernel.apparmor_restrict_unprivileged_userns"
+  changed_when: true
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+    - not pyxis_userns_allow_globally
+    - (enroot_userns_effective.content | default('MQ==') | b64decode | trim) != "1"
+    - systemd_sysctl_bin.results | default([]) | selectattr('stat', 'defined') | selectattr('stat.exists') | list | length > 0
+
+- name: re-read the effective user namespace restriction
+  slurp:
+    src: /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+  register: enroot_userns_effective_after
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+    - not pyxis_userns_allow_globally
+    - (enroot_userns_effective.content | default('MQ==') | b64decode | trim) != "1"
+
+# Nothing on disk declares the key any more, so the value still in the kernel is
+# the one this role wrote. Undo that write and leave the boot default to decide
+# from the next reboot on. No file is created, so nothing is invented here.
+- name: undo the runtime value this role left behind
+  command: sysctl -w kernel.apparmor_restrict_unprivileged_userns=1
+  changed_when: true
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+    - not pyxis_userns_allow_globally
+    - (enroot_userns_effective.content | default('MQ==') | b64decode | trim) != "1"
+    - (enroot_userns_effective_after.content | default('MQ==') | b64decode | trim) != "1"
+
+- name: confirm the user namespace restriction is back on
+  slurp:
+    src: /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+  register: enroot_userns_final
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+    - not pyxis_userns_allow_globally
+    - (enroot_userns_effective.content | default('MQ==') | b64decode | trim) != "1"
+
+- name: fail when the user namespace restriction could not be restored
+  fail:
+    msg: >-
+      kernel.apparmor_restrict_unprivileged_userns is still
+      {{ enroot_userns_final.content | default('') | b64decode | trim }} after this role
+      removed its own /etc/sysctl.d/60-enroot-userns.conf entry. Another file
+      under /etc/sysctl.d, /run/sysctl.d or /usr/lib/sysctl.d is holding it at
+      that value, or the write was refused. Reconcile it by hand; this role
+      only manages its own entry and will not override another one.
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+    - not pyxis_userns_allow_globally
+    - (enroot_userns_effective.content | default('MQ==') | b64decode | trim) != "1"
+    - (enroot_userns_final.content | default('MQ==') | b64decode | trim) != "1"
+
 - name: install slurm-pmi hook
   file:
     path: /etc/enroot/hooks.d/50-slurm-pmi.sh
