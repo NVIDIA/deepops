@@ -49,9 +49,24 @@ fi
 # as "no other jobs", because that would run the *-lastuserjob-* cleanup scripts
 # while another job of the same user is still on the node. Piping squeue into
 # "wc -l" also hides its exit status, so the status is captured explicitly.
+#
+# RUNNING alone is too narrow. A job that is SUSPENDED (scontrol suspend, or
+# preempted with SuspendTime) or STOPPED still owns its processes, its files in
+# /tmp and /dev/shm, and its enroot directories; a job that is CONFIGURING or
+# RESIZING has an allocation on this node and is about to. None of those appear
+# under "-t running", so the *-lastuserjob-* scripts would run and reap them.
+#
+# COMPLETING is deliberately absent. The epilog runs while its own job is in
+# that state, so including it would make every job find itself, leave
+# last_user_job at 0, and disable the cleanup entirely.
+lastuserjob_states='running,suspended,stopped,configuring,resizing'
 last_user_job=0
-if user_jobs=$("$squeue_bin" -h -u "$SLURM_JOB_USER" -w "$HOSTNAME" -t running 2>/dev/null); then
-    if [ -z "$user_jobs" ]; then
+if user_jobs=$("$squeue_bin" -h -u "$SLURM_JOB_USER" -w "$HOSTNAME" -t "$lastuserjob_states" -o '%i' 2>/dev/null); then
+    # Drop this job's own entry defensively. It should not be in the states
+    # above, but an id match is cheap and keeps a future state addition from
+    # silently switching the cleanup off.
+    other_jobs=$(printf '%s\n' "$user_jobs" | grep -vxF "$SLURM_JOB_ID" || :)
+    if [ -z "$other_jobs" ]; then
         last_user_job=1
     fi
 else
