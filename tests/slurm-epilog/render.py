@@ -31,10 +31,24 @@ def main():
     # keep_trailing_newline so the rendered script ends the way the original
     # does; a missing final newline changes nothing functionally but makes
     # diffs against the template noisy.
+    # autoescape stays off, and is written out rather than left to the default
+    # so the reason sits where the scanner alert lands (CodeQL
+    # py/jinja2/autoescape-false, CWE-79).
+    #
+    # The output here is a shell script written to a local file for `bash -n`
+    # and for the harness to execute. It is never a web response and never
+    # reaches a browser. HTML escaping would not protect it; it would corrupt
+    # it -- `&&` becomes `&amp;&amp;`, `>"$victims"` becomes `&gt;&#34;...`,
+    # and the rendered script stops being the one a deployment runs, which is
+    # the whole point of rendering instead of testing a trimmed copy.
+    #
+    # The values substituted are the fixed fixture constants in VARS above, not
+    # anything read from the environment or from a caller.
     env = Environment(
         loader=FileSystemLoader("/"),
         undefined=StrictUndefined,
         keep_trailing_newline=True,
+        autoescape=False,
     )
     rendered = env.get_template(template_path.lstrip("/")).render(**VARS)
 
