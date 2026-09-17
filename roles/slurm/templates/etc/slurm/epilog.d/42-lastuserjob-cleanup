@@ -91,11 +91,15 @@ if [[ -n "$SLURM_JOB_USER" && "$SLURM_JOB_USER" != "root" ]]; then
         mounts=()
         prune=()
         while IFS= read -r field; do
-            mount_point=$(printf '%b' "$field")
+            printf -v mount_point '%b' "$field"
             case "$mount_point" in
                 "$dir"/*)
                     mounts+=( "$mount_point" )
-                    prune+=( -path "$mount_point" -prune -o )
+                    pattern=${mount_point//\\/\\\\}
+                    pattern=${pattern//\*/\\*}
+                    pattern=${pattern//\?/\\?}
+                    pattern=${pattern//\[/\\[}
+                    prune+=( -path "$pattern" -prune -o )
                     ;;
             esac
         done <"$mountlist"
