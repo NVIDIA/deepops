@@ -1,9 +1,142 @@
 #!/usr/bin/env bash
 set -ex
 
+# Sibling 40-lastuserjob-processes spares the accounts listed in
+# localusers.backup so that operators keep their login session when a job of
+# theirs ends. Deleting every file they own under /tmp and /dev/shm undoes that
+# from the other side: the session survives but loses the editor swap files,
+# sockets and scratch it is holding open. Honour the same exemption.
+#
+# The list is one account per line, so match whole lines literally (-x -F).
+# Accounts here routinely contain dots (`je.kim`), which a regex word match
+# would treat as "any character".
+localusers_backup='{{ slurm_config_dir }}/localusers.backup'
+
+# grep exits 0 when listed, 1 when definitely not listed, and >1 when the
+# lookup itself failed (missing or unreadable file, I/O error). A failed lookup
+# is not evidence of absence, so it must not authorise the deletion.
+# `|| lookup_rc=$?` keeps the non-zero status from tripping `set -e`.
+lookup_rc=0
+grep -qxF -- "$SLURM_JOB_USER" "$localusers_backup" || lookup_rc=$?
+
+case "$lookup_rc" in
+    0)
+        exit 0  # listed: leave these users' files alone
+        ;;
+    1)
+        : # definitely not listed: fall through to the cleanup below
+        ;;
+    *)
+        logger -s -t slurm-epilog \
+            "localusers lookup failed (grep rc=${lookup_rc}, file=${localusers_backup}); skipping file cleanup"
+        exit 0
+        ;;
+esac
+
 if [[ -n "$SLURM_JOB_USER" && "$SLURM_JOB_USER" != "root" ]]; then
-    logger -s -t slurm-epilog 'Removed residual user files'
+    # `find -user` needs the account to resolve. When the directory service is
+    # unavailable find exits non-zero without printing anything, and the old
+    # `||:` turned that into a silent no-op. Worse, a partial listing would
+    # still be piped into `rm -fr`. Resolve the name once, up front, and skip
+    # the whole step when it fails: an unresolvable owner is not evidence that
+    # nothing is owned.
+    if ! id -u -- "$SLURM_JOB_USER" >/dev/null 2>&1; then
+        logger -s -t slurm-epilog \
+            "cannot resolve ${SLURM_JOB_USER}; skipping file cleanup rather than deleting on a partial listing"
+        exit 0
+    fi
+
     for dir in /tmp /dev/shm ; do
-	find "${dir}" -user "${SLURM_JOB_USER}" -print0 | xargs -0 -r rm -fr ||:
+        [ -d "$dir" ] || continue
+
+        # -xdev keeps the walk on this filesystem. Without it the walk descends
+        # into anything mounted underneath -- a job_container/tmpfs private
+        # /tmp, a user sshfs, a bind mount of shared storage -- and deletes
+        # files that belong to another node's still-running job.
+        #
+        # It is not enough on its own, because it bounds the walk and not the
+        # deletion that follows:
+        #
+        #   - a user-owned directory holding a mount is still selected, and
+        #     `rm -fr` then descends into the mount the walk refused to enter;
+        #   - a user-owned mount root can be selected in its own right, and the
+        #     recursive delete empties the mounted filesystem;
+        #   - a bind mount from this same filesystem is not a boundary to -xdev
+        #     at all, so the walk goes straight in.
+        #
+        # So the boundary is taken from the kernel's mount table rather than
+        # inferred from device numbers. Every mount under $dir is pruned from
+        # the walk, and a selected directory that still has one beneath it is
+        # left alone. Its siblings are deleted as before, so cleanup continues
+        # around a mount instead of stopping at the first one.
+        if [ ! -r /proc/self/mountinfo ]; then
+            logger -s -t slurm-epilog \
+                "cannot read /proc/self/mountinfo; skipping cleanup under ${dir} rather than deleting across an unknown mount boundary"
+            continue
+        fi
+
+        # Field 5 is the mount point. Spaces, tabs, newlines and backslashes in
+        # it are written as octal escapes, which printf %b turns back into the
+        # real path. awk's status is checked for the same reason find's is: an
+        # empty mount list reads as "nothing is mounted here", which would put
+        # the recursive delete back exactly where it was.
+        mountlist=$(mktemp) || continue
+        if ! awk '{print $5}' /proc/self/mountinfo >"$mountlist" 2>/dev/null; then
+            logger -s -t slurm-epilog \
+                "could not read the mount table; skipping cleanup under ${dir}"
+            rm -f "$mountlist"
+            continue
+        fi
+
+        mounts=()
+        prune=()
+        while IFS= read -r field; do
+            printf -v mount_point '%b' "$field"
+            case "$mount_point" in
+                "$dir"/*)
+                    mounts+=( "$mount_point" )
+                    pattern=${mount_point//\\/\\\\}
+                    pattern=${pattern//\*/\\*}
+                    pattern=${pattern//\?/\\?}
+                    pattern=${pattern//\[/\\[}
+                    prune+=( -path "$pattern" -prune -o )
+                    ;;
+            esac
+        done <"$mountlist"
+        rm -f "$mountlist"
+
+        # find's exit status is checked instead of being swallowed: a failed or
+        # partial walk must not authorise deleting whatever it did manage to
+        # list. The listing is materialised first for the same reason; piping
+        # straight into xargs hides find's status behind xargs'.
+        victims=$(mktemp) || continue
+        if find "$dir" -xdev "${prune[@]}" -user "$SLURM_JOB_USER" -print0 >"$victims" 2>/dev/null; then
+            while IFS= read -r -d '' victim; do
+                nested=""
+                # The array-length form would open a Jinja comment in this
+                # template and break rendering, so emptiness is tested through
+                # the joined elements. A mount point is never an empty string.
+                if [ -d "$victim" ] && [ -n "${mounts[*]}" ]; then
+                    for mount_point in "${mounts[@]}"; do
+                        case "$mount_point" in
+                            "$victim"/*) nested="$mount_point" ; break ;;
+                        esac
+                    done
+                fi
+
+                if [ -n "$nested" ]; then
+                    logger -s -t slurm-epilog \
+                        "leaving ${victim} alone: ${nested} is mounted under it"
+                    continue
+                fi
+
+                rm -fr -- "$victim" ||:
+            done <"$victims"
+            logger -s -t slurm-epilog "Removed residual user files under ${dir}"
+        else
+            logger -s -t slurm-epilog \
+                "find failed under ${dir} for ${SLURM_JOB_USER}; leaving it alone"
+        fi
+        rm -f "$victims"
     done
 fi
