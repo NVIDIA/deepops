@@ -229,6 +229,13 @@ own_file() {
     chown "$1" "$2"
 }
 
+own_dir() {
+    # $1 = owner, $2 = path
+    mkdir -p "$2" || return 1
+    [ "$(id -u)" = 0 ] || return 0
+    chown "$1" "$2"
+}
+
 setup_cleanup() {
     local dir="$work/cleanup"
     rm -rf "$dir"
@@ -405,8 +412,15 @@ else
             return
         fi
 
-        PATH="$dir/bin:$PATH" SLURM_JOB_USER="$identity" "$dir/42-cleanup" >/dev/null 2>&1
-        if "$assert" "$dir"; then
+        # The exit status is part of the result. A cleanup that exits before it
+        # reaches the fixture leaves every payload where it was, and a surviving
+        # payload is what these assertions look for, so an early exit would
+        # read as a boundary that held.
+        local rc
+        PATH="$dir/bin:$PATH" SLURM_JOB_USER="$identity" "$dir/42-cleanup" >/dev/null 2>&1; rc=$?
+        if [ "$rc" != 0 ]; then
+            no "$label" "the cleanup exited $rc"
+        elif "$assert" "$dir"; then
             ok "$label"
         else
             no "$label" "see $dir"
@@ -460,9 +474,14 @@ else
         # The mount root itself belongs to the user, so the walk selects it.
         chown "$identity" "$dir/roots/tmp/scratchmnt" || return 1
         own_file "$identity" "$dir/roots/tmp/scratchmnt/payload" || return 1
+        # Something outside the mount for the cleanup to remove. A surviving
+        # payload on its own is also what a cleanup that never ran leaves
+        # behind.
+        own_file "$identity" "$dir/roots/tmp/beside" || return 1
     }
     assert_owned_mount_root() {
-        [ -e "$1/roots/tmp/scratchmnt/payload" ]
+        local dir="$1"
+        [ -e "$dir/roots/tmp/scratchmnt/payload" ] && [ ! -e "$dir/roots/tmp/beside" ]
     }
     mount_case "a user-owned mount root is left alone" \
         build_owned_mount_root assert_owned_mount_root
@@ -486,6 +505,98 @@ else
     mount_case "a same-filesystem bind mount is left alone" \
         build_same_device_bind assert_same_device_bind
 fi
+
+# ---------------------------------------------------------------------------
+# 42-lastuserjob-cleanup: mount points that read as patterns
+# ---------------------------------------------------------------------------
+#
+# Each mount point becomes a `find -path` pattern, and -path takes a glob, not
+# a literal; quoting does not change that. Left unescaped:
+#
+#   - `data[1]` matches a sibling called `data1` and not itself, and a backslash
+#     is the glob escape character, so `data\1` does the same. The mount goes
+#     unpruned and its root reaches `rm -fr`, while the sibling is spared;
+#   - `*` and `?` still match themselves, so the mount survives and only the
+#     spared sibling gives the missing escape away.
+#
+# A mount point ending in a newline is the other way to lose the name: decoding
+# it through a command substitution strips the newline, and the pattern then
+# names the sibling without it.
+#
+# So every case pairs the mount with the sibling its mishandled name would
+# match and asserts both halves: the payload under the mount survives, and the
+# sibling is cleaned up.
+#
+# The mount-boundary cases need root because they need a real mount. These do
+# not: what is under test is how the script treats a name it read from the mount
+# table, so the table is scripted instead. An `awk` stub on PATH answers the
+# script's one awk call with the mount point the case names, written the way the
+# kernel writes field 5 of mountinfo. The script still insists on a readable
+# /proc/self/mountinfo before it asks.
+echo
+echo "42-lastuserjob-cleanup -- mount points that read as patterns"
+
+if [ -z "${identity:-}" ] || [ ! -r /proc/self/mountinfo ]; then
+    printf '  skip mount-pathname cases (needs a resolvable unprivileged account and /proc/self/mountinfo)\n'
+else
+
+# Backslash, space, tab and newline are written as octal escapes; everything
+# else, glob characters included, is written as it is. Nothing here goes
+# through a command substitution, which would strip the trailing newline one of
+# the cases depends on.
+mountinfo_escape() {
+    local path="$1"
+    path=${path//\\/\\134}
+    path=${path// /\\040}
+    path=${path//$'\t'/\\011}
+    path=${path//$'\n'/\\012}
+    printf '%s\n' "$path"
+}
+
+pathname_case() {
+    # $1 = label, $2 = name of the mount point, $3 = name of the sibling the
+    # mount point would match if it were taken as a pattern
+    local label="$1" mount_name="$2" sibling_name="$3" dir
+    dir="$(setup_cleanup)" || { no "$label" "harness setup failed"; return; }
+    : > "$dir/etc/slurm/localusers.backup"
+
+    local mount_point="$dir/roots/tmp/$mount_name"
+    local sibling="$dir/roots/tmp/$sibling_name"
+    if ! { own_dir "$identity" "$mount_point" \
+            && own_file "$identity" "$mount_point/payload" \
+            && own_file "$identity" "$sibling"; }; then
+        no "$label" "could not create the fixture"
+        return
+    fi
+
+    mountinfo_escape "$mount_point" > "$dir/mount-points"
+    cat > "$dir/bin/awk" <<STUB
+#!/usr/bin/env bash
+cat "$dir/mount-points"
+STUB
+    chmod +x "$dir/bin/awk"
+
+    local out rc
+    out=$(PATH="$dir/bin:$PATH" SLURM_JOB_USER="$identity" "$dir/42-cleanup" 2>&1); rc=$?
+
+    if [ "$rc" != 0 ]; then
+        no "$label" "rc=$rc out=$(printf '%s' "$out" | tail -1)"
+    elif [ ! -e "$mount_point/payload" ]; then
+        no "$label" "the mount point was not pruned: the payload under it is gone"
+    elif [ -e "$sibling" ]; then
+        no "$label" "the sibling $sibling_name was spared"
+    else
+        ok "$label"
+    fi
+}
+
+pathname_case "a mount point containing [ is matched literally"           'data[1]'   'data1'
+pathname_case "a mount point containing a backslash is matched literally" 'data\1'    'data1'
+pathname_case "a mount point containing * is matched literally"           'data*1'    'datax1'
+pathname_case "a mount point containing ? is matched literally"           'data?1'    'datax1'
+pathname_case "a mount point ending in a newline keeps it"                $'data1\n'  'data1'
+
+fi  # identity and /proc/self/mountinfo
 
 echo
 printf '%d passed, %d failed\n' "$pass" "$fail"
