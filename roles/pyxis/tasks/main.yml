@@ -192,45 +192,36 @@
     - not pyxis_userns_allow_globally
     - (enroot_userns_effective.content | default('MQ==') | b64decode | trim) != "1"
 
-# A value other than 1 after the targeted replay does not by itself show that
-# the kernel is holding this role's own leftover write. An administrator file
-# may declare the key and legitimately hold it down, in which case the replay
-# preserved their choice and overwriting it would undo a deliberate decision --
-# silently, because the write would then make the check below pass. Ask the
-# configuration which files declare the key before writing anything.
+# This listing is diagnostics for the failure below. It does not decide
+# anything: no task's when: reads it, so an incomplete or failed scan cannot
+# authorise a write over an administrator's policy. That distinction matters,
+# because a missing declaration does not separate an administrator's
+# runtime-only choice from this role's own leftover write, and the scan cannot
+# see every way the key can be set -- a symlinked drop-in, a glob assignment
+# systemd accepts, or a directory it cannot read.
+#
+# -R follows a symlinked drop-in, which -r does not. The status is kept rather
+# than swallowed so the message can say "the scan failed" instead of claiming
+# nothing declares the key.
 #
 # Both spellings systemd accepts are matched: the dotted "kernel.x" form and
 # the path "kernel/x" form, each optionally prefixed with "-".
-- name: find configuration that still declares the user namespace restriction
+- name: list configuration that still declares the user namespace restriction
   shell: |
     set -o pipefail
-    grep -rlsE '^[[:space:]]*-?[[:space:]]*kernel[./]apparmor_restrict_unprivileged_userns[[:space:]]*=' \
-      /etc/sysctl.conf /etc/sysctl.d /run/sysctl.d /usr/lib/sysctl.d /usr/local/lib/sysctl.d \
-      2>/dev/null || true
+    grep -RlsE '^[[:space:]]*-?[[:space:]]*kernel[./]apparmor_restrict_unprivileged_userns[[:space:]]*=' \
+      /etc/sysctl.conf /etc/sysctl.d /run/sysctl.d /usr/lib/sysctl.d /usr/local/lib/sysctl.d
   args:
     executable: /bin/bash
   register: enroot_userns_declared_in
   changed_when: false
+  failed_when: false
   when:
     - is_compute
     - apparmor_userns_knob.stat.exists | default(false)
     - not pyxis_userns_allow_globally
     - (enroot_userns_effective.content | default('MQ==') | b64decode | trim) != "1"
     - (enroot_userns_effective_after.content | default('MQ==') | b64decode | trim) != "1"
-
-# Nothing on disk declares the key any more, so the value still in the kernel is
-# the one this role wrote. Undo that write and leave the boot default to decide
-# from the next reboot on. No file is created, so nothing is invented here.
-- name: undo the runtime value this role left behind
-  command: sysctl -w kernel.apparmor_restrict_unprivileged_userns=1
-  changed_when: true
-  when:
-    - is_compute
-    - apparmor_userns_knob.stat.exists | default(false)
-    - not pyxis_userns_allow_globally
-    - (enroot_userns_effective.content | default('MQ==') | b64decode | trim) != "1"
-    - (enroot_userns_effective_after.content | default('MQ==') | b64decode | trim) != "1"
-    - (enroot_userns_declared_in.stdout | default('') | trim) == ""
 
 - name: confirm the user namespace restriction is back on
   slurp:
@@ -247,16 +238,22 @@
     msg: >-
       kernel.apparmor_restrict_unprivileged_userns is still
       {{ enroot_userns_final.content | default('') | b64decode | trim }} after this role
-      removed its own /etc/sysctl.d/60-enroot-userns.conf entry.
-      {% if enroot_userns_declared_in.stdout_lines | default([]) | length > 0 %}
+      removed its own /etc/sysctl.d/60-enroot-userns.conf entry and replayed the
+      remaining configuration for that one key.
+      {% if enroot_userns_declared_in.rc | default(0) not in [0, 1] %}
+      The listing of declaring files did not complete (grep exit
+      {{ enroot_userns_declared_in.rc }}), so which file holds the value is unknown here.
+      {% elif enroot_userns_declared_in.stdout_lines | default([]) | length > 0 %}
       These files declare the key and hold it at that value:
       {{ enroot_userns_declared_in.stdout_lines | join(', ') }}.
       {% else %}
-      Nothing under /etc/sysctl.d, /run/sysctl.d or /usr/lib/sysctl.d declares
-      the key, so the write was refused.
+      No declaring file was found, but that does not settle who set the value:
+      the listing cannot see a drop-in it may not read, and an administrator can
+      set the key at runtime without declaring it anywhere.
       {% endif %}
-      Reconcile it by hand; this role only manages its own entry and will not
-      override another one.
+      Reconcile it by hand. This role manages only its own entry and does not
+      write this key back, because it cannot tell its own leftover value apart
+      from a deliberate choice.
   when:
     - is_compute
     - apparmor_userns_knob.stat.exists | default(false)

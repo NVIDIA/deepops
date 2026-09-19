@@ -71,6 +71,8 @@ def state(effective, after=None, declared=""):
         "enroot_userns_declared_in": {
             "stdout": declared,
             "stdout_lines": declared.split() if declared else [],
+            # grep: 0 matched, 1 no match, 2 read or traversal error.
+            "rc": 0 if declared else 1,
         },
     }
     if after is not None:
@@ -100,11 +102,16 @@ SCENARIOS = {
 
 
 EXPECTED = {
-    # label: (write runs, final failure runs)
-    "admin declares 0": (False, True),
-    "interrupted removal": (True, False),
-    "replay restored it": (False, False),
-    "already restricted": (False, False),
+    # label: failure runs
+    #
+    # There is no longer a task that writes the key back. A value other than 1
+    # after the replay ends the run with the reconciliation failure, whatever
+    # the listing found, because a missing declaration does not separate this
+    # role's leftover write from an administrator's runtime-only choice.
+    "admin declares 0": True,
+    "interrupted removal": True,
+    "replay restored it": False,
+    "already restricted": False,
 }
 
 
@@ -113,9 +120,9 @@ def main():
     tasks = load_tasks(path)
     env = make_env()
 
-    write = find_task(tasks, "undo the runtime value this role left behind")
     fail = find_task(tasks, "fail when the user namespace restriction could not be restored")
     removal = find_task(tasks, "drop the host-wide user namespace sysctl when the fallback is off")
+    listing = find_task(tasks, "list configuration that still declares the user namespace restriction")
 
     passed = failed = 0
 
@@ -131,22 +138,68 @@ def main():
 
     print("pyxis userns sysctl reconciliation -- which tasks a host state selects")
     for label, variables in SCENARIOS.items():
-        wrote = selects(env, write, variables)
-        # The final failure reads /proc again. Model that read as the value the
-        # kernel would hold once the write above has or has not happened.
+        # Nothing writes the key between the replay and the final read, so the
+        # value the failure sees is the one the replay left.
         after = variables["enroot_userns_effective_after"].get("content")
-        final = "1\n" if wrote else (base64.b64decode(after).decode() if after else "1\n")
+        final = base64.b64decode(after).decode() if after else "1\n"
         state_now = dict(variables, enroot_userns_final={"content": b64(final)})
-        check(label, (wrote, selects(env, fail, state_now)), EXPECTED[label])
+        check(label, selects(env, fail, state_now), EXPECTED[label])
 
     print()
-    print("the guard is what decides -- the same state without it")
-    # Take the evidence condition back out and replay the administrator state.
-    # Without this the suite could pass while proving nothing.
-    mutant = selects(env, write, SCENARIOS["admin declares 0"],
-                     drop=("enroot_userns_declared_in",))
-    check("without the declaration check, the write overrides the administrator",
-          mutant, True)
+    print("the listing is diagnostics, not authorisation")
+    # The point of the review that removed the forced write: no task may gate on
+    # what the scanner found. A scanner that misses a symlinked drop-in, or that
+    # cannot read a directory, must not be able to license a write over an
+    # administrator's policy. Assert that on the file, not on a fixture string.
+    gated = [t.get("name") for t in tasks
+             if isinstance(t, dict)
+             and any("enroot_userns_declared_in" in str(c) for c in (t.get("when") or []))]
+    check("no task's when: reads the listing", gated, [])
+
+    # The same property stated the other way: the outcome must not move when the
+    # listing is stubbed out. This is the control that stays red if someone
+    # reintroduces a shortcut keyed on an empty scan.
+    for label, variables in SCENARIOS.items():
+        after = variables["enroot_userns_effective_after"].get("content")
+        final = base64.b64decode(after).decode() if after else "1\n"
+        blank = dict(variables,
+                     enroot_userns_final={"content": b64(final)},
+                     enroot_userns_declared_in={"stdout": "", "stdout_lines": [], "rc": 0})
+        check("stubbed listing does not change %r" % label,
+              selects(env, fail, blank), EXPECTED[label])
+
+    print()
+    print("the read chain is what decides")
+    # Each read has to be the only thing standing between a host state and the
+    # failure, or dropping it proves nothing -- the other guard would still
+    # block. So each control uses a state where exactly one read is holding.
+    #
+    # The first read is what makes an already-correct host a no-op: the role
+    # neither removes nor replays anything there.
+    settled = dict(state("1\n", None, ""), enroot_userns_final={"content": b64("0\n")})
+    check("the first read is what spares a settled host",
+          (selects(env, fail, settled),
+           selects(env, fail, settled, drop=("enroot_userns_effective.content",))),
+          (False, True))
+
+    # The final read is what lets a successful replay end quietly. Without it a
+    # host the replay just fixed would still be failed.
+    restored = dict(SCENARIOS["replay restored it"],
+                    enroot_userns_final={"content": b64("1\n")})
+    check("the final read is what lets a successful replay pass",
+          (selects(env, fail, restored),
+           selects(env, fail, restored, drop=("enroot_userns_final.content",))),
+          (False, True))
+
+    print()
+    print("the listing reports its own failure")
+    # grep exits 1 for "no match" and 2 for a read or traversal error. Hiding the
+    # latter behind "|| true" is what let an unreadable drop-in read as "nothing
+    # declares the key". Keep the status.
+    script = listing["shell"]
+    check("the scan does not swallow its status", "|| true" in script, False)
+    check("the scan follows a symlinked drop-in", "-Rls" in script or "-RlsE" in script, True)
+    check("the scan does not fail the play", listing.get("failed_when"), False)
 
     print()
     print("removal task -- no whole-file reload")
