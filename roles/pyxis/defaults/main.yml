@@ -18,3 +18,10 @@ resize_run_partition: false
 
 # /run tmpfs size. ubuntu default is 10% of physical memory
 pyxis_run_tmpfs_size: 50%
+
+# Ubuntu 23.10 and later restrict unprivileged user namespaces through AppArmor,
+# which blocks enroot-nsenter. The role installs an AppArmor profile that grants
+# the capability to enroot-nsenter alone. Set this to true only if that profile
+# cannot be used on your installation: it clears the restriction for every
+# process on the host and lowers the security default of the OS.
+pyxis_userns_allow_globally: false
