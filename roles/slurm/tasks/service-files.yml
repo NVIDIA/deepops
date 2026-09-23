@@ -21,3 +21,29 @@
     - slurmd.service
   when: is_compute
   failed_when: false
+
+# slurmd inherits systemd's minimal PATH, which does not include a custom
+# slurm_install_prefix. Enroot's slurm-pmi hook (installed by the pyxis role)
+# and any other slurmd child that calls scontrol/squeue then fail with
+# "Command not found: scontrol" and every Pyxis container refuses to start.
+# The unconditional "start slurmd" task in compute.yml restarts the unit with
+# daemon-reload after this file, so the drop-in is active on every convergence.
+- name: create slurmd systemd override directory
+  file:
+    path: /etc/systemd/system/slurmd.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: is_compute
+
+- name: put slurm_install_prefix clients on the slurmd PATH
+  copy:
+    dest: /etc/systemd/system/slurmd.service.d/10-slurm-path.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Service]
+      Environment="PATH={{ slurm_install_prefix }}/bin:{{ slurm_install_prefix }}/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  when: is_compute
