@@ -1,0 +1,21 @@
+# enroot-nsenter creates the user namespace that a pyxis container runs in.
+# Ubuntu 23.10 and later ship kernel.apparmor_restrict_unprivileged_userns=1,
+# which makes that fail with:
+#
+#   failed to create user namespace: Permission denied
+#
+# This profile grants the userns capability to that single executable instead
+# of clearing the restriction for every process on the host. enroot-nsenter is
+# the only enroot executable that references CLONE_NEWUSER (enroot 3.2.0), so
+# the other helpers do not need it.
+#
+# The "userns" rule and the "unconfined" flag require AppArmor 4.0 or later,
+# which is present on every release that enables the restriction.
+abi <abi/4.0>,
+include <tunables/global>
+
+profile enroot-nsenter /usr/bin/enroot-nsenter flags=(unconfined) {
+  userns,
+
+  include if exists <local/enroot-nsenter>
+}
