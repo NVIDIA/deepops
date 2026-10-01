@@ -5,10 +5,11 @@ set -xe
 # Get absolute path for script, and convenience vars for virtual and root
 VIRT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-# The default Vagrant operating system is Ubuntu 20.04.
-# To override this, change these variables to a supported OS.
+# The default Vagrant operating system is Ubuntu 22.04.
+# To override this, change these variables to a supported OS
+# (Vagrantfiles exist for ubuntu 18.04/20.04/22.04 and centos 7/8).
 DEEPOPS_VAGRANT_OS=${DEEPOPS_VAGRANT_OS:-ubuntu}
-DEEPOPS_OS_VERSION=${DEEPOPS_OS_VERSION:-20.04}
+DEEPOPS_OS_VERSION=${DEEPOPS_OS_VERSION:-22.04}
 
 # Startup the specified VM OS, defaulting to Ubuntu
 
