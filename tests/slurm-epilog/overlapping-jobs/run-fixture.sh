@@ -276,8 +276,10 @@ scenario_meaning() {
         NOT-RUN|SKIP|INCONCLUSIVE) echo ""; return ;;
     esac
     if [ "$scenario" = 3 ] && [ "$EXPECT" = current ]; then
+        # A mismatch may be mixed destruction or a non-asset check such as drain;
+        # it does not establish that B's assets survived or rule out the race.
         [ "$verdict" = MATCH ] && echo "#1407 reproduced: A's epilog destroyed B's assets" \
-                               || echo "#1407 NOT reproduced: B's assets survived the race"
+                               || echo "differs from the current baseline; review per-check results for asset destruction or survival"
         return
     fi
     [ "$verdict" = MATCH ] && echo "behaves as the $EXPECT epilog should" \
