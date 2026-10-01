@@ -111,8 +111,17 @@ Two schedules are possible; the choice is the owner's:
 | **A: opt-in first (recommended)** | ship flag, default `user`, deprecation note | default flips to `job`; `user` kept one more train |
 | **B: default on** | ship flag, default `job` | remove `user` |
 
-A is recommended because the overlapping-jobs hardware fixture (section 5) does
-not exist yet and the train starts 19 October.
+**Decision (owner, 2026-10-01): schedule B.** 26.11 ships the flag with default
+`job`; `user` remains available as an escape hatch for one train and is removed
+in 27.01. Because the default changes for every upgrading site, the 26.11
+release notes must call this out, and the hardware fixture in section 5 is a
+ship requirement for 26.11, not a follow-up.
+
+Why B still carries risk even with testing: the fixture covers the layouts we
+know about (cgroup v1 and v2, enroot, gang scheduling). A site with a custom
+epilog, a non-cgroup process tracker, or user daemons that live outside any job
+cgroup gets different behaviour on upgrade. The `user` value exists so such a
+site can restore 26.09 behaviour with one variable while reporting the gap.
 
 ## 5. Test plan
 
@@ -148,10 +157,13 @@ owner, separate approval for hardware runs):
 **Gates before "ready":** role lint, playbook syntax check, `run-tests.sh`
 green, molecule unaffected (slurm role is already excluded).
 
-## 6. Decisions needed
+## 6. Decisions (owner, 2026-10-01)
 
-1. Schedule A or B (section 4).
-2. Confirm cgroup v2 support is required in the first cut.
-3. Confirm `job_container/tmpfs` is documented only, with role wiring as a
-   separate issue.
-4. Confirm the script 41 match fix may ride along.
+1. Schedule B (section 4): default `job` in 26.11, `user` removed in 27.01.
+2. cgroup v2 support is required in the first cut; unrecognised layouts
+   fail closed (skip and log).
+3. `job_container/tmpfs` is documented only; role wiring is a separate issue.
+4. The script 41 match fix rides along in the same change.
+
+Implementation is not started by this note. It begins as a separate task once
+the test owner has the overlapping-jobs fixture scheduled.
