@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Fixture hook for scenario 3 (job B allocated during job A's epilog).
+#
+# run-parts.sh decides last_user_job with squeue *before* it iterates epilog.d,
+# so the window the design note describes -- "after squeue answers and before
+# killall runs" -- is the gap between that decision and 40-lastuserjob-processes.
+# This hook sits in that gap (10- sorts before 40-) and, for the one job the
+# driver has marked, waits until the driver says the second job is on the node.
+#
+# It is installed by run-fixture.sh only for the duration of scenario 3 and
+# removed afterwards. It never changes the scripts under test, and it always
+# exits 0: a non-zero epilog script drains the node.
+# The driver prepends a literal root-owned run path when installing this hook.
+ctl="${FIXTURE_CTL_DIR:-/run/deepops-epilog-fixture/ctl}"
+job="${SLURM_JOB_ID:-}"
+
+[[ "$job" =~ ^[1-9][0-9]*$ ]] || exit 0
+[ -e "${ctl}/hold-epilog-${job}" ] || exit 0
+
+date +%s.%N > "${ctl}/holding-epilog-${job}"
+logger -s -t slurm-epilog-fixture "holding epilog of job ${job} until the driver releases it" 2>/dev/null || true
+
+# 0.1 s * 1800 = 3 minutes. Long enough for a job to be scheduled and start,
+# short enough that a stuck driver cannot keep the node in COMPLETING for long.
+for _ in $(seq 1 1800); do
+    if [ -e "${ctl}/release-epilog-${job}" ]; then
+        date +%s.%N > "${ctl}/released-epilog-${job}"
+        exit 0
+    fi
+    sleep 0.1
+done
+
+logger -s -t slurm-epilog-fixture "hold for job ${job} timed out; continuing" 2>/dev/null || true
+date +%s.%N > "${ctl}/hold-timeout-epilog-${job}"
+exit 0
