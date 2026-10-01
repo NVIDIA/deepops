@@ -3,6 +3,9 @@
 
 Never invokes live preflight, Slurm, account management, or firewall commands.
 """
+import csv
+import io
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -45,6 +48,59 @@ class FixtureTests(unittest.TestCase):
     def test_missing_enroot_checks_cannot_pass(self):
         p = self.shell('SCENARIOS=1; SCEN_RAN[1]=1; record 1 ctr_dir skip; write_report')
         self.assertNotEqual(p.returncode, 0, p.stdout)
+
+    def test_s3_report_does_not_infer_asset_survival_from_mismatch(self):
+        # Literal baseline evidence: do not derive the oracle from expected_for.
+        baseline = dict(ready='yes', epilog_end='yes', complete_wait='yes',
+                        hook_held='yes', b_allocated_during_hold='yes',
+                        proc='gone', tmp='absent', shm='absent', ctr_dir='absent',
+                        ctr_runtime='absent', ctr_proc='gone', orphan='gone',
+                        node_drained='no')
+        survived = dict(proc='alive', tmp='present', shm='present', ctr_dir='present',
+                        ctr_runtime='present', ctr_proc='alive', orphan='alive')
+        cases = [
+            ('all_destroyed', {}, 'MATCH', 0),
+            ('only_container_directory_survived', dict(ctr_dir='present'), 'MISMATCH', 1),
+            ('all_survived', survived, 'MISMATCH', 1),
+            ('only_process_destroyed', dict(survived, proc='gone'), 'MISMATCH', 1),
+            ('all_destroyed_but_node_drained', dict(node_drained='yes'), 'MISMATCH', 1),
+        ]
+        for name, overrides, verdict, rc in cases:
+            with self.subTest(case=name):
+                actual = dict(baseline, **overrides)
+                records = '\n'.join(f'record 3 {item} {value}'
+                                    for item, value in actual.items())
+                p = self.shell('SCENARIOS=3; SCEN_RAN[3]=1; EXPECT=current\n' + records + '''
+                    write_report; rc=$?
+                    printf '%s\\n' "$(< "$OUT/report.md")"
+                    printf '\\nREPORT_JSON\\n%s\\n' "$(< "$OUT/report.json")"
+                    printf '\\nREPORT_TSV\\n%s\\n' "$(< "$OUT/report.tsv")"
+                    exit "$rc"
+                ''')
+                self.assertEqual(p.returncode, rc, p.stdout + p.stderr)
+                md, rest = p.stdout.split('\nREPORT_JSON\n', 1)
+                raw_json, tsv = rest.split('\nREPORT_TSV\n', 1)
+                report = json.loads(raw_json)
+                self.assertEqual(report['overall'], verdict)
+                self.assertEqual(report['scenario_verdicts'], {'3': verdict})
+                self.assertEqual(report['expect'], 'current')
+                rows = [dict(scenario='3', check=item, expected=baseline[item],
+                             actual=value, result='MATCH' if value == baseline[item] else 'MISMATCH')
+                        for item, value in actual.items()]
+                self.assertEqual(report['checks'], rows)
+                self.assertEqual(list(csv.DictReader(io.StringIO(tsv), delimiter='\t')), rows)
+                self.assertIn(f'Overall: **{verdict}**', md)
+                summary = next(line for line in md.splitlines()
+                               if line.startswith("| 3 | B allocated during A's epilog |"))
+                self.assertIn(f'| {verdict} |', summary)
+                if verdict == 'MATCH':
+                    self.assertIn("#1407 reproduced: A's epilog destroyed B's assets", summary)
+                else:
+                    # An aggregate mismatch (even node drain alone) cannot prove
+                    # universal survival or rule out reproduction of the race.
+                    self.assertNotIn('NOT reproduced', summary)
+                    self.assertNotIn("B's assets survived", summary)
+                    self.assertIn('review per-check results', summary)
 
     def test_existing_account_refused(self):
         p = self.shell('id() { echo 1000; }; ensure_user existing')
