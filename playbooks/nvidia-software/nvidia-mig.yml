@@ -58,13 +58,14 @@
       when:
         - has_mig.rc == 0
 
-    # TODO: Consider storing a custom copy of the hooks.yaml configuration alongside the config.yaml
     - name: copy cluster-wide mig config file
       copy:
         src: "../../config/nvidia-mig-config.yml"
         dest: "{{ mig_manager_config }}"
       when: has_mig.rc == 0
 
+    # DeepOps does not manage a hooks file. Only request hooks when the site
+    # explicitly configures them; a missing configured file must still fail.
     # nvidia-mig-parted drives the same GPUs as the probe, so it needs the same
     # isolation from the ssh cgroup. A failure here is left unhandled on purpose:
     # a MIG layout that could not be applied must not pass as applied.
@@ -72,7 +73,8 @@
       command: >-
         systemd-run --wait --pipe --collect --quiet --
         nvidia-mig-parted apply -f {{ mig_manager_config }}
-        -c {{ mig_manager_profile }} -k {{ mig_manager_hooks }}
+        -c {{ mig_manager_profile }}
+        {{ ('-k ' ~ (mig_manager_hooks | quote)) if mig_manager_hooks | default('') | length > 0 else '' }}
       when: has_mig.rc == 0
 
     # Reboot nodes if necessary and poll for them to come up
