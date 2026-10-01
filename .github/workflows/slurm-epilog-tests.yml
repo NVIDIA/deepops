@@ -22,6 +22,9 @@ jobs:
   # gate, the deletion guards and the mount-point pattern cases.
   unprivileged:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: check out repo
         uses: actions/checkout@v4
@@ -57,6 +60,9 @@ jobs:
   # harness both; `nobody` is the unprivileged account it borrows for ownership.
   privileged:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     container:
       image: ubuntu:24.04
       options: --privileged
