@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Optional diagnostic hook to record the epilog's actual cgroup.
+# Retained from the recovered fixture; scenario 6 no longer uses a cgroup
+# firewall match. Its synchronous wrapper uses a private network namespace.
+#
+# Installed by run-fixture.sh for one probe job and removed afterwards. Always
+# exits 0.
+ctl="${FIXTURE_CTL_DIR:-/run/deepops-epilog-fixture/ctl}"
+job="${SLURM_JOB_ID:-}"
+[[ "$job" =~ ^[1-9][0-9]*$ ]] || exit 0
+{
+    echo "pid=$$ ppid=$PPID"
+    echo "parent=$(tr '\0' ' ' < "/proc/$PPID/cmdline" 2>/dev/null)"
+    cat /proc/self/cgroup 2>/dev/null
+} > "${ctl}/probe-epilog-${job}" 2>/dev/null
+exit 0
