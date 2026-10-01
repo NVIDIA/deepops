@@ -1,0 +1,99 @@
+---
+name: test slurm epilog cleanup scripts
+# The slurm role is excluded from the molecule CI because it needs systemd
+# services a container cannot run. tests/slurm-epilog/run-tests.sh covers the
+# epilog cleanup guards without Slurm, so run it whenever those scripts or the
+# tests change.
+on:
+  push:
+    paths:
+      - 'roles/slurm/templates/etc/slurm/**'
+      - 'tests/slurm-epilog/**'
+      - '.github/workflows/slurm-epilog-tests.yml'
+  pull_request:
+    paths:
+      - 'roles/slurm/templates/etc/slurm/**'
+      - 'tests/slurm-epilog/**'
+      - '.github/workflows/slurm-epilog-tests.yml'
+  workflow_dispatch:
+
+jobs:
+  # Every case that needs neither root nor a real mount: the last-user-job
+  # gate, the deletion guards and the mount-point pattern cases.
+  unprivileged:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check out repo
+        uses: actions/checkout@v4
+
+      - name: set up python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: install dependencies
+        run: python3 -m pip install jinja2
+
+      - name: run epilog tests
+        run: |
+          set -o pipefail
+          bash tests/slurm-epilog/run-tests.sh 2>&1 | tee epilog-tests.log
+
+      - name: write job summary
+        if: always()
+        run: |
+          {
+            echo '### slurm-epilog tests (unprivileged)'
+            echo
+            echo 'The mount-boundary cases need root and a real mount; they skip here and run in the `privileged` job.'
+            echo
+            echo '```'
+            cat epilog-tests.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # The four mount-boundary cases mount tmpfs and bind mounts under the fixture,
+  # so they need root and CAP_SYS_ADMIN. A privileged container gives the
+  # harness both; `nobody` is the unprivileged account it borrows for ownership.
+  privileged:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:24.04
+      options: --privileged
+    steps:
+      - name: check out repo
+        uses: actions/checkout@v4
+
+      - name: install dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            python3 python3-jinja2 findutils util-linux
+
+      - name: run epilog tests as root
+        run: |
+          set -o pipefail
+          bash tests/slurm-epilog/run-tests.sh 2>&1 | tee epilog-tests.log
+          # The reason this job exists is to run the mount-boundary cases. If
+          # the harness still skipped them, the job proves nothing: fail it.
+          if grep -q 'skip mount-boundary cases' epilog-tests.log; then
+            echo '::error::the mount-boundary cases were skipped in the privileged container'
+            exit 1
+          fi
+
+      - name: write job summary
+        if: always()
+        run: |
+          {
+            echo '### slurm-epilog tests (privileged container, root)'
+            echo
+            if grep -q 'skip mount-boundary cases' epilog-tests.log; then
+              echo '**The mount-boundary cases were skipped.** The container did not give the harness root, `mount`, and `/proc/self/mountinfo`.'
+            else
+              echo 'Includes the four root-only mount-boundary cases.'
+            fi
+            echo
+            echo '```'
+            cat epilog-tests.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
