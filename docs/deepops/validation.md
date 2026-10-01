@@ -25,8 +25,17 @@ python3 scripts/validation/deepops_doctor.py --json
 ```
 
 Local checks: Ansible present, Galaxy dependencies installed, the Kubespray
-submodule initialized, the configuration directory present, and the inventory
-parseable with at least one host. With `--remote` it also verifies host
+submodule initialized, the configuration directory present, the inventory
+parseable with at least one host, and the inventory topology consistent with
+the cluster playbooks. The topology check (`inventory_topology`) fails when a
+core group is empty while its siblings are populated (`slurm-master` without
+`slurm-node`, `kube_node` without `kube_control_plane` or `etcd`), when the
+umbrella group named by the golden-path `--limit` (`slurm-cluster`,
+`k8s_cluster`) does not cover the core groups, when a group name is a
+near-miss of a real one (`slurm_node`, `kube-master`), or when hosts exist but
+none are in any cluster group. Hosts outside every cluster group, and hosts in
+both `slurm-node` and `kube_node`, are reported in the detail without failing
+the check. With `--remote` it also verifies host
 reachability (`ansible -m ping`), reports which hosts have NVIDIA PCI
 devices, and reports sshd systemd overrides (see the GPU visibility note
 below).

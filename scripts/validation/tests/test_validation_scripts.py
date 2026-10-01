@@ -190,5 +190,137 @@ class TestDoctorParsers(unittest.TestCase):
         self.assertEqual(deepops_doctor.count_positive_stdout_hosts(out), 1)
 
 
+def inventory(**groups):
+    """Build an ``ansible-inventory --list`` document from group -> hosts/children."""
+    doc = {"_meta": {"hostvars": {}}, "all": {"children": list(groups)}}
+    for name, spec in groups.items():
+        hosts = spec.get("hosts", [])
+        doc[name] = {"hosts": hosts, "children": spec.get("children", [])}
+        for h in hosts:
+            doc["_meta"]["hostvars"][h] = {}
+    return doc
+
+
+class TestDoctorTopology(unittest.TestCase):
+    def test_example_slurm_layout_passes(self):
+        doc = inventory(
+            **{
+                "slurm-master": {"hosts": ["mgmt01"]},
+                "slurm-node": {"hosts": ["gpu01", "gpu02"]},
+                "slurm-login": {"children": ["slurm-master"]},
+                "slurm-cluster": {"children": ["slurm-master", "slurm-node", "slurm-login"]},
+            }
+        )
+        ok, detail = deepops_doctor.check_inventory_topology(doc)
+        self.assertTrue(ok, detail)
+        self.assertIn("slurm: 1 master, 2 node", detail)
+        self.assertIn("kubernetes: 0 control-plane, 0 etcd, 0 node", detail)
+
+    def test_example_k8s_layout_passes(self):
+        doc = inventory(
+            kube_control_plane={"hosts": ["mgmt01"]},
+            etcd={"hosts": ["mgmt01"]},
+            kube_node={"hosts": ["mgmt01", "gpu01"]},
+            k8s_cluster={"children": ["kube_control_plane", "kube_node"]},
+        )
+        ok, detail = deepops_doctor.check_inventory_topology(doc)
+        self.assertTrue(ok, detail)
+        self.assertIn("kubernetes: 1 control-plane, 1 etcd, 2 node", detail)
+
+    def test_resolve_group_hosts_follows_children_and_tolerates_cycles(self):
+        doc = inventory(
+            a={"hosts": ["h1"], "children": ["b"]},
+            b={"hosts": ["h2"], "children": ["a"]},
+        )
+        self.assertEqual(deepops_doctor.resolve_group_hosts(doc, "a"), {"h1", "h2"})
+        self.assertEqual(deepops_doctor.resolve_group_hosts(doc, "missing"), set())
+
+    def test_slurm_node_without_master_fails(self):
+        doc = inventory(
+            **{
+                "slurm-node": {"hosts": ["gpu01"]},
+                "slurm-cluster": {"children": ["slurm-node"]},
+            }
+        )
+        ok, detail = deepops_doctor.check_inventory_topology(doc)
+        self.assertFalse(ok)
+        self.assertIn("Slurm group 'slurm-master' is empty", detail)
+
+    def test_slurm_hosts_outside_umbrella_fail(self):
+        doc = inventory(
+            **{
+                "slurm-master": {"hosts": ["mgmt01"]},
+                "slurm-node": {"hosts": ["gpu01", "gpu02"]},
+                "slurm-cluster": {"children": ["slurm-master"]},
+            }
+        )
+        ok, detail = deepops_doctor.check_inventory_topology(doc)
+        self.assertFalse(ok)
+        self.assertIn("2 Slurm host(s) not in 'slurm-cluster'", detail)
+        self.assertIn("gpu01, gpu02", detail)
+
+    def test_k8s_without_etcd_fails(self):
+        doc = inventory(
+            kube_control_plane={"hosts": ["mgmt01"]},
+            kube_node={"hosts": ["gpu01"]},
+            k8s_cluster={"children": ["kube_control_plane", "kube_node"]},
+        )
+        ok, detail = deepops_doctor.check_inventory_topology(doc)
+        self.assertFalse(ok)
+        self.assertIn("Kubernetes group 'etcd' is empty", detail)
+
+    def test_misspelled_group_fails(self):
+        doc = inventory(
+            **{
+                "slurm_master": {"hosts": ["mgmt01"]},
+                "slurm-node": {"hosts": ["gpu01"]},
+                "slurm-cluster": {"children": ["slurm_master", "slurm-node"]},
+            }
+        )
+        ok, detail = deepops_doctor.check_inventory_topology(doc)
+        self.assertFalse(ok)
+        self.assertIn("'slurm_master' looks like a misspelling of 'slurm-master'", detail)
+        self.assertIn("Slurm group 'slurm-master' is empty", detail)
+
+    def test_legacy_kube_master_name_fails(self):
+        doc = inventory(
+            **{
+                "kube-master": {"hosts": ["mgmt01"]},
+                "etcd": {"hosts": ["mgmt01"]},
+                "kube_node": {"hosts": ["gpu01"]},
+                "k8s_cluster": {"children": ["kube-master", "kube_node"]},
+            }
+        )
+        ok, detail = deepops_doctor.check_inventory_topology(doc)
+        self.assertFalse(ok)
+        self.assertIn("'kube-master' looks like a misspelling of 'kube_control_plane'", detail)
+
+    def test_hosts_but_no_cluster_groups_fails(self):
+        doc = inventory(gpus={"hosts": ["gpu01", "gpu02"]})
+        ok, detail = deepops_doctor.check_inventory_topology(doc)
+        self.assertFalse(ok)
+        self.assertIn("no hosts in slurm-master/slurm-node or", detail)
+
+    def test_stray_and_mixed_hosts_are_notes_not_failures(self):
+        doc = inventory(
+            **{
+                "slurm-master": {"hosts": ["mgmt01"]},
+                "slurm-node": {"hosts": ["gpu01"]},
+                "slurm-cluster": {"children": ["slurm-master", "slurm-node"]},
+                "kube_control_plane": {"hosts": ["mgmt01"]},
+                "etcd": {"hosts": ["mgmt01"]},
+                "kube_node": {"hosts": ["gpu01"]},
+                "k8s_cluster": {"children": ["kube_control_plane", "kube_node"]},
+                "storage": {"hosts": ["nfs01"]},
+            }
+        )
+        doc["ungrouped"] = {"hosts": ["spare01"]}
+        doc["_meta"]["hostvars"]["spare01"] = {}
+        ok, detail = deepops_doctor.check_inventory_topology(doc)
+        self.assertTrue(ok, detail)
+        self.assertIn("2 host(s) in no cluster group: nfs01, spare01", detail)
+        self.assertIn("1 host(s) in both slurm-node and kube_node: gpu01", detail)
+
+
 if __name__ == "__main__":
     unittest.main()

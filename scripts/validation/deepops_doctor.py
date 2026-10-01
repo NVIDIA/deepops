@@ -3,9 +3,10 @@
 
 Run this from the DeepOps repository root on the provisioning machine before
 running cluster playbooks. It verifies the local environment (Ansible, Galaxy
-dependencies, Kubespray submodule, configuration directory, inventory) and,
-with ``--remote``, host reachability and GPU visibility over the configured
-inventory.
+dependencies, Kubespray submodule, configuration directory, inventory, and
+whether the inventory's group layout matches what the Slurm and Kubernetes
+cluster playbooks expect) and, with ``--remote``, host reachability and GPU
+visibility over the configured inventory.
 
 The default output is one line per check. With ``--json`` the script prints a
 single JSON object with a stable ``checks`` list so automation and AI agents
@@ -68,6 +69,138 @@ def count_inventory_hosts(inventory_json):
         hosts.update(data.get("hosts", []))
     groups = [g for g in inventory_json if g not in ("_meta", "all", "ungrouped")]
     return len(hosts), sorted(groups)
+
+
+# Groups the two top-level cluster playbooks are built around. The umbrella
+# groups are what the golden-path ``--limit`` arguments name.
+SLURM_CORE_GROUPS = ("slurm-master", "slurm-node")
+SLURM_UMBRELLA_GROUP = "slurm-cluster"
+K8S_CORE_GROUPS = ("kube_control_plane", "etcd", "kube_node")
+K8S_UMBRELLA_GROUP = "k8s_cluster"
+
+# Spellings that look like a DeepOps/Kubespray group but are not one. The
+# playbooks silently skip hosts in these, so the inventory "parses" and the
+# deploy does nothing useful.
+GROUP_NAME_ALIASES = {
+    "slurm_master": "slurm-master",
+    "slurm_node": "slurm-node",
+    "slurm_login": "slurm-login",
+    "slurm_nfs": "slurm-nfs",
+    "slurm_cache": "slurm-cache",
+    "slurm_metric": "slurm-metric",
+    "slurm_cluster": "slurm-cluster",
+    "kube-master": "kube_control_plane",
+    "kube_master": "kube_control_plane",
+    "kube-control-plane": "kube_control_plane",
+    "kube-node": "kube_node",
+    "k8s-cluster": "k8s_cluster",
+}
+
+
+def resolve_group_hosts(inventory_json, group, _seen=None):
+    """Return the set of hosts in ``group``, following ``children`` recursively."""
+    _seen = _seen if _seen is not None else set()
+    if group in _seen:
+        return set()
+    _seen.add(group)
+    data = inventory_json.get(group)
+    if not isinstance(data, dict):
+        return set()
+    hosts = set(data.get("hosts", []))
+    for child in data.get("children", []):
+        hosts |= resolve_group_hosts(inventory_json, child, _seen)
+    return hosts
+
+
+def check_inventory_topology(inventory_json):
+    """Compare the inventory's group layout with what the cluster playbooks expect.
+
+    Returns ``(ok, detail)``. ``ok`` is False when the layout would make
+    ``slurm-cluster.yml`` or ``k8s-cluster.yml`` skip hosts or fail: a core
+    group is missing while its siblings are populated, the umbrella group used
+    with ``--limit`` does not cover the core groups, a group name is a
+    near-miss of a real one, or no cluster groups are defined at all. Hosts in
+    no cluster group and hosts in both Slurm and Kubernetes groups are reported
+    in the detail but do not fail the check.
+    """
+    all_hosts, _ = count_inventory_hosts(inventory_json)
+    groups = {
+        g: resolve_group_hosts(inventory_json, g)
+        for g in inventory_json
+        if g not in ("_meta", "all", "ungrouped")
+    }
+    problems = []
+    notes = []
+
+    for alias, real in sorted(GROUP_NAME_ALIASES.items()):
+        if alias in groups and groups[alias] and real not in groups:
+            problems.append(
+                "group '%s' looks like a misspelling of '%s' (playbooks will skip it)"
+                % (alias, real)
+            )
+
+    slurm_hosts = {g: groups.get(g, set()) for g in SLURM_CORE_GROUPS}
+    slurm_any = set().union(*slurm_hosts.values())
+    if slurm_any:
+        for g, hosts in slurm_hosts.items():
+            if not hosts:
+                problems.append("Slurm group '%s' is empty" % g)
+        umbrella = groups.get(SLURM_UMBRELLA_GROUP, set())
+        uncovered = slurm_any - umbrella
+        if uncovered:
+            problems.append(
+                "%d Slurm host(s) not in '%s' (-l %s skips them): %s"
+                % (len(uncovered), SLURM_UMBRELLA_GROUP, SLURM_UMBRELLA_GROUP,
+                   ", ".join(sorted(uncovered)))
+            )
+
+    k8s_hosts = {g: groups.get(g, set()) for g in K8S_CORE_GROUPS}
+    k8s_any = set().union(*k8s_hosts.values())
+    if k8s_any:
+        for g, hosts in k8s_hosts.items():
+            if not hosts:
+                problems.append("Kubernetes group '%s' is empty" % g)
+        umbrella = groups.get(K8S_UMBRELLA_GROUP, set())
+        uncovered = (k8s_hosts["kube_control_plane"] | k8s_hosts["kube_node"]) - umbrella
+        if uncovered:
+            problems.append(
+                "%d Kubernetes host(s) not in '%s' (-l %s skips them): %s"
+                % (len(uncovered), K8S_UMBRELLA_GROUP, K8S_UMBRELLA_GROUP,
+                   ", ".join(sorted(uncovered)))
+            )
+
+    if all_hosts and not slurm_any and not k8s_any:
+        problems.append(
+            "no hosts in %s or %s; the cluster playbooks will not touch any host"
+            % ("/".join(SLURM_CORE_GROUPS), "/".join(K8S_CORE_GROUPS))
+        )
+
+    hosts_in_some_group = set().union(*groups.values()) if groups else set()
+    meta_hosts = set(inventory_json.get("_meta", {}).get("hostvars", {}))
+    ungrouped = set(inventory_json.get("ungrouped", {}).get("hosts", []))
+    stray = (meta_hosts | ungrouped) - slurm_any - k8s_any
+    stray |= hosts_in_some_group - slurm_any - k8s_any
+    if stray and (slurm_any or k8s_any):
+        notes.append(
+            "%d host(s) in no cluster group: %s" % (len(stray), ", ".join(sorted(stray)))
+        )
+
+    mixed = slurm_hosts["slurm-node"] & k8s_hosts["kube_node"]
+    if mixed:
+        notes.append(
+            "%d host(s) in both slurm-node and kube_node: %s"
+            % (len(mixed), ", ".join(sorted(mixed)))
+        )
+
+    summary = "slurm: %d master, %d node; kubernetes: %d control-plane, %d etcd, %d node" % (
+        len(slurm_hosts["slurm-master"]),
+        len(slurm_hosts["slurm-node"]),
+        len(k8s_hosts["kube_control_plane"]),
+        len(k8s_hosts["etcd"]),
+        len(k8s_hosts["kube_node"]),
+    )
+    detail = "; ".join([summary] + problems + notes)
+    return not problems, detail
 
 
 def main():
@@ -151,9 +284,11 @@ def main():
             ["ansible-inventory", "-i", inventory, "--list"], timeout=120
         )
         parsed_ok = False
+        inventory_json = {}
         if rc == 0:
             try:
-                hosts_total, groups = count_inventory_hosts(json.loads(out))
+                inventory_json = json.loads(out)
+                hosts_total, groups = count_inventory_hosts(inventory_json)
                 parsed_ok = True
             except json.JSONDecodeError:
                 # Leave parsed_ok False; the inventory_parses check below
@@ -176,6 +311,9 @@ def main():
                 if hosts_total
                 else "inventory defines no hosts",
             )
+        if parsed_ok and hosts_total > 0:
+            topology_ok, topology_detail = check_inventory_topology(inventory_json)
+            check(checks, "inventory_topology", topology_ok, topology_detail)
     else:
         check(
             checks,
