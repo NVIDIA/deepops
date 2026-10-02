@@ -523,6 +523,11 @@ fi
 # it through a command substitution strips the newline, and the pattern then
 # names the sibling without it.
 #
+# A mount point containing whitespace is lost a third way: mountinfo writes a
+# space as `\040` and a tab as `\011`, so a script that skips the decode
+# prunes a sibling literally called `data\0401` and walks into `data 1`, and
+# one that splits the field on whitespace prunes `data` instead.
+#
 # So every case pairs the mount with the sibling its mishandled name would
 # match and asserts both halves: the payload under the mount survives, and the
 # sibling is cleaned up.
@@ -595,6 +600,11 @@ pathname_case "a mount point containing a backslash is matched literally" 'data\
 pathname_case "a mount point containing * is matched literally"           'data*1'    'datax1'
 pathname_case "a mount point containing ? is matched literally"           'data?1'    'datax1'
 pathname_case "a mount point ending in a newline keeps it"                $'data1\n'  'data1'
+# The undecoded \040 names a sibling with a literal backslash in it.
+pathname_case "a mount point containing a space is decoded"               'data 1'    'data\0401'
+# And a field split on whitespace names the first word.
+pathname_case "a mount point containing a space is not split"             'data 1'    'data'
+pathname_case "a mount point containing a tab is decoded"                 $'data\t1'  'data\0111'
 
 fi  # identity and /proc/self/mountinfo
 

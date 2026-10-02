@@ -77,7 +77,11 @@ if [[ -n "$SLURM_JOB_USER" && "$SLURM_JOB_USER" != "root" ]]; then
 
         # Field 5 is the mount point. Spaces, tabs, newlines and backslashes in
         # it are written as octal escapes, which printf %b turns back into the
-        # real path. awk's status is checked for the same reason find's is: an
+        # real path. The kernel writes exactly three octal digits (`\040`), but
+        # %b reads `\0` followed by up to three digits, so `\0401` -- a space
+        # and then a "1" -- would decode as `\001`. Prefixing each escape with
+        # a `0` pins the digit count. awk's status is checked for the same
+        # reason find's is: an
         # empty mount list reads as "nothing is mounted here", which would put
         # the recursive delete back exactly where it was.
         mountlist=$(mktemp) || continue
@@ -91,7 +95,7 @@ if [[ -n "$SLURM_JOB_USER" && "$SLURM_JOB_USER" != "root" ]]; then
         mounts=()
         prune=()
         while IFS= read -r field; do
-            printf -v mount_point '%b' "$field"
+            printf -v mount_point '%b' "${field//\\/\\0}"
             case "$mount_point" in
                 "$dir"/*)
                     mounts+=( "$mount_point" )
