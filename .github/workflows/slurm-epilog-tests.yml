@@ -80,10 +80,10 @@ jobs:
         run: |
           set -o pipefail
           bash tests/slurm-epilog/run-tests.sh 2>&1 | tee epilog-tests.log
-          # The reason this job exists is to run the mount-boundary cases. If
-          # the harness still skipped them, the job proves nothing: fail it.
-          if grep -q 'skip mount-boundary cases' epilog-tests.log; then
-            echo '::error::the mount-boundary cases were skipped in the privileged container'
+          # Require every case, including fixtures that can skip individually
+          # when a mount fails even though the whole-block preflight passed.
+          if grep -qE '^[[:space:]]+skip ' epilog-tests.log; then
+            echo '::error::epilog cases were skipped in the privileged container'
             exit 1
           fi
 
@@ -93,10 +93,12 @@ jobs:
           {
             echo '### slurm-epilog tests (privileged container, root)'
             echo
-            if grep -q 'skip mount-boundary cases' epilog-tests.log; then
-              echo '**The mount-boundary cases were skipped.** The container did not give the harness root, `mount`, and `/proc/self/mountinfo`.'
-            else
+            if grep -qE '^[[:space:]]+skip ' epilog-tests.log; then
+              echo '**Cases were skipped.** The privileged job requires all cases; see the fixture or prerequisite failures below.'
+            elif grep -qE '^[0-9]+ passed, 0 failed$' epilog-tests.log; then
               echo 'Includes the four root-only mount-boundary cases.'
+            else
+              echo '**The suite failed or did not finish.** Full mount-boundary coverage is not confirmed.'
             fi
             echo
             echo '```'
