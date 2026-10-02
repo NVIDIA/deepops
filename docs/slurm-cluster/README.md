@@ -16,6 +16,7 @@ Instructions for deploying a GPU cluster with Slurm
   - [Installing Open on Demand](#installing-open-on-demand)
   - [Pyxis and Enroot](#pyxis-and-enroot)
   - [Large deployments](#large-deployments)
+  - [Uninstalling Slurm](#uninstalling-slurm)
 
 ## Requirements
 
@@ -246,3 +247,7 @@ The DeepOps Singularity wrapper role has been retired. Singularity lives on upst
 
 To minimize the requirements for the cluster management services, DeepOps deploys a single Slurm head node for cluster management, shared filesystems, and user login. However, for larger deployments, it often makes sense to run these functions on multiple separate machines.
 For instructions on separating these functions, see the [large deployment guide](./large-deployments.md).
+
+## Uninstalling Slurm
+
+DeepOps has no automated Slurm uninstall playbook (the Kubernetes side has the Kubespray reset playbook, see [Reset the Cluster](../k8s-cluster/README.md#reset-the-cluster)). For the list of services, files, and system changes the Slurm playbook makes, and a manual procedure to undo them, see the [Slurm uninstall guide](./slurm-uninstall.md).
