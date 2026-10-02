@@ -173,7 +173,40 @@ and every pre-existing UID, including UID-zero aliases, are refused).
 | 6 | Epilog alone in a different network namespace; failed-squeue warning from that invocation; END and successful wrapper completion; pre-existing orphan/scratch/enroot directory unchanged; controller still queryable and node not drained |
 | 7 | Fresh S1 and S4 repetitions on verified cgroup v2, with separate evidence/report; both must match |
 
-### Baseline acceptance discrepancy — decision still required
+### Reviewed baseline acceptance disposition
+
+Technical review (2026-10-02) resolved the original request for “S1 FAIL on
+26.09” as a mistaken reproduction assumption, not a scope or risk change.
+No owner acceptance decision remains for this interpretation. Baseline `26.09`
+(`facc47e4`) already protects same-user RUNNING and SUSPENDED jobs through
+#1391/#1404. Retain all seven numbered scenarios above with these roles:
+
+- **S1/S2:** survival controls on both baseline and candidate. A live S1/S2
+  failure is a baseline regression: stop and report; do not treat it as the
+  intended race reproduction.
+- **S3:** race reproduction on baseline (B's assets removed after the dispatcher
+  decision), survival on the job-scoped candidate. If the baseline does not
+  remove B's assets, the race was not reproduced: stop and report, not pass.
+- **S4:** useful last-job cleanup must still remove the verified outside-job
+  orphan, scratch and enroot directory on both baseline and candidate.
+- **S5–S7:** unchanged; retain the operator exemption, failed-query safety and
+  cgroup-v2 repetitions with their existing evidence requirements.
+
+A baseline MATCH is not candidate sign-off. Hardware remains unrun; these are
+source-derived expectations and offline evidence, not a live reproduction or
+hardware certification. Explicit approval naming the target, lease/window,
+installation/configuration changes, account creation, job execution, cleanup/drain
+impact and recovery remains mandatory before any live run. This disposition
+changes no product code, fixture behavior, expectation values, coverage, safety
+gates or exit semantics.
+
+<details>
+<summary>Superseded historical evidence — original discrepancy wording</summary>
+
+The following wording is preserved unchanged as historical evidence. Its pending
+decision requirement is superseded by the reviewed disposition above.
+
+#### Baseline acceptance discrepancy — decision still required
 
 At tag `26.09` (`facc47e456659049b62802c0a3145e593b9af6ff`), the
 installed-source dispatcher already excludes last-user cleanup when another
@@ -188,6 +221,8 @@ An acceptance request for “S1 FAIL on 26.09” conflicts with those semantics.
 Do not force S1 to fail, relabel S3 as S1, or use a baseline MATCH as candidate
 sign-off. The test owner must route the scenario-number decision to the owner
 before live baseline sign-off. Keep all seven scenarios in the ship-gate record.
+
+</details>
 
 ## Reports, exit codes and cleanup
 
