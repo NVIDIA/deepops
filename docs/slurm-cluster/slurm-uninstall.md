@@ -53,7 +53,7 @@ only on `slurm-node` hosts):
 | `slurmd.service` and the drop-in `/etc/systemd/system/slurmd.service.d/10-slurm-path.conf` | Same |
 | `munge.service` | Distribution package `munge` |
 | `mariadb.service` | Distribution package `mariadb-server` (controller only) |
-| `docker.slurm-exporter.service`, `docker.node-exporter.service`, `docker.dcgm-exporter.service`, `docker.prometheus.service`, `docker.grafana.service` | Only when `slurm_enable_monitoring` is set |
+| `docker.slurm-exporter.service`, `docker.node-exporter.service`, `docker.dcgm-exporter.service`, `docker.prometheus.service`, `docker.grafana.service`, `docker.alertmanager.service` | Only when `slurm_enable_monitoring` is set |
 
 Files and directories (variable name in parentheses):
 
@@ -105,7 +105,7 @@ not try to keep them registered.
 ```bash
 systemctl disable --now slurmd slurmctld slurmdbd 2>/dev/null
 systemctl disable --now docker.slurm-exporter docker.node-exporter \
-  docker.dcgm-exporter docker.prometheus docker.grafana 2>/dev/null
+  docker.dcgm-exporter docker.prometheus docker.grafana docker.alertmanager 2>/dev/null
 # Only if no other workload uses this authentication service:
 # systemctl disable --now munge
 ```
@@ -257,14 +257,27 @@ Each is independent of Slurm and can stay in place if it is still useful.
 
 | Component | Flag | What to remove |
 |---|---|---|
-| Enroot and Pyxis | `slurm_install_enroot`, `slurm_install_pyxis` (default on) | Pyxis configuration is under `/etc/slurm`; the plugin is under the Slurm install prefix. Review the Pyxis build/install paths and Enroot package manifest. Remove Enroot only if no other workloads use it, and unload its AppArmor profile through the distribution's tooling before removing the profile file. |
+| Enroot and Pyxis | `slurm_install_enroot`, `slurm_install_pyxis` (default on) | Pyxis configuration is under `/etc/slurm`; the configured plugin is `/usr/local/src/pyxis/spank_pyxis.so`, independent of `slurm_install_prefix`. Review the Pyxis build/install paths and Enroot package manifest. Remove Enroot only if no other workloads use it; see the AppArmor policy cleanup below. |
 | Node Health Check | `slurm_install_nhc` | `/etc/nhc`, `/etc/sysconfig/nhc`, `/usr/sbin/nhc*`, `/usr/libexec/nhc`, `/opt/deepops/build/nhc` |
-| OpenMPI | `slurm_cluster_install_openmpi` (default on) | Built into `/usr/local` from `/tmp/openmpi-build`; `cd` to that directory and `make uninstall` if it still exists |
+| OpenMPI | `slurm_cluster_install_openmpi` (example inventory: off; unset: on) | Built into `/usr/local` from `/tmp/openmpi-build`; `cd` to that directory and `make uninstall` if it still exists |
 | Lmod / software modules | `slurm_install_lmod` | See `roles/lmod/defaults/main.yml` for `sm_software_path` and `sm_module_path`; profile scripts in `/etc/profile.d/` |
 | Rootless Docker module | `playbooks/container/docker-rootless.yml` | See `roles/docker-rootless/defaults/main.yml` for `rootlessdocker_install_dir`; profile scripts in `/etc/profile.d/` |
-| Monitoring | `slurm_enable_monitoring` | The `docker.*` units above (stopped in step 1), their unit files in `/etc/systemd/system/`, and the containers (`docker rm -f` them) |
+| Monitoring | `slurm_enable_monitoring` | The listed monitoring units, including `docker.alertmanager.service` (stopped in step 1), their unit files in `/etc/systemd/system/`, and their matching containers. Inspect names and other users before removing containers; do not remove unrelated `docker.*` services. Run `systemctl daemon-reload` after removing unit files. Back up retained monitoring data; remove configuration and volumes only if no longer needed. |
 | Centralized syslog | `slurm_enable_rsyslog_client` (default on) | `/etc/rsyslog.d/99-forward-syslog.conf` on compute nodes, then `systemctl restart rsyslog` |
 | NFS | `slurm_enable_nfs_server`, `slurm_enable_nfs_client_nodes` | Exports and mounts configured by the NFS roles; see [Slurm and NFS](./slurm-nfs.md) |
+
+When retiring Enroot, restore the site's intended AppArmor policy, not just
+its files. For the scoped profile, unload `/etc/apparmor.d/enroot-nsenter`
+through the distribution's tooling before removing the profile file, only if
+no remaining workload needs it. If `pyxis_userns_allow_globally` was enabled,
+inspect `/etc/sysctl.d/60-enroot-userns.conf`: it sets
+`kernel.apparmor_restrict_unprivileged_userns=0` for the whole host. Back it up,
+remove only the unneeded DeepOps override, and restore and apply the site's
+intended value using the distribution's sysctl tooling. Check other sysctl
+files for overrides and verify the effective value with
+`sysctl kernel.apparmor_restrict_unprivileged_userns` where the knob exists.
+Deleting the file alone does not restore the running kernel value. Review
+remaining user-namespace workloads before tightening the policy.
 
 The NVIDIA driver, CUDA toolkit, container toolkit, Docker, chrony, and the
 `/etc/hosts` and hostname changes made by the generic playbooks are not Slurm
