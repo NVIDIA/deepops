@@ -194,6 +194,19 @@ Read through the [slurm usage guide](slurm-usage.md) for more information.
 The default Slurm deployment includes a collection of prolog and epilog scripts that should be modified to suit a particular system.
 For more information, see the [prolog/epilog documentation](slurm-prolog-epilog/README.md).
 
+### Lua plugins
+
+Slurm's Lua plugins (for example `JobSubmitPlugins=lua` or `CliFilterPlugins=lua`) only load when Slurm was built with Lua support. DeepOps does not request Lua support or install its development package by default; Slurm may still detect a preinstalled Lua library. To enable it, set the following in `config/group_vars/slurm-cluster.yml` and run the Slurm playbook:
+
+```yaml
+slurm_build_lua: true
+# Needed when Slurm is already installed at the configured version, otherwise
+# the build step is skipped and the existing binaries stay in place.
+slurm_force_rebuild: true
+```
+
+This installs the distribution's Lua development package (`liblua5.3-dev` on Ubuntu, `lua-devel` on RHEL-family systems; override the role variable `slurm_lua_deps` through Ansible extra vars to pick another version) and passes `--with-lua` to Slurm's `configure`. Place your `job_submit.lua` or `cli_filter.lua` in the Slurm configuration directory (`/etc/slurm` by default) and enable the plugin in `slurm.conf` as described in the [Slurm documentation](https://slurm.schedmd.com/job_submit_plugins.html).
+
 ## Node Health Check
 
 The default Slurm deployment includes setting up [Node Health Check](https://github.com/mej/nhc). This tool will run periodically on idle nodes to validate that the hardware and software is set up as expected. Nodes which fail this check will be automatically drained in Slurm to prevent jobs running on potentially broken nodes.
