@@ -58,6 +58,15 @@ python3 scripts/validation/validate_k8s.py --json --cuda-smoke
 The validator must report `"ok": true` with `cuda_smoke_ok: true`. See
 `skills/deploy-k8s-gpu-cluster/` for the full procedure and failure branches.
 
+## Choose a model workflow
+
+Start with `skills/model-workflows/` to distinguish cached inputs, single-node
+inference and training. Use only the documented cache and serving paths below.
+Fine-tuning has no supported recipe or training-result validator here yet; stop
+and obtain a reviewed recipe and success criteria rather than reporting cache
+readiness as training success. Multi-node workflows are not supported by these
+skills.
+
 ## Golden path: shared model cache
 
 Use `playbooks/model-cache.yml` only on an approved, existing NFS mount and one
@@ -73,8 +82,8 @@ model coverage. See `skills/manage-model-cache/` and
 
 ## Golden path: single-node model serving
 
-Follow `docs/model-workflows/vllm-quickstart.md` inside an approved, isolated GPU
-allocation. Use the pinned local snapshot, one GPU, and a loopback-only endpoint.
+Use `skills/serve-model/` and follow `docs/model-workflows/vllm-quickstart.md`
+inside an approved, isolated GPU allocation. Use the pinned local snapshot, one GPU, and a loopback-only endpoint.
 After startup, run `scripts/validation/validate_vllm.py --json` with the expected
 served model name and the cache validator's explicit inputs. This submits one
 small completion request; it does not start a server or download models. Require

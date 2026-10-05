@@ -15,7 +15,9 @@ agent (or person) can simply read the relevant `SKILL.md` before acting.
 | [deploy-k8s-gpu-cluster](deploy-k8s-gpu-cluster/SKILL.md) | Deploying or rebuilding a Kubernetes GPU cluster. |
 | [provision-with-maas](provision-with-maas/SKILL.md) | Provisioning, tagging, validating, or releasing machines through MAAS. |
 | [deploy-airgapped](deploy-airgapped/SKILL.md) | Preparing mirrors and deploying Slurm or Kubernetes without Internet access. |
+| [model-workflows](model-workflows/SKILL.md) | Choosing cache or single-node serving procedures; identifying unsupported training or multi-node requests. |
 | [manage-model-cache](manage-model-cache/SKILL.md) | Preparing shared model files, pinning revisions, or diagnosing offline cache access. |
+| [serve-model](serve-model/SKILL.md) | Serving a cached snapshot on one GPU and validating a local completion endpoint. |
 | [validate-gpu-cluster](validate-gpu-cluster/SKILL.md) | Health checks and post-deploy verification. |
 | [diagnose-driver-install](diagnose-driver-install/SKILL.md) | NVIDIA driver failures, `nvidia-smi` errors, GPU pods crash-looping. |
 
