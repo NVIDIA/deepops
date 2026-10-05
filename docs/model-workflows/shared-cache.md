@@ -140,6 +140,9 @@ site-enforced egress restrictions. See [air-gapped deployment](../../skills/depl
 for the separate package/image mirroring requirements. The writer's pinned Python
 packages must also be mirrored before using it offline.
 
+For a one-GPU serving example using this exact cache layout, see the
+[vLLM quickstart and JSON validator](vllm-quickstart.md).
+
 ## Failure handling and lifecycle
 
 - Missing mount: stop and have the storage operator restore the approved mount.
