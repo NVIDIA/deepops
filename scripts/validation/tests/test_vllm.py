@@ -16,7 +16,7 @@ REVISION = "a" * 40
 
 
 @contextlib.contextmanager
-def endpoint(responses):
+def endpoint(responses, drip_interval=0):
     requests = []
 
     class Handler(http.server.BaseHTTPRequestHandler):
@@ -37,7 +37,13 @@ def endpoint(responses):
                 self.send_header(key, value)
             self.end_headers()
             try:
-                self.wfile.write(data)
+                if drip_interval and self.path == "/health":
+                    for byte in data:
+                        self.wfile.write(bytes([byte]))
+                        self.wfile.flush()
+                        time.sleep(drip_interval)
+                else:
+                    self.wfile.write(data)
             except (BrokenPipeError, ConnectionResetError):
                 pass
 
@@ -125,6 +131,14 @@ class VllmTests(unittest.TestCase):
         self.assertEqual(len(requests), 1)
         self.assertNotIn("private server details", json.dumps(result))
 
+    def test_health_requires_200_not_other_success_status(self):
+        self.responses["/health"] = (204, b"", {}, 0)
+        with endpoint(self.responses) as (url, requests):
+            result = self.run_validator(url)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["errors"][0]["stage"], "health")
+        self.assertEqual(len(requests), 1)
+
     def test_model_must_be_advertised_and_models_shape_valid(self):
         for value in ({"data": [{"id": "other"}]}, {"data": []}, [], None,
                       {"data": "test-model"}, {"data": [None]}, b"not json"):
@@ -142,6 +156,7 @@ class VllmTests(unittest.TestCase):
                {**good, "choices": [None]}, {**good, "choices": [{"text": " "}]},
                {**good, "choices": [{"text": 7}]},
                {**good, "usage": {"completion_tokens": 0}},
+               {**good, "usage": {"completion_tokens": 9}},
                {**good, "usage": {"completion_tokens": True}},
                {**good, "usage": None}, b"broken json"]
         for value in bad:
@@ -189,6 +204,17 @@ class VllmTests(unittest.TestCase):
         self.assertEqual(result["errors"][0]["stage"], "health")
         self.assertEqual(len(requests), 1)
 
+    def test_dripping_body_hits_elapsed_guard_not_socket_timeout(self):
+        # Every byte arrives before the socket timeout, but the full body takes
+        # longer than the elapsed budget. Without that guard all checks pass.
+        self.responses["/health"] = (200, b"x" * 20, {}, 0)
+        with endpoint(self.responses, drip_interval=0.02) as (url, requests):
+            result = self.run_validator(url, "--timeout", "0.1")
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["errors"][0]["stage"], "health")
+        self.assertIn("time limit", result["errors"][0]["message"])
+        self.assertEqual(len(requests), 1)
+
     def test_invalid_timeouts_rejected_before_http(self):
         for timeout in ("0", "-1", "nan", "inf", "121"):
             with self.subTest(timeout=timeout):
@@ -198,11 +224,17 @@ class VllmTests(unittest.TestCase):
                 self.assertEqual(requests, [])
 
     def test_oversized_response_rejected(self):
-        self.responses["/v1/models"] = (200, b" " * (1024 * 1024 + 1), {}, 0)
-        with endpoint(self.responses) as (url, _):
+        # Valid JSON plus whitespace stays valid even if a broken reader
+        # truncates the padding. A missing size guard must not pass this test
+        # merely because malformed JSON failed independently.
+        data = json.dumps({"data": [{"id": "test-model"}]}).encode() + b" " * (1024 * 1024)
+        self.responses["/v1/models"] = (200, data, {}, 0)
+        with endpoint(self.responses) as (url, requests):
             result = self.run_validator(url)
         self.assertFalse(result["ok"])
         self.assertEqual(result["errors"][0]["stage"], "model")
+        self.assertIn("exceeds 1 MiB", result["errors"][0]["message"])
+        self.assertEqual(len(requests), 2)
 
     def test_connection_refused_is_json_failure(self):
         with endpoint(self.responses) as (url, _):

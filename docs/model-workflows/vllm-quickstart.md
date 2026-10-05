@@ -147,8 +147,9 @@ accuracy. Neither server responses nor error bodies are copied into the result.
 - No retries. `--timeout` defaults to a 30-second socket timeout (maximum 120),
   with an elapsed-time guard checked between response-body reads. A final blocked
   read can add up to one socket timeout; this is not a hard process deadline.
-  CI runners should also impose their own overall command deadline. Each response
-  is capped at 1 MiB.
+  CI runners should also impose their own overall command deadline, including
+  the cache check: an unresponsive shared filesystem can block local file reads.
+  Each response is capped at 1 MiB.
 
 Success proves a small completion from the named local endpoint plus readability
 of the listed snapshot files. **It cannot attest that the server loaded that
