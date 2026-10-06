@@ -18,12 +18,12 @@ DRIVER = HERE / 'run-fixture.sh'
 
 
 class FixtureTests(unittest.TestCase):
-    def shell(self, body, main=False):
+    def shell(self, body, main=False, args=()):
         # Load definitions, not main; this also exercises the real option parser.
         source = DRIVER.read_text().split('\nif [ "$SELFTEST" = 1 ]; then')[0]
         with tempfile.TemporaryDirectory(dir=os.environ.get('PAPERCLIP_SCRATCH_DIR')) as tmp:
             env = dict(os.environ, TEST_TMP=tmp, FIXTURE_SOURCE=str(DRIVER))
-            script = 'set --\n' + source + '\nOUT="$TEST_TMP"; CTL="$TEST_TMP"; REPORT_ENABLED=1\n' + body
+            script = 'set -- ' + shlex.join(args) + '\n' + source + '\nOUT="$TEST_TMP"; CTL="$TEST_TMP"; REPORT_ENABLED=1\n' + body
             if main:
                 script += "\ntrap 'rc=$?" + DRIVER.read_text().split("\ntrap 'rc=$?", 1)[1]
             return subprocess.run(['bash', '-c', script], env=env, text=True,
@@ -132,6 +132,36 @@ class FixtureTests(unittest.TestCase):
                 else:
                     self.assertNotIn('CONFIG_ACCEPTED', p.stdout)
                     self.assertIn('scenario 3 requires CompleteWait=0', p.stderr)
+
+    def test_window_reference_is_recorded_with_approval(self):
+        # Execute the actual evidence write, but only in the temporary output
+        # directory. Never run the live setup surrounding this statement.
+        source = DRIVER.read_text()
+        start = source.index("    printf 'approval=%s")
+        end = source.index('\n', start)
+        p = self.shell(source[start:end] + '\nprintf "%s" "$(< "$OUT/ownership.txt")"',
+                       args=['--approval', 'offline-approval', '--window', 'offline-window'])
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+        evidence = dict(line.split('=', 1) for line in p.stdout.splitlines())
+        self.assertEqual(evidence['approval'], 'offline-approval')
+        self.assertEqual(evidence['window'], 'offline-window')
+
+    def test_approval_and_window_references_remain_required(self):
+        source = DRIVER.read_text()
+        start = source.index('    [ -n "$APPROVAL" ]')
+        end = source.index('\n', start)
+        guard = source[start:end]  # actual preflight guard; no host operations
+        for args, rc in [([], 2), (['--approval', 'offline-approval'], 2),
+                         (['--window', 'offline-window'], 2),
+                         (['--approval', 'offline-approval', '--window', 'offline-window'], 0)]:
+            with self.subTest(args=args):
+                p = self.shell(guard + '\nprintf "REFERENCES_PRESENT"', args=args)
+                self.assertEqual(p.returncode, rc, p.stdout + p.stderr)
+                if rc == 0:
+                    self.assertEqual(p.stdout, 'REFERENCES_PRESENT')
+                else:
+                    self.assertNotIn('REFERENCES_PRESENT', p.stdout)
+                    self.assertIn('not an authorization grant', p.stderr)
 
     def test_existing_account_refused(self):
         p = self.shell('id() { echo 1000; }; ensure_user existing')
@@ -360,7 +390,7 @@ class FixtureTests(unittest.TestCase):
 
     def test_missing_option_values(self):
         for flag in ('--expect', '--scenarios', '--out', '--node', '--slurm-prefix',
-                     '--user', '--operator', '--image'):
+                     '--user', '--operator', '--image', '--approval', '--window'):
             with self.subTest(flag=flag):
                 p = subprocess.run(['bash', str(DRIVER), flag], capture_output=True,
                                    text=True, timeout=3)
