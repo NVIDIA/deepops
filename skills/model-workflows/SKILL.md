@@ -15,7 +15,8 @@ working inference, or training are different outcomes with different evidence.
 |---|---|---|
 | Prepare or repair shared model inputs | [Manage model cache](../manage-model-cache/SKILL.md) | Cache validator exit `0` and `ok: true`, as the real consumer. Only named-file readability is proven. |
 | Serve a pinned snapshot on one GPU | [Serve model](../serve-model/SKILL.md) | Cache gate first, then serving validator exit `0` and `ok: true`. One bounded completion, not training or performance validation. |
-| Fine-tune a model | Stop: no supported training recipe or training-result validator is provided here yet. | Cache readiness is not training success. Obtain a reviewed single-node recipe and explicit success criteria before proceeding. |
+| Check fine-tuning prerequisites | [Fine-tuning readiness](../finetune-model/SKILL.md) | Readiness validator exit `0`, `status: ready`, `training_validated: false`. Optional one-GPU container probe is off by default. |
+| Actually fine-tune a model | Stop: no supported training recipe or training-result validator is provided here yet. | Readiness is not training success. Obtain a reviewed recipe and explicit success criteria before proceeding. |
 | Multi-node serving or training | Stop: unsupported by these skills. | Do not infer distributed support from a successful single-node check. |
 
 ## Common preflight
@@ -40,7 +41,9 @@ working inference, or training are different outcomes with different evidence.
 Record which validator ran, its exit code, schema version, explicit inputs and
 checks. The [cache guide](../../docs/model-workflows/shared-cache.md) and
 [serving guide](../../docs/model-workflows/vllm-quickstart.md) define their JSON
-contracts; this umbrella does not invent a combined success field.
+contracts; the [fine-tuning readiness guide](../../docs/model-workflows/finetune-readiness.md)
+separates preparation from training. This umbrella does not invent a combined
+success field.
 
 A readable cache is preparation only. A completion is inference only. Neither
 proves that a particular revision was loaded, a GPU was used, or training

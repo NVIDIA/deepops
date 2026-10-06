@@ -7,7 +7,7 @@ import unittest
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
-SKILLS = ("model-workflows", "serve-model")
+SKILLS = ("model-workflows", "serve-model", "finetune-model")
 
 
 class ModelSkillDocsTest(unittest.TestCase):

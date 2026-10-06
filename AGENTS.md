@@ -61,11 +61,11 @@ The validator must report `"ok": true` with `cuda_smoke_ok: true`. See
 ## Choose a model workflow
 
 Start with `skills/model-workflows/` to distinguish cached inputs, single-node
-inference and training. Use only the documented cache and serving paths below.
-Fine-tuning has no supported recipe or training-result validator here yet; stop
-and obtain a reviewed recipe and success criteria rather than reporting cache
-readiness as training success. Multi-node workflows are not supported by these
-skills.
+inference and training. Use the documented cache, serving and fine-tuning
+readiness paths below. Fine-tuning has no training recipe or training-result
+validator here yet; obtain a reviewed recipe and success criteria rather than
+reporting readiness as training success. Multi-node workflows are not supported
+by these skills.
 
 ## Golden path: shared model cache
 
@@ -90,6 +90,18 @@ small completion request; it does not start a server or download models. Require
 exit `0` and `ok: true`, but do not treat this as revision attestation, GPU-use
 proof, or a performance result. Never run it against someone else's service
 without permission. No live testing is implied by offline fixtures.
+
+## Golden path: fine-tuning readiness (not training)
+
+Use `skills/finetune-model/` for the readiness-only scope. Run
+`scripts/validation/validate_finetune.py --json` as the consumer on the selected
+Slurm compute host, with explicit node, partition, digest-pinned image and cache
+inputs. It checks scheduler availability, idle GPU capacity, local container
+support and the supported model file layout. Exit `0` and `status: ready` mean
+preparation only; `training_validated` is always false. No job runs by default.
+The optional `--gpu-smoke` requires separate authorization and proves only a
+single-GPU container probe. See `docs/model-workflows/finetune-readiness.md` for
+limits, failure reasons and the distinction from training success.
 
 ## Rules for operating this repository
 
