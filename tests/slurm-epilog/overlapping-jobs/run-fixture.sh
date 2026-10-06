@@ -47,7 +47,7 @@ SUSPEND_MODE=gang
 PARTITION=""
 GANG_PARTITION=""
 APPROVAL=""
-LEASE=""
+WINDOW=""
 KEEP_USERS=0
 NO_ENROOT=0
 SELFTEST=0
@@ -69,7 +69,7 @@ Usage: $0 [options]
   --partition NAME              normal partition for scenarios 1,3-7
   --gang-partition NAME         FORCE-sharing partition for scenario 2
   --approval REF                operator-verified authorization reference
-  --lease REF                   operator-verified exclusive active lease reference
+  --window REF                  operator-verified exclusive active maintenance-window reference
   --out DIR                     report/evidence directory (default: /root/epilog-fixture-<timestamp>)
   --node NAME                   Slurm node name (default: hostname -s)
   --slurm-prefix DIR            Slurm install prefix holding bin/sbatch (default: autodetect)
@@ -85,14 +85,14 @@ EOF
 
 while [ $# -gt 0 ]; do
     case "$1" in
-        --expect|--scenarios|--out|--node|--slurm-prefix|--user|--operator|--image|--suspend-mode|--partition|--gang-partition|--approval|--lease)
+        --expect|--scenarios|--out|--node|--slurm-prefix|--user|--operator|--image|--suspend-mode|--partition|--gang-partition|--approval|--window)
             [ $# -ge 2 ] && [ -n "$2" ] && [[ "$2" != --* ]] || { echo "missing value for $1" >&2; exit 2; } ;;
     esac
     case "$1" in
         --partition) PARTITION="$2"; shift 2 ;;
         --gang-partition) GANG_PARTITION="$2"; shift 2 ;;
         --approval) APPROVAL="$2"; shift 2 ;;
-        --lease) LEASE="$2"; shift 2 ;;
+        --window) WINDOW="$2"; shift 2 ;;
         --expect) EXPECT="$2"; shift 2 ;;
         --scenarios) SCENARIOS="$2"; shift 2 ;;
         --out) OUT="$2"; shift 2 ;;
@@ -689,7 +689,7 @@ trusted_path() {
 
 preflight() {
     [ "$(id -u)" = 0 ] || die "run as root"
-    [ -n "$APPROVAL" ] && [ -n "$LEASE" ] || die "pass approval and active lease references; see README (not an authorization grant)"
+    [ -n "$APPROVAL" ] && [ -n "$WINDOW" ] || die "pass approval and active maintenance-window references; see README (not an authorization grant)"
     [ -n "$PARTITION" ] || die "--partition is required"
     local f u jobs config partition_config
     for u in "$USER_QA" "$USER_OPS"; do
@@ -740,7 +740,7 @@ preflight() {
         die "node must equal hostname -s for the dispatcher query"
     fi
     jobs=$(sq -h -o %i) || die "squeue failed during idle check"
-    [ -z "$jobs" ] || die "fixture requires an idle, exclusively leased cluster (including no pending jobs)"
+    [ -z "$jobs" ] || die "fixture requires an idle, exclusively reserved cluster (including no pending jobs)"
     config=$(sc show config) || die "cannot read controller configuration"
     grep -Eq '^ProctrackType[[:space:]]*=[[:space:]]*proctrack/cgroup' <<<"$config" || die "proctrack/cgroup required"
     if [ "${selected[3]:-0}" = 1 ]; then
@@ -782,7 +782,7 @@ preflight() {
     printf '%s\n' "$CTL" > "$ACTIVE/control-path"
     mkdir -m 0700 "$OUT" || die "cannot create output"
     REPORT_ENABLED=1
-    printf 'approval=%s\nlease=%s\nrun=%s\nuser=%s\noperator=%s\nbase=%s\n' "$APPROVAL" "$LEASE" "$RUN_ID" "$USER_QA" "$USER_OPS" "$BASE" > "$OUT/ownership.txt"
+    printf 'approval=%s\nwindow=%s\nrun=%s\nuser=%s\noperator=%s\nbase=%s\n' "$APPROVAL" "$WINDOW" "$RUN_ID" "$USER_QA" "$USER_OPS" "$BASE" > "$OUT/ownership.txt"
     printf '%s\n' "$config" > "$OUT/slurm-config.txt"
     [ -z "${partition_config:-}" ] || printf '%s\n' "$partition_config" > "$OUT/gang-partition.txt"
     chmod 1777 "$JOBOUT"
