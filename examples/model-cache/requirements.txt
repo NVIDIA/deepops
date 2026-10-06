@@ -1,0 +1,2 @@
+# Install in the cache writer's dedicated Python >=3.10 environment, not Ansible's.
+huggingface_hub==2.1.1
