@@ -744,7 +744,7 @@ preflight() {
     config=$(sc show config) || die "cannot read controller configuration"
     grep -Eq '^ProctrackType[[:space:]]*=[[:space:]]*proctrack/cgroup' <<<"$config" || die "proctrack/cgroup required"
     if [ "${selected[3]:-0}" = 1 ]; then
-        grep -Eq '^CompleteWait[[:space:]]*=[[:space:]]*0[[:space:]]*$' <<<"$config" || die "scenario 3 requires CompleteWait=0"
+        grep -Eq '^CompleteWait[[:space:]]*=[[:space:]]*0([[:space:]]+sec)?[[:space:]]*$' <<<"$config" || die "scenario 3 requires CompleteWait=0"
     fi
     if [ "${selected[2]:-0}" = 1 ]; then
         [ -n "$GANG_PARTITION" ] || die "--gang-partition is required for scenario 2"

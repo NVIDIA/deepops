@@ -43,12 +43,23 @@ scratch directory. These tests are **not** hardware certification.
   submissions, reservations used by others, or concurrent fixture runs.
 - Bash, Python 3 (JSON report), coreutils, procps, util-linux (`runuser`, `setsid`,
   `unshare`), journalctl, Slurm commands and working enroot. Passwordless local
-  root operations; never supply a password through this fixture.
+  root operations; never supply a password through this fixture. Enroot must be
+  installed before setup; a minimal Slurm installation may omit it (for example,
+  with `slurm_install_enroot=false`). Install it through the approved provisioning
+  procedure, or enable `slurm_install_enroot` when provisioning the test host.
 - Installed DeepOps epilog at `/etc/slurm/epilog.sh`, dispatcher at
   `/etc/slurm/shared/bin/run-parts.sh`, hooks at `/etc/slurm/epilog.d`, a regular
   `/etc/slurm/localusers.backup`, and working journal logging of epilog START/END.
   Save the installed commit/render inputs separately; the fixture saves hashes,
   copies, Slurm config, job states and logs for the actual installation.
+- `/etc/slurm` must be root-owned; `/etc/slurm/epilog.d` must be owned by
+  `root:slurm` or stricter (for example, `root:root`). Neither directory may be
+  group/world writable; mode `0755` is sufficient. The driver's `trusted_path`
+  check requires root ownership, no group/world write bits and no symlinks on
+  checked paths and all ancestors, including `/etc/slurm/localusers.backup`.
+  The DeepOps Slurm installation can leave these directories owned by `slurm`;
+  correct ownership and permissions through the approved disposable-host setup
+  procedure before running the driver. Do not weaken the trust check.
 - `ProctrackType=proctrack/cgroup`, the appropriate task/cgroup configuration, a
   normal partition able to run two one-CPU jobs, and `CompleteWait=0` for S3.
   No job-container/private-tmp setting hiding fixture files from the host;

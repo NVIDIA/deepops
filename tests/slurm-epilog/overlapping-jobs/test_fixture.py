@@ -8,6 +8,7 @@ import io
 import json
 import os
 from pathlib import Path
+import shlex
 import subprocess
 import tempfile
 import unittest
@@ -101,6 +102,36 @@ class FixtureTests(unittest.TestCase):
                     self.assertNotIn('NOT reproduced', summary)
                     self.assertNotIn("B's assets survived", summary)
                     self.assertIn('review per-check results', summary)
+
+    def test_s3_complete_wait_accepts_only_zero_with_optional_seconds(self):
+        # Execute the real read-only config checks, not live preflight. Slurm is
+        # the external boundary; no root, host setup or mutation is needed.
+        source = DRIVER.read_text()
+        start = source.index('    config=$(sc show config)')
+        end = source.index('\n    CTLD_PORT=', start)
+        checks = source[start:end]
+        for value, rc in [('0', 0), ('0 sec', 0), ('0 sec   ', 0),
+                          ('30 sec', 2), ('30', 2), ('0sec', 2),
+                          ('0 msec', 2), ('0 sec extra', 2), ('', 2)]:
+            with self.subTest(value=value):
+                config = ('ProctrackType           = proctrack/cgroup\n'
+                          f'CompleteWait            = {value}\n'
+                          'SchedulerTimeSlice      = 30 sec\n'
+                          'EpilogTimeout           = 300 sec\n'
+                          'KillWait                = 30 sec\n')
+                p = self.shell('''
+                    selected=(); selected[3]=1
+                    sc() {
+                        [ "$*" = "show config" ] || return 1
+                        printf '%s\\n' ''' + shlex.quote(config) + '''
+                    }
+                ''' + checks + '\nprintf "CONFIG_ACCEPTED"\n')
+                self.assertEqual(p.returncode, rc, p.stdout + p.stderr)
+                if rc == 0:
+                    self.assertEqual(p.stdout, 'CONFIG_ACCEPTED')
+                else:
+                    self.assertNotIn('CONFIG_ACCEPTED', p.stdout)
+                    self.assertIn('scenario 3 requires CompleteWait=0', p.stderr)
 
     def test_existing_account_refused(self):
         p = self.shell('id() { echo 1000; }; ensure_user existing')
