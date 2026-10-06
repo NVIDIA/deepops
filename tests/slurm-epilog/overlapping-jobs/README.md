@@ -1,12 +1,12 @@
 # Overlapping Slurm jobs: installed-epilog fixture
 
-**Destructive integration test for an exclusively leased disposable cluster.**
+**Destructive integration test for an exclusively reserved disposable cluster.**
 The offline commands below are safe without Slurm or root. The live procedure is
 not authorized merely by this README or by a successful offline test. Obtain an
 explicit approval naming the target, installation/configuration changes, account
-creation, job execution, possible cleanup/drain impact, lease window and recovery
-first. The test owner verifies the lease and code provenance before execution.
-`--approval` and `--lease` record references; they do not verify or grant authority.
+creation, job execution, possible cleanup/drain impact, maintenance window and recovery
+first. The test owner verifies the reservation and code provenance before execution.
+`--approval` and `--window` record references; they do not verify or grant authority.
 Do not run on a shared workstation, production node, or shared controller.
 
 This fixture changes files **under tests only** in the source repository. It runs
@@ -144,30 +144,30 @@ normal node state; injector failure cannot match.
 
 ## Run commands and assertions
 
-Example commands after prerequisites, approval and lease validation:
+Example commands after prerequisites, approval and reservation validation:
 
 ```bash
-# Supply actual authorization/lease references and partition names.
+# Supply actual authorization/maintenance-window references and partition names.
 F=/opt/deepops-epilog-fixture
 bash "$F/run-fixture.sh" --expect current --scenarios 1,2,3,4,5,6 \
   --node "$(hostname -s)" --partition "$TEST_PARTITION" \
   --gang-partition "$GANG_PARTITION" --approval "$APPROVAL_REF" \
-  --lease "$LEASE_REF" --out /root/epilog-baseline-v1
+  --window "$WINDOW_REF" --out /root/epilog-baseline-v1
 
 # Separately approved cgroup-v2 target; output path must not already exist.
 bash "$F/run-fixture.sh" --expect current --scenarios 7 \
   --node "$(hostname -s)" --partition "$TEST_PARTITION" \
-  --approval "$APPROVAL_REF" --lease "$LEASE_REF" --out /root/epilog-baseline-v2
+  --approval "$APPROVAL_REF" --window "$WINDOW_REF" --out /root/epilog-baseline-v2
 
 # After installing the independently approved job-scoped candidate on v2:
 bash "$F/run-fixture.sh" --expect job-scoped --scenarios 1,2,3,4,5,6,7 \
   --node "$(hostname -s)" --partition "$TEST_PARTITION" \
   --gang-partition "$GANG_PARTITION" --approval "$APPROVAL_REF" \
-  --lease "$LEASE_REF" --out /root/epilog-candidate-v2
+  --window "$WINDOW_REF" --out /root/epilog-candidate-v2
 ```
 
 Use an external test window of at most 90 minutes per matrix leg, with at least
-15 minutes of lease remaining for rollback. Operator supervision is required.
+15 minutes of reservation remaining for rollback. Operator supervision is required.
 TERM requests cleanup; if an external timeout is used, allow at least ten minutes
 before KILL so cancellation and epilog completion can finish. Never immediately
 rerun over stale state. The account names default to distinct random run-scoped
@@ -205,7 +205,7 @@ No owner acceptance decision remains for this interpretation. Baseline `26.09`
 
 A baseline MATCH is not candidate sign-off. Hardware remains unrun; these are
 source-derived expectations and offline evidence, not a live reproduction or
-hardware certification. Explicit approval naming the target, lease/window,
+hardware certification. Explicit approval naming the target, reservation/window,
 installation/configuration changes, account creation, job execution, cleanup/drain
 impact and recovery remains mandatory before any live run. This disposition
 changes no product code, fixture behavior, expectation values, coverage, safety
@@ -294,7 +294,7 @@ For interrupted execution, SIGKILL, power loss or cleanup failure:
    reconfiguration procedure. Verify no fixture jobs remain and the normal epilog
    path is active, then remove `/etc/slurm/epilog-fixture-wrapper` and the exact
    fixture installation. Review any drain reason; never blindly resume a node.
-6. Preserve all evidence and verify the leased target is clean or reprovisioned
+6. Preserve all evidence and verify the reserved target is clean or reprovisioned
    before releasing it. Site-wide image caches may have been populated by enroot
    import/prolog; shared caches are deliberately not recursively deleted. Include
    any site-specific cache cleanup in the approved recovery plan, or reprovision. No release/tag/publication is implied by this test.
