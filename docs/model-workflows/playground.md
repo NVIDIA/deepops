@@ -28,24 +28,25 @@ playbooks. Offline tests are not evidence of a successful GPU deployment.
 
 ## Model and image pins
 
-The default `playground_model_profile: qwen3` selects:
+The default `playground_model_profile: qwen3` selects **Qwen3-8B on both H100
+(primary) and A100 (backup)** for this first slice:
 
 - `Qwen/Qwen3-8B` at `b968826d9c46dd6066d109eabc6255188de91218`.
 - Served name: `local-qwen3-8b`.
 
-`playground_model_profile: gpt-oss` selects the alternative:
+`playground_model_profile: gpt-oss` explicitly opts into the alternative:
 
 - `openai/gpt-oss-20b` at `6cee5e81ee83917806bbde320786a8fb61efebee`.
 - Served name: `local-gpt-oss-20b`.
 
-**Why Qwen is the default:** vLLM's tagged 0.31.0 supported-model table lists
-GPT-OSS, and the upstream GPT-OSS recipe explicitly covers H100/Hopper. However,
-the tagged GPU and quantization documentation reviewed on 2026-10-07 did not
-establish GPT-OSS MXFP4 support specifically on RTX PRO 6000 (Blackwell).
-Generic Blackwell/B200 guidance is not proof for that GPU. This is a conservative
-fallback, **not a claim that GPT-OSS cannot run there**. Select GPT-OSS only after
-checking the actual GPU/kernel combination. Neither profile is hardware-certified
-by the offline tests in this change.
+**Why Qwen is the default:** keep one conservative default across H100 and A100
+for the first slice. vLLM's tagged 0.31.0 supported-model table lists both model
+families. The upstream GPT-OSS recipe supports H100 and A100 (including the
+A100 Triton attention / Marlin MXFP4 path), but that recipe is rolling guidance,
+**not version-pinned evidence** for this container and GPU/kernel combination.
+This is not a claim that GPT-OSS is unsupported on either GPU. Select it only
+with explicit validation of the chosen combination. Neither profile is
+hardware-certified by the offline tests in this change.
 
 Sources:
 
@@ -98,9 +99,14 @@ ansible-playbook -i config/inventory -l playground playbooks/model-playground.ym
 
 This downloads only the selected snapshot files, creates stable random secrets
 **on the host**, starts private services, provisions an administrator and the
-named ordinary user, and requires a real user chat before starting the HTTPS
-listener. A rerun reuses credentials, UI data and model files. It reconciles
-containers and briefly stops the listener while rechecking accounts and inference;
+named ordinary user, registers the local model with a read grant for that user,
+and requires a real user chat before starting the HTTPS listener. Open WebUI's
+model access control stays enabled; unregistered models are admin-only in
+v0.11.4. Bootstrap uses the admin-only missing-model creation path of
+`/api/v1/models/model/access/update` and replaces the selected model's grants
+with only the named user's read grant (no wildcard or write permission).
+A rerun reuses credentials, UI data and model files and repairs that grant. It
+reconciles containers and briefly stops the listener while rechecking accounts and inference;
 this is not a zero-downtime operation. Never run concurrent deployments.
 
 Both inference containers have only an internal Docker network: **no published
@@ -112,6 +118,12 @@ telemetry. Its sole model connection is `http://vllm:8000/v1`. Persistent UI
 configuration is disabled so saved connection settings do not override the role
 at restart. The gateway blocks registration and restricts browser connections to
 the same origin. Administrators and Docker/root access remain trusted privileges.
+
+vLLM's API key is loaded from its private file into `VLLM_API_KEY` immediately
+before process launch, not into command-line arguments or Compose metadata.
+The v0.31.0 authentication middleware supports this environment variable when
+`--api-key` is absent. Request logging is off by default in that version; do not
+pass the unsupported `--disable-log-requests` flag.
 
 Container logging is deliberately disabled: startup arguments, authentication
 responses and chat text must not enter Docker logs. Secret-reading Ansible tasks
@@ -129,10 +141,22 @@ ssh -N -L 8443:127.0.0.1:8443 ubuntu@gpu.example.org
 ```
 
 Open `https://localhost:8443`. The role creates a self-signed 30-day certificate.
-Retrieve its **public** `tls/cert.pem` over the already trusted SSH connection and
-trust it in a dedicated browser profile/OS trust store according to site policy.
-Do not disable certificate verification or blindly accept an unknown certificate.
-No private key leaves the host. Changing certificate identity or renewing it
+Retrieve its **public** `tls/cert.pem` over the already trusted SSH connection:
+
+```bash
+mkdir -p "$HOME/.local/share/model-playground-login"
+ssh ubuntu@gpu.example.org \
+  'sudo -n cat /var/lib/deepops/model-playground/tls/cert.pem' \
+  > "$HOME/.local/share/model-playground-login/cert.pem"
+openssl x509 -in "$HOME/.local/share/model-playground-login/cert.pem" \
+  -noout -subject -issuer -dates -fingerprint -sha256
+```
+
+This assumes approved noninteractive sudo; otherwise use the site's approved
+retrieval procedure. Check that SSH and OpenSSL succeeded before importing the
+certificate into a dedicated browser profile/OS trust store according to site
+policy. Do not disable certificate verification or blindly accept an unknown
+certificate. No private key leaves the host. Changing certificate identity or renewing it
 requires a deliberate certificate replacement (or cleanup/redeploy).
 
 For access through a private network, change only the variables:
@@ -235,4 +259,10 @@ The fake-server tests include cloud/extra model lists, wrong roots, empty replie
 health-only services, wrong account roles, invalid JSON, redirects, oversized
 responses, private file permissions and proxy isolation. Template tests cover
 published ports, read-only mounts, offline settings, auth and restart policy.
+A source-linked v0.31.0 argument allow-list checks every rendered vLLM option for
+both profiles and rejects unknown flags. Account tests require model registration
+and the named-user read grant on fresh setup and reruns; validator tests require
+the ordinary-user session for both model listing and chat, never an admin token.
+See the [pinned-contract notes](../../scripts/validation/tests/fixtures/playground-contracts.md)
+for upstream source locations and offline-test limits.
 No test downloads weights, starts containers or uses a GPU.
