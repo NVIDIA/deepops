@@ -75,9 +75,12 @@ python3 -m venv "$HOME/.venvs/model-cache"
 ```
 
 From a shell running as the designated writer, use a restrictive umask and source
-only the cache environment. This example model is public; review its license,
-file list and size before downloading. The commit hash, not `main` or a tag, is
-the reproducibility boundary:
+only the cache environment. The example model, `openai-community/gpt2` at
+`607a30d783dfa663caf39e06633721c8d4cfcd7e`, is listed as **MIT** in its
+[pinned model card](https://huggingface.co/openai-community/gpt2/blob/607a30d783dfa663caf39e06633721c8d4cfcd7e/README.md)
+(verified 2026-10-07). Review the license terms, file list and size before
+downloading; public access does not replace that review. The commit hash, not
+`main` or a tag, is the reproducibility boundary:
 
 ```bash
 umask 0027

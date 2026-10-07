@@ -50,13 +50,22 @@ python3.12 -m venv "$HOME/.venvs/deepops-vllm"
 "$HOME/.venvs/deepops-vllm/bin/vllm" --version
 ```
 
-The example pins vLLM **0.31.0**. Transitive packages are not a full lockfile:
-record `pip freeze` with validation evidence, and use your site's reviewed wheel
-set for repeatable deployment. Do not mix an existing PyTorch installation into
-this environment. Do not upgrade the cache writer's pinned CLI to fix a serving
+The example pins vLLM **0.31.0**, licensed under **Apache-2.0** (verified
+2026-10-07 against the [tagged license](https://github.com/vllm-project/vllm/blob/v0.31.0/LICENSE)
+and [package metadata](https://pypi.org/project/vllm/0.31.0/)). This is the serving
+package's license, not the model's or every dependency's. Transitive packages
+are not a full lockfile: record `pip freeze` with validation evidence, and use
+your site's reviewed wheel set for repeatable deployment. Do not mix an existing
+PyTorch installation into this environment. Do not upgrade the cache writer's pinned CLI to fix a serving
 package problem. vLLM loads a local snapshot, not a mutable Hub repository name.
 
 ## 2. Check the cache before starting the server
+
+The example model, `openai-community/gpt2` at
+`607a30d783dfa663caf39e06633721c8d4cfcd7e`, is listed as **MIT** in its
+[pinned model card](https://huggingface.co/openai-community/gpt2/blob/607a30d783dfa663caf39e06633721c8d4cfcd7e/README.md)
+(verified 2026-10-07). Review its license terms before use; re-check the model's
+license and access requirements when selecting another model or revision.
 
 ```bash
 export HF_HUB_CACHE=/shared/hf-cache/hub
