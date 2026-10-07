@@ -1,0 +1,8 @@
+---
+# Intentionally not imported by any cluster playbook.
+- name: Run an opt-in single-host model playground
+  hosts: model-playground
+  become: true
+  gather_facts: true
+  roles:
+    - model_playground

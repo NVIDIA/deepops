@@ -1,0 +1,294 @@
+---
+- name: Validate pinned images, model profile and listener settings
+  ansible.builtin.assert:
+    that:
+      - playground_model_profile in playground_models
+      - playground_bind_address is match('^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$')
+      - playground_https_port | int >= 1024
+      - playground_https_port | int <= 65535
+      - playground_tls_name is match('^[a-zA-Z0-9][a-zA-Z0-9.-]*$')
+      - playground_admin_email is match('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]+$')
+      - playground_user_email is match('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]+$')
+      - playground_admin_email != playground_user_email
+      - playground_vllm_image is match('^vllm/vllm-openai:v0\.31\.0@sha256:[a-f0-9]{64}$')
+      - playground_webui_image is match('^ghcr.io/open-webui/open-webui:v0\.11\.4@sha256:[a-f0-9]{64}$')
+      - playground_nginx_image is match('^nginx:1\.28\.0-alpine@sha256:[a-f0-9]{64}$')
+
+- name: Select the immutable model identity
+  ansible.builtin.set_fact:
+    playground_model: "{{ playground_models[playground_model_profile] }}"
+
+- name: Validate model identity
+  ansible.builtin.assert:
+    that:
+      - playground_model.repo is match('^[A-Za-z0-9_-]+/[A-Za-z0-9_.-]+$')
+      - "'..' not in playground_model.repo"
+      - playground_model.revision is match('^[a-f0-9]{40}$')
+      - playground_model.served_name is match('^[A-Za-z0-9][A-Za-z0-9_.-]+$')
+      - playground_model.files | length > 0
+
+- name: Verify exactly one visible GPU and an already configured driver
+  ansible.builtin.command:
+    argv: [nvidia-smi, --query-gpu=uuid, --format=csv,noheader]
+  register: playground_gpus
+  changed_when: false
+
+- name: Require one GPU
+  ansible.builtin.assert:
+    that: playground_gpus.stdout_lines | length == 1
+    fail_msg: Run the DeepOps driver and container-toolkit prerequisites on one single-GPU host first.
+
+- name: Verify Docker Compose is already available
+  ansible.builtin.command:
+    argv: [docker, compose, version, --short]
+  changed_when: false
+
+- name: Verify the NVIDIA Docker runtime is already configured
+  ansible.builtin.command:
+    argv:
+      - docker
+      - info
+      - --format
+      - "{{ '{{json .Runtimes}}' }}"
+  register: playground_runtimes
+  changed_when: false
+
+- name: Require the NVIDIA container runtime
+  ansible.builtin.assert:
+    that: "'nvidia' in (playground_runtimes.stdout | from_json)"
+
+- name: Install host-only download and certificate prerequisites
+  ansible.builtin.apt:
+    name: [python3-venv, openssl]
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Inspect owned directories before any writes
+  ansible.builtin.stat:
+    path: "{{ item }}"
+    follow: false
+  loop:
+    - /var/lib/deepops
+    - /var/lib/deepops/model-playground/cache
+    - /var/lib/deepops/model-playground/hf-home
+    - /var/lib/deepops/model-playground/secrets
+    - /var/lib/deepops/model-playground/tls
+    - /var/lib/deepops/model-playground/webui-data
+    - /var/lib/deepops/model-playground/bin
+    - /var/lib/deepops/model-playground/venv
+  register: playground_directories
+
+- name: Refuse redirected or foreign-owned directories
+  ansible.builtin.assert:
+    that:
+      - >-
+        not item.stat.exists or
+        (item.stat.isdir | default(false) and not item.stat.islnk | default(false) and item.stat.uid == 0)
+  loop: "{{ playground_directories.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Create private playground directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+  loop:
+    - /var/lib/deepops/model-playground
+    - /var/lib/deepops/model-playground/cache
+    - /var/lib/deepops/model-playground/hf-home
+    - /var/lib/deepops/model-playground/secrets
+    - /var/lib/deepops/model-playground/tls
+    - /var/lib/deepops/model-playground/webui-data
+    - /var/lib/deepops/model-playground/bin
+
+- name: Install validation helpers
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../scripts/validation/{{ item }}"
+    dest: "/var/lib/deepops/model-playground/bin/{{ item }}"
+    owner: root
+    group: root
+    mode: '0700'
+  loop:
+    - validate_model_cache.py
+    - validate_playground.py
+
+- name: Install private account and process launch helpers
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/var/lib/deepops/model-playground/bin/{{ item }}"
+    owner: root
+    group: root
+    mode: '0700'
+  loop:
+    - playground_accounts.py
+    - playground_entrypoint.py
+
+- name: Create private Hugging Face CLI environment
+  ansible.builtin.command:
+    argv: [python3, -m, venv, /var/lib/deepops/model-playground/venv]
+    creates: /var/lib/deepops/model-playground/venv/bin/python3
+
+- name: Install the shared-cache CLI pin without inheriting tokens or pip configuration
+  ansible.builtin.command:
+    argv:
+      - env
+      - -i
+      - HOME=/var/lib/deepops/model-playground/hf-home
+      - PATH=/usr/bin:/bin
+      - /var/lib/deepops/model-playground/venv/bin/python3
+      - -m
+      - pip
+      - --isolated
+      - install
+      - huggingface_hub==2.1.1
+  register: playground_pip
+  changed_when: "'Successfully installed' in playground_pip.stdout"
+
+- name: Download only the pinned public model files into the local Hub cache
+  ansible.builtin.command:
+    argv: >-
+      {{ ['env', '-i', 'HOME=/var/lib/deepops/model-playground/hf-home', 'PATH=/usr/bin:/bin',
+          'HF_HOME=/var/lib/deepops/model-playground/hf-home',
+          'HF_TOKEN_PATH=/var/lib/deepops/model-playground/hf-home/no-token',
+          'HF_HUB_DISABLE_IMPLICIT_TOKEN=1', 'HF_HUB_DISABLE_TELEMETRY=1',
+          '/var/lib/deepops/model-playground/venv/bin/hf', 'download', playground_model.repo,
+          '--revision', playground_model.revision,
+          '--cache-dir', '/var/lib/deepops/model-playground/cache', '--include'] + playground_model.files }}
+  changed_when: false
+  no_log: true
+
+- name: Verify every required file with the existing cache validator
+  ansible.builtin.command:
+    argv: >-
+      {{ ['python3', '/var/lib/deepops/model-playground/bin/validate_model_cache.py', '--json',
+          '--cache-dir', '/var/lib/deepops/model-playground/cache',
+          '--repo-id', playground_model.repo, '--revision', playground_model.revision] +
+          (playground_model.files | map('regex_replace', '^', '--require-file=') | list) }}
+  changed_when: false
+
+- name: Generate stable host-only secrets without returning them to the controller
+  ansible.builtin.command:
+    argv:
+      - python3
+      - /var/lib/deepops/model-playground/bin/playground_accounts.py
+      - initialize
+      - --directory
+      - /var/lib/deepops/model-playground/secrets
+      - --admin-email
+      - "{{ playground_admin_email }}"
+      - --user-email
+      - "{{ playground_user_email }}"
+      - --user-name
+      - "{{ playground_user_name }}"
+  changed_when: false
+  no_log: true
+
+- name: Generate a private self-signed HTTPS certificate
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - req
+      - -x509
+      - -newkey
+      - rsa:3072
+      - -nodes
+      - -days
+      - '30'
+      - -keyout
+      - /var/lib/deepops/model-playground/tls/key.pem
+      - -out
+      - /var/lib/deepops/model-playground/tls/cert.pem
+      - -subj
+      - "/CN={{ playground_tls_name }}"
+      - -addext
+      - "subjectAltName=DNS:{{ playground_tls_name }},DNS:localhost,IP:127.0.0.1"
+    creates: /var/lib/deepops/model-playground/tls/cert.pem
+  no_log: true
+
+- name: Protect the certificate key
+  ansible.builtin.file:
+    path: /var/lib/deepops/model-playground/tls/key.pem
+    mode: '0600'
+    owner: root
+    group: root
+
+- name: Record the public model identity
+  ansible.builtin.copy:
+    dest: /var/lib/deepops/model-playground/model.json
+    content: "{{ playground_model | to_nice_json }}\n"
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Render private container and HTTPS configuration
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/var/lib/deepops/model-playground/{{ item }}"
+    owner: root
+    group: root
+    mode: '0600'
+  loop: [compose.yml, nginx.conf]
+
+- name: Stop the public listener while reconciling accounts
+  ansible.builtin.command:
+    argv: [docker, compose, --project-name, deepops-playground, --file, /var/lib/deepops/model-playground/compose.yml, stop, gateway]
+  changed_when: true
+  no_log: true
+
+- name: Start private model and UI services
+  ansible.builtin.command:
+    argv: [docker, compose, --project-name, deepops-playground, --file, /var/lib/deepops/model-playground/compose.yml, up, -d, vllm, webui]
+  changed_when: true
+  no_log: true
+
+- name: Provision the named user before publishing any listener
+  ansible.builtin.command:
+    argv: [docker, compose, --project-name, deepops-playground, --file, /var/lib/deepops/model-playground/compose.yml, exec, -T, webui, python3, /opt/playground/playground_accounts.py, bootstrap, --directory, /run/playground]
+  register: playground_bootstrap
+  until: playground_bootstrap.rc == 0
+  retries: 60
+  delay: 5
+  changed_when: false
+  no_log: true
+
+- name: Require a real user chat and pinned backend identity before opening HTTPS
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - --project-name
+      - deepops-playground
+      - --file
+      - /var/lib/deepops/model-playground/compose.yml
+      - exec
+      - -T
+      - webui
+      - python3
+      - /opt/playground/validate_playground.py
+      - --json
+      - --model
+      - "{{ playground_model.served_name }}"
+      - --repo-id
+      - "{{ playground_model.repo }}"
+      - --revision
+      - "{{ playground_model.revision }}"
+      - --user-file
+      - /run/playground/user.json
+      - --api-key-file
+      - /run/playground/api-key
+  register: playground_validation
+  until: playground_validation.rc == 0
+  retries: 60
+  delay: 10
+  changed_when: false
+  no_log: true
+
+- name: Publish only the authenticated HTTPS gateway
+  ansible.builtin.command:
+    argv: [docker, compose, --project-name, deepops-playground, --file, /var/lib/deepops/model-playground/compose.yml, up, -d, gateway]
+  changed_when: true
+  no_log: true
