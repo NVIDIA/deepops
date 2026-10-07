@@ -462,14 +462,15 @@ enroot_data_path_for() {
     # Cache the validated pre-job path; never rediscover a deletion target.
     [ -z "${ENROOT_DATA[$1]:-}" ] || { printf '%s' "${ENROOT_DATA[$1]}"; return; }
     local raw
-    raw=$(awk '$1=="ENROOT_DATA_PATH"{print $2}' /etc/enroot/enroot.conf 2>/dev/null | tail -1)
+    # Preserve the full value, including spaces inside substitutions like $(id -u).
+    raw=$(awk '$1=="ENROOT_DATA_PATH"{sub(/^[[:space:]]*[^[:space:]]+[[:space:]]*/, ""); print}' /etc/enroot/enroot.conf 2>/dev/null | tail -1)
     [ -n "$raw" ] || raw='${XDG_DATA_HOME:-$HOME/.local/share}/enroot'
     as_user "$1" "echo \"$raw\"" 2>/dev/null | tail -1
 }
 enroot_runtime_path_for() {
     [ -z "${ENROOT_RUNTIME[$1]:-}" ] || { printf '%s' "${ENROOT_RUNTIME[$1]}"; return; }
     local raw
-    raw=$(awk '$1=="ENROOT_RUNTIME_PATH"{print $2}' /etc/enroot/enroot.conf 2>/dev/null | tail -1)
+    raw=$(awk '$1=="ENROOT_RUNTIME_PATH"{sub(/^[[:space:]]*[^[:space:]]+[[:space:]]*/, ""); print}' /etc/enroot/enroot.conf 2>/dev/null | tail -1)
     [ -n "$raw" ] || raw='${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/enroot'
     as_user "$1" "echo \"$raw\"" 2>/dev/null | tail -1
 }

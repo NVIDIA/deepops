@@ -18,11 +18,15 @@ DRIVER = HERE / 'run-fixture.sh'
 
 
 class FixtureTests(unittest.TestCase):
-    def shell(self, body, main=False, args=()):
+    def shell(self, body, main=False, args=(), enroot_config=None):
         # Load definitions, not main; this also exercises the real option parser.
         source = DRIVER.read_text().split('\nif [ "$SELFTEST" = 1 ]; then')[0]
         with tempfile.TemporaryDirectory(dir=os.environ.get('PAPERCLIP_SCRATCH_DIR')) as tmp:
             env = dict(os.environ, TEST_TMP=tmp, FIXTURE_SOURCE=str(DRIVER))
+            if enroot_config is not None:
+                # Relocate only the config file; keep the real awk and expansion.
+                Path(tmp, 'enroot.conf').write_text(enroot_config)
+                source = source.replace('/etc/enroot/enroot.conf', '"$TEST_TMP/enroot.conf"')
             script = 'set -- ' + shlex.join(args) + '\n' + source + '\nOUT="$TEST_TMP"; CTL="$TEST_TMP"; REPORT_ENABLED=1\n' + body
             if main:
                 script += "\ntrap 'rc=$?" + DRIVER.read_text().split("\ntrap 'rc=$?", 1)[1]
@@ -353,6 +357,43 @@ class FixtureTests(unittest.TestCase):
             self.assertEqual((ctl / 'fault-done-123').read_text().strip(), '1')
             self.assertFalse((ctl / 'fault-isolated-123').exists())
             self.assertNotIn('UNSAFE_FALLBACK', p.stdout + (ctl / 'fault-log-123').read_text())
+
+    def test_enroot_paths_preserve_command_substitution_with_spaces(self):
+        # Field-2 parsing truncates $(id -u); assert both complete per-user paths.
+        configs = [
+            'ENROOT_DATA_PATH /tmp/enroot-data/user-$(id -u)\n'
+            'ENROOT_RUNTIME_PATH /run/enroot/user-$(id -u)\n',
+            # Keep exact-key matching, leading whitespace and last-setting wins.
+            'ENROOT_DATA_PATH /unused-data\n'
+            'ENROOT_RUNTIME_PATH /unused-runtime\n'
+            ' \tENROOT_DATA_PATH\t /tmp/enroot-data/user-$(id -u)\n'
+            '\tENROOT_RUNTIME_PATH  \t/run/enroot/user-$(id -u)\n'
+            '# ENROOT_DATA_PATH /commented-out\n'
+            'ENROOT_RUNTIME_PATH_OTHER /not-the-runtime-key\n',
+        ]
+        for config in configs:
+            with self.subTest(config=config):
+                p = self.shell('''
+                    # No account switching: execute the real expansion in Bash,
+                    # with only the unavailable test users' identity substituted.
+                    as_user() {
+                        local uid
+                        case "$1" in qa) uid=21001;; ops) uid=21002;; *) return 1;; esac
+                        TEST_UID="$uid" bash -c 'id() {
+                            [ "$*" = "-u" ] || return 1
+                            printf "%s\\n" "$TEST_UID"
+                        }; '"$2"
+                    }
+                    for user in qa ops; do
+                        printf '%s\\n' "$(enroot_data_path_for "$user")"
+                        printf '%s\\n' "$(enroot_runtime_path_for "$user")"
+                    done
+                ''', enroot_config=config)
+                self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+                self.assertEqual(p.stdout.splitlines(), [
+                    '/tmp/enroot-data/user-21001', '/run/enroot/user-21001',
+                    '/tmp/enroot-data/user-21002', '/run/enroot/user-21002',
+                ])
 
     def test_enroot_existing_or_shared_paths_are_refused(self):
         p = self.shell('''
