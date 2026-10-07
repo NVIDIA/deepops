@@ -1,5 +1,8 @@
 """Render deployment boundaries; never run Docker or contact a host."""
+import argparse
+import contextlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -17,14 +20,37 @@ sys.path.insert(0, str(ROOT / 'scripts/validation'))
 
 
 class DeploymentContractTests(unittest.TestCase):
-    def render(self):
+    def render(self, profile='qwen3'):
         path = ROLE / 'templates/compose.yml.j2'
         self.assertTrue(path.is_file(), 'private deployment template not implemented')
         defaults = yaml.safe_load((ROLE / 'defaults/main.yml').read_text())
-        defaults['playground_model'] = defaults['playground_models']['qwen3']
+        defaults['playground_model'] = defaults['playground_models'][profile]
         env = jinja2.Environment(undefined=jinja2.StrictUndefined)
         env.filters['to_json'] = json.dumps
         return yaml.safe_load(env.from_string(path.read_text()).render(**defaults))
+
+    def vllm_parser(self):
+        fixture = json.loads((Path(__file__).parent / 'fixtures/vllm-0.31.0-playground-args.json').read_text())
+        image = self.render()['services']['vllm']['image']
+        self.assertTrue(image.startswith('vllm/vllm-openai:v' + fixture['version'] + '@sha256:'))
+        parser = argparse.ArgumentParser(allow_abbrev=False)
+        types = {'str': str, 'int': int, 'float': float}
+        for flag, kind in fixture['arguments'].items():
+            parser.add_argument(flag, type=types[kind], required=True)
+        return parser
+
+    def test_every_rendered_vllm_argument_is_supported_by_pinned_version(self):
+        for profile in ['qwen3', 'gpt-oss']:
+            with self.subTest(profile=profile):
+                self.vllm_parser().parse_args(self.render(profile)['services']['vllm']['command'])
+
+    def test_pinned_argument_check_rejects_unknown_flags(self):
+        command = self.render()['services']['vllm']['command']
+        for flag in ['--disable-log-requests', '--unknown-option', '--max-model']:
+            with self.subTest(flag=flag), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit) as error:
+                    self.vllm_parser().parse_args(command + [flag])
+                self.assertEqual(error.exception.code, 2)
 
     def test_only_gateway_publishes_and_inference_has_no_egress(self):
         config = self.render()
@@ -44,6 +70,7 @@ class DeploymentContractTests(unittest.TestCase):
     def test_webui_is_authenticated_and_single_backend_only(self):
         env = self.render()['services']['webui']['environment']
         self.assertEqual(env['WEBUI_AUTH'], 'true')
+        self.assertEqual(env.get('BYPASS_MODEL_ACCESS_CONTROL', 'false'), 'false')
         self.assertEqual(env['OPENAI_API_BASE_URLS'], 'http://vllm:8000/v1')
         for name in ['ENABLE_SIGNUP', 'ENABLE_OLLAMA_API', 'ENABLE_WEB_SEARCH',
                      'ENABLE_IMAGE_GENERATION', 'ENABLE_DIRECT_CONNECTIONS', 'ENABLE_DIRECT_INTEGRATIONS',
@@ -51,6 +78,19 @@ class DeploymentContractTests(unittest.TestCase):
             self.assertEqual(env[name], 'false', name)
         for name in ['WEBUI_ADMIN_PASSWORD', 'OPENAI_API_KEYS', 'WEBUI_SECRET_KEY']:
             self.assertNotIn(name, env)
+
+    def test_deploy_bootstraps_selected_model_before_validation_and_gateway(self):
+        tasks = yaml.safe_load((ROLE / 'tasks/deploy.yml').read_text())
+        commands = [t['ansible.builtin.command']['argv'] for t in tasks
+                    if 'ansible.builtin.command' in t and isinstance(t['ansible.builtin.command']['argv'], list)]
+        bootstrap = next(c for c in commands if 'bootstrap' in c)
+        validate = next(c for c in commands if '/opt/playground/validate_playground.py' in c)
+        gateway = next(c for c in commands if c[-3:] == ['up', '-d', 'gateway'])
+        self.assertIn('--model', bootstrap)
+        self.assertEqual(bootstrap[bootstrap.index('--model') + 1], '{{ playground_model.served_name }}')
+        self.assertEqual(validate[validate.index('--user-file') + 1], '/run/playground/user.json')
+        self.assertLess(commands.index(bootstrap), commands.index(validate))
+        self.assertLess(commands.index(validate), commands.index(gateway))
 
     def test_launch_reads_private_files_not_compose_secrets(self):
         path = ROLE / 'files/playground_entrypoint.py'
@@ -70,11 +110,15 @@ class DeploymentContractTests(unittest.TestCase):
                 self.assertEqual(os.environ['OPENAI_API_KEYS'], 'fixture-key')
                 self.assertEqual(os.environ['WEBUI_ADMIN_PASSWORD'], 'fixture-password')
                 self.assertEqual(execute.call_args.args, ('bash', ['bash', '/app/backend/start.sh']))
-            with patch.object(module.os, 'execvp') as execute:
-                module.launch('vllm', ['--model', '/models/snapshot'], root)
+            with patch.dict(os.environ, {}, clear=True), patch.object(module.os, 'execvp') as execute:
+                command = self.render()['services']['vllm']['command']
+                module.launch('vllm', command, root)
                 argv = execute.call_args.args[1]
-                self.assertEqual(argv[argv.index('--api-key') + 1], 'fixture-key')
-                self.assertIn('/models/snapshot', argv)
+                self.assertEqual(os.environ.get('VLLM_API_KEY'), 'fixture-key')
+                self.assertNotIn('fixture-key', argv)
+                self.assertNotIn('--api-key', argv)
+                self.assertEqual(argv[:3], ['python3', '-m', 'vllm.entrypoints.openai.api_server'])
+                self.vllm_parser().parse_args(argv[3:])
 
 
 if __name__ == '__main__':

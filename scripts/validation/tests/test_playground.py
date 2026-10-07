@@ -137,6 +137,26 @@ class PlaygroundTests(unittest.TestCase):
         self.assertEqual([r[0] for r in requests], ['/api/v1/auths/signin', '/v1/models',
                                                   '/api/models', '/api/chat/completions'])
 
+    def test_ui_model_and_chat_use_the_ordinary_user_session(self):
+        with endpoint() as (url, requests):
+            result = self.run_check(url)
+        self.assertTrue(result['checks']['ui_model'])
+        self.assertTrue(result['checks']['chat'])
+        signins = [r for r in requests if r[0] == '/api/v1/auths/signin']
+        self.assertEqual(len(signins), 1)
+        self.assertEqual(signins[0][1]['email'], 'reader@example.org')
+        for path in ['/api/models', '/api/chat/completions']:
+            calls = [r for r in requests if r[0] == path]
+            self.assertEqual(len(calls), 1)
+            self.assertEqual(calls[0][2], 'Bearer test-session')
+        # An admin login must fail before either user-level check can run.
+        with endpoint('admin') as (url, requests):
+            result = self.run_check(url)
+        self.assertFalse(result['ok'])
+        self.assertFalse(result['checks']['ui_model'])
+        self.assertFalse(result['checks']['chat'])
+        self.assertEqual([r[0] for r in requests], ['/api/v1/auths/signin'])
+
     def test_negative_controls_fail_closed(self):
         for mode in ['cloud', 'extra-ui', 'extra-backend', 'wrong-root', 'empty', 'reasoning-only',
                      'wrong-reply-model', 'health-only', 'admin', 'bad-token', 'malformed',

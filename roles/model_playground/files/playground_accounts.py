@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import re
 import secrets
 import sys
 
@@ -38,21 +39,45 @@ def initialize(directory, admin_email, user_email, user_name):
             raise CheckError('existing account identity differs; cleanup before changing accounts')
 
 
-def bootstrap(directory, client, base):
+def bootstrap(directory, client, base, model):
+    if not isinstance(model, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,127}', model):
+        raise CheckError('provide a safe served model name')
     directory = Path(directory)
     admin = json.loads(read_secret(directory / 'admin.json'))
     user = json.loads(read_secret(directory / 'user.json'))
     token = login(client, base, admin, 'admin')
     try:
-        login(client, base, user, 'user')
-        return
+        user_token = login(client, base, user, 'user')
     except CheckError as exc:
         # Wrong credentials/missing account only. Never create after network,
         # TLS, malformed-response or role failures. Duplicate email fails closed.
         if str(exc) not in ('endpoint returned HTTP 400', 'endpoint returned HTTP 401'):
             raise
-    client.request(base, '/api/v1/auths/add', dict(user, role='user'), token=token)
-    login(client, base, user, 'user')
+        client.request(base, '/api/v1/auths/add', dict(user, role='user'), token=token)
+        user_token = login(client, base, user, 'user')
+
+    # Resolve the principal from the ordinary user's authenticated session,
+    # not from a display name or the administrator's identity.
+    identity = client.request(base, '/api/v1/auths/', token=user_token)
+    if (not isinstance(identity, dict) or identity.get('role') != 'user'
+            or not isinstance(identity.get('email'), str)
+            or identity['email'].casefold() != user['email'].casefold()
+            or not isinstance(identity.get('id'), str)
+            or not re.fullmatch(r'[A-Za-z0-9_-]+', identity['id'])):
+        raise CheckError('could not resolve the named ordinary user')
+    grant = {'principal_type': 'user', 'principal_id': identity['id'], 'permission': 'read'}
+    # v0.11.4 upserts a missing base-model record here for admins. Reconcile on
+    # EVERY run, including pre-existing accounts and retries after partial setup.
+    # Replace grants with only this user: no public/wildcard or write access.
+    registered = client.request(base, '/api/v1/models/model/access/update',
+                                {'id': model, 'access_grants': [grant]}, token=token)
+    if (not isinstance(registered, dict) or registered.get('id') != model
+            or registered.get('base_model_id') is not None or registered.get('is_active') is not True
+            or not isinstance(registered.get('access_grants'), list)
+            or len(registered['access_grants']) != 1
+            or not isinstance(registered['access_grants'][0], dict)
+            or any(registered['access_grants'][0].get(k) != v for k, v in grant.items())):
+        raise CheckError('model read access was not confirmed')
 
 
 def main():
@@ -62,6 +87,7 @@ def main():
     parser.add_argument('--admin-email')
     parser.add_argument('--user-email')
     parser.add_argument('--user-name')
+    parser.add_argument('--model', help='Exact local served model name (required for bootstrap)')
     args = parser.parse_args()
     try:
         if args.action == 'initialize':
@@ -69,7 +95,7 @@ def main():
                 raise CheckError('provide two distinct accounts and a user name')
             initialize(args.directory, args.admin_email, args.user_email, args.user_name)
         else:
-            bootstrap(args.directory, Client(timeout=15), 'http://127.0.0.1:8080')
+            bootstrap(args.directory, Client(timeout=15), 'http://127.0.0.1:8080', args.model)
     except (CheckError, OSError, ValueError, TypeError):
         # Do not expose passwords, JWTs, response bodies, or supplied identities.
         print('Account provisioning failed; check private files and service readiness.', file=sys.stderr)

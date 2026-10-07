@@ -245,9 +245,25 @@
   changed_when: true
   no_log: true
 
-- name: Provision the named user before publishing any listener
+- name: Provision the named user and local model read access before publishing any listener
   ansible.builtin.command:
-    argv: [docker, compose, --project-name, deepops-playground, --file, /var/lib/deepops/model-playground/compose.yml, exec, -T, webui, python3, /opt/playground/playground_accounts.py, bootstrap, --directory, /run/playground]
+    argv:
+      - docker
+      - compose
+      - --project-name
+      - deepops-playground
+      - --file
+      - /var/lib/deepops/model-playground/compose.yml
+      - exec
+      - -T
+      - webui
+      - python3
+      - /opt/playground/playground_accounts.py
+      - bootstrap
+      - --directory
+      - /run/playground
+      - --model
+      - "{{ playground_model.served_name }}"
   register: playground_bootstrap
   until: playground_bootstrap.rc == 0
   retries: 60
