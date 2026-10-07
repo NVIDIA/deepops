@@ -1,0 +1,102 @@
+---
+- name: Require an explicit single-host playground operation
+  ansible.builtin.assert:
+    that:
+      - playground_enabled | bool
+      - ansible_play_hosts_all | length == 1
+      - ansible_distribution == 'Ubuntu'
+      - ansible_distribution_version is version('22.04', '>=')
+      - ansible_architecture == 'x86_64'
+      - not ('restart' in ansible_run_tags and 'cleanup' in ansible_run_tags)
+      - not ('deploy' in ansible_run_tags and 'cleanup' in ansible_run_tags)
+    fail_msg: Explicitly enable one Ubuntu x86_64 host; deploy, restart and cleanup are separate operations.
+  tags: always
+
+# Fixed ownership boundary: no caller-supplied path is ever recursively removed.
+- name: Inspect the parent ownership boundary
+  ansible.builtin.stat:
+    path: /var/lib/deepops
+    follow: false
+  register: playground_parent_stat
+  tags: always
+
+- name: Reject a redirected parent boundary
+  ansible.builtin.assert:
+    that:
+      - >-
+        not playground_parent_stat.stat.exists or
+        (playground_parent_stat.stat.isdir | default(false) and
+        not playground_parent_stat.stat.islnk | default(false) and
+        playground_parent_stat.stat.uid == 0)
+  tags: always
+
+- name: Inspect the dedicated playground ownership boundary
+  ansible.builtin.stat:
+    path: /var/lib/deepops/model-playground
+    follow: false
+  register: playground_root_stat
+  tags: always
+
+- name: Reject a redirected ownership boundary
+  ansible.builtin.assert:
+    that:
+      - >-
+        not playground_root_stat.stat.exists or
+        (playground_root_stat.stat.isdir | default(false) and
+        not playground_root_stat.stat.islnk | default(false) and
+        playground_root_stat.stat.uid == 0)
+  tags: always
+
+- name: Deploy the playground
+  ansible.builtin.import_tasks: deploy.yml
+  when: "'restart' not in ansible_run_tags and 'cleanup' not in ansible_run_tags"
+  tags: deploy
+
+- name: Restart the playground without changing configuration or downloading models
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - --project-name
+      - deepops-playground
+      - --file
+      - /var/lib/deepops/model-playground/compose.yml
+      - restart
+  changed_when: true
+  when: "'restart' in ansible_run_tags"
+  no_log: true
+  tags: [never, restart]
+
+- name: Inspect the saved container definition for cleanup
+  ansible.builtin.stat:
+    path: /var/lib/deepops/model-playground/compose.yml
+    follow: false
+  register: playground_compose_stat
+  when: "'cleanup' in ansible_run_tags"
+  tags: [never, cleanup]
+
+- name: Remove playground containers and networks
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - --project-name
+      - deepops-playground
+      - --file
+      - /var/lib/deepops/model-playground/compose.yml
+      - down
+      - --volumes
+      - --remove-orphans
+  changed_when: true
+  when:
+    - "'cleanup' in ansible_run_tags"
+    - playground_compose_stat.stat.exists
+  no_log: true
+  tags: [never, cleanup]
+
+- name: Remove owned model cache, UI data, credentials and configuration
+  ansible.builtin.file:
+    path: /var/lib/deepops/model-playground
+    state: absent
+  when: "'cleanup' in ansible_run_tags"
+  tags: [never, cleanup]

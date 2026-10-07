@@ -1,0 +1,35 @@
+worker_processes auto;
+error_log /dev/null crit;
+pid /var/run/nginx.pid;
+events { worker_connections 1024; }
+http {
+    access_log off;
+    server_tokens off;
+    map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+    }
+    server {
+        listen 443 ssl;
+        server_name {{ playground_tls_name }};
+        ssl_certificate /etc/playground-tls/cert.pem;
+        ssl_certificate_key /etc/playground-tls/key.pem;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        client_max_body_size 1m;
+        add_header X-Content-Type-Options nosniff always;
+        add_header Referrer-Policy no-referrer always;
+        add_header Content-Security-Policy "default-src 'self'; connect-src 'self'; img-src 'self' data: blob:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; worker-src 'self' blob:; frame-ancestors 'none'" always;
+        location = /api/v1/auths/signup { return 403; }
+        location / {
+            proxy_pass http://webui:8080;
+            proxy_http_version 1.1;
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header X-Forwarded-For $remote_addr;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+            proxy_read_timeout 180s;
+            proxy_buffering off;
+        }
+    }
+}
