@@ -1,0 +1,22 @@
+{
+  "version": "0.31.0",
+  "description": "Reviewed subset of the tagged API-server CLI. Every playground option must be in this list; additions require checking the tagged source, not copying the template. Each current option takes one value (served-model-name also accepts multiple upstream).",
+  "sources": [
+    "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/engine/arg_utils.py",
+    "https://github.com/vllm-project/vllm/blob/v0.31.0/vllm/entrypoints/launchers/cli_args.py"
+  ],
+  "source_sha256": {
+    "vllm/engine/arg_utils.py": "95be1adb96f55933f6a52260c8cb2181d04707401ca21d97c33108c5ab58f3ac",
+    "vllm/entrypoints/launchers/cli_args.py": "c26330deb1bffb27b4ddbdc508a02ffd06efd5b201dba7d077d288e3b6ec2a8e"
+  },
+  "arguments": {
+    "--model": "str",
+    "--served-model-name": "str",
+    "--host": "str",
+    "--port": "int",
+    "--tensor-parallel-size": "int",
+    "--max-model-len": "int",
+    "--max-num-seqs": "int",
+    "--gpu-memory-utilization": "float"
+  }
+}

@@ -12,8 +12,10 @@ def launch(service, args, directory=Path('/run/playground')):
     directory = Path(directory)
     key = read_secret(directory / 'api-key')
     if service == 'vllm':
-        os.execvp('python3', ['python3', '-m', 'vllm.entrypoints.openai.api_server',
-                              *args, '--api-key', key])
+        # v0.31.0 authentication middleware reads this when --api-key is absent.
+        # Load at exec time: never put the key in argv or Compose metadata.
+        os.environ['VLLM_API_KEY'] = key
+        os.execvp('python3', ['python3', '-m', 'vllm.entrypoints.openai.api_server', *args])
     elif service == 'webui':
         admin = json.loads(read_secret(directory / 'admin.json'))
         os.environ.update(OPENAI_API_KEYS=key,

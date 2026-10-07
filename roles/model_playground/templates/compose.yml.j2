@@ -47,7 +47,6 @@ services:
       - "4"
       - --gpu-memory-utilization
       - "0.85"
-      - --disable-log-requests
   webui:
     image: {{ playground_webui_image | to_json }}
     user: "0:0"
