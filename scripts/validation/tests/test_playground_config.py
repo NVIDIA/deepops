@@ -6,6 +6,9 @@ import io
 import json
 import os
 from pathlib import Path
+import re
+import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -66,6 +69,45 @@ class DeploymentContractTests(unittest.TestCase):
         for service in services.values():
             self.assertEqual(service['restart'], 'unless-stopped')
             self.assertIn('@sha256:', service['image'])
+
+    def tls_san(self, name, bind='127.0.0.1'):
+        tasks = yaml.safe_load((ROLE / 'tasks/deploy.yml').read_text())
+        task = next(t for t in tasks if t.get('name') == 'Compute certificate identities')
+        env = jinja2.Environment(undefined=jinja2.StrictUndefined)
+        env.tests['match'] = lambda value, pattern: re.match(pattern, value) is not None
+        expression = task['ansible.builtin.set_fact']['playground_tls_san']
+        return env.from_string(expression).render(
+            playground_tls_name=name, playground_bind_address=bind,
+            **task['vars']).strip()
+
+    def test_certificate_identities_use_ip_sans_for_addresses(self):
+        cases = {
+            ('localhost', '127.0.0.1'): 'DNS:localhost,IP:127.0.0.1',
+            ('playground.example.org', '10.0.0.5'): 'DNS:playground.example.org,IP:10.0.0.5,DNS:localhost,IP:127.0.0.1',
+            ('10.0.0.5', '10.0.0.5'): 'IP:10.0.0.5,DNS:localhost,IP:127.0.0.1',
+            ('10.0.0.5', '127.0.0.1'): 'IP:10.0.0.5,DNS:localhost,IP:127.0.0.1',
+            ('10.0.0.256', '127.0.0.1'): 'DNS:10.0.0.256,DNS:localhost,IP:127.0.0.1',
+        }
+        for (name, bind), expected in cases.items():
+            with self.subTest(name=name, bind=bind):
+                self.assertEqual(self.tls_san(name, bind), expected)
+        argv = next(t['ansible.builtin.command']['argv'] for t in yaml.safe_load((ROLE / 'tasks/deploy.yml').read_text())
+                    if t.get('name') == 'Generate a private self-signed HTTPS certificate')
+        self.assertIn('subjectAltName={{ playground_tls_san }}', argv)
+
+    @unittest.skipUnless(shutil.which('openssl'), 'openssl not installed')
+    def test_private_ip_certificate_verifies_by_ip(self):
+        san = self.tls_san('10.0.0.5', '10.0.0.5')
+        with tempfile.TemporaryDirectory() as tmp:
+            key, cert = Path(tmp) / 'key.pem', Path(tmp) / 'cert.pem'
+            subprocess.run(['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1',
+                            '-keyout', str(key), '-out', str(cert), '-subj', '/CN=10.0.0.5',
+                            '-addext', 'subjectAltName=' + san], check=True, capture_output=True)
+            for ip, ok in [('10.0.0.5', True), ('127.0.0.1', True), ('10.0.0.6', False)]:
+                with self.subTest(ip=ip):
+                    result = subprocess.run(['openssl', 'verify', '-CAfile', str(cert), '-verify_ip', ip, str(cert)],
+                                            capture_output=True)
+                    self.assertEqual(result.returncode == 0, ok)
 
     def test_webui_is_authenticated_and_single_backend_only(self):
         env = self.render()['services']['webui']['environment']

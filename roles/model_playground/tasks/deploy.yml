@@ -187,6 +187,17 @@
   changed_when: false
   no_log: true
 
+- name: Compute certificate identities
+  # An IPv4 certificate name must be an IP SAN; a DNS SAN holding an address
+  # does not verify. A private bind address is also added as an IP SAN.
+  ansible.builtin.set_fact:
+    playground_tls_san: >-
+      {{ ([(('IP:' if playground_tls_name is match(playground_ipv4_pattern) else 'DNS:') ~ playground_tls_name)]
+          + ([('IP:' ~ playground_bind_address)] if playground_bind_address not in ['127.0.0.1', '0.0.0.0'] else [])
+          + ['DNS:localhost', 'IP:127.0.0.1']) | unique | join(',') }}
+  vars:
+    playground_ipv4_pattern: '^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$'
+
 - name: Generate a private self-signed HTTPS certificate
   ansible.builtin.command:
     argv:
@@ -205,7 +216,7 @@
       - -subj
       - "/CN={{ playground_tls_name }}"
       - -addext
-      - "subjectAltName=DNS:{{ playground_tls_name }},DNS:localhost,IP:127.0.0.1"
+      - "subjectAltName={{ playground_tls_san }}"
     creates: /var/lib/deepops/model-playground/tls/cert.pem
   no_log: true
 

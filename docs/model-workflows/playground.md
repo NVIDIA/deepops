@@ -161,7 +161,8 @@ requires a deliberate certificate replacement (or cleanup/redeploy).
 
 For access through a private network, change only the variables:
 `playground_bind_address` to the host's private IPv4 address and
-`playground_tls_name` to its matching DNS name. Keep access limited with site
+`playground_tls_name` to its matching DNS name or the same private IPv4
+address (an address becomes an IP certificate identity). Keep access limited with site
 firewall/network controls; this role does not configure them. Do not bind a
 public address. The bind setting is not an access-control policy. Set the
 certificate name before first deployment; changing it does not silently rotate
