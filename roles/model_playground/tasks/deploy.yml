@@ -154,7 +154,7 @@
     argv: >-
       {{ ['env', '-i', 'HOME=/var/lib/deepops/model-playground/hf-home', 'PATH=/usr/bin:/bin',
           'HF_HOME=/var/lib/deepops/model-playground/hf-home',
-          'HF_TOKEN_PATH=/var/lib/deepops/model-playground/hf-home/no-token',
+          'HF_TOKEN_PATH=/var/lib/deepops/model-playground/hf-home/no-auth',
           'HF_HUB_DISABLE_IMPLICIT_TOKEN=1', 'HF_HUB_DISABLE_TELEMETRY=1',
           '/var/lib/deepops/model-playground/venv/bin/hf', 'download', playground_model.repo,
           '--revision', playground_model.revision,

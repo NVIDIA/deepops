@@ -83,10 +83,10 @@ class DeploymentContractTests(unittest.TestCase):
     def test_certificate_identities_use_ip_sans_for_addresses(self):
         cases = {
             ('localhost', '127.0.0.1'): 'DNS:localhost,IP:127.0.0.1',
-            ('playground.example.org', '10.0.0.5'): 'DNS:playground.example.org,IP:10.0.0.5,DNS:localhost,IP:127.0.0.1',
-            ('10.0.0.5', '10.0.0.5'): 'IP:10.0.0.5,DNS:localhost,IP:127.0.0.1',
-            ('10.0.0.5', '127.0.0.1'): 'IP:10.0.0.5,DNS:localhost,IP:127.0.0.1',
-            ('10.0.0.256', '127.0.0.1'): 'DNS:10.0.0.256,DNS:localhost,IP:127.0.0.1',
+            ('playground.example.org', '192.0.2.5'): 'DNS:playground.example.org,IP:192.0.2.5,DNS:localhost,IP:127.0.0.1',
+            ('192.0.2.5', '192.0.2.5'): 'IP:192.0.2.5,DNS:localhost,IP:127.0.0.1',
+            ('192.0.2.5', '127.0.0.1'): 'IP:192.0.2.5,DNS:localhost,IP:127.0.0.1',
+            ('192.0.2.256', '127.0.0.1'): 'DNS:192.0.2.256,DNS:localhost,IP:127.0.0.1',
         }
         for (name, bind), expected in cases.items():
             with self.subTest(name=name, bind=bind):
@@ -96,14 +96,14 @@ class DeploymentContractTests(unittest.TestCase):
         self.assertIn('subjectAltName={{ playground_tls_san }}', argv)
 
     @unittest.skipUnless(shutil.which('openssl'), 'openssl not installed')
-    def test_private_ip_certificate_verifies_by_ip(self):
-        san = self.tls_san('10.0.0.5', '10.0.0.5')
+    def test_ip_certificate_verifies_by_ip(self):
+        san = self.tls_san('192.0.2.5', '192.0.2.5')
         with tempfile.TemporaryDirectory() as tmp:
             key, cert = Path(tmp) / 'key.pem', Path(tmp) / 'cert.pem'
             subprocess.run(['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1',
-                            '-keyout', str(key), '-out', str(cert), '-subj', '/CN=10.0.0.5',
+                            '-keyout', str(key), '-out', str(cert), '-subj', '/CN=192.0.2.5',
                             '-addext', 'subjectAltName=' + san], check=True, capture_output=True)
-            for ip, ok in [('10.0.0.5', True), ('127.0.0.1', True), ('10.0.0.6', False)]:
+            for ip, ok in [('192.0.2.5', True), ('127.0.0.1', True), ('198.51.100.6', False)]:
                 with self.subTest(ip=ip):
                     result = subprocess.run(['openssl', 'verify', '-CAfile', str(cert), '-verify_ip', ip, str(cert)],
                                             capture_output=True)
@@ -185,14 +185,14 @@ class DeploymentContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             for name, value in [('api-key', 'fixture-key'), ('webui-key', 'fixture-session'),
-                                ('admin.json', json.dumps({'email': 'admin@example.org', 'password': 'fixture-password'}))]:
+                                ('admin.json', json.dumps({'email': 'admin@example.org', 'password': 'fixture-passphrase'}))]:
                 p = root / name
                 p.write_text(value)
                 p.chmod(0o600)
             with patch.dict(os.environ, {}, clear=True), patch.object(module.os, 'execvp') as execute:
                 module.launch('webui', [], root)
                 self.assertEqual(os.environ['OPENAI_API_KEYS'], 'fixture-key')
-                self.assertEqual(os.environ['WEBUI_ADMIN_PASSWORD'], 'fixture-password')
+                self.assertEqual(os.environ['WEBUI_ADMIN_PASSWORD'], 'fixture-passphrase')
                 self.assertEqual(execute.call_args.args, ('bash', ['bash', '/app/backend/start.sh']))
             with patch.dict(os.environ, {}, clear=True), patch.object(module.os, 'execvp') as execute:
                 command = self.render()['services']['vllm']['command']

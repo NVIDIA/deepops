@@ -14,11 +14,11 @@ from validate_playground import CheckError, Client, login, read_secret
 def initialize(directory, admin_email, user_email, user_name):
     directory = Path(directory)
     if directory.is_symlink():
-        raise CheckError('secret directory must not be a symlink')
+        raise CheckError('private directory must not be a symlink')
     directory.mkdir(mode=0o700, parents=False, exist_ok=True)
     info = directory.stat()
     if info.st_uid != os.geteuid() or info.st_mode & 0o077:
-        raise CheckError('secret directory must be owner-only')
+        raise CheckError('private directory must be owner-only')
     values = {
         'admin.json': json.dumps({'email': admin_email, 'name': 'Administrator', 'password': secrets.token_urlsafe(36)}),
         'user.json': json.dumps({'email': user_email, 'name': user_name, 'password': secrets.token_urlsafe(36)}),
@@ -45,7 +45,7 @@ def bootstrap(directory, client, base, model):
     directory = Path(directory)
     admin = json.loads(read_secret(directory / 'admin.json'))
     user = json.loads(read_secret(directory / 'user.json'))
-    token = login(client, base, admin, 'admin')
+    admin_session = login(client, base, admin, 'admin')
     try:
         user_token = login(client, base, user, 'user')
     except CheckError as exc:
@@ -53,12 +53,12 @@ def bootstrap(directory, client, base, model):
         # TLS, malformed-response or role failures. Duplicate email fails closed.
         if str(exc) not in ('endpoint returned HTTP 400', 'endpoint returned HTTP 401'):
             raise
-        client.request(base, '/api/v1/auths/add', dict(user, role='user'), token=token)
+        client.request(base, '/api/v1/auths/add', dict(user, role='user'), bearer=admin_session)
         user_token = login(client, base, user, 'user')
 
     # Resolve the principal from the ordinary user's authenticated session,
     # not from a display name or the administrator's identity.
-    identity = client.request(base, '/api/v1/auths/', token=user_token)
+    identity = client.request(base, '/api/v1/auths/', bearer=user_token)
     if (not isinstance(identity, dict) or identity.get('role') != 'user'
             or not isinstance(identity.get('email'), str)
             or identity['email'].casefold() != user['email'].casefold()
@@ -70,7 +70,7 @@ def bootstrap(directory, client, base, model):
     # EVERY run, including pre-existing accounts and retries after partial setup.
     # Replace grants with only this user: no public/wildcard or write access.
     registered = client.request(base, '/api/v1/models/model/access/update',
-                                {'id': model, 'access_grants': [grant]}, token=token)
+                                {'id': model, 'access_grants': [grant]}, bearer=admin_session)
     confirm_model_read_access(registered, model, grant)
 
     # v0.11.4 injects native builtin tools for browser sessions by default,
@@ -83,7 +83,7 @@ def bootstrap(directory, client, base, model):
     configured = client.request(base, '/api/v1/models/model/update', {
         'id': model, 'base_model_id': None, 'name': model, 'is_active': True,
         'params': {}, 'meta': meta, 'access_grants': [grant],
-    }, token=token)
+    }, bearer=admin_session)
     confirm_model_read_access(configured, model, grant)
     actual_meta = configured.get('meta')
     if (configured.get('params') != {} or not isinstance(actual_meta, dict)

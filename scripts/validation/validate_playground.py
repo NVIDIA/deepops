@@ -33,13 +33,13 @@ def read_secret(path):
             info = os.fstat(stream.fileno())
             if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid()
                     or info.st_mode & 0o077 or info.st_size > 16384):
-                raise CheckError('secret files must be owner-only regular files owned by this account')
+                raise CheckError('private files must be owner-only regular files owned by this account')
             value = stream.read(16385).strip()
             if not value:
-                raise CheckError('secret file is empty')
+                raise CheckError('private file is empty')
             return value
     except (OSError, UnicodeError):
-        raise CheckError('secret file could not be read safely') from None
+        raise CheckError('private file could not be read safely') from None
 
 
 def origin(value):
@@ -68,11 +68,11 @@ class Client:
         self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect(),
                                                   urllib.request.HTTPSHandler(context=context))
 
-    def request(self, base, path, payload=None, token=None):
+    def request(self, base, path, payload=None, bearer=None):
         data = None if payload is None else json.dumps(payload).encode()
         headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-        if token:
-            headers['Authorization'] = 'Bearer ' + token
+        if bearer:
+            headers['Authorization'] = 'Bearer ' + bearer
         req = urllib.request.Request(base + path, data=data, headers=headers)
         try:
             deadline = time.monotonic() + self.timeout
@@ -103,7 +103,7 @@ class Client:
 def login(client, base, credentials, role):
     if not isinstance(credentials, dict) or not all(isinstance(credentials.get(k), str) and credentials[k]
                                                    for k in ('email', 'password')):
-        raise CheckError('credentials require email and password')
+        raise CheckError('login requires an email address and passphrase')
     result = client.request(base, '/api/v1/auths/signin',
                             {k: credentials[k] for k in ('email', 'password')})
     if (not isinstance(result, dict) or result.get('role') != role
@@ -139,13 +139,13 @@ def validate(args):
         if any(c.isspace() for c in key):
             raise CheckError('invalid API key file')
         stage = 'login'
-        token = login(client, ui, credentials, 'user')
+        session = login(client, ui, credentials, 'user')
         result['checks'][stage] = True
         stage = 'backend_model'
-        only_model(client.request(backend, '/v1/models', token=key), args.model, snapshot)
+        only_model(client.request(backend, '/v1/models', bearer=key), args.model, snapshot)
         result['checks'][stage] = True
         stage = 'ui_model'
-        only_model(client.request(ui, '/api/models', token=token), args.model)
+        only_model(client.request(ui, '/api/models', bearer=session), args.model)
         result['checks'][stage] = True
         stage = 'chat'
         reply = client.request(ui, '/api/chat/completions', {
@@ -156,7 +156,7 @@ def validate(args):
             # no stored chat/background task is created. Do not force legacy
             # calling or tool_choice=none: that would mask a broken UI policy.
             'session_id': 'playground-validator', 'features': {}, 'tool_servers': [],
-        }, token=token)
+        }, bearer=session)
         if not isinstance(reply, dict) or reply.get('error') or reply.get('model') != args.model:
             raise CheckError('chat reply must identify the expected local model')
         choices = reply.get('choices')
@@ -180,7 +180,7 @@ def main():
     parser.add_argument('--model', required=True)
     parser.add_argument('--repo-id', required=True)
     parser.add_argument('--revision', required=True)
-    parser.add_argument('--user-file', required=True, help='Owner-only JSON with email and password')
+    parser.add_argument('--user-file', required=True, help='Owner-only Open WebUI sign-in JSON (email address and passphrase)')
     parser.add_argument('--api-key-file', required=True)
     parser.add_argument('--ca-file', help='CA for HTTPS; TLS verification is never disabled')
     parser.add_argument('--timeout', type=float, default=120)

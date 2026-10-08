@@ -19,9 +19,10 @@ playbooks. Offline tests are not evidence of a successful GPU deployment.
 - Controller: normal DeepOps Ansible setup and an explicitly reviewed inventory.
   The role installs only `python3-venv` and `openssl` host prerequisites.
 - Initial installation needs outbound access for Ubuntu packages, PyPI, public
-  container registries and public, ungated model files. **Do not supply an HF
-  token.** Model downloads run in a private venv using `huggingface_hub==2.1.1`,
-  with an empty inherited environment and implicit token use disabled.
+  container registries and public, ungated model files. **Do not supply HF
+  authentication credentials.** Model downloads run in a private venv using
+  `huggingface_hub==2.1.1`, with an empty inherited environment and implicit
+  authentication disabled.
 - All owned files live under `/var/lib/deepops/model-playground`, root-only. Do
   not put other workloads, mount points, symlinks or valuable data there.
   Cleanup deletes this entire tree, including chats and model weights.
@@ -79,7 +80,7 @@ Use a dedicated inventory group with one host; do not use `all`:
 playground ansible_host=gpu.example.org ansible_user=ubuntu
 ```
 
-Put non-secret overrides in the inventory's group variables:
+Put only non-sensitive overrides in the inventory's group variables:
 
 ```yaml
 playground_enabled: true
@@ -137,7 +138,7 @@ The v0.31.0 authentication middleware supports this environment variable when
 pass the unsupported `--disable-log-requests` flag.
 
 Container logging is deliberately disabled: startup arguments, authentication
-responses and chat text must not enter Docker logs. Secret-reading Ansible tasks
+responses and chat text must not enter Docker logs. Ansible tasks that read private files
 use `no_log`; passwords and API keys are not templated into Compose or returned
 to the controller. Runtime processes necessarily hold secrets; a root/Docker
 administrator can inspect them. This is not multi-tenant isolation against host
@@ -200,8 +201,8 @@ chmod 600 "$HOME/.local/share/model-playground-login/user.json"
 ```
 
 This assumes approved noninteractive sudo; otherwise use the site's approved
-private retrieval procedure. Open the private file with a trusted password
-manager/local editor, enter credentials only in the verified HTTPS login page,
+private retrieval procedure. Open the private file with a trusted local editor
+or credentials manager, enter credentials only in the verified HTTPS login page,
 and remove the local copy when no longer needed. Do not paste credentials into
 chat, tickets, commands or shared documents. Do not retrieve the backend API key
 for normal browser use.
@@ -233,7 +234,7 @@ or suppress tools in the request to hide a broken policy. It omits `chat_id`
 and uses `stream: false` to get a synchronous result without saving a chat.
 Health alone, reasoning-only content, tool-call/error replies (including errors
 inside an HTTP 200 response), extra/cloud models and wrong snapshots fail.
-JSON never includes the reply, password, session token or API key. The
+JSON never includes replies, login passphrases, session bearers or API keys. The
 validator supports verified HTTPS via `--webui-url` and `--ca-file` where that
 endpoint and the private backend are both reachable; it never disables TLS,
 follows redirects or inherits proxy routing.
@@ -246,7 +247,7 @@ minutes; inference retries are bounded. A failed initial validation leaves the
 HTTPS listener closed.
 
 ```bash
-# Restart only: no model download, secret rotation, or driver work.
+# Restart only: no model download, changes to authentication keys, or driver work.
 ansible-playbook -i config/inventory -l playground playbooks/model-playground.yml --tags restart
 
 # Destructive: deletes all playground containers, networks, volumes/bind data,
@@ -285,7 +286,7 @@ published ports, read-only mounts, offline settings, auth and restart policy.
 A source-linked v0.31.0 argument allow-list checks every rendered vLLM option for
 both profiles and rejects unknown flags. Account tests require model registration
 and the named-user read grant on fresh setup and reruns; validator tests require
-the ordinary-user session for both model listing and chat, never an admin token.
+the ordinary-user session for both model listing and chat, never an admin session.
 A UI-session fake rejects the browser-only auto-tool request when parser flags
 are absent; removing the session marker would make that negative test fail.
 Account tests require chat-only capabilities to be restored on reruns and

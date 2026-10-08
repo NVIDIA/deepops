@@ -41,11 +41,11 @@ def endpoint(mode='good'):
                 models.append({'id': 'cloud-model', 'root': 'remote'})
             if self.path == '/api/v1/auths/signin':
                 value = {'token': 'test-session', 'role': 'user'}
-                if payload != {'email': 'reader@example.org', 'password': 'test-password'}:
+                if payload != {'email': 'reader@example.org', 'password': 'test-passphrase'}:
                     status = 401
                 if mode == 'admin':
                     value['role'] = 'admin'
-                if mode == 'bad-token':
+                if mode == 'bad-session':
                     value['token'] = ''
             elif self.path == '/v1/models':
                 value = {'data': models}
@@ -91,7 +91,7 @@ def endpoint(mode='good'):
                 self.end_headers()
                 return
             if mode == 'echo-error':
-                status, value = 500, {'error': 'test-password test-key test-session'}
+                status, value = 500, {'error': 'test-passphrase test-key test-session'}
             data = (b'x' * (1024 * 1024 + 1) if mode == 'oversized' else
                     b'not-json' if mode == 'malformed' else json.dumps(value).encode())
             self.send_response(status)
@@ -118,7 +118,7 @@ class PlaygroundTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.user = Path(self.tmp.name) / 'user.json'
-        self.user.write_text(json.dumps({'email': 'reader@example.org', 'password': 'test-password'}))
+        self.user.write_text(json.dumps({'email': 'reader@example.org', 'password': 'test-passphrase'}))
         self.user.chmod(0o600)
         self.key = Path(self.tmp.name) / 'api-key'
         self.key.write_text('test-key')
@@ -134,8 +134,8 @@ class PlaygroundTests(unittest.TestCase):
         self.assertIn(run.returncode, (0, 1))
         result = json.loads(run.stdout)
         self.assertEqual(result['ok'], run.returncode == 0)
-        for secret in ['test-key', 'test-password', 'test-session', 'A small reply']:
-            self.assertNotIn(secret, run.stdout)
+        for private_value in ['test-key', 'test-passphrase', 'test-session', 'A small reply']:
+            self.assertNotIn(private_value, run.stdout)
         return result
 
     def test_chat_and_exact_model_identity_required(self):
@@ -188,7 +188,7 @@ class PlaygroundTests(unittest.TestCase):
 
     def test_negative_controls_fail_closed(self):
         for mode in ['cloud', 'extra-ui', 'extra-backend', 'wrong-root', 'empty', 'reasoning-only',
-                     'wrong-reply-model', 'health-only', 'admin', 'bad-token', 'malformed',
+                     'wrong-reply-model', 'health-only', 'admin', 'bad-session', 'malformed',
                      'redirect', 'echo-error', 'oversized']:
             with self.subTest(mode=mode), endpoint(mode) as (url, _):
                 self.assertFalse(self.run_check(url)['ok'])

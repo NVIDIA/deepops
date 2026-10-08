@@ -29,7 +29,7 @@ SHA-256 hashes are in the fixture.
 
 - [Authentication routes](https://github.com/open-webui/open-webui/blob/v0.11.4/backend/open_webui/routers/auths.py):
   `GET /api/v1/auths/` returns the authenticated session's `id`, `email`, `role`.
-  Bootstrap checks those fields using the ordinary user's token.
+  Bootstrap checks those fields using the ordinary user's session.
 - [Model routes](https://github.com/open-webui/open-webui/blob/v0.11.4/backend/open_webui/routers/models.py):
   `ModelAccessGrantsForm` accepts `id` and `access_grants`.
   `POST /api/v1/models/model/access/update` creates a missing base-model record
@@ -79,6 +79,6 @@ not execution of upstream middleware. An actual browser test is still required.
 The stateful account fixture starts with no registered model, so the ordinary
 user sees none until bootstrap sends a valid admin grant. It covers both fresh
 accounts and existing accounts/retries. The HTTP validator fixture separately
-requires the ordinary-user token for model discovery and chat and rejects an
+requires the ordinary-user session for model discovery and chat and rejects an
 admin login before either check. A real server/browser run remains necessary;
 these contracts are not a claim of a deployed Open WebUI integration test.

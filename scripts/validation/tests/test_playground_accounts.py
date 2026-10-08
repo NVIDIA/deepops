@@ -30,22 +30,22 @@ class WebUIContract:
         self.response_changes = {}
         self.policy_response_changes = {}
 
-    def request(self, base, path, payload=None, token=None):
-        self.calls.append((path, payload, token))
+    def request(self, base, path, payload=None, bearer=None):
+        self.calls.append((path, payload, bearer))
         if path == '/api/v1/auths/signin':
             if payload['email'] == 'admin@example.org':
-                return {'token': 'admin-token', 'role': 'admin'}
+                return {'token': 'admin-bearer', 'role': 'admin'}
             if not self.user_exists:
                 raise CheckError('endpoint returned HTTP 400')
-            return {'token': 'user-token', 'role': 'user'}
-        if path == '/api/v1/auths/add' and token == 'admin-token':
+            return {'token': 'user-bearer', 'role': 'user'}
+        if path == '/api/v1/auths/add' and bearer == 'admin-bearer':
             if self.user_exists or payload['role'] != 'user':
                 raise AssertionError('duplicate account or incorrect role')
             self.user_exists = True
             return dict(self.identity)
-        if path == '/api/v1/auths/' and token == 'user-token':
+        if path == '/api/v1/auths/' and bearer == 'user-bearer':
             return dict(self.identity)
-        if path == '/api/v1/models/model/access/update' and token == 'admin-token':
+        if path == '/api/v1/models/model/access/update' and bearer == 'admin-bearer':
             if self.grant_error:
                 raise CheckError('endpoint returned HTTP 403')
             model = self.models.get(payload['id']) or {
@@ -59,17 +59,17 @@ class WebUIContract:
             model.update(self.response_changes)
             self.models[payload['id']] = model
             return model
-        if path == '/api/v1/models/model/update' and token == 'admin-token':
+        if path == '/api/v1/models/model/update' and bearer == 'admin-bearer':
             model = self.models[payload['id']]
             if not self.ignore_tool_policy:
                 model.update(payload)
             model.update(self.policy_response_changes)
             return model
-        if path == '/api/models' and token == 'user-token':
+        if path == '/api/models' and bearer == 'user-bearer':
             return {'data': [m for m in self.models.values() if any(
                 g['principal_type'] == 'user' and g['principal_id'] == 'reader-id'
                 and g['permission'] == 'read' for g in m['access_grants'])]}
-        raise AssertionError('unexpected route or wrong account token: ' + path)
+        raise AssertionError('unexpected route or wrong account bearer: ' + path)
 
 
 class AccountTests(unittest.TestCase):
@@ -118,16 +118,16 @@ class AccountTests(unittest.TestCase):
             with self.subTest(existing=existing):
                 client = WebUIContract(user_exists=existing)
                 base = 'http://127.0.0.1:8080'
-                self.assertEqual(client.request(base, '/api/models', token='user-token')['data'], [])
+                self.assertEqual(client.request(base, '/api/models', bearer='user-bearer')['data'], [])
                 self.module.bootstrap(self.root, client, base, 'local-chat')
-                token = login(client, base, json.loads((self.root / 'user.json').read_text()), 'user')
-                self.assertEqual([m['id'] for m in client.request(base, '/api/models', token=token)['data']], ['local-chat'])
+                session = login(client, base, json.loads((self.root / 'user.json').read_text()), 'user')
+                self.assertEqual([m['id'] for m in client.request(base, '/api/models', bearer=session)['data']], ['local-chat'])
                 creates = [c for c in client.calls if c[0] == '/api/v1/auths/add']
                 self.assertEqual(len(creates), 0 if existing else 1)
                 grants = [c for c in client.calls if c[0] == '/api/v1/models/model/access/update']
                 self.assertEqual(grants, [('/api/v1/models/model/access/update', {
                     'id': 'local-chat', 'access_grants': [
-                        {'principal_type': 'user', 'principal_id': 'reader-id', 'permission': 'read'}]}, 'admin-token')])
+                        {'principal_type': 'user', 'principal_id': 'reader-id', 'permission': 'read'}]}, 'admin-bearer')])
 
     def test_bootstrap_disables_builtin_tools_and_repairs_policy_on_rerun(self):
         self.initialize()
@@ -170,7 +170,7 @@ class AccountTests(unittest.TestCase):
         self.module.bootstrap(self.root, client, base, 'local-chat')
         client.models['local-chat']['access_grants'] = []
         self.module.bootstrap(self.root, client, base, 'local-chat')
-        self.assertEqual(len(client.request(base, '/api/models', token='user-token')['data']), 1)
+        self.assertEqual(len(client.request(base, '/api/models', bearer='user-bearer')['data']), 1)
         self.assertFalse(any(c[0] == '/api/v1/auths/add' for c in client.calls))
 
     def test_invalid_user_identity_never_grants_access(self):
@@ -215,7 +215,7 @@ class AccountTests(unittest.TestCase):
     def test_network_error_does_not_create_account(self):
         self.initialize()
         client = Mock()
-        client.request.side_effect = [{'token': 'admin-token', 'role': 'admin'}, self.module.CheckError('endpoint unreachable')]
+        client.request.side_effect = [{'token': 'admin-bearer', 'role': 'admin'}, self.module.CheckError('endpoint unreachable')]
         with self.assertRaises(self.module.CheckError):
             self.module.bootstrap(self.root, client, 'http://127.0.0.1:8080', 'local-chat')
         self.assertEqual(client.request.call_count, 2)
