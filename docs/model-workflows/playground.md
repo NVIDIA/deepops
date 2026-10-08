@@ -105,16 +105,27 @@ model access control stays enabled; unregistered models are admin-only in
 v0.11.4. Bootstrap uses the admin-only missing-model creation path of
 `/api/v1/models/model/access/update` and replaces the selected model's grants
 with only the named user's read grant (no wildcard or write permission).
-A rerun reuses credentials, UI data and model files and repairs that grant. It
-reconciles containers and briefly stops the listener while rechecking accounts and inference;
-this is not a zero-downtime operation. Never run concurrent deployments.
+Bootstrap also reconciles the selected model through `/api/v1/models/model/update`:
+`meta.capabilities.builtin_tools` is false, tool/filter attachments are empty,
+and model parameters are reset to the chat-only defaults. This disables Open
+WebUI v0.11.4's automatic browser-only built-in tools, rather than enabling
+vLLM tool-call parsing. No built-in tools remain advertised for ordinary chat.
+The model's code-interpreter, web-search, image-generation and terminal
+capabilities are also disabled. Do not add tools to this managed model.
+A rerun reuses credentials, UI data and model files and repairs that grant and
+chat-only policy. It reconciles containers and briefly stops the listener while
+rechecking accounts and inference; this is not a zero-downtime operation. Never run concurrent deployments.
 
 Both inference containers have only an internal Docker network: **no published
 vLLM or plain-HTTP UI port and no external network route**. Only the HTTPS gateway
 joins the frontend network. vLLM has `HF_HUB_OFFLINE=1` and API-key authentication.
 Open WebUI requires login, denies self-registration, disables Ollama, web search,
 image generation, direct/user connections, code execution, community sharing and
-telemetry. Its sole model connection is `http://vllm:8000/v1`. Persistent UI
+telemetry. Notes, memories, channels, calendar, automations, subagents and user
+webhooks are disabled; tool-server and terminal-server connection lists are
+empty. Ordinary users cannot manage workspace tools/skills or direct tool
+servers. This is a chat-only deployment, not a tool-executing agent.
+Its sole model connection is `http://vllm:8000/v1`. Persistent UI
 configuration is disabled so saved connection settings do not override the role
 at restart. The gateway blocks registration and restricts browser connections to
 the same origin. Administrators and Docker/root access remain trusted privileges.
@@ -213,8 +224,16 @@ Success is exit zero and `"ok": true`, with login, backend identity, UI model li
 and chat checks all true. It logs in as the ordinary user, requires exactly one
 model from both APIs, compares vLLM's `root` to the exact pinned `/models/...`
 snapshot, and demands nonempty assistant content from a chat through WebUI.
-Health alone, reasoning-only content, extra/cloud models and wrong snapshots
-fail. JSON never includes the reply, password, session token or API key. The
+The chat includes the browser's `session_id` marker so v0.11.4 runs its UI
+built-in-tool selection path. Without the chat-only model policy, that path
+injects `tools` with implicit `tool_choice: auto`, which the deliberately
+non-tool-enabled vLLM configuration rejects. A plain API request without the
+session marker misses this defect. The validator does not force legacy calling
+or suppress tools in the request to hide a broken policy. It omits `chat_id`
+and uses `stream: false` to get a synchronous result without saving a chat.
+Health alone, reasoning-only content, tool-call/error replies (including errors
+inside an HTTP 200 response), extra/cloud models and wrong snapshots fail.
+JSON never includes the reply, password, session token or API key. The
 validator supports verified HTTPS via `--webui-url` and `--ca-file` where that
 endpoint and the private backend are both reachable; it never disables TLS,
 follows redirects or inherits proxy routing.
@@ -236,9 +255,12 @@ ansible-playbook -i config/inventory -l playground playbooks/model-playground.ym
 ansible-playbook -i config/inventory -l playground playbooks/model-playground.yml --tags cleanup
 ```
 
-Do not combine lifecycle tags. Rerun the validator after restart; a container
-starting is not inference evidence. `unless-stopped` restores services after a
-host reboot, but a manually stopped service stays stopped. Cleanup is repeatable;
+Do not combine lifecycle tags. The restart-only play does not wait for model
+readiness: an immediate validator run can fail while the model reloads. Rerun
+the validator at 30-second intervals for at most five minutes after restart or
+reboot; if it still fails, stop and investigate rather than treating it as a
+successful restart. A container starting is not inference evidence.
+`unless-stopped` restores services after a host reboot, but a manually stopped service stays stopped. Cleanup is repeatable;
 redeploy afterward generates new passwords and a new certificate. Use cleanup
 before changing account identities. Changing profiles requires a deployment
 rerun and a fresh validator run; old model cache files remain until cleanup.
@@ -264,6 +286,10 @@ A source-linked v0.31.0 argument allow-list checks every rendered vLLM option fo
 both profiles and rejects unknown flags. Account tests require model registration
 and the named-user read grant on fresh setup and reruns; validator tests require
 the ordinary-user session for both model listing and chat, never an admin token.
+A UI-session fake rejects the browser-only auto-tool request when parser flags
+are absent; removing the session marker would make that negative test fail.
+Account tests require chat-only capabilities to be restored on reruns and
+reject an unacknowledged policy update.
 See the [pinned-contract notes](../../scripts/validation/tests/fixtures/playground-contracts.md)
 for upstream source locations and offline-test limits.
 No test downloads weights, starts containers or uses a GPU.

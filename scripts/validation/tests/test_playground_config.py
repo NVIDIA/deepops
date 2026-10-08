@@ -151,6 +151,18 @@ class DeploymentContractTests(unittest.TestCase):
         for name in ['WEBUI_ADMIN_PASSWORD', 'OPENAI_API_KEYS', 'WEBUI_SECRET_KEY']:
             self.assertNotIn(name, env)
 
+    def test_tool_execution_surfaces_are_disabled(self):
+        env = self.render()['services']['webui']['environment']
+        for name in ['ENABLE_CODE_EXECUTION', 'ENABLE_CODE_INTERPRETER', 'ENABLE_WEB_SEARCH',
+                     'ENABLE_DIRECT_INTEGRATIONS', 'ENABLE_NOTES', 'ENABLE_MEMORIES',
+                     'ENABLE_CHANNELS', 'ENABLE_CALENDAR', 'ENABLE_AUTOMATIONS', 'ENABLE_SUBAGENTS',
+                     'ENABLE_USER_WEBHOOKS', 'USER_PERMISSIONS_FEATURES_NOTES',
+                     'USER_PERMISSIONS_WORKSPACE_TOOLS_ACCESS', 'USER_PERMISSIONS_WORKSPACE_SKILLS_ACCESS',
+                     'USER_PERMISSIONS_FEATURES_DIRECT_TOOL_SERVERS']:
+            self.assertEqual(env.get(name), 'false', name)
+        for name in ['TOOL_SERVER_CONNECTIONS', 'TERMINAL_SERVER_CONNECTIONS']:
+            self.assertEqual(json.loads(env.get(name, 'null')), [], name)
+
     def test_deploy_bootstraps_selected_model_before_validation_and_gateway(self):
         tasks = yaml.safe_load((ROLE / 'tasks/deploy.yml').read_text())
         commands = [t['ansible.builtin.command']['argv'] for t in tasks

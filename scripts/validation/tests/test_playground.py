@@ -69,6 +69,16 @@ def endpoint(mode='good'):
                     value['choices'][0]['message'] = {'reasoning_content': 'thinking'}
                 if mode == 'wrong-reply-model':
                     value['model'] = 'cloud-model'
+                # v0.11.4 injects native builtins only for UI sessions. The
+                # old vLLM config rejects their implicit tool_choice=auto.
+                if mode == 'auto-tools-unsupported' and payload.get('session_id'):
+                    status, value = 400, {'error': 'auto tool choice requires parser flags'}
+                if mode == 'embedded-tool-error':
+                    value['choices'][0]['message']['error'] = {'content': 'tool failure'}
+                if mode == 'top-level-error':
+                    value['error'] = 'tool failure'
+                if mode == 'tool-call-reply':
+                    value['choices'][0]['message']['tool_calls'] = [{'type': 'function', 'id': 'unexpected'}]
                 if self.headers.get('Authorization') != 'Bearer test-session':
                     status = 401
             else:
@@ -156,6 +166,25 @@ class PlaygroundTests(unittest.TestCase):
         self.assertFalse(result['checks']['ui_model'])
         self.assertFalse(result['checks']['chat'])
         self.assertEqual([r[0] for r in requests], ['/api/v1/auths/signin'])
+
+    def test_chat_exercises_browser_builtin_tool_path(self):
+        with endpoint() as (url, requests):
+            self.assertTrue(self.run_check(url)['ok'])
+        chat = next(r[1] for r in requests if r[0] == '/api/chat/completions')
+        self.assertTrue(chat.get('session_id'))
+        # No stored chat or socket task: exercise UI middleware synchronously.
+        self.assertNotIn('chat_id', chat)
+        self.assertEqual(chat.get('tool_servers'), [])
+        self.assertEqual(chat.get('features'), {})
+        with endpoint('auto-tools-unsupported') as (url, _):
+            result = self.run_check(url)
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['errors'], [{'stage': 'chat', 'message': 'endpoint returned HTTP 400'}])
+
+    def test_embedded_error_cannot_pass_with_nonempty_content(self):
+        for mode in ['embedded-tool-error', 'top-level-error', 'tool-call-reply']:
+            with self.subTest(mode=mode), endpoint(mode) as (url, _):
+                self.assertFalse(self.run_check(url)['ok'])
 
     def test_negative_controls_fail_closed(self):
         for mode in ['cloud', 'extra-ui', 'extra-backend', 'wrong-root', 'empty', 'reasoning-only',

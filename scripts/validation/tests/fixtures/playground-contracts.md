@@ -45,6 +45,37 @@ SHA-256 hashes are in the fixture.
   for an ordinary user. A base model needs a record and matching read grant.
   Source SHA-256: `04b1a72ee9d5fe4b91e87b0b823292271af69b357fc753762818c859e6fee252`.
 
+### Browser tool-injection regression
+
+- [Chat component](https://github.com/open-webui/open-webui/blob/v0.11.4/src/lib/components/chat/Chat.svelte)
+  sends `session_id`, `features` and `tool_servers` to `/api/chat/completions`.
+- [Chat handler](https://github.com/open-webui/open-webui/blob/v0.11.4/backend/open_webui/main.py)
+  moves `session_id` into metadata, defaults function calling to `native`, and
+  starts asynchronous socket tasks only when both session and chat IDs exist.
+- [Chat middleware](https://github.com/open-webui/open-webui/blob/v0.11.4/backend/open_webui/utils/middleware.py)
+  sets `use_builtin_tools` for UI sessions unless the model capability
+  `builtin_tools` is false (or legacy calling is selected). It converts the
+  resolved tools to OpenAI `tools` before forwarding to vLLM, whose default
+  tool choice is `auto`. Notes-chat has a separate override, so notes are also
+  globally disabled and denied to ordinary users by this role.
+- [Built-in tool selection](https://github.com/open-webui/open-webui/blob/v0.11.4/backend/open_webui/utils/tools.py)
+  includes time, user-input, knowledge and chat-history tools even when code
+  execution and web search are disabled. Just disabling those two features
+  therefore does not make ordinary browser chat tool-free.
+- The model update route above accepts `ModelForm` (`id`, `name`, `meta`,
+  `params`, `base_model_id`, `is_active`, `access_grants`). The role keeps the
+  named read grant and disables builtins plus executable model capabilities
+  every time bootstrap runs. This uses supported model configuration, not a
+  patched server or a request filter.
+
+The validator deliberately supplies a session marker without a stored chat ID:
+it exercises the UI-only middleware but receives a synchronous JSON response.
+It does not simulate the socket stream or prove browser rendering. The HTTP
+fake's `auto-tools-unsupported` mode models the old policy's injected tools and
+vLLM rejection; it fails only for session-marked requests, so reverting to the
+old plain API request breaks the negative test. This is a boundary regression,
+not execution of upstream middleware. An actual browser test is still required.
+
 The stateful account fixture starts with no registered model, so the ordinary
 user sees none until bootstrap sends a valid admin grant. It covers both fresh
 accounts and existing accounts/retries. The HTTP validator fixture separately

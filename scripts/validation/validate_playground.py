@@ -151,13 +151,18 @@ def validate(args):
         reply = client.request(ui, '/api/chat/completions', {
             'model': args.model, 'messages': [{'role': 'user', 'content': 'Say hello in one short sentence. /no_think'}],
             'max_tokens': 256, 'temperature': 0, 'stream': False,
+            # v0.11.4 uses session_id to select the browser's builtin-tool
+            # middleware. Omit chat_id so the reply remains synchronous and
+            # no stored chat/background task is created. Do not force legacy
+            # calling or tool_choice=none: that would mask a broken UI policy.
+            'session_id': 'playground-validator', 'features': {}, 'tool_servers': [],
         }, token=token)
-        if not isinstance(reply, dict) or reply.get('model') != args.model:
+        if not isinstance(reply, dict) or reply.get('error') or reply.get('model') != args.model:
             raise CheckError('chat reply must identify the expected local model')
         choices = reply.get('choices')
         message = choices[0].get('message') if isinstance(choices, list) and choices and isinstance(choices[0], dict) else None
-        if (not isinstance(message, dict) or not isinstance(message.get('content'), str)
-                or not message['content'].strip()):
+        if (not isinstance(message, dict) or message.get('error') or message.get('tool_calls')
+                or not isinstance(message.get('content'), str) or not message['content'].strip()):
             raise CheckError('chat reply must contain nonempty assistant content')
         result['checks'][stage] = True
         result['ok'] = True

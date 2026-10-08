@@ -71,6 +71,27 @@ def bootstrap(directory, client, base, model):
     # Replace grants with only this user: no public/wildcard or write access.
     registered = client.request(base, '/api/v1/models/model/access/update',
                                 {'id': model, 'access_grants': [grant]}, token=token)
+    confirm_model_read_access(registered, model, grant)
+
+    # v0.11.4 injects native builtin tools for browser sessions by default,
+    # even when code execution and web search are globally disabled. This
+    # playground is chat-only: disable injection rather than enable a parser
+    # (and executable tools) in the model server. Reconcile on every rerun.
+    meta = {'capabilities': dict.fromkeys(('builtin_tools', 'code_interpreter',
+                                           'web_search', 'image_generation', 'terminal'), False),
+            'toolIds': [], 'filterIds': [], 'knowledge': []}
+    configured = client.request(base, '/api/v1/models/model/update', {
+        'id': model, 'base_model_id': None, 'name': model, 'is_active': True,
+        'params': {}, 'meta': meta, 'access_grants': [grant],
+    }, token=token)
+    confirm_model_read_access(configured, model, grant)
+    actual_meta = configured.get('meta')
+    if (configured.get('params') != {} or not isinstance(actual_meta, dict)
+            or any(actual_meta.get(k) != v for k, v in meta.items())):
+        raise CheckError('chat-only model policy was not confirmed')
+
+
+def confirm_model_read_access(registered, model, grant):
     if (not isinstance(registered, dict) or registered.get('id') != model
             or registered.get('base_model_id') is not None or registered.get('is_active') is not True
             or not isinstance(registered.get('access_grants'), list)

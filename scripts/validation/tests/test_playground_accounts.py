@@ -26,7 +26,9 @@ class WebUIContract:
         self.identity = {'id': 'reader-id', 'email': 'reader@example.org', 'role': 'user'}
         self.grant_error = False
         self.ignore_grant = False
+        self.ignore_tool_policy = False
         self.response_changes = {}
+        self.policy_response_changes = {}
 
     def request(self, base, path, payload=None, token=None):
         self.calls.append((path, payload, token))
@@ -46,15 +48,22 @@ class WebUIContract:
         if path == '/api/v1/models/model/access/update' and token == 'admin-token':
             if self.grant_error:
                 raise CheckError('endpoint returned HTTP 403')
-            model = {'id': payload['id'], 'user_id': 'admin-id', 'base_model_id': None,
-                     'name': payload['id'], 'params': {}, 'meta': {}, 'is_active': True,
-                     'created_at': 1, 'updated_at': 1, 'access_grants': []}
+            model = self.models.get(payload['id']) or {
+                'id': payload['id'], 'user_id': 'admin-id', 'base_model_id': None,
+                'name': payload['id'], 'params': {}, 'meta': {}, 'is_active': True,
+                'created_at': 1, 'updated_at': 1, 'access_grants': []}
             if not self.ignore_grant:
                 model['access_grants'] = [dict(g, id='grant-id', resource_type='model',
                                                resource_id=payload['id'], created_at=1)
                                           for g in payload['access_grants']]
             model.update(self.response_changes)
             self.models[payload['id']] = model
+            return model
+        if path == '/api/v1/models/model/update' and token == 'admin-token':
+            model = self.models[payload['id']]
+            if not self.ignore_tool_policy:
+                model.update(payload)
+            model.update(self.policy_response_changes)
             return model
         if path == '/api/models' and token == 'user-token':
             return {'data': [m for m in self.models.values() if any(
@@ -119,6 +128,40 @@ class AccountTests(unittest.TestCase):
                 self.assertEqual(grants, [('/api/v1/models/model/access/update', {
                     'id': 'local-chat', 'access_grants': [
                         {'principal_type': 'user', 'principal_id': 'reader-id', 'permission': 'read'}]}, 'admin-token')])
+
+    def test_bootstrap_disables_builtin_tools_and_repairs_policy_on_rerun(self):
+        self.initialize()
+        client = WebUIContract(user_exists=True)
+        base = 'http://127.0.0.1:8080'
+        for _ in range(2):
+            self.module.bootstrap(self.root, client, base, 'local-chat')
+            model = client.models['local-chat']
+            capabilities = model['meta'].get('capabilities', {})
+            for name in ['builtin_tools', 'code_interpreter', 'web_search', 'image_generation', 'terminal']:
+                self.assertIs(capabilities.get(name), False, name)
+            self.assertEqual(model['meta']['toolIds'], [])
+            self.assertEqual(model['meta']['filterIds'], [])
+            self.assertEqual(model['params'], {})
+            self.assertEqual(len(model['access_grants']), 1)
+            self.assertEqual(model['access_grants'][0]['permission'], 'read')
+            model['meta'] = {'capabilities': {'builtin_tools': True}, 'toolIds': ['unexpected']}
+
+    def test_unacknowledged_tool_policy_fails_bootstrap(self):
+        self.initialize()
+        client = WebUIContract(user_exists=True)
+        client.ignore_tool_policy = True
+        with self.assertRaises(self.module.CheckError):
+            self.module.bootstrap(self.root, client, 'http://127.0.0.1:8080', 'local-chat')
+
+    def test_policy_update_cannot_drop_grants_or_change_model_identity(self):
+        self.initialize()
+        for change in [{'id': 'other-model'}, {'base_model_id': 'remote'}, {'is_active': False},
+                       {'access_grants': []}, {'meta': None}, {'params': {'function_calling': 'legacy'}}]:
+            with self.subTest(change=change):
+                client = WebUIContract(user_exists=True)
+                client.policy_response_changes = change
+                with self.assertRaises(self.module.CheckError):
+                    self.module.bootstrap(self.root, client, 'http://127.0.0.1:8080', 'local-chat')
 
     def test_rerun_repairs_missing_grant_without_recreating_user(self):
         self.initialize()
