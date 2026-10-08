@@ -122,6 +122,23 @@ class DeploymentContractTests(unittest.TestCase):
         self.assertEqual(commands['Verify exactly one visible GPU and an already configured driver'],
                          ['nvidia-smi', '--query-gpu=uuid', '--format=csv,noheader'])
 
+    def test_download_requests_every_required_file_positionally(self):
+        tasks = yaml.safe_load((ROLE / 'tasks/deploy.yml').read_text())
+        task = next(t for t in tasks if t.get('name', '').startswith('Download only the pinned public model files'))
+        expression = task['ansible.builtin.command']['argv'].strip()
+        self.assertTrue(expression.startswith('{{') and expression.endswith('}}'))
+        env = jinja2.Environment(undefined=jinja2.StrictUndefined)
+        defaults = yaml.safe_load((ROLE / 'defaults/main.yml').read_text())
+        for profile, model in defaults['playground_models'].items():
+            with self.subTest(profile=profile):
+                argv = env.compile_expression(expression[2:-2])(playground_model=model)
+                # hf download REPO_ID [FILENAMES]...; --include takes a single glob.
+                self.assertNotIn('--include', argv)
+                self.assertEqual(argv[-len(model['files']):], model['files'])
+                self.assertIn('config.json', argv)
+                self.assertEqual(argv[argv.index('download') + 1], model['repo'])
+                self.assertTrue(all(not f.startswith('-') for f in model['files']))
+
     def test_webui_is_authenticated_and_single_backend_only(self):
         env = self.render()['services']['webui']['environment']
         self.assertEqual(env['WEBUI_AUTH'], 'true')
