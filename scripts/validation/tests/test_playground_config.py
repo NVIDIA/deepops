@@ -109,6 +109,19 @@ class DeploymentContractTests(unittest.TestCase):
                                             capture_output=True)
                     self.assertEqual(result.returncode == 0, ok)
 
+    def test_command_arguments_parse_as_intended(self):
+        commands = {}
+        for path in sorted((ROLE / 'tasks').glob('*.yml')):
+            for task in yaml.safe_load(path.read_text()) or []:
+                argv = (task.get('ansible.builtin.command') or {}).get('argv')
+                if isinstance(argv, list):
+                    commands[task.get('name')] = argv
+                    for item in argv:
+                        # An unquoted comma in a YAML flow list silently splits one argument.
+                        self.assertFalse(str(item) in {'noheader', 'nounits'}, (task.get('name'), argv))
+        self.assertEqual(commands['Verify exactly one visible GPU and an already configured driver'],
+                         ['nvidia-smi', '--query-gpu=uuid', '--format=csv,noheader'])
+
     def test_webui_is_authenticated_and_single_backend_only(self):
         env = self.render()['services']['webui']['environment']
         self.assertEqual(env['WEBUI_AUTH'], 'true')

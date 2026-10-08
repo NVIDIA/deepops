@@ -29,7 +29,7 @@
 
 - name: Verify exactly one visible GPU and an already configured driver
   ansible.builtin.command:
-    argv: [nvidia-smi, --query-gpu=uuid, --format=csv,noheader]
+    argv: [nvidia-smi, --query-gpu=uuid, "--format=csv,noheader"]
   register: playground_gpus
   changed_when: false
 
