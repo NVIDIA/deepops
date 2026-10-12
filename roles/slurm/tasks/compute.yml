@@ -82,6 +82,17 @@
   notify: restart slurmd
   tags: config
 
+- name: validate slurm_epilog_cleanup_scope
+  assert:
+    that:
+      - slurm_epilog_cleanup_scope in ['job', 'user']
+    fail_msg: >-
+      slurm_epilog_cleanup_scope must be 'job' or 'user'
+      (got '{{ slurm_epilog_cleanup_scope }}').
+  tags:
+    - prolog
+    - epilog
+
 - name: copy shared scripts
   template:
     src: "{{ item }}"
@@ -89,6 +100,47 @@
     mode: 0755
   with_fileglob:
     - templates/etc/slurm/shared/bin/*
+  tags:
+    - prolog
+    - epilog
+
+- name: warn that slurm_epilog_cleanup_scope user is deprecated
+  debug:
+    msg: >-
+      slurm_epilog_cleanup_scope: user restores the 26.09 epilog cleanup and is
+      deprecated. It will be removed in 27.01; see
+      docs/slurm-cluster/epilog-job-scoped-cleanup.md.
+  when: slurm_epilog_cleanup_scope == 'user'
+  tags:
+    - prolog
+    - epilog
+
+- name: create shared library directory for job-scoped epilog cleanup
+  file:
+    path: "{{ slurm_config_dir }}/shared/lib"
+    state: directory
+    owner: slurm
+    mode: 0755
+  when: slurm_epilog_cleanup_scope == 'job'
+  tags:
+    - prolog
+    - epilog
+
+- name: copy job-scoped epilog helpers
+  template:
+    src: etc/slurm/shared/lib/epilog-job-scope.sh
+    dest: "{{ slurm_config_dir }}/shared/lib/epilog-job-scope.sh"
+    mode: 0644
+  when: slurm_epilog_cleanup_scope == 'job'
+  tags:
+    - prolog
+    - epilog
+
+- name: remove job-scoped epilog helpers when the scope is user
+  file:
+    path: "{{ slurm_config_dir }}/shared/lib/epilog-job-scope.sh"
+    state: absent
+  when: slurm_epilog_cleanup_scope == 'user'
   tags:
     - prolog
     - epilog
