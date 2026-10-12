@@ -195,6 +195,8 @@ Read through the [slurm usage guide](slurm-usage.md) for more information.
 The default Slurm deployment includes a collection of prolog and epilog scripts that should be modified to suit a particular system.
 For more information, see the [prolog/epilog documentation](slurm-prolog-epilog/README.md).
 
+From release 26.11 the cleanup that runs when a user's job ends is job-scoped by default and no longer touches the user's other running jobs on the node; `slurm_epilog_cleanup_scope: user` restores the previous behaviour for one release. See [Job-scoped epilog cleanup](epilog-job-scoped-cleanup.md).
+
 ### Lua plugins
 
 Slurm's Lua plugins (for example `JobSubmitPlugins=lua` or `CliFilterPlugins=lua`) only load when Slurm was built with Lua support. DeepOps does not request Lua support or install its development package by default; Slurm may still detect a preinstalled Lua library. To enable it, set the following in `config/group_vars/slurm-cluster.yml` and run the Slurm playbook:
