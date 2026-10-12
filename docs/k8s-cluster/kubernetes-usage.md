@@ -10,7 +10,7 @@ Kubernetes Usage Guide
 
 ## Introduction
 
-Most of the following examples can be configured and executed through the Kubernetes Dashboard. For a basic run-through on how to leverage the Kubernetes Dashboard, please see the [official documentation](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/). The following examples use `kubectl` on the master node instead.
+The following examples use `kubectl` on a control-plane node. Kubernetes Dashboard is not installed by DeepOps; see the [Dashboard guidance](README.md#kubernetes-dashboard) if you want to install it separately.
 
 ## Simple Commands
 

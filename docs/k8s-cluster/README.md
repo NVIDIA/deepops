@@ -114,11 +114,23 @@ The following components are completely optional and can be installed on an exis
 
 ### Kubernetes Dashboard
 
-Run the following script to create an administrative user and print out the dashboard URL and access token:
+DeepOps does not install Kubernetes Dashboard. The pinned Kubespray release
+(v2.31.0) no longer ships the dashboard add-on; the former `dashboard_enabled`
+and dashboard image settings have no effect.
 
-```bash
-./scripts/k8s/deploy_dashboard_user.sh
-```
+If you need a dashboard, install and configure it separately using the
+[upstream Kubernetes Dashboard documentation](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/),
+including its authentication and access instructions. For air-gapped deployments,
+mirror the images and charts required by that installation separately; the
+Kubespray download step does not cache a dashboard add-on.
+
+The legacy `scripts/k8s/deploy_dashboard_user.sh` helper is not an installer. It
+assumes a `kubernetes-dashboard` Service already exists in `kube-system`, changes
+it to a NodePort, and creates a cluster-admin service account if it is missing.
+It also expects a legacy service-account token Secret. Do not use it as a setup
+step for a new DeepOps cluster or assume it works with a separately installed
+Dashboard version. The helper is unchanged; this guidance does not establish
+that its HTTPS access works.
 
 ### Persistent Storage
 
