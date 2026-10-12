@@ -73,6 +73,56 @@ else
     log "[WARN] squeue failed while counting jobs for ${SLURM_JOB_USER} on ${HOSTNAME}; not running the last-user-job scripts."
 fi
 
+{% if slurm_epilog_cleanup_scope == 'job' %}
+# Job-scoped cleanup (slurm_epilog_cleanup_scope: job). Only meaningful where
+# there are *-lastuserjob-* scripts, i.e. the epilog; the prolog skips it.
+#
+# squeue is the controller's opinion of the node, and it can be behind it: with
+# the default CompleteWait=0 the controller may place a new job of this user
+# here after squeue answered and before the cleanup below runs. The kernel's
+# view cannot be: every process of a Slurm job sits in a job_<id> cgroup, so a
+# process of this user in the cgroup of any job other than the one ending is
+# direct, node-local evidence that the user is not done here. Either source
+# saying "another job is here" is enough to skip the *-lastuserjob-* scripts.
+#
+# When the local view cannot be established (no numeric uid, unreadable or
+# unrecognised /proc/<pid>/cgroup data) the answer is the safe one: another job
+# may be here. The cleanup is deferred to the next job's epilog; it is never
+# guessed at.
+epilog_proc_root=/proc
+job_scope_lib='{{ slurm_config_dir }}/shared/lib/epilog-job-scope.sh'
+
+# node_view: clear (no other job's process found), other_job, or unknown.
+node_view=clear
+if compgen -G "$parts_dir/*-lastuserjob-*" >/dev/null; then
+    node_view=unknown
+    # `.` on a missing file must not take the whole epilog down under set -e.
+    if [ -r "$job_scope_lib" ] && . "$job_scope_lib"; then
+        if epilog_resolve_uid; then
+            node_rc=0
+            epilog_other_job_present "$epilog_uid" "$SLURM_JOB_ID" || node_rc=$?
+            case "$node_rc" in
+                0) node_view=other_job
+                   log "Another job of ${SLURM_JOB_USER} has processes on this node (found by cgroup); not running the last-user-job scripts."
+                   ;;
+                1) node_view=clear ;;
+                *) log "[WARN] could not read the cgroup membership of the processes of ${SLURM_JOB_USER}; assuming another job may be here." ;;
+            esac
+        else
+            log "[WARN] no numeric uid for ${SLURM_JOB_USER}; assuming another job may be here."
+        fi
+    else
+        log "[WARN] cannot load ${job_scope_lib}; assuming another job of ${SLURM_JOB_USER} may be here."
+    fi
+fi
+if [ "$node_view" != clear ]; then
+    last_user_job=0
+fi
+# Scripts that decide per process (40-lastuserjob-processes) read this to know
+# whether the user has no other job here, which is when orphans may be reaped.
+export EPILOG_LAST_USER_JOB="$last_user_job"
+
+{% endif %}
 # Re-implement run-parts since on centos it is just a bash script with no useful flags.
 failed=0
 for script in "$parts_dir"/*; do
@@ -84,6 +134,20 @@ for script in "$parts_dir"/*; do
         log "Skipping $script because the job was not run in exclusive mode."
         continue
     fi
+{% if slurm_epilog_cleanup_scope == 'job' %}
+    # 40-lastuserjob-processes classifies each process by its own job cgroup
+    # and applies the last-user-job rule to orphans itself, so it must also run
+    # when another job is present: it is what spares that job's processes and
+    # still reaps the ending job's.
+    if [[ "$script" == *"-lastuserjob-processes" ]]; then
+        log "Running $script ..."
+        if ! $script >>/var/log/slurm/prolog-epilog 2>&1; then
+            log "[ERROR] $script failed. Check the log at /var/log/slurm/prolog-epilog for more details."
+            failed=1
+        fi
+        continue
+    fi
+{% endif %}
     if [[ "$script" == *"-lastuserjob-"* ]] && [ "$last_user_job" = 0 ]; then
         log "Skipping $script because there is still another job running on this node for the same user."
         continue

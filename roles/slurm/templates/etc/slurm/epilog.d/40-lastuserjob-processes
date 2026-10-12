@@ -36,8 +36,104 @@ case "$lookup_rc" in
         ;;
 esac
 
+{% if slurm_epilog_cleanup_scope == 'job' %}
+# Job-scoped cleanup (slurm_epilog_cleanup_scope: job).
+#
+# `killall -9 -u` reaps every process the user owns on the node, whichever job
+# it belongs to. Here each process is classified by the job cgroup it sits in
+# (/proc/<pid>/cgroup, see shared/lib/epilog-job-scope.sh) and only the ones
+# that are this job's, or that belong to no job and the user has no job left,
+# are killed:
+#
+#   in the ending job's cgroup   kill (Slurm does this too; belt and braces)
+#   in any other job's cgroup    never kill, whatever squeue said
+#   in no job cgroup (orphan)    kill only when the dispatcher found no other
+#                                job of this user, by squeue and by cgroup
+#   cgroup line not understood   skip and log
+#
+# Anything that cannot be established is a skip, never a kill, and the script
+# never fails the epilog: a failing epilog drains the node.
+kill_bin=kill
+epilog_proc_root=/proc
+job_scope_lib='{{ slurm_config_dir }}/shared/lib/epilog-job-scope.sh'
+
+if [ "$SLURM_JOB_USER" = root ]; then
+    exit 0
+fi
+
+if [ ! -r "$job_scope_lib" ] || ! . "$job_scope_lib"; then
+    logger -s -t slurm-epilog \
+        "cannot load ${job_scope_lib}; skipping process cleanup"
+    exit 0
+fi
+
+if ! epilog_resolve_uid || [ "$epilog_uid" = 0 ]; then
+    logger -s -t slurm-epilog \
+        "no usable uid for ${SLURM_JOB_USER}; skipping process cleanup"
+    exit 0
+fi
+
+if ! pids=$(epilog_user_pids "$epilog_uid"); then
+    logger -s -t slurm-epilog \
+        "cannot list processes under ${epilog_proc_root}; skipping process cleanup"
+    exit 0
+fi
+
+# The dispatcher exports 1 only when neither squeue nor the cgroup scan found
+# another job of this user. Run on its own the script treats orphans as live.
+last_user_job="${EPILOG_LAST_USER_JOB:-0}"
+
+killed=0
+spared=0
+unsure=0
+for pid in $pids; do
+    [ "$pid" != "$$" ] || continue
+
+    rc=0
+    jobs=$(epilog_pid_jobs "$pid") || rc=$?
+    case "$rc" in
+        0) ;;
+        1) continue ;;  # exited since the listing
+        *)
+            logger -s -t slurm-epilog \
+                "cannot classify pid ${pid} (unreadable or unrecognised cgroup data); leaving it alone"
+            unsure=$((unsure + 1))
+            continue
+            ;;
+    esac
+
+    in_ending=0
+    in_other=0
+    for job in $jobs; do
+        if [ "$job" = "$SLURM_JOB_ID" ]; then
+            in_ending=1
+        else
+            in_other=1
+        fi
+    done
+
+    if [ "$in_other" = 1 ]; then
+        spared=$((spared + 1))
+        continue
+    fi
+
+    if [ "$in_ending" = 0 ] && [ "$last_user_job" != 1 ]; then
+        # An orphan, but the user may still be running here.
+        spared=$((spared + 1))
+        continue
+    fi
+
+    if "$kill_bin" -9 -- "$pid" 2>/dev/null; then
+        killed=$((killed + 1))
+    fi
+done
+
+logger -s -t slurm-epilog \
+    "Job-scoped process cleanup for ${SLURM_JOB_USER} job ${SLURM_JOB_ID}: killed ${killed}, spared ${spared}, unclassified ${unsure}"
+{% else %}
 if [ "$SLURM_JOB_USER" != root ]; then
     if killall -9 -u "$SLURM_JOB_USER" ; then
         logger -s -t slurm-epilog 'Killed residual user processes'
     fi
 fi
+{% endif %}
