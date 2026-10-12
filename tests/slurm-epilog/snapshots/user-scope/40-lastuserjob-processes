@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -ex
+
+# Sibling 41-lastuserjob-ssh already consults this list before it touches a
+# user, so that operator accounts do not lose access when their job ends.
+# `killall -9 -u` is broader than anything 41 does -- it reaps every process
+# the user owns on this node, including their interactive login shell and its
+# sshd session -- so it has to honour the same exemption.
+#
+# Without this an operator who submits from a login shell on a compute node is
+# disconnected the moment the job's epilog runs.
+#
+# The list is one account per line, so match whole lines literally (-x -F).
+# Accounts here routinely contain dots (`je.kim`), which a regex word match
+# would treat as "any character".
+localusers_backup='/etc/slurm/localusers.backup'
+
+# grep exits 0 when listed, 1 when definitely not listed, and >1 when the
+# lookup itself failed (missing or unreadable file, I/O error). A failed
+# lookup is not evidence of absence, so it must not authorise the killall.
+# `|| lookup_rc=$?` keeps the non-zero status from tripping `set -e`.
+lookup_rc=0
+grep -qxF -- "$SLURM_JOB_USER" "$localusers_backup" || lookup_rc=$?
+
+case "$lookup_rc" in
+    0)
+        exit 0  # listed: don't kill these users' login sessions
+        ;;
+    1)
+        : # definitely not listed: fall through to the cleanup below
+        ;;
+    *)
+        logger -s -t slurm-epilog \
+            "localusers lookup failed (grep rc=${lookup_rc}, file=${localusers_backup}); skipping process cleanup"
+        exit 0
+        ;;
+esac
+
+if [ "$SLURM_JOB_USER" != root ]; then
+    if killall -9 -u "$SLURM_JOB_USER" ; then
+        logger -s -t slurm-epilog 'Killed residual user processes'
+    fi
+fi

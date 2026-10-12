@@ -56,13 +56,34 @@ STUB
 
 render() {
     # $1 = template path relative to $templates, $2 = output path
-    python3 "$here/render.py" "$templates/$1" "$2" || return 1
+    python3 "$here/render.py" "$templates/$1" "$2" "${RENDER_SCOPE:-job}" || return 1
     chmod +x "$2"
     # A rendered script that does not parse would fail every behavioural case
     # below with the same opaque message; check the syntax separately so the
     # cause is named.
     bash -n "$2"
 }
+
+# A fake /proc: <root>/<pid>/status carries the Uid line and <root>/<pid>/cgroup
+# the cgroup membership, which is all the job-scoped helpers read. Paths are
+# written the way the kernel writes them, for cgroup v1 and v2.
+fake_proc() {
+    # $1 = root, $2 = pid, $3 = uid, $4 = contents of /proc/<pid>/cgroup
+    mkdir -p "$1/$2"
+    printf 'Name:\tfixture\nUid:\t%s\t%s\t%s\t%s\n' "$3" "$3" "$3" "$3" > "$1/$2/status"
+    if [ -n "${4-}" ]; then
+        printf '%s\n' "$4" > "$1/$2/cgroup"
+    else
+        : > "$1/$2/cgroup"
+    fi
+}
+
+# cgroup lines as Slurm lays them out. v1 has one line per controller
+# hierarchy under /slurm/uid_N/job_M; v2 has one unified line under the
+# slurmstepd scope.
+cg_v1_job() { printf '4:cpuset:/slurm/uid_%s/job_%s/step_0/task_0\n3:memory:/slurm/uid_%s/job_%s/step_0\n1:name=systemd:/system.slice/slurmd.service' "$1" "$2" "$1" "$2"; }
+cg_v2_job() { printf '0::/system.slice/slurmstepd.scope/job_%s/step_0/user/task_0' "$1"; }
+cg_none()   { printf '0::/user.slice/user-%s.slice/session-3.scope' "$1"; }
 
 # ---------------------------------------------------------------------------
 # run-parts.sh: which jobs count as "the user still has work on this node"
@@ -78,6 +99,26 @@ setup_runparts() {
     mkdir -p "$dir/bin" "$dir/parts"
 
     render "shared/bin/run-parts.sh" "$dir/run-parts.sh" || return 1
+
+    # Job scope: the dispatcher also reads the node's own process table. Point
+    # it at a fake /proc and at the helper library rendered into the fixture,
+    # and check the redirects took, as the cleanup setup does: a template edit
+    # that changes those lines would otherwise hand the real /proc back.
+    mkdir -p "$dir/proc"
+    if [ "${RENDER_SCOPE:-job}" = job ]; then
+        mkdir -p "$dir/lib"
+        render "shared/lib/epilog-job-scope.sh" "$dir/lib/epilog-job-scope.sh" || return 1
+        sed -i "s#^epilog_proc_root=.*#epilog_proc_root='$dir/proc'#" "$dir/run-parts.sh"
+        sed -i "s#^job_scope_lib=.*#job_scope_lib='$dir/lib/epilog-job-scope.sh'#" "$dir/run-parts.sh"
+        if ! grep -qF "epilog_proc_root='$dir/proc'" "$dir/run-parts.sh" \
+           || ! grep -qF "job_scope_lib='$dir/lib/epilog-job-scope.sh'" "$dir/run-parts.sh"; then
+            printf '  FAIL harness: the dispatcher /proc root was not redirected into the fixture\n' >&2
+            return 1
+        fi
+        # Every real /proc has processes. One owned by another account keeps an
+        # otherwise empty fixture from reading as "no process table".
+        fake_proc "$dir/proc" 1 0 '0::/init.scope'
+    fi
 
     # The script calls squeue twice: once for the exclusive check (-o "%C %D"),
     # once for the last-user-job count. Answer the first with a non-exclusive
@@ -160,12 +201,14 @@ runparts_case() {
     local label="$1" expect="$2" jobs="${3-}" rc="${4-0}"
     local dir
     dir="$(setup_runparts)" || { no "$label" "harness setup failed"; return; }
+    # $5 = optional function that builds the fake /proc under $dir/proc
+    if [ -n "${5-}" ]; then "$5" "$dir/proc"; fi
 
     rm -f "$dir/RAN"
     local out
     out=$(
         PATH="$dir/bin:$PATH" \
-        SLURM_JOB_USER=alice SLURM_JOB_ID=1000 SLURMD_NODENAME=node1 \
+        SLURM_JOB_USER=alice SLURM_JOB_UID=1001 SLURM_JOB_ID=1000 SLURMD_NODENAME=node1 \
         HOSTNAME=node1 SLURM_JOBID=1000 \
         SQUEUE_JOBS="$jobs" SQUEUE_RC="$rc" \
         "$dir/run-parts.sh" "$dir/parts" 2>&1
@@ -252,6 +295,11 @@ setup_cleanup() {
     # case gets the fixture roots, including the ones that are supposed to stop
     # before any deletion -- test safety cannot rest on the code under test.
     sed -i "s#^    for dir in /tmp /dev/shm ; do#    for dir in $dir/roots/tmp $dir/roots/shm ; do#" "$dir/42-cleanup"
+
+    # Job scope also reads slurm.conf (job_container/tmpfs). Keep that off the
+    # host's real file too; the fixture has none unless a case writes one. The
+    # user-scope rendering has no such line, so a miss here is not an error.
+    sed -i "s#^slurm_conf=.*#slurm_conf='$dir/etc/slurm/slurm.conf'#" "$dir/42-cleanup"
 
     # And the redirect is verified rather than assumed: a template edit that
     # changes that line would silently hand the real roots back.
@@ -607,6 +655,371 @@ pathname_case "a mount point containing a space is not split"             'data 
 pathname_case "a mount point containing a tab is decoded"                 $'data\t1'  'data\0111'
 
 fi  # identity and /proc/self/mountinfo
+
+# ---------------------------------------------------------------------------
+# Job scope: dispatcher guard, script 40, script 42 and script 50
+# ---------------------------------------------------------------------------
+#
+# Everything here runs against a fake /proc (fake_proc above) and a recording
+# `kill`, so it needs neither Slurm, cgroups nor root. The ending job is 1000
+# and the user is uid 1001 throughout; "squeue says clear" is the stub with no
+# jobs.
+
+# Fake process tables for the dispatcher cases.
+proc_other_job_v1() { fake_proc "$1" 2001 1001 "$(cg_v1_job 1001 1002)"; }
+proc_other_job_v2() { fake_proc "$1" 2001 1001 "$(cg_v2_job 1002)"; }
+proc_own_job_only() { fake_proc "$1" 2001 1001 "$(cg_v2_job 1000)"; }
+proc_other_job_other_user() { fake_proc "$1" 2001 1555 "$(cg_v2_job 1002)"; }
+proc_unrecognised() { fake_proc "$1" 2001 1001 'this is not a cgroup file'; }
+proc_unreadable() { fake_proc "$1" 2001 1001 ''; }
+proc_orphan_only() { fake_proc "$1" 2001 1001 "$(cg_none 1001)"; }
+proc_own_and_other() { fake_proc "$1" 2001 1001 "$(cg_v2_job 1000)"; fake_proc "$1" 2002 1001 "$(cg_v2_job 1003)"; }
+
+echo
+echo "run-parts.sh -- job-scoped guard (scope=job)"
+RENDER_SCOPE=job
+runparts_case "node scan: another job's process (cgroup v1) blocks though squeue is clear" skipped "" 0 proc_other_job_v1
+runparts_case "node scan: another job's process (cgroup v2) blocks though squeue is clear" skipped "" 0 proc_other_job_v2
+runparts_case "node scan: only the ending job's processes do not block"                    ran     "" 0 proc_own_job_only
+runparts_case "node scan: another user's job does not block"                               ran     "" 0 proc_other_job_other_user
+runparts_case "node scan: an orphan alone does not block"                                  ran     "" 0 proc_orphan_only
+runparts_case "node scan: own and other job together block"                                skipped "" 0 proc_own_and_other
+runparts_case "node scan: an unrecognised cgroup layout fails closed"                      skipped "" 0 proc_unrecognised
+runparts_case "node scan: an empty cgroup file fails closed"                               skipped "" 0 proc_unreadable
+runparts_case "squeue still wins when the node scan is clear"                              skipped "1001:running" 0 proc_orphan_only
+
+# No process table at all: a /proc with nothing in it must read as "cannot
+# tell", not as "no other job".
+proc_empty() { rm -rf "$1"; mkdir -p "$1"; }
+runparts_case "node scan: an empty process table fails closed" skipped "" 0 proc_empty
+
+# A dispatcher that cannot load its helper library must defer, not run on
+# squeue alone.
+dir="$(setup_runparts)" || dir=""
+if [ -z "$dir" ]; then
+    no "a missing helper library fails closed" "harness setup failed"
+else
+    rm -f "$dir/lib/epilog-job-scope.sh" "$dir/RAN"
+    out=$(PATH="$dir/bin:$PATH" SLURM_JOB_USER=alice SLURM_JOB_UID=1001 SLURM_JOB_ID=1000 \
+          HOSTNAME=node1 SLURM_JOBID=1000 SQUEUE_JOBS="" SQUEUE_RC=0 \
+          "$dir/run-parts.sh" "$dir/parts" 2>&1); rc=$?
+    if [ "$rc" = 0 ] && [ ! -e "$dir/RAN" ] && printf '%s' "$out" | grep -q 'cannot load'; then
+        ok "a missing helper library fails closed"
+    else
+        no "a missing helper library fails closed" "rc=$rc ran=$([ -e "$dir/RAN" ] && echo yes || echo no) out=$(printf '%s' "$out" | tail -1)"
+    fi
+fi
+
+# A job without SLURM_JOB_UID resolves the account instead; with neither it
+# defers.
+dir="$(setup_runparts)" || dir=""
+if [ -z "$dir" ]; then
+    no "no resolvable uid fails closed" "harness setup failed"
+else
+    rm -f "$dir/RAN"
+    out=$(PATH="$dir/bin:$PATH" SLURM_JOB_USER="nosuchuser-$$" SLURM_JOB_UID="" SLURM_JOB_ID=1000 \
+          HOSTNAME=node1 SLURM_JOBID=1000 SQUEUE_JOBS="" SQUEUE_RC=0 \
+          "$dir/run-parts.sh" "$dir/parts" 2>&1); rc=$?
+    if [ "$rc" = 0 ] && [ ! -e "$dir/RAN" ] && printf '%s' "$out" | grep -q 'no numeric uid'; then
+        ok "no resolvable uid fails closed"
+    else
+        no "no resolvable uid fails closed" "rc=$rc out=$(printf '%s' "$out" | tail -1)"
+    fi
+fi
+
+echo
+echo "run-parts.sh -- scope=user ignores the node scan"
+RENDER_SCOPE=user
+runparts_case "user scope: another job's cgroup does not block (squeue only)" ran "" 0 proc_other_job_v2
+RENDER_SCOPE=job
+
+# --- 40-lastuserjob-processes ------------------------------------------------
+echo
+echo "40-lastuserjob-processes -- PID classification (scope=job)"
+
+setup_procs() {
+    local dir="$work/procs"
+    rm -rf "$dir"
+    mkdir -p "$dir/proc" "$dir/lib" "$dir/etc"
+    write_logger_stub "$dir"
+    render "epilog.d/40-lastuserjob-processes" "$dir/40-processes" || return 1
+    render "shared/lib/epilog-job-scope.sh" "$dir/lib/epilog-job-scope.sh" || return 1
+    sed -i "s#^localusers_backup=.*#localusers_backup='$dir/etc/localusers.backup'#" "$dir/40-processes"
+    sed -i "s#^epilog_proc_root=.*#epilog_proc_root='$dir/proc'#" "$dir/40-processes"
+    sed -i "s#^job_scope_lib=.*#job_scope_lib='$dir/lib/epilog-job-scope.sh'#" "$dir/40-processes"
+    # A recording kill: the harness must never signal a real process.
+    cat > "$dir/bin/kill" <<STUB
+#!/usr/bin/env bash
+printf '%s\n' "\$*" >> "$dir/kill.log"
+STUB
+    chmod +x "$dir/bin/kill"
+    sed -i "s#^kill_bin=.*#kill_bin='$dir/bin/kill'#" "$dir/40-processes"
+    for want in "localusers_backup='$dir/etc/localusers.backup'" "epilog_proc_root='$dir/proc'" \
+                "job_scope_lib='$dir/lib/epilog-job-scope.sh'" "kill_bin='$dir/bin/kill'"; do
+        if ! grep -qF "$want" "$dir/40-processes"; then
+            printf '  FAIL harness: 40 was not redirected into the fixture (%s)\n' "$want" >&2
+            return 1
+        fi
+    done
+    : > "$dir/etc/localusers.backup"
+    : > "$dir/kill.log"
+    printf '%s' "$dir"
+}
+
+# $1 label, $2 builder, $3 "pid pid ..." expected killed, $4 EPILOG_LAST_USER_JOB
+procs_case() {
+    local label="$1" build="$2" want="$3" last="${4-0}" dir
+    dir="$(setup_procs)" || { no "$label" "harness setup failed"; return; }
+    "$build" "$dir/proc"
+    local out rc
+    out=$(PATH="$dir/bin:$PATH" SLURM_JOB_USER=alice SLURM_JOB_UID=1001 SLURM_JOB_ID=1000 \
+          EPILOG_LAST_USER_JOB="$last" "$dir/40-processes" 2>&1); rc=$?
+    local got
+    got=$(sed -e 's/^-9 -- //' "$dir/kill.log" | sort -n | tr '\n' ' ' | sed 's/ $//')
+    if [ "$rc" != 0 ]; then
+        no "$label" "rc=$rc out=$(printf '%s' "$out" | tail -1)"
+    elif [ "$got" != "$want" ]; then
+        no "$label" "killed '$got', wanted '$want'"
+    else
+        ok "$label"
+    fi
+}
+
+# One PID per row of the classification table in the design note, on both
+# layouts. 3001 is the ending job's, 3002 another job's, 3003 an orphan, 3004
+# unparsable; 3005 belongs to someone else's job and is never ours to touch.
+mixed_v1() { fake_proc "$1" 3001 1001 "$(cg_v1_job 1001 1000)"; fake_proc "$1" 3002 1001 "$(cg_v1_job 1001 1002)"
+             fake_proc "$1" 3003 1001 "$(cg_none 1001)"; fake_proc "$1" 3004 1001 'garbage'
+             fake_proc "$1" 3005 1777 "$(cg_v1_job 1777 1050)"; }
+mixed_v2() { fake_proc "$1" 3001 1001 "$(cg_v2_job 1000)"; fake_proc "$1" 3002 1001 "$(cg_v2_job 1002)"
+             fake_proc "$1" 3003 1001 "$(cg_none 1001)"; fake_proc "$1" 3004 1001 'garbage'
+             fake_proc "$1" 3005 1777 "$(cg_v2_job 1050)"; }
+
+procs_case "cgroup v1: ending job killed, other job spared, orphan spared while another job exists" mixed_v1 "3001" 0
+procs_case "cgroup v2: ending job killed, other job spared, orphan spared while another job exists" mixed_v2 "3001" 0
+procs_case "cgroup v1: orphan killed only when the user has no other job" mixed_v1 "3001 3003" 1
+procs_case "cgroup v2: orphan killed only when the user has no other job" mixed_v2 "3001 3003" 1
+# Even when the dispatcher says "last job", a process in another job's cgroup
+# is never killed: that is the race squeue cannot see.
+procs_case "another job's process is spared even when the dispatcher says last job" mixed_v2 "3001 3003" 1
+
+exited_between() { fake_proc "$1" 3010 1001 "$(cg_v2_job 1000)"; rm -f "$1/3010/cgroup"; }
+procs_case "a process that exits between listing and classifying is skipped" exited_between "" 1
+
+# A vanished process is routine and must not put bash errors in the epilog log.
+vanished_quiet_dir="$(setup_procs)" || vanished_quiet_dir=""
+if [ -z "$vanished_quiet_dir" ]; then
+    no "a vanished process produces no shell error output" "harness setup failed"
+else
+    fake_proc "$vanished_quiet_dir/proc" 3012 1001 "$(cg_v2_job 1000)"
+    rm -f "$vanished_quiet_dir/proc/3012/cgroup"
+    out=$(PATH="$vanished_quiet_dir/bin:$PATH" SLURM_JOB_USER=alice SLURM_JOB_UID=1001 SLURM_JOB_ID=1000 \
+          EPILOG_LAST_USER_JOB=1 "$vanished_quiet_dir/40-processes" 2>&1)
+    if ! printf '%s' "$out" | grep -qi 'no such file\|line [0-9]*:'; then
+        ok "a vanished process produces no shell error output"
+    else
+        no "a vanished process produces no shell error output" "$(printf '%s' "$out" | head -2 | tr '\n' ' ')"
+    fi
+fi
+
+unparsable_only() { fake_proc "$1" 3011 1001 'x:y'; }
+procs_case "an unparsable cgroup line is skipped, not killed" unparsable_only "" 1
+
+# Nested job paths (a step cgroup under the job) classify by the job_ component.
+nested_step() { fake_proc "$1" 3020 1001 '0::/system.slice/slurmstepd.scope/job_1000/step_batch/user/task_0'; }
+procs_case "a step cgroup under the ending job is the ending job's" nested_step "3020" 0
+
+# A job id that is only a prefix of the ending job's must not match.
+prefix_job() { fake_proc "$1" 3021 1001 "$(cg_v2_job 10001)"; }
+procs_case "job 10001 is not job 1000" prefix_job "" 1
+
+# --- exemptions and edge users -------------------------------------------------
+exempt_dir="$(setup_procs)" || exempt_dir=""
+if [ -z "$exempt_dir" ]; then
+    no "a user in localusers.backup is spared" "harness setup failed"
+else
+    mixed_v2 "$exempt_dir/proc"
+    printf 'alice\n' > "$exempt_dir/etc/localusers.backup"
+    PATH="$exempt_dir/bin:$PATH" SLURM_JOB_USER=alice SLURM_JOB_UID=1001 SLURM_JOB_ID=1000 \
+        EPILOG_LAST_USER_JOB=1 "$exempt_dir/40-processes" >/dev/null 2>&1; rc=$?
+    if [ "$rc" = 0 ] && [ ! -s "$exempt_dir/kill.log" ]; then
+        ok "a user in localusers.backup is spared"
+    else
+        no "a user in localusers.backup is spared" "rc=$rc kills=$(tr '\n' ' ' < "$exempt_dir/kill.log")"
+    fi
+fi
+
+root_dir="$(setup_procs)" || root_dir=""
+if [ -z "$root_dir" ]; then
+    no "root is never touched" "harness setup failed"
+else
+    fake_proc "$root_dir/proc" 3030 0 "$(cg_v2_job 1000)"
+    PATH="$root_dir/bin:$PATH" SLURM_JOB_USER=root SLURM_JOB_UID=0 SLURM_JOB_ID=1000 \
+        EPILOG_LAST_USER_JOB=1 "$root_dir/40-processes" >/dev/null 2>&1; rc=$?
+    if [ "$rc" = 0 ] && [ ! -s "$root_dir/kill.log" ]; then
+        ok "root is never touched"
+    else
+        no "root is never touched" "rc=$rc kills=$(tr '\n' ' ' < "$root_dir/kill.log")"
+    fi
+fi
+
+lookup_dir="$(setup_procs)" || lookup_dir=""
+if [ -z "$lookup_dir" ]; then
+    no "an unreadable localusers.backup stops the process cleanup" "harness setup failed"
+else
+    mixed_v2 "$lookup_dir/proc"
+    rm -f "$lookup_dir/etc/localusers.backup"
+    out=$(PATH="$lookup_dir/bin:$PATH" SLURM_JOB_USER=alice SLURM_JOB_UID=1001 SLURM_JOB_ID=1000 \
+          EPILOG_LAST_USER_JOB=1 "$lookup_dir/40-processes" 2>&1); rc=$?
+    if [ "$rc" = 0 ] && [ ! -s "$lookup_dir/kill.log" ] && printf '%s' "$out" | grep -q 'localusers lookup failed'; then
+        ok "an unreadable localusers.backup stops the process cleanup"
+    else
+        no "an unreadable localusers.backup stops the process cleanup" "rc=$rc out=$(printf '%s' "$out" | tail -1)"
+    fi
+fi
+
+# Without the dispatcher's word that this was the last job, an orphan stays.
+standalone_dir="$(setup_procs)" || standalone_dir=""
+if [ -z "$standalone_dir" ]; then
+    no "run without the dispatcher, orphans are spared" "harness setup failed"
+else
+    mixed_v2 "$standalone_dir/proc"
+    PATH="$standalone_dir/bin:$PATH" SLURM_JOB_USER=alice SLURM_JOB_UID=1001 SLURM_JOB_ID=1000 \
+        "$standalone_dir/40-processes" >/dev/null 2>&1; rc=$?
+    got=$(sed -e 's/^-9 -- //' "$standalone_dir/kill.log" | tr '\n' ' ' | sed 's/ $//')
+    if [ "$rc" = 0 ] && [ "$got" = 3001 ]; then
+        ok "run without the dispatcher, orphans are spared"
+    else
+        no "run without the dispatcher, orphans are spared" "rc=$rc killed='$got'"
+    fi
+fi
+
+# And in scope=user the original killall is what runs.
+user40="$work/user40"; rm -rf "$user40"; mkdir -p "$user40/bin" "$user40/etc"
+write_logger_stub "$user40"
+if RENDER_SCOPE=user render "epilog.d/40-lastuserjob-processes" "$user40/40" \
+   && grep -q 'killall -9 -u' "$user40/40" && ! grep -q 'epilog-job-scope' "$user40/40"; then
+    ok "user scope renders the original killall script"
+else
+    no "user scope renders the original killall script" "see $user40"
+fi
+
+# --- 42-lastuserjob-cleanup: job_container/tmpfs ---------------------------------
+echo
+echo "42-lastuserjob-cleanup -- job_container/tmpfs (scope=job)"
+jc_identity="$(cleanup_identity)" || jc_identity=""
+if [ -z "$jc_identity" ]; then
+    printf '  skip job_container cases (no resolvable unprivileged account)\n'
+else
+    jc_case() {
+        # $1 = label, $2 = slurm.conf contents ("" = none), $3 = expect gone|kept
+        local label="$1" conf="$2" expect="$3" dir
+        dir="$(setup_cleanup)" || { no "$label" "harness setup failed"; return; }
+        : > "$dir/etc/slurm/localusers.backup"
+        sed -i "s#^slurm_conf=.*#slurm_conf='$dir/etc/slurm/slurm.conf'#" "$dir/42-cleanup"
+        grep -qF "slurm_conf='$dir/etc/slurm/slurm.conf'" "$dir/42-cleanup" \
+            || { no "$label" "harness could not redirect slurm.conf"; return; }
+        [ -z "$conf" ] || printf '%s\n' "$conf" > "$dir/etc/slurm/slurm.conf"
+        own_file "$jc_identity" "$dir/roots/tmp/scratch" || { no "$label" "could not create the fixture file"; return; }
+        local out rc state=kept
+        out=$(PATH="$dir/bin:$PATH" SLURM_JOB_USER="$jc_identity" "$dir/42-cleanup" 2>&1); rc=$?
+        [ -e "$dir/roots/tmp/scratch" ] || state=gone
+        if [ "$rc" != 0 ]; then
+            no "$label" "rc=$rc out=$(printf '%s' "$out" | tail -1)"
+        elif [ "$state" != "$expect" ]; then
+            no "$label" "file is $state, wanted $expect"
+        elif [ "$expect" = kept ] && ! printf '%s' "$out" | grep -q 'job_container/tmpfs is configured'; then
+            no "$label" "skipped without logging why: $(printf '%s' "$out" | tail -1)"
+        else
+            ok "$label"
+        fi
+    }
+    jc_case "job_container/tmpfs configured: file cleanup is skipped and logged" \
+        "JobContainerType=job_container/tmpfs" kept
+    jc_case "job_container/tmpfs with spacing is still detected" \
+        "  JobContainerType = job_container/tmpfs" kept
+    jc_case "a commented-out JobContainerType does not skip the cleanup" \
+        "#JobContainerType=job_container/tmpfs" gone
+    jc_case "no JobContainerType: cleanup runs" "ProctrackType=proctrack/cgroup" gone
+    jc_case "no slurm.conf readable: cleanup runs as before" "" gone
+fi
+
+# --- 50-lastuserjob-all-enroot-dirs -----------------------------------------------
+# The enroot script has no guard of its own; it is protected by the dispatcher.
+# The dispatcher cases above run a -lastuserjob- marker, which is the same gate
+# 50 sits behind, so what is pinned here is the rendering: the paths survive
+# in both scopes, and nothing in the script changes with the scope.
+echo
+echo "50-lastuserjob-all-enroot-dirs -- same removal in both scopes, behind the stronger guard"
+e50j="$work/e50j"; e50u="$work/e50u"; rm -rf "$e50j" "$e50u"; mkdir -p "$e50j" "$e50u"
+if RENDER_SCOPE=job render "epilog.d/50-lastuserjob-all-enroot-dirs" "$e50j/50" \
+   && RENDER_SCOPE=user render "epilog.d/50-lastuserjob-all-enroot-dirs" "$e50u/50" \
+   && cmp -s "$e50j/50" "$e50u/50"; then
+    ok "script 50 is identical in both scopes; the dispatcher guard is what changes"
+else
+    no "script 50 is identical in both scopes; the dispatcher guard is what changes" "rendered output differs"
+fi
+# The dispatcher test that matters for 50: a -lastuserjob-all-enroot-dirs
+# script is skipped when the node scan finds another job.
+dir="$(setup_runparts)" || dir=""
+if [ -z "$dir" ]; then
+    no "enroot cleanup is skipped when another job is present" "harness setup failed"
+else
+    rm -f "$dir/parts/"*
+    for n in 50-lastuserjob-all-enroot-dirs; do
+        printf '#!/usr/bin/env bash\ntouch "%s/RAN-50"\n' "$dir" > "$dir/parts/$n"; chmod +x "$dir/parts/$n"
+    done
+    proc_other_job_v2 "$dir/proc"
+    PATH="$dir/bin:$PATH" SLURM_JOB_USER=alice SLURM_JOB_UID=1001 SLURM_JOB_ID=1000 HOSTNAME=node1 \
+        SLURM_JOBID=1000 SQUEUE_JOBS="" SQUEUE_RC=0 "$dir/run-parts.sh" "$dir/parts" >/dev/null 2>&1
+    skipped_ok=1; [ ! -e "$dir/RAN-50" ] || skipped_ok=0
+    rm -f "$dir/proc/2001/cgroup"; cg_none 1001 > "$dir/proc/2001/cgroup"
+    PATH="$dir/bin:$PATH" SLURM_JOB_USER=alice SLURM_JOB_UID=1001 SLURM_JOB_ID=1000 HOSTNAME=node1 \
+        SLURM_JOBID=1000 SQUEUE_JOBS="" SQUEUE_RC=0 "$dir/run-parts.sh" "$dir/parts" >/dev/null 2>&1
+    if [ "$skipped_ok" = 1 ] && [ -e "$dir/RAN-50" ]; then
+        ok "enroot cleanup is skipped when another job is present and runs when last"
+    else
+        no "enroot cleanup is skipped when another job is present and runs when last" \
+           "skipped_when_other=$skipped_ok ran_when_last=$([ -e "$dir/RAN-50" ] && echo yes || echo no)"
+    fi
+fi
+
+# --- 26.09 snapshot -----------------------------------------------------------------
+# scope=user must render byte-for-byte what 26.09 deployed. The snapshots are the
+# 26.09 templates rendered with the same fixture values; script 41 is excluded
+# because its match fix applies in both scopes and is covered above.
+echo
+echo "scope=user -- byte-identical to the 26.09 scripts"
+snap_ok() {
+    # $1 = template relative path, $2 = snapshot file name
+    local out="$work/snap-$2"
+    if RENDER_SCOPE=user render "$1" "$out" && cmp -s "$out" "$here/snapshots/user-scope/$2"; then
+        ok "scope=user renders $2 identically to 26.09"
+    else
+        no "scope=user renders $2 identically to 26.09" "$(diff "$here/snapshots/user-scope/$2" "$out" 2>&1 | head -5 | tr '\n' ' ')"
+    fi
+}
+snap_ok "epilog.d/40-lastuserjob-processes"       40-lastuserjob-processes
+snap_ok "epilog.d/42-lastuserjob-cleanup"         42-lastuserjob-cleanup
+snap_ok "epilog.d/50-lastuserjob-all-enroot-dirs" 50-lastuserjob-all-enroot-dirs
+snap_ok "shared/bin/run-parts.sh"                 run-parts.sh
+snap_ok "epilog.sh"                               epilog.sh
+
+# Every template must render and parse in both scopes; StrictUndefined fails
+# the render if a template references a variable the role does not define.
+for scope in job user; do
+    bad=""
+    for t in epilog.sh epilog.d/40-lastuserjob-processes epilog.d/41-lastuserjob-ssh \
+             epilog.d/42-lastuserjob-cleanup epilog.d/50-lastuserjob-all-enroot-dirs \
+             shared/bin/run-parts.sh shared/lib/epilog-job-scope.sh; do
+        RENDER_SCOPE=$scope render "$t" "$work/parse-$scope" 2>/dev/null || bad="$bad $t"
+    done
+    if [ -z "$bad" ]; then
+        ok "all epilog templates render and parse with scope=$scope"
+    else
+        no "all epilog templates render and parse with scope=$scope" "failed:$bad"
+    fi
+done
 
 # ---------------------------------------------------------------------------
 # 41-lastuserjob-ssh: which SSH allow entries are removed

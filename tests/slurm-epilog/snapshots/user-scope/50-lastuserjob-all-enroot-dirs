@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -ex
+
+command -v enroot >/dev/null || exit 0  # enroot not installed
+
+runtime_path="$(sudo -u "$SLURM_JOB_USER" sh -c 'echo "/run/enroot/user-$(id -u)"')"
+rm -rf "$runtime_path"
+
+data_path="$(sudo -u "$SLURM_JOB_USER" sh -c 'echo "/tmp/enroot-data/user-$(id -u)"')"
+rm -rf "$data_path"
