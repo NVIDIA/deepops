@@ -123,5 +123,4 @@ slurm: Another job of alice has processes on this node (found by cgroup); not ru
 ## Testing
 
 The unprivileged unit tests are in `tests/slurm-epilog/run-tests.sh` and run in CI.
-An overlapping-jobs fixture for a disposable cluster is in
-`tests/slurm-epilog/overlapping-jobs/`.
+They use a fake `/proc` and cover both cgroup layouts.
