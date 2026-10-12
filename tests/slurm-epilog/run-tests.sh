@@ -608,6 +608,85 @@ pathname_case "a mount point containing a tab is decoded"                 $'data
 
 fi  # identity and /proc/self/mountinfo
 
+# ---------------------------------------------------------------------------
+# 41-lastuserjob-ssh: which SSH allow entries are removed
+# ---------------------------------------------------------------------------
+#
+# The script edits two files, the live /etc/localusers and the localusers.backup
+# exemption list. Both lookups used to match substrings and regular
+# expressions: `grep -w` treated `je` as listed when `je.kim` was (the dot is
+# not a word character), and `sed "/${user}/d"` deleted every entry that merely
+# contained the name. The cases below pin whole-line, literal matching.
+echo
+echo "41-lastuserjob-ssh -- exact match"
+
+setup_ssh() {
+    local dir="$work/ssh"
+    rm -rf "$dir"
+    mkdir -p "$dir"
+    write_logger_stub "$dir"
+    render "epilog.d/41-lastuserjob-ssh" "$dir/41-ssh" || return 1
+    sed -i "s#^localusers_backup=.*#localusers_backup='$dir/localusers.backup'#" "$dir/41-ssh"
+    sed -i "s#^localusers_live=.*#localusers_live='$dir/localusers'#" "$dir/41-ssh"
+    if ! grep -qF "localusers_backup='$dir/localusers.backup'" "$dir/41-ssh" \
+       || ! grep -qF "localusers_live='$dir/localusers'" "$dir/41-ssh"; then
+        printf '  FAIL harness: the 41 paths were not redirected into the fixture\n' >&2
+        return 1
+    fi
+    printf '%s' "$dir"
+}
+
+ssh_case() {
+    # $1 = label, $2 = job user, $3 = backup list, $4 = live list,
+    # $5 = expected live list afterwards
+    local label="$1" user="$2" backup="$3" live="$4" want="$5" dir
+    dir="$(setup_ssh)" || { no "$label" "harness setup failed"; return; }
+    printf '%s\n' "$backup" > "$dir/localusers.backup"
+    printf '%s\n' "$live" > "$dir/localusers"
+    local out rc got
+    out=$(PATH="$dir/bin:$PATH" SLURM_JOB_USER="$user" "$dir/41-ssh" 2>&1); rc=$?
+    got="$(cat "$dir/localusers")"
+    if [ "$rc" != 0 ]; then
+        no "$label" "rc=$rc out=$(printf '%s' "$out" | tail -1)"
+    elif [ "$got" != "$want" ]; then
+        no "$label" "live list is '$(printf '%s' "$got" | tr '\n' ' ')', wanted '$(printf '%s' "$want" | tr '\n' ' ')'"
+    else
+        ok "$label"
+    fi
+}
+
+ssh_case "the job user's own entry is removed" \
+    alice "root" "root
+alice
+bob" "root
+bob"
+ssh_case "a name contained in other entries removes only its own line" \
+    al "root" "root
+al
+alice
+halley" "root
+alice
+halley"
+ssh_case "a dot in the name is not a wildcard" \
+    je.kim "root" "root
+je.kim
+jeXkim" "root
+jeXkim"
+ssh_case "a name with sed metacharacters is matched literally" \
+    'a*b' "root" "root
+a*b
+aab" "root
+aab"
+ssh_case "a listed operator keeps the entry" \
+    alice "alice" "root
+alice" "root
+alice"
+ssh_case "a name that is only a prefix of a listed operator is not exempt" \
+    je "je.kim" "root
+je
+je.kim" "root
+je.kim"
+
 echo
 printf '%d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" = 0 ]
