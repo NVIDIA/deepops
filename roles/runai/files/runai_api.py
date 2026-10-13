@@ -65,7 +65,7 @@ class Client:
     def __init__(self, domain, ip, ca_file, timeout=30):
         self.domain, self.ip, self.timeout = domain, ip or domain, timeout
         self.context = ssl.create_default_context(cafile=ca_file or None)
-        self.token = ""
+        self.bearer = ""
 
     def request(self, method, path, body=None, form=None):
         headers = {"Accept": "application/json"}
@@ -76,8 +76,8 @@ class Client:
         elif body is not None:
             data = json.dumps(body).encode()
             headers["Content-Type"] = "application/json"
-        if self.token:
-            headers["Authorization"] = "Bearer " + self.token
+        if self.bearer:
+            headers["Authorization"] = "Bearer " + self.bearer
         try:
             sock = socket.create_connection((self.ip, 443), self.timeout)
             conn = http.client.HTTPSConnection(self.domain, 443, context=self.context, timeout=self.timeout)
@@ -95,20 +95,20 @@ class Client:
         except ValueError:
             raise ApiError("%s %s returned invalid JSON" % (method, path.split("?")[0]))
 
-    def login(self, user, password):
+    def login(self, user, pw):
         doc = self.request("POST", "/api/v2/token",
-                           form={"grant_type": "password", "username": user, "password": password})
-        self.token = doc.get("access_token", "")
-        if not self.token:
+                           form={"grant_type": "password", "username": user, "password": pw})
+        self.bearer = doc.get("access_token", "")
+        if not self.bearer:
             raise ApiError("login returned no access token")
 
 
-def wait_for_api(client, user, password, wait):
+def wait_for_api(client, user, pw, wait):
     deadline = time.time() + wait
     last = ""
     while True:
         try:
-            client.login(user, password)
+            client.login(user, pw)
             return
         except ApiError as exc:
             last = str(exc)
@@ -126,13 +126,13 @@ def main(argv=None):
     p.add_argument("--chart-version", required=True)
     p.add_argument("--wait", type=int, default=600, help="seconds to wait for the control plane")
     args = p.parse_args(argv)
-    user, password = os.environ.get("RUNAI_USERNAME", ""), os.environ.get("RUNAI_PASSWORD", "")
-    if not user or not password:
+    user, pw = os.environ.get("RUNAI_USERNAME", ""), os.environ.get("RUNAI_PASSWORD", "")
+    if not user or not pw:
         print("error: RUNAI_USERNAME and RUNAI_PASSWORD must be set", file=sys.stderr)
         return 2
     client = Client(args.domain, args.resolve_ip, args.ca_file)
     try:
-        wait_for_api(client, user, password, args.wait)
+        wait_for_api(client, user, pw, args.wait)
         listing = client.request("GET", "/api/v1/clusters")
         items = listing if isinstance(listing, list) else listing.get("clusters", [])
         found = [c for c in items if c.get("name") == args.cluster_name]

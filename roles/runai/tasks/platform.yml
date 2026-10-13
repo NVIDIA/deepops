@@ -12,7 +12,7 @@
     fail_msg: >-
       Platform mode needs runai_platform_domain (a DNS name), runai_platform_admin_user (an email
       address) and runai_platform_admin_password (8+ characters with a digit, lower case, upper
-      case and one of -!@#$%^&*()_+=). Keep the password in an Ansible vault.
+      case and one of -!@#$%^&*()_+=). Keep it in an Ansible vault.
       A certificate file needs its key file too.
     quiet: true
   no_log: true

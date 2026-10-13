@@ -157,7 +157,7 @@ The role then:
    `runai_platform_tls_cert_file`, `runai_platform_tls_key_file` and, if privately
    signed, `runai_platform_ca_file` (paths on the control-plane node);
 4. installs the control plane, registers the cluster with it through its API, and
-   installs the cluster chart with the short-lived token the API returns.
+   installs the cluster chart with the short-lived install key the API returns.
 
 **Names.** `runai_platform_domain` must resolve to the ingress address from the
 nodes and from wherever you browse. Without DNS (a lab), set

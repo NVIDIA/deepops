@@ -112,7 +112,7 @@ runai_mode: "off"
 # driver is not changed. Leave false unless you need enforced memory limits.
 #runai_kai_gpu_fractioning: false
 
-# Platform mode only. Keep the password in an Ansible vault.
+# Platform mode only. Keep the admin login in an Ansible vault.
 #runai_platform_domain: "runai.example.com"
 #runai_platform_admin_user: "admin@example.com"
 #runai_platform_admin_password: "{{ vault_runai_admin_password }}"

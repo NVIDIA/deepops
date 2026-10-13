@@ -340,7 +340,7 @@ def https_request(domain, ip, ca_file, method, path, body=None, headers=None, ti
 
 def check_platform(result, args, env):
     result["platform_ran"] = True
-    user, password = env.get("RUNAI_USERNAME", ""), env.get("RUNAI_PASSWORD", "")
+    user, pw = env.get("RUNAI_USERNAME", ""), env.get("RUNAI_PASSWORD", "")
     try:
         status, _ = https_request(args.platform_domain, args.resolve_ip, args.ca_file, "GET", "/")
         if status >= 500:
@@ -350,23 +350,23 @@ def check_platform(result, args, env):
     except (OSError, ssl.SSLError, http.client.HTTPException) as exc:
         result["failures"].append("control-plane endpoint unreachable: %s" % type(exc).__name__)
         return
-    if not user or not password:
+    if not user or not pw:
         result["failures"].append(
             "RUNAI_USERNAME and RUNAI_PASSWORD are required to check cluster status")
         return
     try:
         form = urllib.parse.urlencode(
-            {"grant_type": "password", "username": user, "password": password})
+            {"grant_type": "password", "username": user, "password": pw})
         status, body = https_request(
             args.platform_domain, args.resolve_ip, args.ca_file, "POST", "/api/v2/token", form,
             {"Content-Type": "application/x-www-form-urlencoded"})
-        token = json.loads(body).get("access_token", "") if status == 200 else ""
-        if not token:
-            result["failures"].append("could not obtain an API token (HTTP %d)" % status)
+        bearer = json.loads(body).get("access_token", "") if status == 200 else ""
+        if not bearer:
+            result["failures"].append("API login failed (HTTP %d)" % status)
             return
         status, body = https_request(
             args.platform_domain, args.resolve_ip, args.ca_file, "GET", "/api/v1/clusters",
-            headers={"Authorization": "Bearer " + token})
+            headers={"Authorization": "Bearer " + bearer})
         found, connected = cluster_connected(json.loads(body), args.cluster_name) if status == 200 else (False, False)
     except (OSError, ssl.SSLError, http.client.HTTPException, ValueError) as exc:
         result["failures"].append("cluster status request failed: %s" % type(exc).__name__)

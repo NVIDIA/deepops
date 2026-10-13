@@ -26,7 +26,7 @@ the GPU Operator or the NVIDIA driver. Full guide: `docs/k8s-cluster/runai.md`.
 ## Procedure
 
 1. Set `runai_mode` (and, for platform, the domain, admin user and a vaulted
-   password) in `config/group_vars/k8s_cluster.yml`.
+   login value) in `config/group_vars/k8s_cluster.yml`.
 2. Preview: `ansible-playbook -l kube_control_plane playbooks/k8s-cluster/runai.yml --check --diff`
 3. Apply: `ansible-playbook -l kube_control_plane playbooks/k8s-cluster/runai.yml`.
    Rerun once; the second run must report `changed=0`.
@@ -62,6 +62,6 @@ the GPU Operator or the NVIDIA driver. Full guide: `docs/k8s-cluster/runai.md`.
 ## Do not
 
 - Install standalone KAI beside the Run:ai cluster chart.
-- Put the admin password in a command line, an inventory file in Git, or a log.
+- Put the admin login value in a command line, an inventory file in Git, or a log.
 - Treat a finished playbook as success; only the validator's `"ok": true` counts.
 - Claim a live result you did not run. Offline tests prove the logic, not a GPU job.

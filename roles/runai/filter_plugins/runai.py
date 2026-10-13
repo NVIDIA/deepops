@@ -14,7 +14,7 @@ def runai_deep_merge(base, extra):
 
 
 def runai_password_ok(value):
-    """Run:ai admin password policy: 8+ chars, digit, lower, upper, special from -!@#$%^&*()_+="""
+    """Run:ai admin login policy: 8+ chars, digit, lower, upper, special from -!@#$%^&*()_+="""
     return bool(
         isinstance(value, str) and len(value) >= 8
         and re.search(r"[0-9]", value) and re.search(r"[a-z]", value)

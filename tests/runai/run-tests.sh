@@ -90,8 +90,8 @@ unset STATE
 STATE=""; run p1 -e runai_mode=platform
 [ $rc -ne 0 ] && echo "$out" | grep -q "runai_platform_domain" && pass "platform needs a domain" || bad "platform domain check"
 run p2 -e runai_mode=platform -e runai_platform_domain=runai.lab.test -e runai_platform_admin_password=weak
-[ $rc -ne 0 ] && pass "platform refuses a weak admin password" || bad "weak password"
-echo "$out" | grep -q "weak" && bad "password leaked into output" || pass "password not printed"
+[ $rc -ne 0 ] && pass "platform refuses a weak admin login" || bad "weak login"
+echo "$out" | grep -q "weak" && bad "login value leaked into output" || pass "login value not printed"
 unset STATE
 
 # 10. filter unit tests

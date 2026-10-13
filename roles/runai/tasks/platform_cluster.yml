@@ -18,7 +18,7 @@
     mode: "0700"
   become: true
 
-# The install token is short-lived (two hours) and is fetched only when the
+# The install key is short-lived (two hours) and is fetched only when the
 # cluster release must be created or changed.
 - name: Register the cluster and fetch its install settings
   ansible.builtin.command:

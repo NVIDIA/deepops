@@ -55,7 +55,7 @@ runai_cluster_name: "deepops"
 # For QA without DNS, use a name resolved through a hosts-file entry (see below).
 runai_platform_domain: ""
 
-# First administrator. Put the password in an Ansible vault; the role refuses an
+# First administrator. Put the admin login value in an Ansible vault; the role refuses an
 # empty value and never prints it.
 runai_platform_admin_user: "admin@example.com"
 runai_platform_admin_password: ""
