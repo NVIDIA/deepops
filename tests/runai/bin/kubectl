@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+"""Fake kubectl for offline role tests."""
+import json, os, sys
+state = os.environ["FAKE_STATE"]
+os.makedirs(state, exist_ok=True)
+with open(os.path.join(state, "kubectl.log"), "a") as log:
+    log.write(" ".join(sys.argv[1:]) + "\n")
+a = [x for x in sys.argv[1:] if x not in ("--namespace",)]
+joined = " ".join(sys.argv[1:])
+gpus = os.environ.get("FAKE_GPUS", "1")
+major = os.environ.get("FAKE_DRIVER_MAJOR", "580")
+if "get nodes" in joined:
+    print(json.dumps({"items": [{"metadata": {"name": "n1", "labels": {"nvidia.com/gpu.present": "true", "nvidia.com/cuda.driver-version.major": major}},
+                                 "status": {"allocatable": {"nvidia.com/gpu": gpus}}}]}))
+elif joined.startswith("version"):
+    print(json.dumps({"clientVersion": {"gitVersion": "v1.35.4"}}))
+elif "get storageclass" in joined:
+    print(json.dumps({"items": [{"metadata": {"name": "nfs", "annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}]}))
+elif "get crd" in joined:
+    print("")
+elif " wait " in " " + joined + " ":
+    pass
+elif "delete namespace" in joined:
+    print("namespace \"x\" deleted")
+else:
+    pass

@@ -1,0 +1,49 @@
+---
+# Idempotent "helm upgrade --install". Inputs (set with vars: on include_tasks):
+#   _rel: {release, namespace, chart, version, repo (optional), values (dict),
+#          sensitive (bool), wait (bool, default true)}
+# Values travel on stdin, never on the command line or on disk. The release is only
+# touched when it is missing, not deployed, on another chart version, or its
+# user-supplied values differ, so a converged rerun reports changed=0.
+- name: "{{ _rel.release }} | look up the current release"
+  ansible.builtin.command: "{{ runai_helm }} list --namespace {{ _rel.namespace }} --output json"
+  register: _rel_list
+  changed_when: false
+  check_mode: false
+  failed_when: _rel_list.rc != 0 and 'not found' not in _rel_list.stderr
+
+- name: "{{ _rel.release }} | note the current release"
+  ansible.builtin.set_fact:
+    _rel_current: "{{ (_rel_list.stdout | default('[]', true) | from_json | selectattr('name', 'equalto', _rel.release) | list | first) | default({}) }}"
+
+- name: "{{ _rel.release }} | read its current values"
+  ansible.builtin.command: "{{ runai_helm }} get values {{ _rel.release }} --namespace {{ _rel.namespace }} --output json"
+  register: _rel_values
+  changed_when: false
+  check_mode: false
+  no_log: "{{ _rel.sensitive | default(false) }}"
+  when: _rel_current | length > 0
+
+- name: "{{ _rel.release }} | decide whether to change it"
+  ansible.builtin.set_fact:
+    _rel_needs_change: >-
+      {{ (_rel_current | length == 0)
+         or (_rel_current.status | default('') != 'deployed')
+         or (_rel_current.chart | default('') != _rel.chart.split('/')[-1] ~ '-' ~ _rel.version)
+         or ((_rel_values.stdout | default('null', true) | from_json or {}) | to_json(sort_keys=True)
+             != (_rel.helm_values | to_json(sort_keys=True))) }}
+  no_log: "{{ _rel.sensitive | default(false) }}"
+
+- name: "{{ _rel.release }} | helm upgrade --install"
+  ansible.builtin.command:
+    argv: >-
+      {{ [runai_helm, 'upgrade', '--install', _rel.release, _rel.chart,
+          '--version', _rel.version, '--namespace', _rel.namespace, '--create-namespace']
+         + (['--repo', _rel.repo] if _rel.repo | default('') else [])
+         + (['--wait', '--timeout', runai_helm_timeout] if _rel.wait | default(true) else [])
+         + ['--values', '-'] }}
+    stdin: "{{ _rel.helm_values | to_json }}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
+  no_log: "{{ _rel.sensitive | default(false) }}"
+  changed_when: true
+  when: _rel_needs_change | bool

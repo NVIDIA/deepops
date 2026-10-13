@@ -92,6 +92,16 @@ model coverage. See `skills/manage-model-cache/` and
    variables in `config/group_vars/`; do not edit roles for site-specific
    values.
 
+## Optional: KAI Scheduler / Run:ai (off by default)
+
+`runai_mode: kai` (or the experimental `platform`) plus
+`playbooks/k8s-cluster/runai.yml` adds GPU-aware queues and fractional GPUs on top
+of the GPU Operator. The two modes exclude each other. Verify with
+`python3 scripts/validation/validate_runai.py --json` and require `"ok": true`.
+Memory-limited fractions (`runai_kai_gpu_fractioning`) need GPU Operator v26.7.1+
+and an r615+ driver the role will not install for you. See
+`skills/deploy-runai-kai/` and `docs/k8s-cluster/runai.md`.
+
 ## Gotchas that look like failures but are not
 
 - **`nvidia-smi` over SSH reports "No devices were found" on Slurm nodes.**

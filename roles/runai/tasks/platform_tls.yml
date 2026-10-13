@@ -1,0 +1,80 @@
+---
+- name: Create the working directory (private)
+  ansible.builtin.file:
+    path: "{{ runai_work_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  become: true
+
+- name: Generate a local CA and a certificate for the domain (lab use)
+  ansible.builtin.shell: |
+    set -euo pipefail
+    cd {{ runai_work_dir | quote }}
+    if [ ! -s ca.pem ]; then
+      openssl req -x509 -newkey rsa:3072 -nodes -days 825 -subj "/CN=DeepOps Run:ai local CA" \
+        -keyout ca.key -out ca.pem
+    fi
+    if [ ! -s tls.crt ]; then
+      openssl req -newkey rsa:3072 -nodes -subj "/CN={{ runai_platform_domain }}" -keyout tls.key -out tls.csr
+      printf 'subjectAltName=DNS:{{ runai_platform_domain }},DNS:*.{{ runai_platform_domain }}\n' > san.ext
+      openssl x509 -req -in tls.csr -CA ca.pem -CAkey ca.key -CAcreateserial -days 825 \
+        -extfile san.ext -out tls.crt
+      rm -f tls.csr san.ext
+      echo generated
+    fi
+  args:
+    executable: /bin/bash
+  register: runai_gen_tls
+  changed_when: "'generated' in runai_gen_tls.stdout"
+  become: true
+  when: runai_platform_tls_cert_file | length == 0
+
+- name: Choose the certificate files
+  ansible.builtin.set_fact:
+    runai_tls_cert: "{{ runai_platform_tls_cert_file if runai_platform_tls_cert_file | length > 0 else runai_work_dir ~ '/tls.crt' }}"
+    runai_tls_key: "{{ runai_platform_tls_key_file if runai_platform_tls_key_file | length > 0 else runai_work_dir ~ '/tls.key' }}"
+    runai_tls_ca: "{{ runai_platform_ca_file if runai_platform_ca_file | length > 0 else (runai_work_dir ~ '/ca.pem' if runai_platform_tls_cert_file | length == 0 else '') }}"
+
+- name: Create the namespaces
+  ansible.builtin.shell: "{{ runai_kubectl }} create namespace {{ item }} --dry-run=client -o yaml | {{ runai_kubectl }} apply -f -"
+  args:
+    executable: /bin/bash
+  loop: ["{{ runai_cp_namespace }}", "{{ runai_cluster_namespace }}"]
+  register: runai_ns
+  changed_when: "'created' in runai_ns.stdout"
+
+- name: Create the TLS secret for the control plane
+  ansible.builtin.shell: |
+    set -euo pipefail
+    {{ runai_kubectl }} -n {{ runai_cp_namespace }} create secret tls runai-backend-tls \
+      --cert {{ runai_tls_cert | quote }} --key {{ runai_tls_key | quote }} --dry-run=client -o yaml \
+      | {{ runai_kubectl }} apply -f -
+  args:
+    executable: /bin/bash
+  register: runai_tls_secret
+  changed_when: "'created' in runai_tls_secret.stdout or 'configured' in runai_tls_secret.stdout"
+  no_log: true
+  become: true
+
+- name: Create the CA secrets (control plane and cluster)
+  ansible.builtin.shell: |
+    set -euo pipefail
+    {{ runai_kubectl }} -n {{ item }} create secret generic runai-ca-cert \
+      --from-file=runai-ca.pem={{ runai_tls_ca | quote }} --dry-run=client -o yaml | {{ runai_kubectl }} apply -f -
+  args:
+    executable: /bin/bash
+  loop: ["{{ runai_cp_namespace }}", "{{ runai_cluster_namespace }}"]
+  register: runai_ca_secret
+  changed_when: "'created' in runai_ca_secret.stdout or 'configured' in runai_ca_secret.stdout"
+  become: true
+  when: runai_tls_ca | length > 0
+
+- name: Label the cluster CA secret as cluster-wide
+  ansible.builtin.command: >-
+    {{ runai_kubectl }} -n {{ runai_cluster_namespace }} label secret runai-ca-cert
+    run.ai/cluster-wide=true run.ai/name=runai-ca-cert --overwrite
+  register: runai_ca_label
+  changed_when: "'not labeled' not in runai_ca_label.stdout"
+  when: runai_tls_ca | length > 0

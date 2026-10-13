@@ -1,0 +1,55 @@
+---
+- name: Check whether the Run:ai cluster is already installed
+  ansible.builtin.command: "{{ runai_helm }} list --namespace {{ runai_cluster_namespace }} --output json"
+  register: runai_cluster_list
+  changed_when: false
+  check_mode: false
+
+- name: Note the installed cluster release
+  ansible.builtin.set_fact:
+    runai_cluster_current: "{{ (runai_cluster_list.stdout | from_json | selectattr('name', 'equalto', runai_cluster_release_name) | list | first) | default({}) }}"
+
+- name: Copy the API helper to the host
+  ansible.builtin.copy:
+    src: runai_api.py
+    dest: "{{ runai_work_dir }}/runai_api.py"
+    owner: root
+    group: root
+    mode: "0700"
+  become: true
+
+# The install token is short-lived (two hours) and is fetched only when the
+# cluster release must be created or changed.
+- name: Register the cluster and fetch its install settings
+  ansible.builtin.command:
+    argv: >-
+      {{ ['python3', runai_work_dir ~ '/runai_api.py',
+          '--domain', runai_platform_domain,
+          '--cluster-name', runai_cluster_name,
+          '--chart-version', runai_chart_version]
+         + (['--resolve-ip', runai_platform_ingress_ip] if runai_platform_ingress_ip | length > 0 else [])
+         + (['--ca-file', runai_tls_ca] if runai_tls_ca | length > 0 else []) }}
+  environment:
+    RUNAI_USERNAME: "{{ runai_platform_admin_user }}"
+    RUNAI_PASSWORD: "{{ runai_platform_admin_password }}"
+  register: runai_api
+  changed_when: (runai_api.stdout | from_json).created
+  no_log: true
+  become: true
+  when: >-
+    runai_cluster_current | length == 0
+    or runai_cluster_current.status | default('') != 'deployed'
+    or runai_cluster_current.chart | default('') != 'runai-cluster-' ~ runai_chart_version
+
+- name: Install the Run:ai cluster
+  ansible.builtin.include_tasks: helm_release.yml
+  vars:
+    _rel:
+      release: "{{ runai_cluster_release_name }}"
+      namespace: "{{ runai_cluster_namespace }}"
+      chart: "{{ runai_cluster_chart }}"
+      repo: "{{ runai_chart_repo }}"
+      version: "{{ runai_chart_version }}"
+      helm_values: "{{ runai_cluster_base_values | runai_deep_merge((runai_api.stdout | from_json).values) | runai_deep_merge(runai_platform_cluster_extra_values) }}"
+      sensitive: true
+  when: runai_api is not skipped

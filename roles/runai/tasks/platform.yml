@@ -1,0 +1,54 @@
+---
+# Run:ai control plane + cluster on one Kubernetes cluster ("same-cluster").
+# Experimental in 26.11: ships only if it passes a live run (see docs/k8s-cluster/runai.md).
+- name: Check platform settings
+  ansible.builtin.assert:
+    that:
+      - runai_platform_domain | length > 0
+      - runai_platform_domain is match('^[A-Za-z0-9]([-A-Za-z0-9.]*[A-Za-z0-9])?$')
+      - runai_platform_admin_user is match('^[^@\s]+@[^@\s]+$')
+      - runai_platform_admin_password | runai_password_ok
+      - (runai_platform_tls_cert_file | length > 0) == (runai_platform_tls_key_file | length > 0)
+    fail_msg: >-
+      Platform mode needs runai_platform_domain (a DNS name), runai_platform_admin_user (an email
+      address) and runai_platform_admin_password (8+ characters with a digit, lower case, upper
+      case and one of -!@#$%^&*()_+=). Keep the password in an Ansible vault.
+      A certificate file needs its key file too.
+    quiet: true
+  no_log: true
+
+- name: Check prerequisites the cluster must already provide
+  ansible.builtin.include_tasks: platform_preflight.yml
+
+- name: Install the HAProxy ingress controller
+  ansible.builtin.include_tasks: helm_release.yml
+  vars:
+    _rel:
+      release: "{{ runai_platform_ingress_release_name }}"
+      namespace: "{{ runai_platform_ingress_namespace }}"
+      chart: "{{ runai_platform_ingress_chart }}"
+      repo: "{{ runai_platform_ingress_repo }}"
+      version: "{{ runai_platform_ingress_chart_version }}"
+      helm_values: "{{ runai_platform_ingress_values }}"
+  when: runai_platform_install_ingress | bool
+
+- name: Prepare the domain and certificates
+  ansible.builtin.include_tasks: platform_tls.yml
+
+- name: Make the domain resolve
+  ansible.builtin.include_tasks: platform_dns.yml
+
+- name: Install the Run:ai control plane
+  ansible.builtin.include_tasks: helm_release.yml
+  vars:
+    _rel:
+      release: "{{ runai_cp_release_name }}"
+      namespace: "{{ runai_cp_namespace }}"
+      chart: "{{ runai_cp_chart }}"
+      repo: "{{ runai_chart_repo }}"
+      version: "{{ runai_chart_version }}"
+      helm_values: "{{ runai_cp_values }}"
+      sensitive: true
+
+- name: Register this cluster and install the Run:ai cluster
+  ansible.builtin.include_tasks: platform_cluster.yml

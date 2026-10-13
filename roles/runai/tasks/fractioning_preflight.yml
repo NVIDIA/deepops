@@ -1,0 +1,41 @@
+---
+# gpu-fractioning needs GPU Operator >= runai_gpu_operator_min_version and an
+# r615-or-newer driver. This role never changes the GPU stack; it refuses to
+# continue until the stack is already right.
+- name: Find the GPU Operator release
+  ansible.builtin.set_fact:
+    runai_gpu_operator_chart: "{{ (runai_releases | selectattr('name', 'equalto', gpu_operator_release_name | default('nvidia-gpu-operator')) | map(attribute='chart') | list | first) | default('') }}"
+
+- name: Require a new enough GPU Operator
+  ansible.builtin.assert:
+    that:
+      - runai_gpu_operator_chart.startswith('gpu-operator-')
+      - runai_gpu_operator_chart.split('-')[-1] | regex_replace('^v', '') is version(runai_gpu_operator_min_version | regex_replace('^v', ''), '>=')
+    fail_msg: >-
+      GPU memory fractioning needs GPU Operator {{ runai_gpu_operator_min_version }} or newer
+      (found: {{ runai_gpu_operator_chart | default('none', true) }}). Set gpu_operator_chart_version
+      and rerun playbooks/k8s-cluster/nvidia-gpu-operator.yml, or leave runai_kai_gpu_fractioning false.
+    quiet: true
+
+- name: Read the driver version the GPU stack reports
+  ansible.builtin.command: "{{ runai_kubectl }} get nodes --output json"
+  register: runai_driver_nodes
+  changed_when: false
+  check_mode: false
+  no_log: true
+
+- name: List GPU nodes and their driver major version
+  ansible.builtin.set_fact:
+    runai_driver_majors: "{{ runai_driver_nodes.stdout | runai_driver_majors }}"
+
+- name: Require an r615 or newer driver on every GPU node
+  ansible.builtin.assert:
+    that:
+      - runai_driver_majors | length > 0
+      - runai_driver_majors | min >= runai_gpu_fractioning_min_driver_major
+    fail_msg: >-
+      GPU memory fractioning needs driver r{{ runai_gpu_fractioning_min_driver_major }} or newer on every
+      GPU node (found majors: {{ runai_driver_majors }}). The GPU Operator does not pick it by default: set
+      gpu_operator_driver_version to an r615 release (with gpu_operator_preinstalled_nvidia_software: false)
+      or install an r615 host driver, then rerun. See docs/k8s-cluster/runai.md.
+    quiet: true

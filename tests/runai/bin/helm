@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+"""Fake helm for offline role tests. State lives in $FAKE_STATE (a directory)."""
+import json, os, sys
+state = os.environ["FAKE_STATE"]
+os.makedirs(state, exist_ok=True)
+db = os.path.join(state, "releases.json")
+rels = json.load(open(db)) if os.path.exists(db) else {}
+with open(os.path.join(state, "calls.log"), "a") as log:
+    log.write(" ".join(a for a in sys.argv[1:] if a != "-") + "\n")
+a = sys.argv[1:]
+def opt(name, default=""):
+    return a[a.index(name) + 1] if name in a else default
+def save():
+    json.dump(rels, open(db, "w"))
+if a[0] == "list":
+    ns = opt("--namespace")
+    out = [dict(name=k.split("/", 1)[1], namespace=v["ns"], chart=v["chart"], status="deployed")
+           for k, v in rels.items() if "--all-namespaces" in a or v["ns"] == ns]
+    print(json.dumps(out))
+elif a[0] == "get" and a[1] == "values":
+    key = opt("--namespace") + "/" + a[2]
+    print(json.dumps(rels[key]["values"]) if key in rels else "null")
+elif a[0] == "upgrade":
+    rel, chart = a[2], a[3]
+    values = json.loads(sys.stdin.read() or "{}")
+    name = chart.rstrip("/").split("/")[-1]
+    rels[opt("--namespace") + "/" + rel] = dict(ns=opt("--namespace"), chart=name + "-" + opt("--version"), values=values)
+    save()
+elif a[0] == "uninstall":
+    key = opt("--namespace") + "/" + a[1]
+    if key not in rels:
+        sys.stderr.write("Error: uninstall: Release not loaded: %s: release: not found\n" % a[1]); sys.exit(1)
+    del rels[key]; save()
+else:
+    sys.stderr.write("fake helm: unsupported %s\n" % a); sys.exit(3)

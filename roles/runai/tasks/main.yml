@@ -1,0 +1,22 @@
+---
+# Optional Run:ai / KAI Scheduler. Does nothing unless runai_mode is kai or platform.
+- name: Check the Run:ai settings
+  ansible.builtin.assert:
+    that:
+      - runai_mode in ['off', 'kai', 'platform']
+      - runai_state in ['present', 'absent']
+    fail_msg: "runai_mode must be off, kai or platform and runai_state must be present or absent"
+    quiet: true
+
+- name: Skip Run:ai (runai_mode is off)
+  ansible.builtin.debug:
+    msg: "runai_mode is off; nothing to do. Set runai_mode to kai or platform in config/group_vars/k8s_cluster.yml."
+  when: runai_mode == 'off' and runai_state == 'present'
+
+- name: Install Run:ai
+  ansible.builtin.include_tasks: install.yml
+  when: runai_mode != 'off' and runai_state == 'present'
+
+- name: Remove Run:ai
+  ansible.builtin.include_tasks: uninstall.yml
+  when: runai_state == 'absent'

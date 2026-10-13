@@ -1,0 +1,45 @@
+---
+# Values the role builds from your settings. Not meant to be overridden; use
+# runai_kai_extra_values / runai_platform_*_extra_values instead.
+runai_kai_components: [kai-operator, binder, queue-controller, admission, kai-scheduler-default]
+
+runai_kai_base_values:
+  global:
+    gpuSharingMode: "{{ 'NvFractions' if runai_kai_gpu_fractioning | bool else 'NonMemoryEnforced' }}"
+    nvFractions:
+      set: "{{ runai_kai_gpu_fractioning | bool }}"
+runai_kai_values: "{{ runai_kai_base_values | runai_deep_merge(runai_kai_extra_values) }}"
+
+# ------------------------------------------------------------------ platform
+runai_platform_ingress_values:
+  controller:
+    ingressClass: "{{ runai_platform_ingress_class }}"
+    ingressClassResource:
+      name: "{{ runai_platform_ingress_class }}"
+    service:
+      type: "{{ runai_platform_ingress_service_type }}"
+    kind: "{{ 'DaemonSet' if runai_platform_ingress_host_ports | bool else 'Deployment' }}"
+    daemonset:
+      useHostPort: "{{ runai_platform_ingress_host_ports | bool }}"
+
+runai_cp_base_values:
+  global:
+    domain: "{{ runai_platform_domain }}"
+    ingress:
+      ingressClass: "{{ runai_platform_ingress_class }}"
+    customCA:
+      enabled: "{{ (runai_tls_ca | default('')) | length > 0 }}"
+  tenantsManager:
+    config:
+      adminUsername: "{{ runai_platform_admin_user }}"
+      adminPassword: "{{ runai_platform_admin_password }}"
+runai_cp_values: "{{ runai_cp_base_values | runai_deep_merge(runai_platform_cp_extra_values) }}"
+
+runai_cluster_base_values:
+  clusterConfig:
+    global:
+      ingress:
+        ingressClass: "{{ runai_platform_ingress_class }}"
+  global:
+    customCA:
+      enabled: "{{ (runai_tls_ca | default('')) | length > 0 }}"

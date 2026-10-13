@@ -1,0 +1,18 @@
+---
+# Optional: KAI Scheduler or the Run:ai platform on top of the GPU Operator.
+# Off by default. Choose a mode in config/group_vars/k8s_cluster.yml:
+#   runai_mode: kai        # KAI Scheduler (queues, gang scheduling, fractional GPUs)
+#   runai_mode: platform   # Run:ai control plane + cluster (experimental)
+# Remove with: -e runai_state=absent
+# Then check with: python3 scripts/validation/validate_runai.py --json
+# See docs/k8s-cluster/runai.md
+- hosts: kube_control_plane[0]
+  become: true
+  tasks:
+    - name: Install or remove Run:ai
+      include_role:
+        name: runai
+      run_once: true
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
+  tags:
+    - runai

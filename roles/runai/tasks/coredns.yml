@@ -1,0 +1,37 @@
+---
+# Adds (or removes) one hosts{} block in the CoreDNS Corefile for the domain.
+# Kubespray owns this ConfigMap and will overwrite it on its next run; for a
+# permanent entry set kubespray's dns_etchosts instead (see docs).
+- name: Read the CoreDNS Corefile
+  ansible.builtin.command: "{{ runai_kubectl }} -n kube-system get configmap coredns --output json"
+  register: runai_corefile_raw
+  changed_when: false
+  check_mode: false
+
+- name: Plan the Corefile change
+  ansible.builtin.set_fact:
+    runai_corefile_old: "{{ (runai_corefile_raw.stdout | from_json).data.Corefile }}"
+    runai_corefile_block: "    hosts {\n      {{ runai_platform_ingress_ip }} {{ runai_platform_domain }}\n      fallthrough\n    }  # deepops-runai\n"
+  no_log: true
+
+- name: Compute the new Corefile
+  ansible.builtin.set_fact:
+    runai_corefile_clean: "{{ runai_corefile_old | regex_replace('    hosts \\{\\n[^}]*\\}  # deepops-runai\\n', '') }}"
+  no_log: true
+
+- name: Apply the Corefile change
+  ansible.builtin.shell: |
+    set -euo pipefail
+    {{ runai_kubectl }} -n kube-system patch configmap coredns --type merge \
+      --patch "$(python3 -c 'import json,sys; print(json.dumps({"data": {"Corefile": sys.stdin.read()}}))')"
+    {{ runai_kubectl }} -n kube-system rollout restart deployment/coredns
+  args:
+    executable: /bin/bash
+    stdin: >-
+      {{ runai_corefile_clean | regex_replace('(\\.:53 \\{\\n)', '\\1' ~ runai_corefile_block) if runai_coredns_present | bool else runai_corefile_clean }}
+    stdin_add_newline: false
+  register: runai_corefile_apply
+  changed_when: true
+  when: >-
+    (runai_coredns_present | bool and 'deepops-runai' not in runai_corefile_old)
+    or (not runai_coredns_present | bool and 'deepops-runai' in runai_corefile_old)

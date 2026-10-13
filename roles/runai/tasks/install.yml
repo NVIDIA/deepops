@@ -1,0 +1,11 @@
+---
+- name: Check prerequisites
+  ansible.builtin.include_tasks: preflight.yml
+
+- name: Install KAI Scheduler
+  ansible.builtin.include_tasks: kai.yml
+  when: runai_mode == 'kai'
+
+- name: Install the Run:ai platform
+  ansible.builtin.include_tasks: platform.yml
+  when: runai_mode == 'platform'

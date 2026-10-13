@@ -94,3 +94,28 @@ kube_enable_rsyslog_client: true
 rsyslog_server_hostname: "{{ groups['kube_control_plane'][0] }}"
 rsyslog_client_tcp_host: "{{ rsyslog_server_hostname }}"
 rsyslog_client_group: "k8s_cluster"
+
+################################################################################
+# Run:ai / KAI Scheduler (optional, off by default)                            #
+################################################################################
+# Playbook: playbooks/k8s-cluster/runai.yml   Docs: docs/k8s-cluster/runai.md
+# Check:    python3 scripts/validation/validate_runai.py --json
+#
+#   off       do nothing (default)
+#   kai       KAI Scheduler: queues, gang scheduling, fractional GPU requests
+#   platform  Run:ai control plane + cluster, same Kubernetes cluster (experimental)
+# The modes exclude each other: the platform's cluster chart ships its own KAI.
+runai_mode: "off"
+
+# Hard GPU-memory limits for fractional pods (kai mode). Needs GPU Operator
+# v26.7.1+ and an r615+ driver, which you must set up first; DeepOps's default
+# driver is not changed. Leave false unless you need enforced memory limits.
+#runai_kai_gpu_fractioning: false
+
+# Platform mode only. Keep the password in an Ansible vault.
+#runai_platform_domain: "runai.example.com"
+#runai_platform_admin_user: "admin@example.com"
+#runai_platform_admin_password: "{{ vault_runai_admin_password }}"
+# Lab without DNS: let the role add the hosts entry and a cluster DNS rewrite.
+#runai_platform_manage_hosts_entry: true
+#runai_platform_coredns_rewrite: true

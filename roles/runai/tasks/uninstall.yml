@@ -1,0 +1,71 @@
+---
+# Removes only what this role installs. Leaves the GPU stack alone.
+- name: Remove the Run:ai cluster
+  ansible.builtin.command: "{{ runai_helm }} uninstall {{ runai_cluster_release_name }} --namespace {{ runai_cluster_namespace }} --wait --timeout {{ runai_helm_timeout }}"
+  register: runai_rm_cluster
+  changed_when: runai_rm_cluster.rc == 0
+  failed_when: runai_rm_cluster.rc != 0 and 'not found' not in runai_rm_cluster.stderr
+
+- name: Remove the Run:ai control plane
+  ansible.builtin.command: "{{ runai_helm }} uninstall {{ runai_cp_release_name }} --namespace {{ runai_cp_namespace }} --wait --timeout {{ runai_helm_timeout }}"
+  register: runai_rm_cp
+  changed_when: runai_rm_cp.rc == 0
+  failed_when: runai_rm_cp.rc != 0 and 'not found' not in runai_rm_cp.stderr
+
+- name: Remove KAI Scheduler
+  ansible.builtin.command: "{{ runai_helm }} uninstall {{ runai_kai_release_name }} --namespace {{ runai_kai_namespace }} --wait --timeout {{ runai_helm_timeout }}"
+  register: runai_rm_kai
+  changed_when: runai_rm_kai.rc == 0
+  failed_when: runai_rm_kai.rc != 0 and 'not found' not in runai_rm_kai.stderr
+
+- name: Remove the HAProxy ingress controller this role installed
+  ansible.builtin.command: "{{ runai_helm }} uninstall {{ runai_platform_ingress_release_name }} --namespace {{ runai_platform_ingress_namespace }} --wait"
+  register: runai_rm_ingress
+  changed_when: runai_rm_ingress.rc == 0
+  failed_when: runai_rm_ingress.rc != 0 and 'not found' not in runai_rm_ingress.stderr
+  when: runai_platform_install_ingress | bool
+
+- name: Remove the CoreDNS rewrite
+  ansible.builtin.include_tasks: coredns.yml
+  vars:
+    runai_coredns_present: false
+  when: runai_platform_coredns_rewrite | bool
+
+- name: Remove the hosts-file entry
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^\S+\s+{{ runai_platform_domain | regex_escape }}\s*# deepops-runai$'
+    state: absent
+  when: runai_platform_manage_hosts_entry | bool and runai_platform_domain | length > 0
+
+# Helm keeps these on purpose (resource-policy: keep); an uninstall that leaves
+# them behind is not clean, so remove them here.
+- name: Remove namespaces left behind
+  ansible.builtin.command: "{{ runai_kubectl }} delete namespace {{ item }} --ignore-not-found --wait --timeout=300s"
+  loop:
+    - "{{ runai_kai_namespace }}"
+    - kai-resource-reservation
+    - runai-reservation
+    - runai-scale-adjust
+    - "{{ runai_cluster_namespace }}"
+    - "{{ runai_cp_namespace }}"
+    - "{{ runai_platform_ingress_namespace if runai_platform_install_ingress | bool else omit }}"
+  register: runai_rm_ns
+  changed_when: "'deleted' in runai_rm_ns.stdout"
+  when: item is not none
+
+- name: List CRDs from these charts
+  ansible.builtin.shell: >-
+    set -o pipefail;
+    {{ runai_kubectl }} get crd --output name | grep -E '(\.run\.ai|\.kai\.scheduler|scheduling\.run\.ai|gpu-fractioning\.kai\.scheduler|\.karta\.)' || true
+  args:
+    executable: /bin/bash
+  register: runai_left_crds
+  changed_when: false
+  check_mode: false
+
+- name: Remove CRDs from these charts (runai_uninstall_remove_crds)
+  ansible.builtin.command: "{{ runai_kubectl }} delete {{ item }} --ignore-not-found"
+  loop: "{{ runai_left_crds.stdout_lines }}"
+  changed_when: true
+  when: runai_uninstall_remove_crds | bool

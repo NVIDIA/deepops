@@ -1,0 +1,61 @@
+---
+- name: Find Helm and the Kubernetes API
+  ansible.builtin.command: "{{ runai_kubectl }} version --output json"
+  register: runai_kube_version
+  changed_when: false
+  check_mode: false
+
+- name: List installed Helm releases
+  ansible.builtin.command: "{{ runai_helm }} list --all-namespaces --output json"
+  register: runai_all_releases
+  changed_when: false
+  check_mode: false
+
+- name: Note installed Helm releases
+  ansible.builtin.set_fact:
+    runai_releases: "{{ runai_all_releases.stdout | from_json }}"
+
+- name: Check for GPUs
+  ansible.builtin.command: "{{ runai_kubectl }} get nodes --output json"
+  register: runai_nodes
+  changed_when: false
+  check_mode: false
+  no_log: true
+
+- name: Count allocatable GPUs
+  ansible.builtin.set_fact:
+    runai_gpu_count: "{{ runai_nodes.stdout | runai_gpu_count }}"
+
+- name: Require the GPU stack (GPU Operator or device plugin)
+  ansible.builtin.assert:
+    that:
+      - runai_gpu_count | int > 0
+    fail_msg: >-
+      No node advertises nvidia.com/gpu. Install the GPU stack first
+      (ansible-playbook playbooks/k8s-cluster/nvidia-gpu-operator.yml) and wait for the
+      node to report GPUs. Check with: kubectl get nodes -o json | grep nvidia.com/gpu
+    quiet: true
+  when: runai_require_gpu | bool
+
+- name: Refuse two KAI Schedulers (kai mode)
+  ansible.builtin.assert:
+    that: runai_releases | selectattr('chart', 'match', '^runai-cluster-') | list | length == 0
+    fail_msg: >-
+      The Run:ai cluster chart is installed and it already ships its own KAI Scheduler.
+      Do not add standalone KAI beside it. Uninstall one of them (runai_state: absent) first.
+    quiet: true
+  when: runai_mode == 'kai'
+
+- name: Refuse two KAI Schedulers (platform mode)
+  ansible.builtin.assert:
+    that: runai_releases | selectattr('name', 'equalto', runai_kai_release_name) | list | length == 0
+    fail_msg: >-
+      A standalone KAI Scheduler release ({{ runai_kai_release_name }}) is installed and the
+      Run:ai cluster chart ships its own KAI. Run this role with runai_mode: kai and
+      runai_state: absent first, then install platform mode.
+    quiet: true
+  when: runai_mode == 'platform'
+
+- name: Check GPU memory fractioning prerequisites
+  ansible.builtin.include_tasks: fractioning_preflight.yml
+  when: runai_mode == 'kai' and runai_kai_gpu_fractioning | bool

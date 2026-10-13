@@ -1,0 +1,22 @@
+---
+# Both are off by default and meant for labs without a DNS record for the domain.
+- name: Find the address the domain should resolve to
+  ansible.builtin.assert:
+    that: runai_platform_ingress_ip | length > 0
+    fail_msg: Set runai_platform_ingress_ip to the address the ingress controller answers on.
+    quiet: true
+  when: runai_platform_manage_hosts_entry | bool or runai_platform_coredns_rewrite | bool
+
+- name: Resolve the domain on the control-plane host
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^\S+\s+{{ runai_platform_domain | regex_escape }}\s*# deepops-runai$'
+    line: "{{ runai_platform_ingress_ip }} {{ runai_platform_domain }} # deepops-runai"
+  become: true
+  when: runai_platform_manage_hosts_entry | bool
+
+- name: Resolve the domain inside the cluster
+  ansible.builtin.include_tasks: coredns.yml
+  vars:
+    runai_coredns_present: true
+  when: runai_platform_coredns_rewrite | bool
