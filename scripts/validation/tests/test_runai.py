@@ -312,6 +312,67 @@ class TestPlatformAndUninstall(unittest.TestCase):
         self.assertEqual(result["leftovers"], ["namespace/runai"])
 
 
+class TestPlatformProject(unittest.TestCase):
+    def _run(self, create_status=201, delete_status=200):
+        calls = []
+
+        def fake(domain, ip, ca, method, path, body=None, headers=None, timeout=20):
+            calls.append((method, path, body))
+            if path == "/":
+                return 200, b"<html>"
+            if path == "/api/v2/token":
+                return 200, json.dumps({"access_token": "t"}).encode()
+            if path == "/api/v1/clusters":
+                return 200, json.dumps({"clusters": [{"name": "deepops", "uuid": "c1",
+                                                      "status": {"platform": "Connected"}}]}).encode()
+            if path == "/api/v1/node-pools":
+                return 200, json.dumps({"nodepools": [{"id": 7, "name": "default", "clusterId": "c1"}]}).encode()
+            if path == "/api/v1/org-unit/projects" and method == "POST":
+                return create_status, json.dumps({"id": "p1"}).encode()
+            if path == "/api/v1/org-unit/projects/p1" and method == "DELETE":
+                return delete_status, b""
+            return 404, b""
+        orig = vr.https_request
+        vr.https_request = fake
+        kube = FakeKube(pods={"kai-whole-gpu": pod("kai-whole-gpu"), "kai-half-a": pod("kai-half-a"),
+                              "kai-half-b": pod("kai-half-b")})
+        kube_get = kube.get_json
+        kube.get_json = lambda a, timeout=60: ({}, "") if a[:2] == ["get", "namespace"] else kube_get(a, timeout)
+        try:
+            result = vr.validate(args("--mode", "platform", "--platform-domain", "runai.lab.test",
+                                      "--create-project", "dv"),
+                                 {"RUNAI_USERNAME": "u", "RUNAI_PASSWORD": "p"}, kube)
+        finally:
+            vr.https_request = orig
+        return result, calls, kube
+
+    def test_project_created_used_and_deleted(self):
+        result, calls, kube = self._run()
+        self.assertTrue(result["ok"], result["failures"])
+        self.assertTrue(result["project_created"] and result["project_deleted"])
+        self.assertEqual([m for m, p, _ in calls if p.startswith("/api/v1/org-unit")], ["POST", "DELETE"])
+        self.assertEqual(kube.applied[0]["metadata"]["namespace"], "runai-dv")
+        self.assertEqual(kube.applied[0]["spec"]["schedulerName"], "runai-scheduler")
+        self.assertEqual(kube.applied[0]["metadata"]["labels"], {"runai/queue": "dv", "kai.scheduler/queue": "dv"})
+
+    def test_create_body_shape(self):
+        body = vr.project_body("dv", "c1", "7", 1)
+        self.assertEqual(body["resources"][0]["nodePool"], {"id": "7"})
+        self.assertEqual(body["resources"][0]["gpu"]["deserved"], 1)
+
+    def test_create_failure_is_not_ok(self):
+        result, _, _ = self._run(create_status=400)
+        self.assertFalse(result["ok"])
+
+    def test_delete_failure_is_not_ok(self):
+        result, _, _ = self._run(delete_status=500)
+        self.assertFalse(result["ok"])
+
+    def test_create_project_needs_platform_mode(self):
+        with self.assertRaises(SystemExit):
+            args("--create-project", "dv")
+
+
 class TestArgs(unittest.TestCase):
     def test_bad_namespace_refused(self):
         with self.assertRaises(SystemExit):

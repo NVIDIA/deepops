@@ -176,8 +176,12 @@ RUNAI_USERNAME=admin@example.com RUNAI_PASSWORD='...' \
 ```
 
 In platform mode, pods must be submitted in a Run:ai project's namespace and use
-that project's queue. Create a project in the web UI (or API) first, then pass its
-namespace and queue to the validator. Beyond what the validator checks, DeepOps
+that project's queue. Either create a project in the web UI (or API) first and pass
+its namespace and queue to the validator, or let the validator do it: add
+`--create-project deepops-validate` and it creates that project through the API
+(one GPU of quota in the first node pool), runs the whole-GPU and half-GPU checks in
+`runai-deepops-validate` with `runai-scheduler`, and deletes the project again. With
+that flag `"ok": true` also requires the project to have been created and deleted. Beyond what the validator checks, DeepOps
 does not configure projects, users or quotas; use the Run:ai documentation.
 
 Run:ai 3.0 releases often. Keep `runai_chart_version` pinned and refresh it on

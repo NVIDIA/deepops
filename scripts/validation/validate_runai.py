@@ -13,7 +13,9 @@ Checks (all in a throw-away namespace that is deleted on success):
 4. ``--memory-enforcement``: a pod inside its GPU-memory share completes and a pod
    that allocates past it is refused (gpu-fractioning only)
 5. ``--mode platform``: the control-plane API answers over the configured domain
-   and the cluster reports ``Connected``
+   and the cluster reports ``Connected``. With ``--create-project NAME`` the
+   validator also creates a throw-away Run:ai project through the API, runs checks
+   2 and 3 in the project's namespace with ``runai-scheduler``, then deletes the project.
 
 ``--verify-uninstalled`` is a separate read-only mode: it passes only if no
 ``kai-scheduler``/``runai*`` namespace or Helm release is left.
@@ -151,6 +153,8 @@ def pod_manifest(name, namespace, image, command, args, scheduler, queue_label, 
     if env:
         spec["containers"][0]["env"] = [{"name": k, "value": v} for k, v in sorted(env.items())]
     meta = {"name": name, "namespace": namespace, "labels": {queue_label: queue}}
+    if queue_label == "runai/queue":  # Run:ai documents this key; the KAI scheduler reads its own
+        meta["labels"]["kai.scheduler/queue"] = queue
     if annotations:
         meta["annotations"] = annotations
     return {"apiVersion": "v1", "kind": "Pod", "metadata": meta, "spec": spec}
@@ -338,6 +342,123 @@ def https_request(domain, ip, ca_file, method, path, body=None, headers=None, ti
         conn.close()
 
 
+
+def api_json(args, bearer, method, path, body=None):
+    """One JSON call to the control plane; returns (status, parsed-or-{})."""
+    headers = {"Authorization": "Bearer " + bearer, "Accept": "application/json"}
+    data = None
+    if body is not None:
+        data = json.dumps(body)
+        headers["Content-Type"] = "application/json"
+    status, raw = https_request(args.platform_domain, args.resolve_ip, args.ca_file,
+                                method, path, data, headers)
+    try:
+        return status, (json.loads(raw) if raw else {})
+    except ValueError:
+        return status, {}
+
+
+def api_login(args, env):
+    form = urllib.parse.urlencode({"grant_type": "password", "username": env.get("RUNAI_USERNAME", ""),
+                                   "password": env.get("RUNAI_PASSWORD", "")})
+    status, body = https_request(
+        args.platform_domain, args.resolve_ip, args.ca_file, "POST", "/api/v2/token", form,
+        {"Content-Type": "application/x-www-form-urlencoded"})
+    return json.loads(body).get("access_token", "") if status == 200 else ""
+
+
+def project_body(name, cluster_id, pool_id, gpus):
+    """Request body for ``POST /api/v1/org-unit/projects``."""
+    return {"name": name, "clusterId": cluster_id,
+            "resources": [{"nodePool": {"id": pool_id},
+                           "gpu": {"deserved": gpus, "limit": None, "overQuotaWeight": 1}}]}
+
+
+def pick_cluster(clusters_json, cluster_name):
+    items = clusters_json if isinstance(clusters_json, list) else clusters_json.get("clusters", [])
+    for item in items:
+        if item.get("name") == cluster_name:
+            return item.get("uuid") or item.get("id") or ""
+    return ""
+
+
+def pick_pool(pools_json, cluster_id):
+    items = pools_json if isinstance(pools_json, list) else pools_json.get("nodepools", [])
+    for item in items:
+        if item.get("clusterId") in (cluster_id, None, "") and item.get("id"):
+            return str(item["id"])
+    return ""
+
+
+def create_project(args, env, result):
+    """Create the throw-away project. Returns (bearer, project_id) or ("", "")."""
+    bearer = api_login(args, env)
+    if not bearer:
+        result["failures"].append("API login failed (project setup)")
+        return "", ""
+    status, clusters = api_json(args, bearer, "GET", "/api/v1/clusters")
+    cluster_id = pick_cluster(clusters, args.cluster_name) if status == 200 else ""
+    status, pools = api_json(args, bearer, "GET", "/api/v1/node-pools")
+    pool_id = pick_pool(pools, cluster_id) if status == 200 else ""
+    if not cluster_id or not pool_id:
+        result["failures"].append("could not find the cluster or its node pool through the API")
+        return bearer, ""
+    status, doc = api_json(args, bearer, "POST", "/api/v1/org-unit/projects",
+                           project_body(args.create_project, cluster_id, pool_id, 1))
+    if status >= 300 or not doc.get("id"):
+        result["failures"].append("project create failed (HTTP %d)" % status)
+        return bearer, ""
+    result["project_created"] = True
+    return bearer, str(doc["id"])
+
+
+def wait_namespace(kube, namespace, timeout):
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        doc, _ = kube.get_json(["get", "namespace", namespace])
+        if doc is not None:
+            return True
+        time.sleep(5)
+    return False
+
+
+def delete_project(args, bearer, project_id, result):
+    try:
+        status, _ = api_json(args, bearer, "DELETE", "/api/v1/org-unit/projects/" + urllib.parse.quote(project_id))
+        if status >= 300 and status != 404:
+            result["failures"].append("project delete failed (HTTP %d); delete it by hand" % status)
+        else:
+            result["project_deleted"] = True
+    except (OSError, ssl.SSLError, http.client.HTTPException) as exc:
+        result["failures"].append("project delete failed: %s; delete it by hand" % type(exc).__name__)
+
+
+def run_in_project(kube, result, args, env):
+    """Platform mode: create a throw-away project, run the GPU checks in its namespace, delete it."""
+    check_platform(result, args, env)
+    if not result["platform_cluster_connected"] or not result["scheduler_ready"] or args.skip_gpu_jobs:
+        return
+    bearer = project_id = ""
+    try:
+        bearer, project_id = create_project(args, env, result)
+        if not project_id:
+            return
+        args.namespace = "runai-" + args.create_project
+        args.queue = args.create_project
+        if not wait_namespace(kube, args.namespace, args.job_timeout):
+            result["failures"].append("project namespace %s did not appear" % args.namespace)
+            return
+        check_whole_gpu(kube, result, args)
+        check_fractions(kube, result, args)
+    except (OSError, ssl.SSLError, http.client.HTTPException, ValueError) as exc:
+        result["failures"].append("project run failed: %s" % type(exc).__name__)
+    finally:
+        if project_id:
+            delete_project(args, bearer, project_id, result)
+            if result["project_deleted"]:
+                kube.delete_namespace(args.namespace)
+
+
 def check_platform(result, args, env):
     result["platform_ran"] = True
     user, pw = env.get("RUNAI_USERNAME", ""), env.get("RUNAI_PASSWORD", "")
@@ -387,6 +508,7 @@ def new_result(mode):
         "fraction_job_ran": False, "fraction_job_ok": False,
         "memory_enforcement_ran": False, "memory_enforcement_ok": False,
         "platform_ran": False, "platform_api_ok": False, "platform_cluster_connected": False,
+        "project_created": False, "project_deleted": False,
         "uninstalled_ran": False, "uninstalled_ok": False, "leftovers": [],
         "failures": [],
     }
@@ -426,7 +548,9 @@ def validate(args, env, kube=None):
         result["ok"] = result["uninstalled_ok"] and not result["failures"]
         return result
     check_scheduler(kube, result, args)
-    if result["scheduler_ready"] and not args.skip_gpu_jobs:
+    if args.mode == "platform" and args.create_project:
+        run_in_project(kube, result, args, env)
+    elif result["scheduler_ready"] and not args.skip_gpu_jobs:
         if kube.ensure_namespace(args.namespace)[0] != 0:
             result["failures"].append("could not create namespace %s" % args.namespace)
         else:
@@ -434,16 +558,18 @@ def validate(args, env, kube=None):
             check_fractions(kube, result, args)
             if args.memory_enforcement:
                 check_memory_enforcement(kube, result, args)
-    if args.mode == "platform":
+    if args.mode == "platform" and not result["platform_ran"]:
         check_platform(result, args, env)
     ran_ok = (result["scheduler_ready"] and
               (args.skip_gpu_jobs or (result["gpu_job_ok"] and result["fraction_job_ok"])) and
               (not args.memory_enforcement or result["memory_enforcement_ok"]) and
               (args.mode != "platform" or
-               (result["platform_api_ok"] and result["platform_cluster_connected"])))
+               (result["platform_api_ok"] and result["platform_cluster_connected"] and
+                (not args.create_project or (result["project_created"] and result["project_deleted"])))))
     result["ok"] = bool(ran_ok and not result["failures"])
     if result["ok"] and not args.skip_gpu_jobs:
-        kube.delete_namespace(args.namespace)
+        if not args.create_project:
+            kube.delete_namespace(args.namespace)
     elif not args.skip_gpu_jobs and result["gpu_job_ran"]:
         result["failures"].append("namespace %s kept for debugging" % args.namespace)
     return result
@@ -472,6 +598,9 @@ def parse_args(argv):
     p.add_argument("--platform-domain", default="", help="control-plane FQDN (platform mode)")
     p.add_argument("--resolve-ip", default="", help="connect here instead of resolving the domain")
     p.add_argument("--ca-file", default="", help="CA bundle that signed the control-plane certificate")
+    p.add_argument("--create-project", default="",
+                   help="platform mode: create this throw-away Run:ai project through the API, run the "
+                        "GPU checks in its namespace, then delete it (needs RUNAI_USERNAME/RUNAI_PASSWORD)")
     p.add_argument("--cluster-name", default="deepops", help="Run:ai cluster name to look up")
     args = p.parse_args(argv)
     for label, value in (("namespace", args.namespace), ("kai-namespace", args.kai_namespace)):
@@ -480,6 +609,16 @@ def parse_args(argv):
     if args.mode == "platform" and not args.verify_uninstalled:
         if not args.platform_domain or not FQDN_RE.match(args.platform_domain):
             p.error("--platform-domain is required in platform mode")
+    if args.create_project and (args.mode != "platform" or not NAME_RE.match(args.create_project)):
+        p.error("--create-project needs --mode platform and a valid Kubernetes name")
+    if args.mode == "platform":  # the cluster chart puts its scheduler in the runai namespace
+        if args.kai_namespace == KAI_NAMESPACE:
+            args.kai_namespace = "runai"
+        if args.create_project:
+            if args.scheduler_name == "kai-scheduler":
+                args.scheduler_name = "runai-scheduler"
+            if args.queue_label_key == "kai.scheduler/queue":
+                args.queue_label_key = "runai/queue"
     if args.job_timeout < 10:
         p.error("--job-timeout must be at least 10 seconds")
     return args
