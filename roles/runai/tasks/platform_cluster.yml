@@ -50,6 +50,6 @@
       chart: "{{ runai_cluster_chart }}"
       repo: "{{ runai_chart_repo }}"
       version: "{{ runai_chart_version }}"
-      helm_values: "{{ runai_cluster_base_values | runai_deep_merge((runai_api.stdout | from_json).values) | runai_deep_merge(runai_platform_cluster_extra_values) }}"
+      helm_values: "{{ runai_cluster_base_values | runai_deep_merge((runai_api.stdout | from_json)['values']) | runai_deep_merge(runai_platform_cluster_extra_values) }}"
       sensitive: true
   when: runai_api is not skipped
