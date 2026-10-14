@@ -10,7 +10,7 @@
   ansible.builtin.assert:
     that:
       - runai_gpu_operator_chart.startswith('gpu-operator-')
-      - runai_gpu_operator_chart.split('-')[-1] | regex_replace('^v', '') is version(runai_gpu_operator_min_version | regex_replace('^v', ''), '>=')
+      - runai_gpu_operator_chart | regex_replace('^gpu-operator-', '') | regex_replace('^v', '') is version(runai_gpu_operator_min_version | regex_replace('^v', ''), '>=')
     fail_msg: >-
       GPU memory fractioning needs GPU Operator {{ runai_gpu_operator_min_version }} or newer
       (found: {{ runai_gpu_operator_chart | default('none', true) }}). Set gpu_operator_chart_version
