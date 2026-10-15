@@ -422,15 +422,26 @@ class TestPlatformNames(unittest.TestCase):
         self.assertEqual(vr.cluster_connected({"clusters": [{"name": "d", "status": {"state": "Disconnected"}}]}, "d"),
                          (True, False))
 
-    def test_status_summary_has_no_free_text(self):
-        doc = {"clusters": [{"name": "d", "status": {"state": "Waiting to connect",
-                                                     "conditions": [{"message": "token=abc123"}],
-                                                     "note": "password=hunter2 and more"}}]}
+    def test_status_summary_only_fixed_words(self):
+        # alphabetic secrets, secret-looking key names and nested text must not survive
+        doc = {"clusters": [{"name": "d", "status": {
+            "state": "Waiting to connect", "platform": "hunter", "status": "SecretTokenAbcdef",
+            "PasswordIsHunterTwo": "okvalue", "conditions": [{"message": "token abc"}]}}]}
         out = vr.cluster_status_summary(doc, "d")
         self.assertEqual(out["state"], "Waiting to connect")
-        self.assertEqual(out["conditions"], "list")
-        self.assertNotIn("hunter2", json.dumps(out))
-        self.assertNotIn("abc123", json.dumps(out))
+        self.assertEqual(out["platform"], "other")
+        self.assertEqual(out["status"], "other")
+        self.assertEqual(out["other_keys"], 2)
+        blob = json.dumps(out)
+        for bad in ("hunter", "SecretToken", "Password", "okvalue", "token", "abc"):
+            self.assertNotIn(bad, blob)
+        self.assertEqual(set(out), {"state", "platform", "status", "other_keys"})
+
+    def test_status_summary_string_status(self):
+        out = vr.cluster_status_summary({"clusters": [{"name": "d", "status": "Connected"}]}, "d")
+        self.assertEqual(out, {"status": "Connected"})
+        out = vr.cluster_status_summary({"clusters": [{"name": "d", "status": "my-private-note"}]}, "d")
+        self.assertEqual(out, {"status": "other"})
 
 
 class TestArgs(unittest.TestCase):

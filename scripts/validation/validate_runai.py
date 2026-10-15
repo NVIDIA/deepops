@@ -143,8 +143,17 @@ def cluster_connected(clusters_json, cluster_name):
     return False, False
 
 
+STATUS_KEYS = ("platform", "state", "status", "connected")
+STATUS_VALUES = ("Connected", "Disconnected", "Waiting to connect", "Waiting", "Pending", "Unknown",
+                 "Error", "Healthy", "Unhealthy", "Online", "Offline")
+
+
 def cluster_status_summary(clusters_json, cluster_name):
-    """Short, secret-free view of a cluster's status for the report: key names and short enum-like values."""
+    """Report-safe view of a cluster's status: only fixed key names and fixed status words.
+
+    Anything else (other keys, other values, free text) is replaced by a constant marker, so
+    nothing taken from the API response can reach the report.
+    """
     items = clusters_json if isinstance(clusters_json, list) else clusters_json.get("clusters", [])
     for item in items:
         if item.get("name") == cluster_name:
@@ -152,11 +161,12 @@ def cluster_status_summary(clusters_json, cluster_name):
             if isinstance(status, str):
                 status = {"status": status}
             out = {}
-            for k, v in (status or {}).items():
-                if isinstance(v, str) and re.match(r"^[A-Za-z][A-Za-z ]{0,30}$", v):
-                    out[str(k)[:30]] = v
-                else:
-                    out[str(k)[:30]] = type(v).__name__
+            for k in STATUS_KEYS:
+                if isinstance(status, dict) and k in status:
+                    v = status[k]
+                    out[k] = v if isinstance(v, str) and v in STATUS_VALUES else "other"
+            if isinstance(status, dict) and any(k not in STATUS_KEYS for k in status):
+                out["other_keys"] = len([k for k in status if k not in STATUS_KEYS])
             return out
     return {}
 
