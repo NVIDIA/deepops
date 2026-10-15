@@ -16,7 +16,8 @@
 
 - name: Compute the new Corefile
   ansible.builtin.set_fact:
-    runai_corefile_clean: "{{ runai_corefile_old | regex_replace('    hosts \\{\\n[^}]*\\}  # deepops-runai\\n', '') }}"
+    runai_corefile_clean: >-
+      {{ runai_corefile_old | regex_replace('    hosts \{\n[^}]*\}  # deepops-runai\n', '') }}
   no_log: true
 
 - name: Apply the Corefile change
@@ -28,7 +29,7 @@
   args:
     executable: /bin/bash
     stdin: >-
-      {{ runai_corefile_clean | regex_replace('(\\.:53 \\{\\n)', '\\1' ~ runai_corefile_block) if runai_coredns_present | bool else runai_corefile_clean }}
+      {{ runai_corefile_clean | regex_replace('(\.:53 \{\n)', '\1' ~ runai_corefile_block) if runai_coredns_present | bool else runai_corefile_clean }}
     stdin_add_newline: false
   register: runai_corefile_apply
   changed_when: true
