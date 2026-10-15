@@ -137,15 +137,19 @@ def cluster_connected(clusters_json, cluster_name):
         if item.get("name") == cluster_name:
             status = item.get("status")
             if isinstance(status, str):  # some API versions return the state directly
-                return True, status == "Connected"
+                return True, status.casefold() == "connected"
             status = status or {}
-            return True, "Connected" in (status.get("platform"), status.get("state"))
+            vals = [str(v).casefold() for v in (status.get("platform"), status.get("state")) if isinstance(v, str)]
+            return True, "connected" in vals
     return False, False
 
 
 STATUS_KEYS = ("platform", "state", "status", "connected")
 STATUS_VALUES = ("Connected", "Disconnected", "Waiting to connect", "Waiting", "Pending", "Unknown",
-                 "Error", "Healthy", "Unhealthy", "Online", "Offline")
+                 "Error", "Healthy", "Unhealthy", "Online", "Offline", "Running", "Ready", "Not ready",
+                 "Initializing", "Degraded", "Missing prerequisites", "Service issues",
+                 "Unsupported version", "Waiting for data", "Installing", "Failed", "Active", "Inactive",
+                 "True", "False", "OK", "Connecting", "Registered", "Created")
 
 
 def cluster_status_summary(clusters_json, cluster_name):
@@ -161,10 +165,18 @@ def cluster_status_summary(clusters_json, cluster_name):
             if isinstance(status, str):
                 status = {"status": status}
             out = {}
+            by_fold = {w.casefold(): w for w in STATUS_VALUES}
             for k in STATUS_KEYS:
                 if isinstance(status, dict) and k in status:
                     v = status[k]
-                    out[k] = v if isinstance(v, str) and v in STATUS_VALUES else "other"
+                    if isinstance(v, str):
+                        out[k] = by_fold.get(v.casefold(), "other_text")
+                    elif isinstance(v, bool):
+                        out[k] = "bool_true" if v else "bool_false"
+                    elif v is None:
+                        out[k] = "null"
+                    else:  # dict, list, number: only the type name, never the content
+                        out[k] = "type_" + type(v).__name__
             if isinstance(status, dict) and any(k not in STATUS_KEYS for k in status):
                 out["other_keys"] = len([k for k in status if k not in STATUS_KEYS])
             return out
