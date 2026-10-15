@@ -222,6 +222,25 @@ def check_scheduler(kube, result, args):
         result["scheduler_ready"] = True
 
 
+def wait_until_ready(kube, args, env, sleep=time.sleep, now=time.time):
+    """Right after an install the scheduler and the cluster link need a few minutes to come up.
+
+    Poll with throw-away results until both are ready or ``--ready-timeout`` runs out;
+    the real checks run afterwards and report whatever is still wrong.
+    """
+    deadline = now() + args.ready_timeout
+    while True:
+        probe = new_result(args.mode)
+        check_scheduler(kube, probe, args)
+        if args.mode == "platform":
+            check_platform(probe, args, env)
+        if probe["scheduler_ready"] and (args.mode != "platform" or probe["platform_cluster_connected"]):
+            return True
+        if now() >= deadline:
+            return False
+        sleep(20)
+
+
 def run_pod(kube, result, args, manifest, phases=("Succeeded", "Failed")):
     rc, _, err = kube.apply(manifest)
     if rc != 0:
@@ -547,6 +566,10 @@ def validate(args, env, kube=None):
         verify_uninstalled(kube, result)
         result["ok"] = result["uninstalled_ok"] and not result["failures"]
         return result
+    if args.ready_timeout is None:
+        args.ready_timeout = 600 if args.mode == "platform" else 0
+    if args.ready_timeout > 0 and not args.verify_uninstalled:
+        wait_until_ready(kube, args, env)
     check_scheduler(kube, result, args)
     if args.mode == "platform" and args.create_project:
         run_in_project(kube, result, args, env)
@@ -592,6 +615,9 @@ def parse_args(argv):
     p.add_argument("--memory-image", default="python:3.12-slim",
                    help="image with python3 for the GPU-memory check")
     p.add_argument("--job-timeout", type=int, default=300, help="seconds per pod (default 300)")
+    p.add_argument("--ready-timeout", type=int, default=None,
+                   help="wait up to this many seconds for the scheduler (and in platform mode the cluster link) "
+                        "to become ready before checking; 0 = check once (default 600 in platform mode, else 0)")
     p.add_argument("--skip-gpu-jobs", action="store_true", help="scheduler health only")
     p.add_argument("--memory-enforcement", action="store_true",
                    help="also prove gpu-fractioning refuses allocations past a pod's share")

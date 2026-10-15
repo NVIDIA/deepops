@@ -72,7 +72,11 @@ class FakeKube:
 
 
 def args(*extra):
-    return vr.parse_args(list(extra))
+    # tests never really wait; the wait has its own tests below
+    extra = list(extra)
+    if "--ready-timeout" not in extra:
+        extra += ["--ready-timeout", "0"]
+    return vr.parse_args(extra)
 
 
 GOOD_PODS = {"kai-whole-gpu": pod("kai-whole-gpu"), "kai-half-a": pod("kai-half-a"),
@@ -371,6 +375,36 @@ class TestPlatformProject(unittest.TestCase):
     def test_create_project_needs_platform_mode(self):
         with self.assertRaises(SystemExit):
             args("--create-project", "dv")
+
+
+class TestReadyWait(unittest.TestCase):
+    def test_waits_until_scheduler_is_up(self):
+        bad = {"items": [deploy("binder", 1, 0)]}
+        kube = FakeKube(deployments=bad)
+        seq = iter([bad, bad, HEALTHY])
+        orig = kube.get_json
+
+        def get_json(a, timeout=60):
+            if a[-1] == "deployments":
+                return next(seq, HEALTHY), ""
+            return orig(a, timeout)
+        kube.get_json = get_json
+        sleeps = []
+        ok = vr.wait_until_ready(kube, args("--ready-timeout", "300"), {}, sleep=sleeps.append, now=lambda: 0)
+        self.assertTrue(ok)
+        self.assertEqual(len(sleeps), 2)
+
+    def test_gives_up_at_the_deadline(self):
+        kube = FakeKube(deployments={"items": [deploy("binder", 1, 0)]})
+        clock = iter(range(0, 10000, 100))
+        ok = vr.wait_until_ready(kube, args("--ready-timeout", "250"), {}, sleep=lambda s: None,
+                                 now=lambda: next(clock))
+        self.assertFalse(ok)
+
+    def test_default_is_off_for_kai_and_on_for_platform(self):
+        self.assertIsNone(vr.parse_args([]).ready_timeout)
+        r = vr.validate(args(), {}, FakeKube(pods=GOOD_PODS))
+        self.assertTrue(r["ok"], r["failures"])
 
 
 class TestArgs(unittest.TestCase):
