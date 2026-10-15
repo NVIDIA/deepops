@@ -429,8 +429,8 @@ class TestPlatformNames(unittest.TestCase):
             "PasswordIsHunterTwo": "okvalue", "conditions": [{"message": "token abc"}]}}]}
         out = vr.cluster_status_summary(doc, "d")
         self.assertEqual(out["state"], "Waiting to connect")
-        self.assertTrue(out["platform"].startswith("other_text_len6_sha"))
-        self.assertTrue(out["status"].startswith("other_text_len22_sha"))
+        self.assertEqual(out["platform"], "other_text_short")
+        self.assertEqual(out["status"], "other_text_long")
         self.assertEqual(out["other_keys"], 2)
         blob = json.dumps(out)
         for bad in ("hunter", "SecretToken", "Password", "okvalue", "token", "abc"):
@@ -441,7 +441,7 @@ class TestPlatformNames(unittest.TestCase):
         out = vr.cluster_status_summary({"clusters": [{"name": "d", "status": "Connected"}]}, "d")
         self.assertEqual(out, {"status": "Connected", "other_keys": 0})
         out = vr.cluster_status_summary({"clusters": [{"name": "d", "status": "my-private-note"}]}, "d")
-        self.assertTrue(out["status"].startswith("other_text_len15_sha")); self.assertEqual(out["other_keys"], 0)
+        self.assertEqual(out, {"status": "other_text_long", "other_keys": 0})
 
     def test_status_summary_types_and_case(self):
         doc = {"clusters": [{"name": "d", "status": {"platform": 7, "state": "connected",
@@ -463,14 +463,23 @@ class TestPlatformNames(unittest.TestCase):
             self.assertNotIn(bad, blob)
         self.assertEqual(vr.cluster_connected(doc, "d"), (True, True))
 
-    def test_unknown_text_is_hashed_and_separators_ignored(self):
-        import hashlib
-        doc = {"clusters": [{"name": "d", "status": {"state": "WaitingToConnect", "platform": "weird-word"}}]}
+    def test_unknown_text_same_bucket_gives_identical_output(self):
+        def summ(txt, nested=False):
+            st = {"state": txt, "platform": {"state": txt}}
+            return json.dumps(vr.cluster_status_summary({"clusters": [{"name": "d", "status": st}]}, "d"),
+                              sort_keys=True)
+        # different secrets of the same length class must be indistinguishable in the report
+        self.assertEqual(summ("hunter2abcdefghijk"), summ("zzzzzzzzzzzzzzzzzz"))
+        self.assertEqual(summ("tok"), summ("pwd"))
+        self.assertNotEqual(summ("tok"), summ("a-much-longer-unknown-value"))
+        for bad in ("hunter", "zzzz", "sha", "len"):
+            self.assertNotIn(bad, summ("hunter2abcdefghijk"))
+
+    def test_separators_and_case_ignored_in_fixed_words(self):
+        doc = {"clusters": [{"name": "d", "status": {"state": "WaitingToConnect", "platform": "waiting_for-data"}}]}
         out = vr.cluster_status_summary(doc, "d")
-        self.assertEqual(out["state"], "Waiting to connect")  # separators/case ignored
-        tag = hashlib.sha256(b"weird-word").hexdigest()[:8]
-        self.assertEqual(out["platform"], "other_text_len10_sha" + tag)
-        self.assertNotIn("weird", json.dumps(out))
+        self.assertEqual(out["state"], "Waiting to connect")
+        self.assertEqual(out["platform"], "Waiting for data")
 
 
 class TestArgs(unittest.TestCase):

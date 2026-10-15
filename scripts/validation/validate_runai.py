@@ -24,7 +24,6 @@ Exit codes: 0 = ok, 1 = not ok, 2 = bad input or kubectl missing.
 """
 
 import argparse
-import hashlib
 import http.client
 import json
 import re
@@ -150,11 +149,20 @@ def cluster_connected(clusters_json, cluster_name):
 
 
 STATUS_KEYS = ("platform", "state", "status", "connected")
-STATUS_VALUES = ("Connected", "Disconnected", "Waiting to connect", "Waiting", "Pending", "Unknown",
-                 "Error", "Healthy", "Unhealthy", "Online", "Offline", "Running", "Ready", "Not ready",
-                 "Initializing", "Degraded", "Missing prerequisites", "Service issues",
-                 "Unsupported version", "Waiting for data", "Installing", "Failed", "Active", "Inactive",
-                 "True", "False", "OK", "Connecting", "Registered", "Created")
+STATUS_VALUES = (
+    "Connected", "Disconnected", "Waiting to connect", "Waiting", "Pending", "Unknown", "Error",
+    "Healthy", "Unhealthy", "Online", "Offline", "Running", "Ready", "Not ready", "Initializing",
+    "Degraded", "Missing prerequisites", "Missing runtime prerequisites", "Service issues",
+    "Unsupported version", "Waiting for data", "Installing", "Failed", "Active", "Inactive",
+    "True", "False", "OK", "Connecting", "Registered", "Created", "Waiting for cluster to connect",
+    "Waiting for the cluster to connect", "Cluster is not connected", "Not connected",
+    "Waiting for connection", "Waiting for cluster", "Cluster not connected", "Not installed",
+    "Installed", "Provisioning", "Provisioned", "Creating", "Updating", "Upgrading", "Deleting",
+    "Terminating", "Suspended", "Paused", "Stale", "No data", "No connection", "Connection lost",
+    "Heartbeat missing", "Stopped", "Partially connected", "Partially ready", "Reconnecting",
+    "Syncing", "Out of sync", "Synced", "Not synced", "Ready to connect", "Connection pending",
+    "Awaiting connection", "Not available", "Available", "Unavailable", "Conflict", "Blocked",
+)
 
 
 def _norm_word(w):
@@ -162,18 +170,16 @@ def _norm_word(w):
 
 
 def _status_marker(v, by_fold, depth=0):
-    """One value -> a constant marker. Strings only if they are a fixed word; text becomes a length bucket."""
+    """One value -> a marker. A string is reported only if it equals a reviewed fixed word (canonical spelling
+    returned); any other text is reported as one of three length buckets, so different unknown values in the
+    same bucket produce identical output."""
     if isinstance(v, str):
         word = by_fold.get(_norm_word(v))
         if word:
             return word
         n = len(v)
-        if n == 0:
-            return "other_text_empty"
-        # length plus a 32-bit tag of the text: lets an operator compare against candidate words
-        # offline (sha256(word)[:8]) without the text itself ever being stored
-        tag = hashlib.sha256(v.encode("utf-8", "replace")).hexdigest()[:8]
-        return "other_text_len%d_sha%s" % (min(n, 99), tag)
+        # length bucket only: nothing derived from the text itself (no hash, no prefix)
+        return "other_text_empty" if n == 0 else ("other_text_short" if n <= 12 else "other_text_long")
     if isinstance(v, bool):
         return "bool_true" if v else "bool_false"
     if v is None:
@@ -191,7 +197,7 @@ def _status_marker(v, by_fold, depth=0):
 def cluster_status_summary(clusters_json, cluster_name):
     """Report-safe view of a cluster's status: only fixed key names, fixed status words and markers.
 
-    Anything else (other keys, other values, free text) is replaced by a constant marker or a
+    Anything else (other keys, other values, free text) is replaced by a marker (a type name, a boolean, or a coarse length bucket) or a
     count, so nothing taken from the API response can reach the report.
     """
     items = clusters_json if isinstance(clusters_json, list) else clusters_json.get("clusters", [])
