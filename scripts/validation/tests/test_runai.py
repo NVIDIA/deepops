@@ -429,8 +429,8 @@ class TestPlatformNames(unittest.TestCase):
             "PasswordIsHunterTwo": "okvalue", "conditions": [{"message": "token abc"}]}}]}
         out = vr.cluster_status_summary(doc, "d")
         self.assertEqual(out["state"], "Waiting to connect")
-        self.assertEqual(out["platform"], "other_text_short")
-        self.assertEqual(out["status"], "other_text_long")
+        self.assertTrue(out["platform"].startswith("other_text_len6_sha"))
+        self.assertTrue(out["status"].startswith("other_text_len22_sha"))
         self.assertEqual(out["other_keys"], 2)
         blob = json.dumps(out)
         for bad in ("hunter", "SecretToken", "Password", "okvalue", "token", "abc"):
@@ -441,7 +441,7 @@ class TestPlatformNames(unittest.TestCase):
         out = vr.cluster_status_summary({"clusters": [{"name": "d", "status": "Connected"}]}, "d")
         self.assertEqual(out, {"status": "Connected", "other_keys": 0})
         out = vr.cluster_status_summary({"clusters": [{"name": "d", "status": "my-private-note"}]}, "d")
-        self.assertEqual(out, {"status": "other_text_long", "other_keys": 0})
+        self.assertTrue(out["status"].startswith("other_text_len15_sha")); self.assertEqual(out["other_keys"], 0)
 
     def test_status_summary_types_and_case(self):
         doc = {"clusters": [{"name": "d", "status": {"platform": 7, "state": "connected",
@@ -462,6 +462,15 @@ class TestPlatformNames(unittest.TestCase):
         for bad in ("token", "abc", "hunter", "secret", "message", "deep"):
             self.assertNotIn(bad, blob)
         self.assertEqual(vr.cluster_connected(doc, "d"), (True, True))
+
+    def test_unknown_text_is_hashed_and_separators_ignored(self):
+        import hashlib
+        doc = {"clusters": [{"name": "d", "status": {"state": "WaitingToConnect", "platform": "weird-word"}}]}
+        out = vr.cluster_status_summary(doc, "d")
+        self.assertEqual(out["state"], "Waiting to connect")  # separators/case ignored
+        tag = hashlib.sha256(b"weird-word").hexdigest()[:8]
+        self.assertEqual(out["platform"], "other_text_len10_sha" + tag)
+        self.assertNotIn("weird", json.dumps(out))
 
 
 class TestArgs(unittest.TestCase):

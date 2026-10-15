@@ -24,6 +24,7 @@ Exit codes: 0 = ok, 1 = not ok, 2 = bad input or kubectl missing.
 """
 
 import argparse
+import hashlib
 import http.client
 import json
 import re
@@ -156,14 +157,23 @@ STATUS_VALUES = ("Connected", "Disconnected", "Waiting to connect", "Waiting", "
                  "True", "False", "OK", "Connecting", "Registered", "Created")
 
 
+def _norm_word(w):
+    return re.sub(r"[\s_\-]+", "", str(w)).casefold()
+
+
 def _status_marker(v, by_fold, depth=0):
     """One value -> a constant marker. Strings only if they are a fixed word; text becomes a length bucket."""
     if isinstance(v, str):
-        word = by_fold.get(v.casefold())
+        word = by_fold.get(_norm_word(v))
         if word:
             return word
         n = len(v)
-        return "other_text_empty" if n == 0 else ("other_text_short" if n <= 12 else "other_text_long")
+        if n == 0:
+            return "other_text_empty"
+        # length plus a 32-bit tag of the text: lets an operator compare against candidate words
+        # offline (sha256(word)[:8]) without the text itself ever being stored
+        tag = hashlib.sha256(v.encode("utf-8", "replace")).hexdigest()[:8]
+        return "other_text_len%d_sha%s" % (min(n, 99), tag)
     if isinstance(v, bool):
         return "bool_true" if v else "bool_false"
     if v is None:
@@ -185,7 +195,7 @@ def cluster_status_summary(clusters_json, cluster_name):
     count, so nothing taken from the API response can reach the report.
     """
     items = clusters_json if isinstance(clusters_json, list) else clusters_json.get("clusters", [])
-    by_fold = {w.casefold(): w for w in STATUS_VALUES}
+    by_fold = {_norm_word(w): w for w in STATUS_VALUES}
     for item in items:
         if item.get("name") == cluster_name:
             status = item.get("status")
