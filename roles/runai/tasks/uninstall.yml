@@ -29,7 +29,26 @@
   ansible.builtin.include_tasks: coredns.yml
   vars:
     runai_coredns_present: false
+    runai_dns_cm: coredns
+    runai_dns_workload: deployment/coredns
   when: runai_platform_coredns_rewrite | bool
+
+- name: Check for the node-local DNS cache
+  ansible.builtin.command: "{{ runai_kubectl }} -n kube-system get configmap nodelocaldns --ignore-not-found --output name"
+  register: runai_nodelocal
+  changed_when: false
+  check_mode: false
+  when: runai_platform_coredns_rewrite | bool
+
+- name: Remove the node-local DNS cache entry
+  ansible.builtin.include_tasks: coredns.yml
+  vars:
+    runai_coredns_present: false
+    runai_dns_cm: nodelocaldns
+    runai_dns_workload: daemonset/nodelocaldns
+  when:
+    - runai_platform_coredns_rewrite | bool
+    - runai_nodelocal.stdout | default('') | length > 0
 
 - name: Remove the hosts-file entry
   ansible.builtin.lineinfile:

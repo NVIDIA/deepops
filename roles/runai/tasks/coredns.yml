@@ -2,8 +2,8 @@
 # Adds (or removes) one hosts{} block in the CoreDNS Corefile for the domain.
 # Kubespray owns this ConfigMap and will overwrite it on its next run; for a
 # permanent entry set kubespray's dns_etchosts instead (see docs).
-- name: Read the CoreDNS Corefile
-  ansible.builtin.command: "{{ runai_kubectl }} -n kube-system get configmap coredns --output json"
+- name: Read the Corefile of {{ runai_dns_cm }}
+  ansible.builtin.command: "{{ runai_kubectl }} -n kube-system get configmap {{ runai_dns_cm }} --output json"
   register: runai_corefile_raw
   changed_when: false
   check_mode: false
@@ -22,9 +22,9 @@
 - name: Apply the Corefile change
   ansible.builtin.shell: |
     set -euo pipefail
-    {{ runai_kubectl }} -n kube-system patch configmap coredns --type merge \
+    {{ runai_kubectl }} -n kube-system patch configmap {{ runai_dns_cm }} --type merge \
       --patch "$(python3 -c 'import json,sys; print(json.dumps({"data": {"Corefile": sys.stdin.read()}}))')"
-    {{ runai_kubectl }} -n kube-system rollout restart deployment/coredns
+    {{ runai_kubectl }} -n kube-system rollout restart {{ runai_dns_workload }}
   args:
     executable: /bin/bash
     stdin: >-
