@@ -425,12 +425,12 @@ class TestPlatformNames(unittest.TestCase):
     def test_status_summary_only_fixed_words(self):
         # alphabetic secrets, secret-looking key names and nested text must not survive
         doc = {"clusters": [{"name": "d", "status": {
-            "state": "Waiting to connect", "platform": "hunter", "status": "SecretTokenAbcdef",
+            "state": "Waiting to connect", "platform": "hunter", "status": "SecretTokenAbcdefghijk",
             "PasswordIsHunterTwo": "okvalue", "conditions": [{"message": "token abc"}]}}]}
         out = vr.cluster_status_summary(doc, "d")
         self.assertEqual(out["state"], "Waiting to connect")
-        self.assertEqual(out["platform"], "other_text")
-        self.assertEqual(out["status"], "other_text")
+        self.assertEqual(out["platform"], "other_text_short")
+        self.assertEqual(out["status"], "other_text_long")
         self.assertEqual(out["other_keys"], 2)
         blob = json.dumps(out)
         for bad in ("hunter", "SecretToken", "Password", "okvalue", "token", "abc"):
@@ -439,17 +439,28 @@ class TestPlatformNames(unittest.TestCase):
 
     def test_status_summary_string_status(self):
         out = vr.cluster_status_summary({"clusters": [{"name": "d", "status": "Connected"}]}, "d")
-        self.assertEqual(out, {"status": "Connected"})
+        self.assertEqual(out, {"status": "Connected", "other_keys": 0})
         out = vr.cluster_status_summary({"clusters": [{"name": "d", "status": "my-private-note"}]}, "d")
-        self.assertEqual(out, {"status": "other_text"})
+        self.assertEqual(out, {"status": "other_text_long", "other_keys": 0})
 
     def test_status_summary_types_and_case(self):
-        doc = {"clusters": [{"name": "d", "status": {"platform": {"msg": "token xyz"}, "state": "connected",
+        doc = {"clusters": [{"name": "d", "status": {"platform": 7, "state": "connected",
                                                      "status": True, "connected": None}}]}
         out = vr.cluster_status_summary(doc, "d")
-        self.assertEqual(out, {"platform": "type_dict", "state": "Connected", "status": "bool_true",
-                               "connected": "null"})
-        self.assertNotIn("xyz", json.dumps(out))
+        self.assertEqual(out, {"platform": "type_int", "state": "Connected", "status": "bool_true",
+                               "connected": "null", "other_keys": 0})
+        self.assertEqual(vr.cluster_connected(doc, "d"), (True, True))
+
+    def test_status_summary_one_nested_level_fixed_keys_only(self):
+        doc = {"clusters": [{"name": "d", "status": {
+            "platform": {"state": "Connected", "message": "token=abc and more", "secret": "hunter2"},
+            "state": {"state": {"deep": "x"}}}}]}
+        out = vr.cluster_status_summary(doc, "d")
+        self.assertEqual(out["platform"], {"state": "Connected", "n_keys": 3})
+        self.assertEqual(out["state"], {"state": "type_dict", "n_keys": 1})
+        blob = json.dumps(out)
+        for bad in ("token", "abc", "hunter", "secret", "message", "deep"):
+            self.assertNotIn(bad, blob)
         self.assertEqual(vr.cluster_connected(doc, "d"), (True, True))
 
 

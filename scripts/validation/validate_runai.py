@@ -139,7 +139,11 @@ def cluster_connected(clusters_json, cluster_name):
             if isinstance(status, str):  # some API versions return the state directly
                 return True, status.casefold() == "connected"
             status = status or {}
-            vals = [str(v).casefold() for v in (status.get("platform"), status.get("state")) if isinstance(v, str)]
+            cands = [status.get("platform"), status.get("state")]
+            for c in list(cands):
+                if isinstance(c, dict):
+                    cands += [c.get("state"), c.get("status"), c.get("platform")]
+            vals = [v.casefold() for v in cands if isinstance(v, str)]
             return True, "connected" in vals
     return False, False
 
@@ -152,32 +156,46 @@ STATUS_VALUES = ("Connected", "Disconnected", "Waiting to connect", "Waiting", "
                  "True", "False", "OK", "Connecting", "Registered", "Created")
 
 
-def cluster_status_summary(clusters_json, cluster_name):
-    """Report-safe view of a cluster's status: only fixed key names and fixed status words.
+def _status_marker(v, by_fold, depth=0):
+    """One value -> a constant marker. Strings only if they are a fixed word; text becomes a length bucket."""
+    if isinstance(v, str):
+        word = by_fold.get(v.casefold())
+        if word:
+            return word
+        n = len(v)
+        return "other_text_empty" if n == 0 else ("other_text_short" if n <= 12 else "other_text_long")
+    if isinstance(v, bool):
+        return "bool_true" if v else "bool_false"
+    if v is None:
+        return "null"
+    if isinstance(v, dict) and depth == 0:
+        # one nested level: the same fixed keys only, everything else counted
+        inner = {k: _status_marker(v[k], by_fold, 1) for k in STATUS_KEYS if k in v}
+        inner["n_keys"] = len(v)
+        return inner
+    if isinstance(v, list):
+        return "type_list_%d" % min(len(v), 20)
+    return "type_" + type(v).__name__
 
-    Anything else (other keys, other values, free text) is replaced by a constant marker, so
-    nothing taken from the API response can reach the report.
+
+def cluster_status_summary(clusters_json, cluster_name):
+    """Report-safe view of a cluster's status: only fixed key names, fixed status words and markers.
+
+    Anything else (other keys, other values, free text) is replaced by a constant marker or a
+    count, so nothing taken from the API response can reach the report.
     """
     items = clusters_json if isinstance(clusters_json, list) else clusters_json.get("clusters", [])
+    by_fold = {w.casefold(): w for w in STATUS_VALUES}
     for item in items:
         if item.get("name") == cluster_name:
             status = item.get("status")
             if isinstance(status, str):
                 status = {"status": status}
             out = {}
-            by_fold = {w.casefold(): w for w in STATUS_VALUES}
             for k in STATUS_KEYS:
                 if isinstance(status, dict) and k in status:
-                    v = status[k]
-                    if isinstance(v, str):
-                        out[k] = by_fold.get(v.casefold(), "other_text")
-                    elif isinstance(v, bool):
-                        out[k] = "bool_true" if v else "bool_false"
-                    elif v is None:
-                        out[k] = "null"
-                    else:  # dict, list, number: only the type name, never the content
-                        out[k] = "type_" + type(v).__name__
-            if isinstance(status, dict) and any(k not in STATUS_KEYS for k in status):
+                    out[k] = _status_marker(status[k], by_fold)
+            if isinstance(status, dict):
                 out["other_keys"] = len([k for k in status if k not in STATUS_KEYS])
             return out
     return {}
