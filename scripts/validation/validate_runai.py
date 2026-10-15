@@ -89,10 +89,11 @@ def summarize_deployments(deploy_json):
     return sorted(names), sorted(bad)
 
 
-def missing_deployments(names, required=REQUIRED_DEPLOYMENTS):
+def missing_deployments(names, required=REQUIRED_DEPLOYMENTS, scheduler_name="kai-scheduler"):
     missing = [r for r in required if r not in names]
-    if not any(n.startswith(SCHEDULER_PREFIX) for n in names):
-        missing.append(SCHEDULER_PREFIX + "<shard>")
+    prefix = scheduler_name + "-"
+    if not any(n.startswith(prefix) for n in names):
+        missing.append(prefix + "<shard>")
     return missing
 
 
@@ -134,9 +135,30 @@ def cluster_connected(clusters_json, cluster_name):
     items = clusters_json if isinstance(clusters_json, list) else clusters_json.get("clusters", [])
     for item in items:
         if item.get("name") == cluster_name:
-            status = item.get("status") or {}
-            return True, status.get("platform") == "Connected"
+            status = item.get("status")
+            if isinstance(status, str):  # some API versions return the state directly
+                return True, status == "Connected"
+            status = status or {}
+            return True, "Connected" in (status.get("platform"), status.get("state"))
     return False, False
+
+
+def cluster_status_summary(clusters_json, cluster_name):
+    """Short, secret-free view of a cluster's status for the report: key names and short enum-like values."""
+    items = clusters_json if isinstance(clusters_json, list) else clusters_json.get("clusters", [])
+    for item in items:
+        if item.get("name") == cluster_name:
+            status = item.get("status")
+            if isinstance(status, str):
+                status = {"status": status}
+            out = {}
+            for k, v in (status or {}).items():
+                if isinstance(v, str) and re.match(r"^[A-Za-z][A-Za-z ]{0,30}$", v):
+                    out[str(k)[:30]] = v
+                else:
+                    out[str(k)[:30]] = type(v).__name__
+            return out
+    return {}
 
 
 def pod_manifest(name, namespace, image, command, args, scheduler, queue_label, queue,
@@ -210,7 +232,7 @@ def check_scheduler(kube, result, args):
         result["failures"].append("could not list deployments in %s: %s" % (args.kai_namespace, err))
         return
     names, bad = summarize_deployments(doc)
-    missing = missing_deployments(names)
+    missing = missing_deployments(names, scheduler_name=args.scheduler_name)
     if missing:
         result["failures"].append("scheduler deployments missing: %s" % ", ".join(missing))
     if bad:
@@ -508,6 +530,8 @@ def check_platform(result, args, env):
             args.platform_domain, args.resolve_ip, args.ca_file, "GET", "/api/v1/clusters",
             headers={"Authorization": "Bearer " + bearer})
         found, connected = cluster_connected(json.loads(body), args.cluster_name) if status == 200 else (False, False)
+        if status == 200:
+            result["cluster_status"] = cluster_status_summary(json.loads(body), args.cluster_name)
     except (OSError, ssl.SSLError, http.client.HTTPException, ValueError) as exc:
         result["failures"].append("cluster status request failed: %s" % type(exc).__name__)
         return
@@ -529,6 +553,7 @@ def new_result(mode):
         "platform_ran": False, "platform_api_ok": False, "platform_cluster_connected": False,
         "project_created": False, "project_deleted": False,
         "uninstalled_ran": False, "uninstalled_ok": False, "leftovers": [],
+        "cluster_status": {},
         "failures": [],
     }
 
@@ -640,9 +665,9 @@ def parse_args(argv):
     if args.mode == "platform":  # the cluster chart puts its scheduler in the runai namespace
         if args.kai_namespace == KAI_NAMESPACE:
             args.kai_namespace = "runai"
+        if args.scheduler_name == "kai-scheduler":
+            args.scheduler_name = "runai-scheduler"
         if args.create_project:
-            if args.scheduler_name == "kai-scheduler":
-                args.scheduler_name = "runai-scheduler"
             if args.queue_label_key == "kai.scheduler/queue":
                 args.queue_label_key = "runai/queue"
     if args.job_timeout < 10:

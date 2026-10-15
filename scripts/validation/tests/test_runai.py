@@ -22,7 +22,7 @@ def deploy(name, want=1, have=1):
 
 
 HEALTHY = {"items": [deploy(n) for n in
-                     ("kai-operator", "binder", "queue-controller", "admission", "kai-scheduler-default")]}
+                     ("kai-operator", "binder", "queue-controller", "admission", "kai-scheduler-default", "runai-scheduler-default")]}
 
 
 def pod(name, node="n1", group="g1", pg="pg-" + "x"):
@@ -405,6 +405,32 @@ class TestReadyWait(unittest.TestCase):
         self.assertIsNone(vr.parse_args([]).ready_timeout)
         r = vr.validate(args(), {}, FakeKube(pods=GOOD_PODS))
         self.assertTrue(r["ok"], r["failures"])
+
+
+class TestPlatformNames(unittest.TestCase):
+    def test_platform_scheduler_is_runai_scheduler(self):
+        a = args("--mode", "platform", "--platform-domain", "runai.lab.test")
+        self.assertEqual(a.scheduler_name, "runai-scheduler")
+        self.assertEqual(vr.missing_deployments(list(vr.REQUIRED_DEPLOYMENTS) + ["runai-scheduler-default"],
+                                                scheduler_name="runai-scheduler"), [])
+        self.assertEqual(vr.missing_deployments(list(vr.REQUIRED_DEPLOYMENTS) + ["kai-scheduler-default"],
+                                                scheduler_name="runai-scheduler"), ["runai-scheduler-<shard>"])
+
+    def test_cluster_connected_reads_state_or_platform_or_string(self):
+        for status in ({"platform": "Connected"}, {"state": "Connected"}, "Connected"):
+            self.assertEqual(vr.cluster_connected({"clusters": [{"name": "d", "status": status}]}, "d"), (True, True))
+        self.assertEqual(vr.cluster_connected({"clusters": [{"name": "d", "status": {"state": "Disconnected"}}]}, "d"),
+                         (True, False))
+
+    def test_status_summary_has_no_free_text(self):
+        doc = {"clusters": [{"name": "d", "status": {"state": "Waiting to connect",
+                                                     "conditions": [{"message": "token=abc123"}],
+                                                     "note": "password=hunter2 and more"}}]}
+        out = vr.cluster_status_summary(doc, "d")
+        self.assertEqual(out["state"], "Waiting to connect")
+        self.assertEqual(out["conditions"], "list")
+        self.assertNotIn("hunter2", json.dumps(out))
+        self.assertNotIn("abc123", json.dumps(out))
 
 
 class TestArgs(unittest.TestCase):
