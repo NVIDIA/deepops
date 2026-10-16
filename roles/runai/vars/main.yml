@@ -35,7 +35,17 @@ runai_cp_base_values:
       adminPassword: "{{ runai_platform_admin_password }}"
 runai_cp_values: "{{ runai_cp_base_values | runai_deep_merge(runai_platform_cp_extra_values) }}"
 
+# The Run:ai cluster chart turns GPU-memory fractioning on by default. That needs GPU Operator
+# >= v26.7.1 and an r615+ driver, which DeepOps does not install by default, so the fractioning
+# daemon crash-loops and Run:ai reports the cluster as "Missing prerequisites" (gpu-stack).
+# Follow the same opt-in as kai mode: off unless runai_kai_gpu_fractioning is true.
 runai_cluster_base_values:
+  kai-resource-management:
+    kai-scheduler:
+      global:
+        gpuSharingMode: "{{ 'NvFractions' if runai_kai_gpu_fractioning | bool else 'NonMemoryEnforced' }}"
+        nvFractions:
+          set: "{{ runai_kai_gpu_fractioning | bool }}"
   clusterConfig:
     global:
       ingress:
