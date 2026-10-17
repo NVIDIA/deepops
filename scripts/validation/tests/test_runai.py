@@ -39,7 +39,7 @@ class FakeKube:
         self.deployments, self.crd, self.pods = deployments, crd, pods or {}
         self.phases, self.logged, self.apply_rc, self.ns_rc = phases or {}, logs or {}, apply_rc, ns_rc
         self.namespaces, self.nodes = namespaces or {"items": []}, nodes
-        self.applied, self.deleted = [], []
+        self.applied, self.deleted, self.owned, self.existing = [], [], [], set()
 
     def get_json(self, args, timeout=60):
         if args[:2] == ["get", "nodes"]:
@@ -69,6 +69,12 @@ class FakeKube:
 
     def delete_namespace(self, namespace):
         self.deleted.append(namespace)
+
+    def namespace_exists(self, namespace):
+        return namespace in self.existing
+
+    def own_namespace(self, namespace):
+        self.owned.append(namespace)
 
 
 def args(*extra):
@@ -376,6 +382,29 @@ class TestPlatformProject(unittest.TestCase):
         self.assertEqual(body["resources"][0]["nodePool"], {"id": "7"})
         self.assertEqual(body["resources"][0]["gpu"]["deserved"], 1)
 
+    def test_project_namespace_owned_only_after_create(self):
+        result, calls, kube = self._run()
+        self.assertEqual(kube.owned, ["runai-dv"])
+        self.assertEqual(kube.deleted, ["runai-dv"])
+
+    def test_existing_project_namespace_is_refused_untouched(self):
+        orig = vr.https_request
+        calls = []
+        vr.https_request = lambda *a, **k: calls.append(a) or (200, json.dumps(
+            {"clusters": [{"name": "deepops", "uuid": "c1", "status": {"platform": "Connected"}}]}).encode())
+        kube = FakeKube(pods=GOOD_PODS)
+        kube.existing = {"runai-dv"}
+        try:
+            result = vr.validate(args("--mode", "platform", "--platform-domain", "runai.lab.test",
+                                      "--create-project", "dv"),
+                                 {"RUNAI_USERNAME": "u", "RUNAI_PASSWORD": "p"}, kube)
+        finally:
+            vr.https_request = orig
+        self.assertFalse(result["ok"])
+        self.assertFalse(result["project_created"])
+        self.assertEqual((kube.deleted, kube.owned, kube.applied), ([], [], []))
+        self.assertFalse([c for c in calls if len(c) > 3 and c[3] == "POST" and "projects" in str(c[4])])
+
     def test_create_failure_is_not_ok(self):
         result, _, _ = self._run(create_status=400)
         self.assertFalse(result["ok"])
@@ -534,3 +563,48 @@ class TestPendingHints(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestNamespaceOwnership(unittest.TestCase):
+    """The real Kube class, with kubectl replaced by a recorder. Offline."""
+
+    def _kube(self, existing):
+        cmds = []
+
+        def fake_run(cmd, timeout=60, input_text=None):
+            cmds.append(cmd)
+            if cmd[:3] == ["kubectl", "get", "namespace"]:
+                return 0, ("namespace/" + cmd[3]) if cmd[3] in existing else "", ""
+            return 0, "", ""
+        orig, vr.run = vr.run, fake_run
+        self.addCleanup(setattr, vr, "run", orig)
+        return vr.Kube(), cmds
+
+    def test_existing_namespace_is_refused_and_never_deleted(self):
+        kube, cmds = self._kube({"prod"})
+        self.assertNotEqual(kube.ensure_namespace("prod")[0], 0)
+        kube.delete_namespace("prod")
+        self.assertFalse([c for c in cmds if "delete" in c or "create" in c])
+
+    def test_unknown_existence_is_treated_as_existing(self):
+        kube, cmds = self._kube(set())
+        vr.run = lambda cmd, timeout=60, input_text=None: (1, "", "refused")
+        self.assertNotEqual(kube.ensure_namespace("x")[0], 0)
+
+    def test_fresh_namespace_is_created_labelled_and_deleted(self):
+        kube, cmds = self._kube(set())
+        self.assertEqual(kube.ensure_namespace("fresh")[0], 0)
+        self.assertIn(["kubectl", "create", "namespace", "fresh"], cmds)
+        self.assertTrue(any("label" in c and vr.OWNER_LABEL + "=" + vr.OWNER_VALUE in c for c in cmds))
+        self.assertTrue(kube.delete_namespace("fresh"))
+        self.assertTrue(any(c[:3] == ["kubectl", "delete", "namespace"] for c in cmds))
+
+    def test_validate_against_existing_namespace_deletes_nothing(self):
+        real, cmds = self._kube({"deepops-runai-validate"})
+        fake = FakeKube(pods=GOOD_PODS)
+        real.get_json = fake.get_json
+        real.apply = fake.apply
+        result = vr.validate(args(), {}, real)
+        self.assertFalse(result["ok"])
+        self.assertEqual(fake.applied, [])
+        self.assertFalse([c for c in cmds if "delete" in c])

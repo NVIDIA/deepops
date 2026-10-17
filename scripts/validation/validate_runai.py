@@ -5,7 +5,7 @@ Run anywhere ``kubectl`` reaches the cluster after ``playbooks/k8s-cluster/runai
 The verdict is strict JSON with ``--json``: ``"ok": true`` only if every check that
 applies to the selected mode passed.
 
-Checks (all in a throw-away namespace that is deleted on success):
+Checks (all in a fresh namespace this run creates (it refuses an existing one) and deletes on success):
 
 1. scheduler pods are available and the KAI queue API exists
 2. a whole-GPU pod scheduled by KAI runs ``nvidia-smi -L`` and completes
@@ -35,6 +35,8 @@ import time
 import urllib.parse
 
 SCHEMA_VERSION = 1
+OWNER_LABEL = "deepops.nvidia.com/runai-validate"
+OWNER_VALUE = "owned"
 KAI_NAMESPACE = "kai-scheduler"
 # The operator names the scheduler Deployment "<schedulerName>-<shard>" (kai-scheduler-default).
 REQUIRED_DEPLOYMENTS = ("kai-operator", "binder", "queue-controller", "admission")
@@ -270,13 +272,43 @@ class Kube:
     def logs(self, namespace, pod):
         return run(["kubectl", "-n", namespace, "logs", pod])[1]
 
+    def __init__(self):
+        # Namespaces this invocation created (or adopted because it created their owner).
+        # delete_namespace() refuses anything not in here.
+        self.owned = set()
+
+    def own_namespace(self, namespace):
+        """Record that this run created the namespace's owner (a Run:ai project)."""
+        self.owned.add(namespace)
+
+    def namespace_exists(self, namespace):
+        """True/False, or None if the answer is unknown (treated as 'exists')."""
+        rc, out, _ = run(["kubectl", "get", "namespace", namespace, "--ignore-not-found",
+                          "-o", "name"])
+        if rc != 0:
+            return None
+        return bool(out)
+
     def delete_namespace(self, namespace):
+        """Delete a namespace only if this run created it. Returns True if a delete was sent."""
+        if namespace not in self.owned:
+            return False
         run(["kubectl", "delete", "namespace", namespace, "--ignore-not-found", "--wait=false"],
             timeout=120)
+        self.owned.discard(namespace)
+        return True
 
     def ensure_namespace(self, namespace):
-        run(["kubectl", "delete", "namespace", namespace, "--ignore-not-found"], timeout=180)
-        return run(["kubectl", "create", "namespace", namespace])
+        """Create a fresh, labelled test namespace. Never touches an existing one."""
+        if self.namespace_exists(namespace) is not False:
+            return 1, "", "namespace %s already exists (or could not be checked); not touching it" % namespace
+        rc, out, err = run(["kubectl", "create", "namespace", namespace])
+        if rc != 0:
+            return rc, out, err
+        self.owned.add(namespace)
+        run(["kubectl", "label", "namespace", namespace, "--overwrite",
+             OWNER_LABEL + "=" + OWNER_VALUE])
+        return rc, out, err
 
 
 # ------------------------------------------------------------------- the checks
@@ -564,11 +596,20 @@ def run_in_project(kube, result, args, env):
     if not result["platform_cluster_connected"] or not result["scheduler_ready"] or args.skip_gpu_jobs:
         return
     bearer = project_id = ""
+    project_ns = "runai-" + args.create_project
+    # Never adopt a project namespace that was already there: the project delete would take
+    # its workloads with it.
+    if kube.namespace_exists(project_ns) is not False:
+        result["failures"].append(
+            "namespace %s already exists (or could not be checked); pick another --create-project name"
+            % project_ns)
+        return
     try:
         bearer, project_id = create_project(args, env, result)
         if not project_id:
             return
-        args.namespace = "runai-" + args.create_project
+        kube.own_namespace(project_ns)  # this run created the project, so its namespace
+        args.namespace = project_ns
         args.queue = args.create_project
         if not wait_namespace(kube, args.namespace, args.job_timeout):
             result["failures"].append("project namespace %s did not appear" % args.namespace)
@@ -687,7 +728,9 @@ def validate(args, env, kube=None):
         run_in_project(kube, result, args, env)
     elif result["scheduler_ready"] and not args.skip_gpu_jobs:
         if kube.ensure_namespace(args.namespace)[0] != 0:
-            result["failures"].append("could not create namespace %s" % args.namespace)
+            result["failures"].append(
+                "could not create a fresh namespace %s (an existing namespace is never reused or "
+                "deleted; pick another --namespace or remove it yourself)" % args.namespace)
         else:
             check_whole_gpu(kube, result, args)
             check_fractions(kube, result, args)
@@ -704,7 +747,7 @@ def validate(args, env, kube=None):
     result["ok"] = bool(ran_ok and not result["failures"])
     if result["ok"] and not args.skip_gpu_jobs:
         if not args.create_project:
-            kube.delete_namespace(args.namespace)
+            kube.delete_namespace(args.namespace)  # no-op unless this run created it
     elif not args.skip_gpu_jobs and result["gpu_job_ran"]:
         result["failures"].append("namespace %s kept for debugging" % args.namespace)
     return result
@@ -718,7 +761,7 @@ def parse_args(argv):
                    help="read-only: pass only if no kai-scheduler/runai* namespace or release remains")
     p.add_argument("--kai-namespace", default=KAI_NAMESPACE)
     p.add_argument("--namespace", default="deepops-runai-validate",
-                   help="namespace for the test pods (deleted on success; in platform mode "
+                   help="namespace for the test pods; must not exist yet, created and labelled by this run, deleted on success; in platform mode "
                         "use the project namespace, e.g. runai-<project>)")
     p.add_argument("--queue", default="default-queue")
     p.add_argument("--queue-label-key", default="kai.scheduler/queue")
