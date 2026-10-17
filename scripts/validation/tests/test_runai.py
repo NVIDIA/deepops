@@ -66,6 +66,8 @@ class FakeKube:
         return self.logged.get(pod_name, "GPU 0: Test GPU (UUID: x)")
 
     def ensure_namespace(self, namespace):
+        if self.ns_rc == 0:
+            self.owned.append((namespace, "uid-fake"))
         return self.ns_rc, "", ""
 
     def delete_namespace(self, namespace):
