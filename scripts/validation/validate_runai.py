@@ -874,8 +874,8 @@ def parse_args(argv):
     p.add_argument("--kai-namespace", default=KAI_NAMESPACE)
     p.add_argument("--namespace", default="deepops-runai-validate",
                    help="namespace for the test pods; must not exist yet, created and labelled by this run, deleted on success "
-                        "(kai mode only; platform mode with --create-project uses runai-<project>, "
-                        "an existing project namespace is never reused)")
+                        "(also used in platform mode with --create-project: this run creates it and binds "
+                        "the new Run:ai project to it; only this exact namespace is deleted)")
     p.add_argument("--queue", default="default-queue")
     p.add_argument("--queue-label-key", default="kai.scheduler/queue")
     p.add_argument("--scheduler-name", default="kai-scheduler")
