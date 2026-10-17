@@ -64,8 +64,9 @@ def nest(pairs):
 class Client:
     def __init__(self, domain, ip, ca_file, timeout=30):
         self.domain, self.ip, self.timeout = domain, ip or domain, timeout
-        self.context = ssl.create_default_context(cafile=ca_file or None)
-        self.context.minimum_version = ssl.TLSVersion.TLSv1_2
+        ctx = ssl.create_default_context(cafile=ca_file or None)
+        ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+        self.context = ctx
         self.bearer = ""
 
     def request(self, method, path, body=None, form=None):
