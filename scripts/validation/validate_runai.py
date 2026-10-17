@@ -25,7 +25,6 @@ Exit codes: 0 = ok, 1 = not ok, 2 = bad input or kubectl missing.
 
 import argparse
 import http.client
-import datetime
 import json
 import re
 import secrets
@@ -874,8 +873,8 @@ def parse_args(argv):
     p.add_argument("--kai-namespace", default=KAI_NAMESPACE)
     p.add_argument("--namespace", default="deepops-runai-validate",
                    help="namespace for the test pods; must not exist yet, created and labelled by this run, deleted on success "
-                        "(also used in platform mode with --create-project: this run creates it and binds "
-                        "the new Run:ai project to it; only this exact namespace is deleted)")
+                        "(kai mode only. Platform mode with --create-project ignores this and creates its own "
+                        "<project>-<8 hex> namespace, binds the new Run:ai project to it, and deletes only that exact namespace)")
     p.add_argument("--queue", default="default-queue")
     p.add_argument("--queue-label-key", default="kai.scheduler/queue")
     p.add_argument("--scheduler-name", default="kai-scheduler")
