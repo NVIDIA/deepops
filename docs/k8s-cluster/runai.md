@@ -26,7 +26,8 @@ and any DeepOps-owned UI. The web UI in `platform` mode is the upstream one.
 - `platform`, which you must provide before running the role:
   - a default StorageClass (`playbooks/k8s-cluster/nfs-client-provisioner.yml`)
   - a load balancer for a `LoadBalancer` service ([Load Balancer and Ingress](ingress.md)),
-    or set `runai_platform_ingress_service_type: NodePort`
+    or set `runai_platform_ingress_service_type: NodePort` (only NodePort was
+    live-tested in 26.11; `LoadBalancer` is untested in 26.11)
   - `kube-prometheus-stack` 88.6.5 or newer (`scripts/k8s/deploy_monitoring.sh`
     with `HELM_PROMETHEUS_CHART_VERSION` set)
   - a DNS name for the control plane, and a TLS certificate for it
