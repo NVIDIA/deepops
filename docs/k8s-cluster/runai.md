@@ -182,10 +182,10 @@ RUNAI_USERNAME=admin@example.com RUNAI_PASSWORD='...' \
 In platform mode, pods must be submitted in a Run:ai project's namespace and use
 that project's queue. The validator does this itself: `--create-project deepops-validate`
 creates that project through the API (one GPU of quota in the first node pool), runs the
-whole-GPU and half-GPU checks in `runai-deepops-validate` with `runai-scheduler`, and
-deletes the project again. With that flag `"ok": true` also requires the project to
-have been created and deleted. The validator never reuses an existing project namespace
-and never deletes one it did not create, so platform mode needs `--create-project NAME`
+whole-GPU and half-GPU checks with `runai-scheduler` in a uniquely named namespace the
+validator creates first and binds the project to, then deletes the project and that namespace (by UID). With that flag `"ok": true` also requires the project to
+have been created and deleted. GPU jobs run only after the namespace still has the UID the validator recorded and Run:ai's
+project label. The validator never reuses an existing namespace and never deletes one it did not create, so platform mode needs `--create-project NAME`
 (a name not in use) or `--skip-gpu-jobs` (control-plane and scheduler checks only). Beyond what the validator checks, DeepOps
 does not configure projects, users or quotas; use the Run:ai documentation.
 
