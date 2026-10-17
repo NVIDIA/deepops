@@ -739,7 +739,7 @@ def validate(args, env, kube=None):
     if args.mode == "platform" and not result["platform_ran"]:
         check_platform(result, args, env)
     ran_ok = (result["scheduler_ready"] and
-              (args.skip_gpu_jobs or (result["gpu_job_ok"] and (result["fraction_job_ok"] or args.skip_fractions))) and
+              (args.skip_gpu_jobs or (result["gpu_job_ok"] and (result["fraction_job_ok"] or result["fraction_job_skipped"]))) and
               (not args.memory_enforcement or result["memory_enforcement_ok"]) and
               (args.mode != "platform" or
                (result["platform_api_ok"] and result["platform_cluster_connected"] and
@@ -748,7 +748,7 @@ def validate(args, env, kube=None):
     if result["ok"] and not args.skip_gpu_jobs:
         if not args.create_project:
             kube.delete_namespace(args.namespace)  # no-op unless this run created it
-    elif not args.skip_gpu_jobs and result["gpu_job_ran"]:
+    elif not args.skip_gpu_jobs and not args.create_project and result["gpu_job_ran"]:
         result["failures"].append("namespace %s kept for debugging" % args.namespace)
     return result
 
@@ -761,8 +761,9 @@ def parse_args(argv):
                    help="read-only: pass only if no kai-scheduler/runai* namespace or release remains")
     p.add_argument("--kai-namespace", default=KAI_NAMESPACE)
     p.add_argument("--namespace", default="deepops-runai-validate",
-                   help="namespace for the test pods; must not exist yet, created and labelled by this run, deleted on success; in platform mode "
-                        "use the project namespace, e.g. runai-<project>)")
+                   help="namespace for the test pods; must not exist yet, created and labelled by this run, deleted on success "
+                        "(kai mode only; platform mode with --create-project uses runai-<project>, "
+                        "an existing project namespace is never reused)")
     p.add_argument("--queue", default="default-queue")
     p.add_argument("--queue-label-key", default="kai.scheduler/queue")
     p.add_argument("--scheduler-name", default="kai-scheduler")
@@ -795,6 +796,11 @@ def parse_args(argv):
             p.error("--platform-domain is required in platform mode")
     if args.create_project and (args.mode != "platform" or not NAME_RE.match(args.create_project)):
         p.error("--create-project needs --mode platform and a valid Kubernetes name")
+    if args.skip_fractions and not args.create_project:
+        p.error("--skip-fractions needs --create-project (platform mode)")
+    if args.mode == "platform" and not args.create_project and not args.skip_gpu_jobs and not args.verify_uninstalled:
+        p.error("platform mode needs --create-project NAME (GPU checks run in a project this run "
+                "creates and deletes) or --skip-gpu-jobs; an existing project namespace is never reused")
     if args.mode == "platform":  # the cluster chart puts its scheduler in the runai namespace
         if args.kai_namespace == KAI_NAMESPACE:
             args.kai_namespace = "runai"

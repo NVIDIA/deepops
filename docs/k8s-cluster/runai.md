@@ -26,7 +26,8 @@ and any DeepOps-owned UI. The web UI in `platform` mode is the upstream one.
 - `platform`, which you must provide before running the role:
   - a default StorageClass (`playbooks/k8s-cluster/nfs-client-provisioner.yml`)
   - a load balancer for a `LoadBalancer` service ([Load Balancer and Ingress](ingress.md)),
-    or set `runai_platform_ingress_service_type: NodePort`
+    or set `runai_platform_ingress_service_type: NodePort` (only NodePort was
+    live-tested in 26.11; `LoadBalancer` is untested in 26.11)
   - `kube-prometheus-stack` 88.6.5 or newer (`scripts/k8s/deploy_monitoring.sh`
     with `HELM_PROMETHEUS_CHART_VERSION` set)
   - a DNS name for the control plane, and a TLS certificate for it
@@ -175,16 +176,17 @@ Check it (the admin credentials go in the environment, never on the command line
 RUNAI_USERNAME=admin@example.com RUNAI_PASSWORD='...' \
   python3 scripts/validation/validate_runai.py --json --mode platform \
   --platform-domain runai.example.com --ca-file /opt/deepops/runai/ca.pem \
-  --namespace runai-<project> --queue <project>
+  --create-project deepops-validate
 ```
 
 In platform mode, pods must be submitted in a Run:ai project's namespace and use
-that project's queue. Either create a project in the web UI (or API) first and pass
-its namespace and queue to the validator, or let the validator do it: add
-`--create-project deepops-validate` and it creates that project through the API
-(one GPU of quota in the first node pool), runs the whole-GPU and half-GPU checks in
-`runai-deepops-validate` with `runai-scheduler`, and deletes the project again. With
-that flag `"ok": true` also requires the project to have been created and deleted. Beyond what the validator checks, DeepOps
+that project's queue. The validator does this itself: `--create-project deepops-validate`
+creates that project through the API (one GPU of quota in the first node pool), runs the
+whole-GPU and half-GPU checks in `runai-deepops-validate` with `runai-scheduler`, and
+deletes the project again. With that flag `"ok": true` also requires the project to
+have been created and deleted. The validator never reuses an existing project namespace
+and never deletes one it did not create, so platform mode needs `--create-project NAME`
+(a name not in use) or `--skip-gpu-jobs` (control-plane and scheduler checks only). Beyond what the validator checks, DeepOps
 does not configure projects, users or quotas; use the Run:ai documentation.
 
 **Known limit (live test, 26.11):** on a one-machine test cluster with an A100, the cluster

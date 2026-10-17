@@ -257,7 +257,7 @@ class TestPlatformAndUninstall(unittest.TestCase):
         orig = vr.https_request
         vr.https_request = lambda *a, **k: (200, b"")
         try:
-            result = vr.validate(args("--mode", "platform", "--platform-domain", "runai.lab.test"),
+            result = vr.validate(args("--mode", "platform", "--platform-domain", "runai.lab.test", "--skip-gpu-jobs"),
                                  {}, FakeKube(pods=GOOD_PODS))
         finally:
             vr.https_request = orig
@@ -281,7 +281,7 @@ class TestPlatformAndUninstall(unittest.TestCase):
         orig = vr.https_request
         vr.https_request = fake
         try:
-            result = vr.validate(args("--mode", "platform", "--platform-domain", "runai.lab.test"),
+            result = vr.validate(args("--mode", "platform", "--platform-domain", "runai.lab.test", "--skip-gpu-jobs"),
                                  {"RUNAI_USERNAME": "u", "RUNAI_PASSWORD": "p"}, FakeKube(pods=GOOD_PODS))
         finally:
             vr.https_request = orig
@@ -362,6 +362,41 @@ class TestPlatformProject(unittest.TestCase):
         self.assertTrue(result["fraction_job_skipped"])
         self.assertFalse(result["fraction_job_ran"])
         self.assertEqual([p["metadata"]["name"] for p in kube.applied], ["kai-whole-gpu"])
+
+    def test_skip_fractions_needs_create_project(self):
+        with self.assertRaises(SystemExit):
+            args("--mode", "platform", "--platform-domain", "runai.lab.test",
+                 "--skip-gpu-jobs", "--skip-fractions")
+
+    def test_platform_without_project_or_skip_is_rejected(self):
+        with self.assertRaises(SystemExit):
+            args("--mode", "platform", "--platform-domain", "runai.lab.test",
+                 "--namespace", "runai-existing")
+
+    def test_no_kept_for_debugging_after_project_delete(self):
+        # a failing GPU pod in the project path: the project and namespace are already gone
+        orig_wait = FakeKube.wait_phase
+        FakeKube.wait_phase = lambda self, ns, name, phases, timeout: "Failed"
+        try:
+            result, calls, kube = self._run()
+        finally:
+            FakeKube.wait_phase = orig_wait
+        self.assertFalse(result["ok"])
+        self.assertTrue(result["gpu_job_ran"])
+        self.assertEqual(kube.deleted, ["runai-dv"])
+        self.assertFalse([f for f in result["failures"] if "kept for debugging" in f])
+
+    def test_skipped_fractions_ok_depends_on_flag(self):
+        orig = vr.run_in_project
+        def no_skip(kube, result, a, env):
+            orig(kube, result, a, env)
+            result["fraction_job_skipped"] = False  # skip flag lost: must not count as ok
+        vr.run_in_project = no_skip
+        try:
+            result, _, _ = self._run(extra=("--skip-fractions",))
+        finally:
+            vr.run_in_project = orig
+        self.assertFalse(result["ok"])
 
     def test_fractions_default_still_required(self):
         result, calls, kube = self._run()
@@ -450,7 +485,7 @@ class TestReadyWait(unittest.TestCase):
 
 class TestPlatformNames(unittest.TestCase):
     def test_platform_scheduler_is_runai_scheduler(self):
-        a = args("--mode", "platform", "--platform-domain", "runai.lab.test")
+        a = args("--mode", "platform", "--platform-domain", "runai.lab.test", "--skip-gpu-jobs")
         self.assertEqual(a.scheduler_name, "runai-scheduler")
         self.assertEqual(vr.missing_deployments(list(vr.REQUIRED_DEPLOYMENTS) + ["runai-scheduler-default"],
                                                 scheduler_name="runai-scheduler"), [])
