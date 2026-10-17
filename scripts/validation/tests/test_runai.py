@@ -712,8 +712,6 @@ class TestNamespaceOwnership(unittest.TestCase):
 
     def test_concurrent_creation_is_refused_and_not_owned(self):
         kube, cmds = self._kube(set())
-        orig = vr.run
-
         def racing(cmd, timeout=60, input_text=None):
             if cmd[:3] == ["kubectl", "get", "namespace"]:
                 return 0, "", ""  # looked free ...

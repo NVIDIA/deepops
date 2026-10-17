@@ -37,7 +37,7 @@ def runai_gpu_count(nodes_doc):
         try:
             total += max(int(value), 0)
         except (TypeError, ValueError):
-            pass
+            continue  # non-numeric allocatable counts as zero
     return total
 
 

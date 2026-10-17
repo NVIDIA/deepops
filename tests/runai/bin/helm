@@ -4,14 +4,18 @@ import json, os, sys
 state = os.environ["FAKE_STATE"]
 os.makedirs(state, exist_ok=True)
 db = os.path.join(state, "releases.json")
-rels = json.load(open(db)) if os.path.exists(db) else {}
+rels = {}
+if os.path.exists(db):
+    with open(db) as fh:
+        rels = json.load(fh)
 with open(os.path.join(state, "calls.log"), "a") as log:
     log.write(" ".join(a for a in sys.argv[1:] if a != "-") + "\n")
 a = sys.argv[1:]
 def opt(name, default=""):
     return a[a.index(name) + 1] if name in a else default
 def save():
-    json.dump(rels, open(db, "w"))
+    with open(db, "w") as fh:
+        json.dump(rels, fh)
 if a[0] == "list":
     ns = opt("--namespace")
     out = [dict(name=k.split("/", 1)[1], namespace=v["ns"], chart=v["chart"], status="deployed")
