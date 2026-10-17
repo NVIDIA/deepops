@@ -73,7 +73,10 @@ Versions are variables (`runai_*_version`); pins are refreshed with each release
    and completed, and (b) two pods that each asked for half a GPU landed on the
    same GPU and both completed. It requires `"ok": true`; if it is false, each
    entry in `failures` names the problem. The temporary namespace is deleted on
-   success and kept on failure so you can look at it.
+   success and kept on failure so you can look at it. The validator only ever
+   creates a new namespace (labelled `deepops.nvidia.com/runai-validate=owned`) and
+   deletes only what it created: if `--namespace` already exists it refuses and
+   touches nothing.
 
 Rerunning the playbook is safe; a converged run reports `changed=0`.
 

@@ -324,3 +324,48 @@ class TestArgs(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestNamespaceOwnership(unittest.TestCase):
+    """The real Kube class, with kubectl replaced by a recorder. Offline."""
+
+    def _kube(self, existing):
+        cmds = []
+
+        def fake_run(cmd, timeout=60, input_text=None):
+            cmds.append(cmd)
+            if cmd[:3] == ["kubectl", "get", "namespace"]:
+                return 0, ("namespace/" + cmd[3]) if cmd[3] in existing else "", ""
+            return 0, "", ""
+        orig, vr.run = vr.run, fake_run
+        self.addCleanup(setattr, vr, "run", orig)
+        return vr.Kube(), cmds
+
+    def test_existing_namespace_is_refused_and_never_deleted(self):
+        kube, cmds = self._kube({"prod"})
+        self.assertNotEqual(kube.ensure_namespace("prod")[0], 0)
+        kube.delete_namespace("prod")
+        self.assertFalse([c for c in cmds if "delete" in c or "create" in c])
+
+    def test_unknown_existence_is_treated_as_existing(self):
+        kube, cmds = self._kube(set())
+        vr.run = lambda cmd, timeout=60, input_text=None: (1, "", "refused")
+        self.assertNotEqual(kube.ensure_namespace("x")[0], 0)
+
+    def test_fresh_namespace_is_created_labelled_and_deleted(self):
+        kube, cmds = self._kube(set())
+        self.assertEqual(kube.ensure_namespace("fresh")[0], 0)
+        self.assertIn(["kubectl", "create", "namespace", "fresh"], cmds)
+        self.assertTrue(any("label" in c and vr.OWNER_LABEL + "=" + vr.OWNER_VALUE in c for c in cmds))
+        self.assertTrue(kube.delete_namespace("fresh"))
+        self.assertTrue(any(c[:3] == ["kubectl", "delete", "namespace"] for c in cmds))
+
+    def test_validate_against_existing_namespace_deletes_nothing(self):
+        real, cmds = self._kube({"deepops-runai-validate"})
+        fake = FakeKube(pods=GOOD_PODS)
+        real.get_json = fake.get_json
+        real.apply = fake.apply
+        result = vr.validate(args(), {}, real)
+        self.assertFalse(result["ok"])
+        self.assertEqual(fake.applied, [])
+        self.assertFalse([c for c in cmds if "delete" in c])
