@@ -317,7 +317,7 @@ class TestPlatformAndUninstall(unittest.TestCase):
 
 
 class TestPlatformProject(unittest.TestCase):
-    def _run(self, create_status=201, delete_status=200):
+    def _run(self, create_status=201, delete_status=200, extra=()):
         calls = []
 
         def fake(domain, ip, ca, method, path, body=None, headers=None, timeout=20):
@@ -344,11 +344,23 @@ class TestPlatformProject(unittest.TestCase):
         kube.get_json = lambda a, timeout=60: ({}, "") if a[:2] == ["get", "namespace"] else kube_get(a, timeout)
         try:
             result = vr.validate(args("--mode", "platform", "--platform-domain", "runai.lab.test",
-                                      "--create-project", "dv"),
+                                      "--create-project", "dv", *extra),
                                  {"RUNAI_USERNAME": "u", "RUNAI_PASSWORD": "p"}, kube)
         finally:
             vr.https_request = orig
         return result, calls, kube
+
+    def test_skip_fractions_is_explicit(self):
+        result, calls, kube = self._run(extra=("--skip-fractions",))
+        self.assertTrue(result["ok"], result["failures"])
+        self.assertTrue(result["fraction_job_skipped"])
+        self.assertFalse(result["fraction_job_ran"])
+        self.assertEqual([p["metadata"]["name"] for p in kube.applied], ["kai-whole-gpu"])
+
+    def test_fractions_default_still_required(self):
+        result, calls, kube = self._run()
+        self.assertFalse(result["fraction_job_skipped"])
+        self.assertTrue(result["fraction_job_ran"])
 
     def test_project_created_used_and_deleted(self):
         result, calls, kube = self._run()

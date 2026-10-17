@@ -574,7 +574,10 @@ def run_in_project(kube, result, args, env):
             result["failures"].append("project namespace %s did not appear" % args.namespace)
             return
         check_whole_gpu(kube, result, args)
-        check_fractions(kube, result, args)
+        if args.skip_fractions:
+            result["fraction_job_skipped"] = True
+        else:
+            check_fractions(kube, result, args)
     except (OSError, ssl.SSLError, http.client.HTTPException, ValueError) as exc:
         result["failures"].append("project run failed: %s" % type(exc).__name__)
     finally:
@@ -632,7 +635,7 @@ def new_result(mode):
         "schema_version": SCHEMA_VERSION, "ok": False, "mode": mode,
         "api_reachable": False, "scheduler_ready": False,
         "gpu_job_ran": False, "gpu_job_ok": False, "gpu_job_node": "",
-        "fraction_job_ran": False, "fraction_job_ok": False,
+        "fraction_job_ran": False, "fraction_job_ok": False, "fraction_job_skipped": False,
         "memory_enforcement_ran": False, "memory_enforcement_ok": False,
         "platform_ran": False, "platform_api_ok": False, "platform_cluster_connected": False,
         "project_created": False, "project_deleted": False,
@@ -693,7 +696,7 @@ def validate(args, env, kube=None):
     if args.mode == "platform" and not result["platform_ran"]:
         check_platform(result, args, env)
     ran_ok = (result["scheduler_ready"] and
-              (args.skip_gpu_jobs or (result["gpu_job_ok"] and result["fraction_job_ok"])) and
+              (args.skip_gpu_jobs or (result["gpu_job_ok"] and (result["fraction_job_ok"] or args.skip_fractions))) and
               (not args.memory_enforcement or result["memory_enforcement_ok"]) and
               (args.mode != "platform" or
                (result["platform_api_ok"] and result["platform_cluster_connected"] and
@@ -727,6 +730,9 @@ def parse_args(argv):
     p.add_argument("--ready-timeout", type=int, default=None,
                    help="wait up to this many seconds for the scheduler (and in platform mode the cluster link) "
                         "to become ready before checking; 0 = check once (default 600 in platform mode, else 0)")
+    p.add_argument("--skip-fractions", action="store_true",
+                   help="platform mode with --create-project: do not run the half-GPU check "
+                        "(reported as fraction_job_skipped; fractional sharing is then not proven)")
     p.add_argument("--skip-gpu-jobs", action="store_true", help="scheduler health only")
     p.add_argument("--memory-enforcement", action="store_true",
                    help="also prove gpu-fractioning refuses allocations past a pod's share")

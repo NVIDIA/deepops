@@ -184,6 +184,14 @@ its namespace and queue to the validator, or let the validator do it: add
 that flag `"ok": true` also requires the project to have been created and deleted. Beyond what the validator checks, DeepOps
 does not configure projects, users or quotas; use the Run:ai documentation.
 
+**Known limit (live test, 26.11):** on a one-machine test cluster with an A100, the cluster
+reported Connected, the whole-GPU pod ran under `runai-scheduler`, and the project was created
+and deleted through the API, but two half-GPU pods stayed Pending (the scheduler said only
+"Unschedulable"; the cause is not proven, GPU fractioning is off by default in this role
+because the chart's fractioning needs a newer GPU software stack). The half-GPU check is
+therefore not proven in platform mode. Pass `--skip-fractions` with `--create-project` to
+skip it; the result then shows `"fraction_job_skipped": true` so the skip is never silent.
+
 Run:ai 3.0 releases often. Keep `runai_chart_version` pinned and refresh it on
 purpose.
 
