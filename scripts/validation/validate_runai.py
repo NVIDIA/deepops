@@ -273,13 +273,11 @@ class Kube:
         return run(["kubectl", "-n", namespace, "logs", pod])[1]
 
     def __init__(self):
-        # Namespaces this invocation created (or adopted because it created their owner).
-        # delete_namespace() refuses anything not in here.
-        self.owned = set()
-
-    def own_namespace(self, namespace):
-        """Record that this run created the namespace's owner (a Run:ai project)."""
-        self.owned.add(namespace)
+        # namespace name -> UID of the namespace this run created (or adopted because it
+        # created its owner). delete_namespace() refuses anything not in here and deletes
+        # with a server-side UID precondition, never by name alone.
+        self.owned = {}
+        self.delete_note = ""
 
     def namespace_exists(self, namespace):
         """True/False, or None if the answer is unknown (treated as 'exists')."""
@@ -289,26 +287,85 @@ class Kube:
             return None
         return bool(out)
 
+    def own_namespace(self, namespace, uid):
+        """Record a namespace (by UID) that this run is allowed to delete."""
+        self.owned[namespace] = uid
+
     def delete_namespace(self, namespace):
-        """Delete a namespace only if this run created it. Returns True if a delete was sent."""
-        if namespace not in self.owned:
+        """Delete a namespace only if this run created it and it still has the recorded UID.
+
+        The UID is enforced by the API server (DeleteOptions.preconditions.uid), so a
+        namespace that was deleted and re-created under the same name is left alone (409).
+        Returns True if the server accepted the delete.
+        """
+        uid = self.owned.pop(namespace, "")
+        if not uid:
             return False
-        run(["kubectl", "delete", "namespace", namespace, "--ignore-not-found", "--wait=false"],
-            timeout=120)
-        self.owned.discard(namespace)
-        return True
+        status, msg = delete_with_uid("/api/v1/namespaces/" + urllib.parse.quote(namespace), uid)
+        if status in (200, 202):
+            return True
+        if status == 404:
+            return False
+        self.delete_note = ("namespace %s was NOT deleted (HTTP %s: %s); it is not the one this run "
+                            "created or could not be checked; leaving it alone" % (namespace, status, msg))
+        return False
 
     def ensure_namespace(self, namespace):
-        """Create a fresh, labelled test namespace. Never touches an existing one."""
+        """Create a fresh, labelled test namespace and record its UID. Never touches an existing one.
+
+        The create is atomic on the server (AlreadyExists if anyone got there first), and the
+        UID comes from the create response itself, so there is no read-then-act gap.
+        """
         if self.namespace_exists(namespace) is not False:
             return 1, "", "namespace %s already exists (or could not be checked); not touching it" % namespace
-        rc, out, err = run(["kubectl", "create", "namespace", namespace])
+        manifest = {"apiVersion": "v1", "kind": "Namespace",
+                    "metadata": {"name": namespace, "labels": {OWNER_LABEL: OWNER_VALUE}}}
+        rc, out, err = run(["kubectl", "create", "-f", "-", "-o", "json"],
+                           input_text=json.dumps(manifest))
         if rc != 0:
             return rc, out, err
-        self.owned.add(namespace)
-        run(["kubectl", "label", "namespace", namespace, "--overwrite",
-             OWNER_LABEL + "=" + OWNER_VALUE])
+        try:
+            doc = json.loads(out)
+            uid = doc["metadata"]["uid"]
+            if doc["metadata"]["name"] != namespace or not uid:
+                raise ValueError
+        except (ValueError, KeyError, TypeError):
+            return 1, "", "namespace %s created but its UID could not be read; not deleting it" % namespace
+        self.owned[namespace] = uid
         return rc, out, err
+
+
+def delete_with_uid(path, uid, timeout=60):
+    """DELETE an API path with a UID precondition via a short-lived ``kubectl proxy``.
+
+    (``kubectl delete --raw`` cannot send a request body, so it cannot carry preconditions.)
+    Returns (http_status, message); status 0 means the delete was not attempted or not sent.
+    """
+    try:
+        proxy = subprocess.Popen(["kubectl", "proxy", "--port=0", "--address=127.0.0.1"],
+                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+    except OSError as exc:
+        return 0, "kubectl proxy: %s" % type(exc).__name__
+    try:
+        line = proxy.stdout.readline()
+        m = re.search(r"127\.0\.0\.1:(\d+)", line)
+        if not m:
+            return 0, "kubectl proxy did not start"
+        conn = http.client.HTTPConnection("127.0.0.1", int(m.group(1)), timeout=timeout)
+        body = json.dumps({"apiVersion": "v1", "kind": "DeleteOptions",
+                           "propagationPolicy": "Background", "preconditions": {"uid": uid}})
+        conn.request("DELETE", path, body, {"Content-Type": "application/json"})
+        resp = conn.getresponse()
+        resp.read()
+        return resp.status, resp.reason
+    except (OSError, http.client.HTTPException) as exc:
+        return 0, type(exc).__name__
+    finally:
+        proxy.terminate()
+        try:
+            proxy.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            proxy.kill()
 
 
 # ------------------------------------------------------------------- the checks
@@ -574,9 +631,9 @@ def wait_namespace(kube, namespace, timeout):
     while time.time() < deadline:
         doc, _ = kube.get_json(["get", "namespace", namespace])
         if doc is not None:
-            return True
+            return doc
         time.sleep(5)
-    return False
+    return None
 
 
 def delete_project(args, bearer, project_id, result):
@@ -588,6 +645,24 @@ def delete_project(args, bearer, project_id, result):
             result["project_deleted"] = True
     except (OSError, ssl.SSLError, http.client.HTTPException) as exc:
         result["failures"].append("project delete failed: %s; delete it by hand" % type(exc).__name__)
+
+
+PROJECT_LABEL = "runai/queue"  # Run:ai puts this label on a project's namespace
+
+
+def project_namespace_uid(doc, namespace, project):
+    """UID of the namespace if it is provably the new project's namespace, else "".
+
+    Requires the exact name and the Run:ai project label naming this project; anything
+    else (wrong name, missing/other label, no UID) is doubt and returns "".
+    """
+    meta = (doc or {}).get("metadata") or {}
+    if meta.get("name") != namespace:
+        return ""
+    if (meta.get("labels") or {}).get(PROJECT_LABEL) != project:
+        return ""
+    uid = meta.get("uid")
+    return uid if isinstance(uid, str) and uid else ""
 
 
 def run_in_project(kube, result, args, env):
@@ -608,12 +683,22 @@ def run_in_project(kube, result, args, env):
         bearer, project_id = create_project(args, env, result)
         if not project_id:
             return
-        kube.own_namespace(project_ns)  # this run created the project, so its namespace
+        doc = wait_namespace(kube, project_ns, args.job_timeout)
+        if doc is None:
+            result["failures"].append(
+                "project namespace %s did not appear in time; the project is deleted through the API "
+                "only and any namespace with that name is left alone (check it by hand)" % project_ns)
+            return
+        uid = project_namespace_uid(doc, project_ns, args.create_project)
+        if not uid:
+            result["failures"].append(
+                "namespace %s is not provably tied to the new project (no %s=%s label from Run:ai); "
+                "the project is deleted through the API only and the namespace is left alone "
+                "(check it by hand)" % (project_ns, PROJECT_LABEL, args.create_project))
+            return
+        kube.own_namespace(project_ns, uid)
         args.namespace = project_ns
         args.queue = args.create_project
-        if not wait_namespace(kube, args.namespace, args.job_timeout):
-            result["failures"].append("project namespace %s did not appear" % args.namespace)
-            return
         check_whole_gpu(kube, result, args)
         if args.skip_fractions:
             result["fraction_job_skipped"] = True
@@ -625,7 +710,9 @@ def run_in_project(kube, result, args, env):
         if project_id:
             delete_project(args, bearer, project_id, result)
             if result["project_deleted"]:
-                kube.delete_namespace(args.namespace)
+                kube.delete_namespace(project_ns)  # only if adopted above; UID-checked
+                if kube.delete_note:
+                    result["failures"].append(kube.delete_note)
 
 
 def check_platform(result, args, env):
@@ -747,7 +834,10 @@ def validate(args, env, kube=None):
     result["ok"] = bool(ran_ok and not result["failures"])
     if result["ok"] and not args.skip_gpu_jobs:
         if not args.create_project:
-            kube.delete_namespace(args.namespace)  # no-op unless this run created it
+            kube.delete_namespace(args.namespace)  # no-op unless this run created it (UID-checked)
+            if kube.delete_note:
+                result["failures"].append(kube.delete_note)
+                result["ok"] = False
     elif not args.skip_gpu_jobs and not args.create_project and result["gpu_job_ran"]:
         result["failures"].append("namespace %s kept for debugging" % args.namespace)
     return result

@@ -40,6 +40,7 @@ class FakeKube:
         self.phases, self.logged, self.apply_rc, self.ns_rc = phases or {}, logs or {}, apply_rc, ns_rc
         self.namespaces, self.nodes = namespaces or {"items": []}, nodes
         self.applied, self.deleted, self.owned, self.existing = [], [], [], set()
+        self.delete_note = ""
 
     def get_json(self, args, timeout=60):
         if args[:2] == ["get", "nodes"]:
@@ -68,13 +69,15 @@ class FakeKube:
         return self.ns_rc, "", ""
 
     def delete_namespace(self, namespace):
-        self.deleted.append(namespace)
+        # like the real one: only a namespace this run owns is ever deleted
+        if namespace in [n for n, _ in self.owned]:
+            self.deleted.append(namespace)
 
     def namespace_exists(self, namespace):
         return namespace in self.existing
 
-    def own_namespace(self, namespace):
-        self.owned.append(namespace)
+    def own_namespace(self, namespace, uid):
+        self.owned.append((namespace, uid))
 
 
 def args(*extra):
@@ -323,7 +326,10 @@ class TestPlatformAndUninstall(unittest.TestCase):
 
 
 class TestPlatformProject(unittest.TestCase):
-    def _run(self, create_status=201, delete_status=200, extra=()):
+    NS_DOC = {"metadata": {"name": "runai-dv", "uid": "uid-dv", "labels": {"runai/queue": "dv"}}}
+
+    def _run(self, create_status=201, delete_status=200, extra=(), ns_doc=None, existing=(),
+             wait_result="doc"):
         calls = []
 
         def fake(domain, ip, ca, method, path, body=None, headers=None, timeout=20):
@@ -347,7 +353,14 @@ class TestPlatformProject(unittest.TestCase):
         kube = FakeKube(pods={"kai-whole-gpu": pod("kai-whole-gpu"), "kai-half-a": pod("kai-half-a"),
                               "kai-half-b": pod("kai-half-b")})
         kube_get = kube.get_json
-        kube.get_json = lambda a, timeout=60: ({}, "") if a[:2] == ["get", "namespace"] else kube_get(a, timeout)
+        doc = self.NS_DOC if ns_doc is None else ns_doc
+        kube.existing = set(existing)
+        kube.get_json = lambda a, timeout=60: (
+            (doc, "") if wait_result == "doc" else (None, "not found")) if a[:2] == ["get", "namespace"] \
+            else kube_get(a, timeout)
+        orig_wait, vr.wait_namespace = vr.wait_namespace, (
+            vr.wait_namespace if wait_result == "doc" else (lambda k, n, t: None))
+        self.addCleanup(setattr, vr, "wait_namespace", orig_wait)
         try:
             result = vr.validate(args("--mode", "platform", "--platform-domain", "runai.lab.test",
                                       "--create-project", "dv", *extra),
@@ -419,26 +432,52 @@ class TestPlatformProject(unittest.TestCase):
 
     def test_project_namespace_owned_only_after_create(self):
         result, calls, kube = self._run()
-        self.assertEqual(kube.owned, ["runai-dv"])
+        self.assertEqual(kube.owned, [("runai-dv", "uid-dv")])
         self.assertEqual(kube.deleted, ["runai-dv"])
 
+    def _posted(self, calls):
+        return [c for c in calls if c[0] == "POST" and "projects" in c[1]]
+
     def test_existing_project_namespace_is_refused_untouched(self):
-        orig = vr.https_request
-        calls = []
-        vr.https_request = lambda *a, **k: calls.append(a) or (200, json.dumps(
-            {"clusters": [{"name": "deepops", "uuid": "c1", "status": {"platform": "Connected"}}]}).encode())
-        kube = FakeKube(pods=GOOD_PODS)
-        kube.existing = {"runai-dv"}
-        try:
-            result = vr.validate(args("--mode", "platform", "--platform-domain", "runai.lab.test",
-                                      "--create-project", "dv"),
-                                 {"RUNAI_USERNAME": "u", "RUNAI_PASSWORD": "p"}, kube)
-        finally:
-            vr.https_request = orig
+        # the token fixture really returns a token, so the refusal is what stops the run
+        result, calls, kube = self._run(existing={"runai-dv"})
         self.assertFalse(result["ok"])
         self.assertFalse(result["project_created"])
+        self.assertTrue(any("already exists" in f for f in result["failures"]), result["failures"])
         self.assertEqual((kube.deleted, kube.owned, kube.applied), ([], [], []))
-        self.assertFalse([c for c in calls if len(c) > 3 and c[3] == "POST" and "projects" in str(c[4])])
+        self.assertEqual(self._posted(calls), [])
+        self.assertTrue(any(c[1] == "/api/v1/clusters" for c in calls))  # got past login
+
+    def test_namespace_without_project_label_is_not_adopted(self):
+        for doc in ({"metadata": {"name": "runai-dv", "uid": "u"}},
+                    {"metadata": {"name": "runai-dv", "uid": "u", "labels": {"runai/queue": "other"}}},
+                    {"metadata": {"name": "runai-dv", "labels": {"runai/queue": "dv"}}},
+                    {"metadata": {"name": "elsewhere", "uid": "u", "labels": {"runai/queue": "dv"}}}):
+            result, calls, kube = self._run(ns_doc=doc)
+            self.assertFalse(result["ok"])
+            self.assertEqual((kube.owned, kube.deleted, kube.applied), ([], [], []), doc)
+            self.assertTrue(any("not provably tied" in f for f in result["failures"]))
+            # project is removed through the API only
+            self.assertEqual([c[0] for c in calls if c[1].startswith("/api/v1/org-unit")], ["POST", "DELETE"])
+
+    def test_timeout_deletes_project_via_api_and_leaves_namespace(self):
+        result, calls, kube = self._run(wait_result="timeout")
+        self.assertFalse(result["ok"])
+        self.assertEqual((kube.owned, kube.deleted, kube.applied), ([], [], []))
+        self.assertTrue(result["project_deleted"])
+        self.assertTrue(any("left alone" in f for f in result["failures"]))
+
+    def test_project_delete_failure_never_deletes_namespace(self):
+        result, calls, kube = self._run(delete_status=500)
+        self.assertFalse(result["ok"])
+        self.assertEqual(kube.deleted, [])
+
+    def test_project_namespace_uid_helper(self):
+        f = vr.project_namespace_uid
+        self.assertEqual(f(self.NS_DOC, "runai-dv", "dv"), "uid-dv")
+        self.assertEqual(f(None, "runai-dv", "dv"), "")
+        self.assertEqual(f({"metadata": {"name": "runai-dv", "uid": 5, "labels": {"runai/queue": "dv"}}},
+                           "runai-dv", "dv"), "")
 
     def test_create_failure_is_not_ok(self):
         result, _, _ = self._run(create_status=400)
@@ -600,39 +639,102 @@ if __name__ == "__main__":
     unittest.main()
 
 
+class _Cmds(list):
+    deletes = None
+
+
 class TestNamespaceOwnership(unittest.TestCase):
     """The real Kube class, with kubectl replaced by a recorder. Offline."""
 
-    def _kube(self, existing):
-        cmds = []
+    def _kube(self, existing, uid="uid-1", delete_status=200):
+        cmds, deletes = _Cmds(), []
 
         def fake_run(cmd, timeout=60, input_text=None):
             cmds.append(cmd)
             if cmd[:3] == ["kubectl", "get", "namespace"]:
                 return 0, ("namespace/" + cmd[3]) if cmd[3] in existing else "", ""
+            if cmd[:2] == ["kubectl", "create"]:
+                name = json.loads(input_text)["metadata"]["name"]
+                if name in existing:  # lost the race: server says AlreadyExists
+                    return 1, "", "AlreadyExists"
+                return 0, json.dumps({"metadata": {"name": name, "uid": uid}}), ""
             return 0, "", ""
+
+        def fake_delete(path, u, timeout=60):
+            deletes.append((path, u))
+            return delete_status, "x"
         orig, vr.run = vr.run, fake_run
+        orig_d, vr.delete_with_uid = vr.delete_with_uid, fake_delete
         self.addCleanup(setattr, vr, "run", orig)
+        self.addCleanup(setattr, vr, "delete_with_uid", orig_d)
+        cmds.deletes = deletes
         return vr.Kube(), cmds
 
     def test_existing_namespace_is_refused_and_never_deleted(self):
         kube, cmds = self._kube({"prod"})
         self.assertNotEqual(kube.ensure_namespace("prod")[0], 0)
-        kube.delete_namespace("prod")
-        self.assertFalse([c for c in cmds if "delete" in c or "create" in c])
+        self.assertFalse(kube.delete_namespace("prod"))
+        self.assertFalse([c for c in cmds if "delete" in c or c[:2] == ["kubectl", "create"]])
+        self.assertEqual(cmds.deletes, [])
 
     def test_unknown_existence_is_treated_as_existing(self):
         kube, cmds = self._kube(set())
         vr.run = lambda cmd, timeout=60, input_text=None: (1, "", "refused")
         self.assertNotEqual(kube.ensure_namespace("x")[0], 0)
 
-    def test_fresh_namespace_is_created_labelled_and_deleted(self):
+    def test_concurrent_creation_is_refused_and_not_owned(self):
         kube, cmds = self._kube(set())
+        orig = vr.run
+
+        def racing(cmd, timeout=60, input_text=None):
+            if cmd[:3] == ["kubectl", "get", "namespace"]:
+                return 0, "", ""  # looked free ...
+            return 1, "", "AlreadyExists"  # ... but someone created it first
+        vr.run = racing
+        self.assertNotEqual(kube.ensure_namespace("raced")[0], 0)
+        self.assertFalse(kube.delete_namespace("raced"))
+        self.assertEqual(cmds.deletes, [])
+
+    def test_unreadable_uid_means_not_owned(self):
+        kube, cmds = self._kube(set())
+        vr.run = lambda cmd, timeout=60, input_text=None: (0, "not json", "") if cmd[:2] == ["kubectl", "create"] else (0, "", "")
+        self.assertNotEqual(kube.ensure_namespace("x")[0], 0)
+        self.assertFalse(kube.delete_namespace("x"))
+        self.assertEqual(cmds.deletes, [])
+
+    def test_fresh_namespace_is_created_labelled_and_deleted_by_uid(self):
+        kube, cmds = self._kube(set(), uid="uid-42")
         self.assertEqual(kube.ensure_namespace("fresh")[0], 0)
-        self.assertIn(["kubectl", "create", "namespace", "fresh"], cmds)
-        self.assertTrue(any("label" in c and vr.OWNER_LABEL + "=" + vr.OWNER_VALUE in c for c in cmds))
+        create = [c for c in cmds if c[:2] == ["kubectl", "create"]]
+        self.assertEqual(len(create), 1)
         self.assertTrue(kube.delete_namespace("fresh"))
-        self.assertTrue(any(c[:3] == ["kubectl", "delete", "namespace"] for c in cmds))
+        self.assertEqual(cmds.deletes, [("/api/v1/namespaces/fresh", "uid-42")])
+        # never a by-name kubectl delete
+        self.assertFalse([c for c in cmds if c[:2] == ["kubectl", "delete"]])
+
+    def test_replacement_namespace_is_not_deleted(self):
+        # same name, different UID: the server answers 409 Conflict to the precondition
+        kube, cmds = self._kube(set(), uid="uid-old", delete_status=409)
+        self.assertEqual(kube.ensure_namespace("swap")[0], 0)
+        self.assertFalse(kube.delete_namespace("swap"))
+        self.assertEqual(cmds.deletes, [("/api/v1/namespaces/swap", "uid-old")])
+        self.assertIn("NOT deleted", kube.delete_note)
+
+    def test_delete_is_only_sent_once(self):
+        kube, cmds = self._kube(set())
+        kube.ensure_namespace("once")
+        kube.delete_namespace("once")
+        kube.delete_namespace("once")
+        self.assertEqual(len(cmds.deletes), 1)
+
+    def test_replacement_is_reported_as_a_failure(self):
+        real, cmds = self._kube(set(), delete_status=409)
+        fake = FakeKube(pods=GOOD_PODS)
+        for n in ("get_json", "apply", "wait_phase", "logs"):
+            setattr(real, n, getattr(fake, n))
+        result = vr.validate(args(), {}, real)
+        self.assertFalse(result["ok"])
+        self.assertTrue(any("NOT deleted" in f for f in result["failures"]))
 
     def test_validate_against_existing_namespace_deletes_nothing(self):
         real, cmds = self._kube({"deepops-runai-validate"})
