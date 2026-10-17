@@ -78,9 +78,6 @@ class FakeKube:
     def namespace_exists(self, namespace):
         return namespace in self.existing
 
-    def own_namespace(self, namespace, uid):
-        self.owned.append((namespace, uid))
-
 
 def args(*extra):
     # tests never really wait; the wait has its own tests below
@@ -328,7 +325,14 @@ class TestPlatformAndUninstall(unittest.TestCase):
 
 
 class TestPlatformProject(unittest.TestCase):
-    NS_DOC = {"metadata": {"name": "runai-dv", "uid": "uid-dv", "labels": {"runai/queue": "dv"}}}
+    @staticmethod
+    def _ts(offset=0):
+        import time as _t
+        return _t.strftime("%Y-%m-%dT%H:%M:%SZ", _t.gmtime(_t.time() + offset))
+
+    def setUp(self):
+        self.NS_DOC = {"metadata": {"name": "runai-dv", "uid": "uid-dv", "creationTimestamp": self._ts(1),
+                                    "labels": {"runai/queue": "dv"}}}
 
     def _run(self, create_status=201, delete_status=200, extra=(), ns_doc=None, existing=(),
              wait_result="doc"):
@@ -398,7 +402,7 @@ class TestPlatformProject(unittest.TestCase):
             FakeKube.wait_phase = orig_wait
         self.assertFalse(result["ok"])
         self.assertTrue(result["gpu_job_ran"])
-        self.assertEqual(kube.deleted, ["runai-dv"])
+        self.assertEqual(kube.deleted, [])
         self.assertFalse([f for f in result["failures"] if "kept for debugging" in f])
 
     def test_skipped_fractions_ok_depends_on_flag(self):
@@ -432,10 +436,23 @@ class TestPlatformProject(unittest.TestCase):
         self.assertEqual(body["resources"][0]["nodePool"], {"id": "7"})
         self.assertEqual(body["resources"][0]["gpu"]["deserved"], 1)
 
-    def test_project_namespace_owned_only_after_create(self):
+    def test_happy_path_never_deletes_namespace_itself(self):
         result, calls, kube = self._run()
-        self.assertEqual(kube.owned, [("runai-dv", "uid-dv")])
-        self.assertEqual(kube.deleted, ["runai-dv"])
+        self.assertTrue(result["ok"], result["failures"])
+        self.assertTrue(result["project_namespace_removed"])
+        self.assertEqual((kube.owned, kube.deleted), ([], []))
+        self.assertTrue(kube.applied)
+
+    def test_namespace_left_after_project_delete_is_reported_not_deleted(self):
+        orig = vr.wait_namespace_gone
+        vr.wait_namespace_gone = lambda k, n, t: False
+        try:
+            result, calls, kube = self._run()
+        finally:
+            vr.wait_namespace_gone = orig
+        self.assertFalse(result["ok"])
+        self.assertEqual(kube.deleted, [])
+        self.assertTrue(any("still exists" in f for f in result["failures"]))
 
     def _posted(self, calls):
         return [c for c in calls if c[0] == "POST" and "projects" in c[1]]
@@ -450,16 +467,24 @@ class TestPlatformProject(unittest.TestCase):
         self.assertEqual(self._posted(calls), [])
         self.assertTrue(any(c[1] == "/api/v1/clusters" for c in calls))  # got past login
 
-    def test_namespace_without_project_label_is_not_adopted(self):
-        for doc in ({"metadata": {"name": "runai-dv", "uid": "u"}},
-                    {"metadata": {"name": "runai-dv", "uid": "u", "labels": {"runai/queue": "other"}}},
-                    {"metadata": {"name": "runai-dv", "labels": {"runai/queue": "dv"}}},
-                    {"metadata": {"name": "elsewhere", "uid": "u", "labels": {"runai/queue": "dv"}}}):
+    def test_unproven_namespace_skips_gpu_jobs(self):
+        old = self._ts(-3600)
+        for doc in ({"metadata": {"name": "runai-dv", "uid": "u", "creationTimestamp": self._ts(1)}},
+                    {"metadata": {"name": "runai-dv", "uid": "u", "creationTimestamp": self._ts(1),
+                                  "labels": {"runai/queue": "other"}}},
+                    {"metadata": {"name": "runai-dv", "creationTimestamp": self._ts(1),
+                                  "labels": {"runai/queue": "dv"}}},
+                    {"metadata": {"name": "elsewhere", "uid": "u", "creationTimestamp": self._ts(1),
+                                  "labels": {"runai/queue": "dv"}}},
+                    # foreign same-name, same-label namespace that pre-dates the project (foreign UID)
+                    {"metadata": {"name": "runai-dv", "uid": "foreign-uid", "creationTimestamp": old,
+                                  "labels": {"runai/queue": "dv"}}},
+                    {"metadata": {"name": "runai-dv", "uid": "u", "labels": {"runai/queue": "dv"}}}):
             result, calls, kube = self._run(ns_doc=doc)
             self.assertFalse(result["ok"])
             self.assertEqual((kube.owned, kube.deleted, kube.applied), ([], [], []), doc)
-            self.assertTrue(any("not provably tied" in f for f in result["failures"]))
-            # project is removed through the API only
+            self.assertFalse(result["gpu_job_ran"])
+            self.assertTrue(any("not provably" in f for f in result["failures"]))
             self.assertEqual([c[0] for c in calls if c[1].startswith("/api/v1/org-unit")], ["POST", "DELETE"])
 
     def test_timeout_deletes_project_via_api_and_leaves_namespace(self):
@@ -474,12 +499,15 @@ class TestPlatformProject(unittest.TestCase):
         self.assertFalse(result["ok"])
         self.assertEqual(kube.deleted, [])
 
-    def test_project_namespace_uid_helper(self):
-        f = vr.project_namespace_uid
-        self.assertEqual(f(self.NS_DOC, "runai-dv", "dv"), "uid-dv")
-        self.assertEqual(f(None, "runai-dv", "dv"), "")
-        self.assertEqual(f({"metadata": {"name": "runai-dv", "uid": 5, "labels": {"runai/queue": "dv"}}},
-                           "runai-dv", "dv"), "")
+    def test_project_namespace_linked_helper(self):
+        f = vr.project_namespace_linked
+        import time as _t
+        now = _t.time()
+        self.assertTrue(f(self.NS_DOC, "runai-dv", "dv", now))
+        self.assertFalse(f(None, "runai-dv", "dv", now))
+        self.assertFalse(f(self.NS_DOC, "runai-dv", "dv", now + 3600))  # older than the project
+        self.assertFalse(f({"metadata": {"name": "runai-dv", "uid": 5, "creationTimestamp": self._ts(1),
+                                         "labels": {"runai/queue": "dv"}}}, "runai-dv", "dv", now))
 
     def test_create_failure_is_not_ok(self):
         result, _, _ = self._run(create_status=400)

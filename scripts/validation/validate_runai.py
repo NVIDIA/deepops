@@ -25,6 +25,7 @@ Exit codes: 0 = ok, 1 = not ok, 2 = bad input or kubectl missing.
 
 import argparse
 import http.client
+import datetime
 import json
 import re
 import shutil
@@ -286,10 +287,6 @@ class Kube:
         if rc != 0:
             return None
         return bool(out)
-
-    def own_namespace(self, namespace, uid):
-        """Record a namespace (by UID) that this run is allowed to delete."""
-        self.owned[namespace] = uid
 
     def delete_namespace(self, namespace):
         """Delete a namespace only if this run created it and it still has the recorded UID.
@@ -636,6 +633,16 @@ def wait_namespace(kube, namespace, timeout):
     return None
 
 
+def wait_namespace_gone(kube, namespace, timeout):
+    deadline = time.time() + timeout
+    while True:
+        if kube.namespace_exists(namespace) is False:
+            return True
+        if time.time() >= deadline:
+            return False
+        time.sleep(3)
+
+
 def delete_project(args, bearer, project_id, result):
     try:
         status, _ = api_json(args, bearer, "DELETE", "/api/v1/org-unit/projects/" + urllib.parse.quote(project_id))
@@ -650,19 +657,28 @@ def delete_project(args, bearer, project_id, result):
 PROJECT_LABEL = "runai/queue"  # Run:ai puts this label on a project's namespace
 
 
-def project_namespace_uid(doc, namespace, project):
-    """UID of the namespace if it is provably the new project's namespace, else "".
+SKEW = 5  # seconds of clock difference tolerated between this host and the API server
 
-    Requires the exact name and the Run:ai project label naming this project; anything
-    else (wrong name, missing/other label, no UID) is doubt and returns "".
-    """
+
+def project_namespace_linked(doc, namespace, project, created_after):
+    """True only if the namespace is provably the new project's: exact name, the Run:ai
+    project label naming it, a UID, and a creation time not before the project was created
+    (epoch seconds). Any doubt is False. The namespace is never deleted by this script
+    either way; Run:ai owns its lifecycle."""
     meta = (doc or {}).get("metadata") or {}
     if meta.get("name") != namespace:
-        return ""
+        return False
     if (meta.get("labels") or {}).get(PROJECT_LABEL) != project:
-        return ""
+        return False
     uid = meta.get("uid")
-    return uid if isinstance(uid, str) and uid else ""
+    if not isinstance(uid, str) or not uid:
+        return False
+    try:
+        made = datetime.datetime.strptime(meta.get("creationTimestamp", ""), "%Y-%m-%dT%H:%M:%SZ")
+        made = made.replace(tzinfo=datetime.timezone.utc).timestamp()
+    except ValueError:
+        return False
+    return made >= created_after - SKEW
 
 
 def run_in_project(kube, result, args, env):
@@ -680,6 +696,7 @@ def run_in_project(kube, result, args, env):
             % project_ns)
         return
     try:
+        started = time.time()
         bearer, project_id = create_project(args, env, result)
         if not project_id:
             return
@@ -689,14 +706,12 @@ def run_in_project(kube, result, args, env):
                 "project namespace %s did not appear in time; the project is deleted through the API "
                 "only and any namespace with that name is left alone (check it by hand)" % project_ns)
             return
-        uid = project_namespace_uid(doc, project_ns, args.create_project)
-        if not uid:
+        if not project_namespace_linked(doc, project_ns, args.create_project, started):
             result["failures"].append(
-                "namespace %s is not provably tied to the new project (no %s=%s label from Run:ai); "
-                "the project is deleted through the API only and the namespace is left alone "
-                "(check it by hand)" % (project_ns, PROJECT_LABEL, args.create_project))
+                "namespace %s is not provably the new project's (needs the %s=%s label from Run:ai and "
+                "a creation time after the project was created); GPU jobs skipped, nothing run in it. "
+                "This script never deletes the namespace" % (project_ns, PROJECT_LABEL, args.create_project))
             return
-        kube.own_namespace(project_ns, uid)
         args.namespace = project_ns
         args.queue = args.create_project
         check_whole_gpu(kube, result, args)
@@ -710,9 +725,13 @@ def run_in_project(kube, result, args, env):
         if project_id:
             delete_project(args, bearer, project_id, result)
             if result["project_deleted"]:
-                kube.delete_namespace(project_ns)  # only if adopted above; UID-checked
-                if kube.delete_note:
-                    result["failures"].append(kube.delete_note)
+                # Run:ai deletes the namespace with the project; we only report, never delete.
+                gone = wait_namespace_gone(kube, project_ns, 60)
+                result["project_namespace_removed"] = gone
+                if not gone:
+                    result["failures"].append(
+                        "namespace %s still exists after the project delete; Run:ai owns it, "
+                        "check it by hand (not deleted by this script)" % project_ns)
 
 
 def check_platform(result, args, env):
