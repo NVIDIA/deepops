@@ -348,6 +348,32 @@ def check_whole_gpu(kube, result, args):
         result["gpu_job_node"] = node
 
 
+PENDING_HINT_WORDS = (
+    "gpu-fraction", "fraction", "annotation", "not supported", "unsupported", "not enabled", "disabled",
+    "sharing", "quota", "over quota", "insufficient", "not enough", "no nodes", "queue", "project",
+    "reservation", "reservation pod", "gpu", "memory", "node pool", "nodepool", "podgroup", "pod group",
+    "priority", "preempt", "reclaim", "deserved", "limit", "capacity", "available", "selector", "taint",
+    "affinity", "scheduler", "webhook", "admission", "denied", "invalid", "unknown", "mps", "nvfractions",
+)
+
+
+def pending_hints(kube, namespace, pod):
+    """Fixed-label hints about why a pod is Pending. Reads the pod's own events and conditions
+    while its namespace still exists. Only labels from PENDING_HINT_WORDS and three counts are
+    returned; no event or condition text is ever copied."""
+    rc, out, _ = run(["kubectl", "-n", namespace, "get", "events", "--field-selector",
+                      "involvedObject.name=" + pod, "-o",
+                      "jsonpath={range .items[*]}{.reason} {.message}{\"\\n\"}{end}"], timeout=60)
+    text = out.lower() if rc == 0 and isinstance(out, str) else ""
+    rc2, out2, _ = run(["kubectl", "-n", namespace, "get", "pod", pod, "-o",
+                        "jsonpath={range .status.conditions[*]}{.type} {.reason} {.message}{\"\\n\"}{end}"],
+                       timeout=60)
+    text += "\n" + (out2.lower() if rc2 == 0 and isinstance(out2, str) else "")
+    labels = sorted(w.replace(" ", "-") for w in PENDING_HINT_WORDS if w in text)
+    return {"event_bytes": len(text.strip()), "lines": len([l for l in text.splitlines() if l.strip()]),
+            "labels": labels}
+
+
 def check_fractions(kube, result, args):
     result["fraction_job_ran"] = True
     names = ["kai-half-a", "kai-half-b"]
@@ -365,6 +391,8 @@ def check_fractions(kube, result, args):
                                 args.job_timeout)
         if phase not in ("Running", "Succeeded"):
             result["failures"].append("fractional pod %s did not start (phase=%s)" % (name, phase))
+            if phase == "Pending":
+                result["pending_hints"] = pending_hints(kube, args.namespace, name)
             return
     placements = []
     for name in names:

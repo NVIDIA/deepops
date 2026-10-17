@@ -492,5 +492,33 @@ class TestArgs(unittest.TestCase):
             args("--job-timeout", "1")
 
 
+class TestPendingHints(unittest.TestCase):
+    def test_only_fixed_labels_no_text(self):
+        orig = vr.run
+        secret = "Bearer SECRETTOKEN123 password=hunter2"
+        vr.run = lambda cmd, timeout=60, input_text=None: (
+            0, "Unschedulable not enough GPU quota " + secret, "")
+        try:
+            h = vr.pending_hints(object(), "ns", "kai-half-a")
+        finally:
+            vr.run = orig
+        blob = json.dumps(h)
+        for bad in ("SECRET", "secret", "hunter2", "Bearer", "password"):
+            self.assertNotIn(bad, blob)
+        self.assertIn("quota", h["labels"])
+        self.assertIn("not-enough", h["labels"])
+        self.assertEqual(sorted(h), ["event_bytes", "labels", "lines"])
+
+    def test_command_failure_is_empty(self):
+        orig = vr.run
+        vr.run = lambda cmd, timeout=60, input_text=None: (1, "", "token=abc")
+        try:
+            h = vr.pending_hints(object(), "ns", "p")
+        finally:
+            vr.run = orig
+        self.assertEqual(h["labels"], [])
+        self.assertNotIn("abc", json.dumps(h))
+
+
 if __name__ == "__main__":
     unittest.main()
