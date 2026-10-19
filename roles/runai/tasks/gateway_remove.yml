@@ -1,0 +1,44 @@
+---
+# Removes only what gateway.yml and gateway_controller.yml added.
+- name: Remove the Gateway
+  ansible.builtin.command: "{{ runai_kubectl }} --namespace {{ runai_cluster_namespace }} delete gateway {{ runai_gateway_name }} --ignore-not-found"
+  register: runai_rm_gw
+  changed_when: "'deleted' in runai_rm_gw.stdout"
+  failed_when: runai_rm_gw.rc != 0 and 'the server doesn' not in runai_rm_gw.stderr
+
+- name: Remove the KGateway controller and its CRDs
+  ansible.builtin.command: "{{ runai_helm }} uninstall {{ item }} --namespace {{ runai_gateway_controller_namespace }} --wait"
+  loop: [kgateway, kgateway-crds]
+  register: runai_rm_kgw
+  changed_when: runai_rm_kgw.rc == 0
+  failed_when: runai_rm_kgw.rc != 0 and 'not found' not in runai_rm_kgw.stderr
+  when: runai_gateway_install_controller | bool
+
+- name: Note whether this role removed the controller releases
+  ansible.builtin.set_fact:
+    runai_gateway_controller_removed: "{{ runai_gateway_install_controller | bool and (runai_rm_kgw.results | selectattr('rc', 'equalto', 0) | list | length > 0) }}"
+
+# Only CRDs marked by this role, and only when no Gateway-API object is left that
+# somebody else still depends on.
+- name: Count remaining Gateways
+  ansible.builtin.shell: >-
+    set -o pipefail;
+    {{ runai_kubectl }} get gateways.gateway.networking.k8s.io --all-namespaces --output name 2>/dev/null | wc -l
+  args:
+    executable: /bin/bash
+  register: runai_gw_left
+  changed_when: false
+  check_mode: false
+
+- name: List the Gateway API CRDs this role installed
+  ansible.builtin.command: >-
+    {{ runai_kubectl }} get crd --output jsonpath={range .items[?(@.metadata.annotations.deepops\.nvidia\.com/runai-installed=="true")]}{.metadata.name}{"\n"}{end}
+  register: runai_gw_crds_owned
+  changed_when: false
+  check_mode: false
+
+- name: Remove the Gateway API CRDs this role installed
+  ansible.builtin.command: "{{ runai_kubectl }} delete crd {{ item }} --ignore-not-found"
+  loop: "{{ runai_gw_crds_owned.stdout_lines }}"
+  changed_when: true
+  when: runai_gw_left.stdout | trim | int == 0

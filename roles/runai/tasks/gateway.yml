@@ -1,0 +1,24 @@
+---
+# One Gateway in the Run:ai cluster namespace, shaped like the Run:ai v3.0 guide. The
+# listeners accept routes from every namespace because the control plane's route lives
+# in its own namespace. Both certificate secrets come from the files used for ingress.
+- name: Create the Gateway certificate secrets
+  ansible.builtin.shell: |
+    set -euo pipefail
+    {{ runai_kubectl }} -n {{ runai_cluster_namespace }} create secret tls {{ item }} \
+      --cert {{ runai_tls_cert | quote }} --key {{ runai_tls_key | quote }} --dry-run=client -o yaml \
+      | {{ runai_kubectl }} apply -f -
+  args:
+    executable: /bin/bash
+  loop: "{{ ['runai-cluster-domain-tls-secret'] + (['runai-cluster-domain-star-tls-secret'] if runai_gateway_workload_routing == 'host' else []) }}"
+  register: runai_gw_tls
+  changed_when: "'created' in runai_gw_tls.stdout or 'configured' in runai_gw_tls.stdout"
+  no_log: true
+  become: true
+
+- name: Create the Gateway
+  ansible.builtin.command: "{{ runai_kubectl }} apply --filename -"
+  args:
+    stdin: "{{ runai_gateway_manifest | to_json }}"
+  register: runai_gw_apply
+  changed_when: "'created' in runai_gw_apply.stdout or 'configured' in runai_gw_apply.stdout"

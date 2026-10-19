@@ -71,7 +71,12 @@ runai_platform_ingress_chart_version: "1.54.2"
 runai_platform_ingress_release_name: "haproxy-kubernetes-ingress"
 runai_platform_ingress_namespace: "haproxy-controller"
 # NodePort is the only type live-tested in 26.11; LoadBalancer is untested in 26.11.
+# With LoadBalancer the role waits for the external address (MetalLB: see
+# scripts/k8s/deploy_loadbalancer.sh) and uses it for the hosts entry, the CoreDNS
+# entry and the validator, instead of the node address.
 runai_platform_ingress_service_type: "LoadBalancer"
+# Seconds to wait for that external address before the role stops with an explanation.
+runai_platform_address_timeout: 300
 # Single-node labs without a load balancer: serve 80/443 directly on the node.
 runai_platform_ingress_host_ports: false
 
@@ -82,9 +87,38 @@ runai_platform_tls_cert_file: ""
 runai_platform_tls_key_file: ""
 runai_platform_ca_file: ""
 
+# How the control plane is reached from outside the cluster.
+#   ingress  HAProxy ingress controller (default, unchanged)
+#   gateway  Kubernetes Gateway API: the role installs the Gateway API CRDs and the
+#            KGateway controller (unless they are already there), creates one Gateway
+#            and points the Run:ai charts at it. Nothing else changes. Pick one and
+#            uninstall in the same mode; to switch, uninstall first.
+runai_platform_exposure: "ingress"
+
+# Gateway exposure only. Versions follow the Run:ai self-hosted v3.0 Gateway API guide.
+# KGateway is used because the guide uses it, it is Apache-2.0 and conformant, and one
+# controller keeps the live test small. Any conformant controller works: set
+# runai_gateway_install_controller: false and runai_gateway_class to its class.
+runai_gateway_api_version: "v1.4.0"
+runai_gateway_api_crds_url: "https://github.com/kubernetes-sigs/gateway-api/releases/download/{{ runai_gateway_api_version }}/standard-install.yaml"
+runai_gateway_install_controller: true
+runai_gateway_class: "kgateway"
+runai_gateway_controller_version: "v2.2.1"
+runai_gateway_controller_chart: "oci://cr.kgateway.dev/kgateway-dev/charts/kgateway"
+runai_gateway_controller_crds_chart: "oci://cr.kgateway.dev/kgateway-dev/charts/kgateway-crds"
+runai_gateway_controller_namespace: "kgateway-system"
+runai_gateway_name: "runai-gateway"
+# The Gateway lives in the Run:ai cluster namespace (runai_cluster_namespace).
+# path: workloads share the control-plane domain under URL paths (any certificate).
+# host: workloads get sub-domains; needs a wildcard DNS entry and a wildcard certificate
+# (the generated lab certificate already has one).
+runai_gateway_workload_routing: "path"
+
 # Lab convenience, all off by default. Use when the domain has no DNS record.
-# Address the domain should point at (default: this host's primary address).
-runai_platform_ingress_ip: "{{ ansible_default_ipv4.address | default('') }}"
+# Address the domain should point at. Leave empty to use, in this order: the Gateway's
+# address (gateway exposure), the ingress service's external address (LoadBalancer),
+# else this host's primary address. Set it to override all of those.
+runai_platform_ingress_ip: ""
 # Add "<ingress ip> <domain>" to /etc/hosts on the control-plane host.
 runai_platform_manage_hosts_entry: false
 # Make the domain resolve inside the cluster (CoreDNS rewrite to the ingress

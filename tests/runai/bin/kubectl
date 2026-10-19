@@ -7,6 +7,9 @@ with open(os.path.join(state, "kubectl.log"), "a") as log:
     log.write(" ".join(sys.argv[1:]) + "\n")
 a = [x for x in sys.argv[1:] if x not in ("--namespace",)]
 joined = " ".join(sys.argv[1:])
+def _crds():
+    f = os.path.join(state, "gwcrds")
+    return open(f).read().split() if os.path.exists(f) else []
 gpus = os.environ.get("FAKE_GPUS", "1")
 major = os.environ.get("FAKE_DRIVER_MAJOR", "580")
 if "get nodes" in joined:
@@ -16,8 +19,32 @@ elif joined.startswith("version"):
     print(json.dumps({"clientVersion": {"gitVersion": "v1.35.4"}}))
 elif "get storageclass" in joined:
     print(json.dumps({"items": [{"metadata": {"name": "nfs", "annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}]}))
+elif "get crd" in joined and "jsonpath" in joined:
+    print("\n".join(c for c in _crds() if os.path.exists(os.path.join(state, "crd-owned"))))
 elif "get crd" in joined:
-    print("")
+    print("\n".join("customresourcedefinition.apiextensions.k8s.io/" + c for c in _crds()))
+elif joined.startswith("apply --filename http"):
+    open(os.path.join(state, "gwcrds"), "w").write("gateways.gateway.networking.k8s.io")
+    print("customresourcedefinition created")
+elif " annotate " in " " + joined + " ":
+    open(os.path.join(state, "crd-owned"), "w").write("1")
+elif "get gateway " in joined and "jsonpath" in joined:
+    if os.path.exists(os.path.join(state, "gateway")) and os.environ.get("FAKE_GW_ADDR", "192.0.2.50") != "none":
+        print(os.environ.get("FAKE_GW_ADDR", "192.0.2.50"))
+elif "get gateways" in joined:
+    if os.path.exists(os.path.join(state, "gateway")):
+        print("gateway.gateway.networking.k8s.io/runai-gateway")
+elif joined.startswith("apply --filename -") and sys.stdin.read().find('"kind": "Gateway"') >= 0:
+    open(os.path.join(state, "gateway"), "w").write("1")
+    print("gateway.gateway.networking.k8s.io/runai-gateway created")
+elif " delete gateway " in " " + joined + " ":
+    if os.path.exists(os.path.join(state, "gateway")):
+        os.remove(os.path.join(state, "gateway")); print("gateway deleted")
+elif " delete crd " in " " + joined + " ":
+    for f in ("gwcrds", "crd-owned"):
+        if os.path.exists(os.path.join(state, f)): os.remove(os.path.join(state, f))
+elif "get service" in joined and "loadBalancer" in joined:
+    print(os.environ.get("FAKE_LB_IP", "192.0.2.60") if os.environ.get("FAKE_LB_IP", "x") != "none" else "")
 elif " wait " in " " + joined + " ":
     pass
 elif "delete namespace" in joined:

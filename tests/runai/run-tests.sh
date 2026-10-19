@@ -94,7 +94,71 @@ run p2 -e runai_mode=platform -e runai_platform_domain=runai.lab.test -e runai_p
 echo "$out" | grep -q "weak" && bad "login value leaked into output" || pass "login value not printed"
 unset STATE
 
-# 10. filter unit tests
+# 10. exposure: address selection and Gateway API (fake helm/kubectl)
+gw() {  # gw <name> <extra ansible args...>
+  local name="$1"; shift
+  : "${STATE:=$(mktemp -d)}"; export FAKE_STATE="$STATE"
+  out="$(ansible-playbook -i localhost, "$HERE/gateway.yml" "$@" 2>&1)"; rc=$?
+}
+jq_() { python3 -c "import json,sys; d=json.load(open('$STATE/result.json')); print(eval(sys.argv[1]))" "$1"; }
+STATE=""; gw lb -e runai_platform_exposure=ingress
+[ $rc -eq 0 ] && [ "$(jq_ "d['address']")" = "192.0.2.60" ] && pass "LoadBalancer address is used instead of the node address" || bad "LoadBalancer address ($rc)"
+[ "$(jq_ "d['cp']['global'].get('gatewayAPI')")" = "None" ] && pass "ingress exposure leaves Gateway API values out" || bad "ingress values"
+unset STATE
+STATE=""; FAKE_LB_IP=none gw lb2 -e runai_platform_exposure=ingress
+[ $rc -ne 0 ] && echo "$out" | grep -q "No external address" && pass "no LoadBalancer address stops with an explanation" || bad "LB timeout"
+unset STATE
+STATE=""; gw np -e runai_platform_exposure=ingress -e runai_platform_ingress_service_type=NodePort
+[ $rc -eq 0 ] && [ "$(jq_ "d['address']")" = "192.0.2.10" ] && pass "NodePort keeps the node address" || bad "NodePort address"
+unset STATE
+STATE=""; gw ov -e runai_platform_exposure=ingress -e runai_platform_ingress_ip=198.51.100.7
+[ $rc -eq 0 ] && [ "$(jq_ "d['address']")" = "198.51.100.7" ] && pass "explicit address wins" || bad "explicit address"
+unset STATE
+STATE=""; gw g1 -e runai_platform_exposure=gateway
+g1=$rc
+[ $g1 -eq 0 ] && [ "$(jq_ "d['address']")" = "192.0.2.50" ] && pass "gateway exposure uses the Gateway address" || bad "gateway address ($g1)"
+grep -q "standard-install.yaml" "$STATE/kubectl.log" && grep -q "v1.4.0/standard-install.yaml" "$STATE/kubectl.log" && pass "Gateway API CRDs pinned to v1.4.0" || bad "CRD pin"
+python3 - "$STATE" <<'P' && pass "KGateway chart and CRDs pinned to v2.2.1" || bad "kgateway pin"
+import json,sys
+r=json.load(open(sys.argv[1]+"/releases.json"))
+assert r["kgateway-system/kgateway"]["chart"]=="kgateway-v2.2.1" and r["kgateway-system/kgateway-crds"]["chart"]=="kgateway-crds-v2.2.1", r
+P
+python3 - "$STATE" <<'P' && pass "gateway values: ingress off, Gateway on, path routing" || bad "gateway values"
+import json,sys
+d=json.load(open(sys.argv[1]+"/result.json"))
+g=d["cp"]["global"]; assert g["ingress"]["enabled"] is False and g["gatewayAPI"]["enabled"] is True, g
+assert g["gatewayAPI"]["parentRefs"]==[{"name":"runai-gateway","namespace":"runai"}], g
+c=d["cluster"]["clusterConfig"]["global"]; assert c["ingress"]["enabled"] is False and c["gatewayAPI"]["name"]=="runai-gateway" and c["subdomainSupport"] is False, c
+assert len(d["gateway"]["spec"]["listeners"])==1
+P
+gw g2 -e runai_platform_exposure=gateway
+[ $rc -eq 0 ] && pass "gateway install converges" || bad "gateway rerun"
+gw g3 -e runai_platform_exposure=gateway -e runai_test_action=remove
+[ $rc -eq 0 ] && [ ! -e "$STATE/gateway" ] && [ ! -e "$STATE/gwcrds" ] && pass "gateway uninstall removes the Gateway and the CRDs it installed" || bad "gateway uninstall ($rc)"
+python3 - "$STATE" <<'P' && pass "gateway uninstall removes the controller releases" || bad "controller removal"
+import json,sys
+assert json.load(open(sys.argv[1]+"/releases.json"))=={}
+P
+unset STATE
+# existing Gateway API CRDs are neither replaced nor removed
+STATE="$(mktemp -d)"; echo gateways.gateway.networking.k8s.io > "$STATE/gwcrds"
+gw g4 -e runai_platform_exposure=gateway -e runai_gateway_install_controller=false
+grep -q "^apply --filename http" "$STATE/kubectl.log" && bad "pre-existing CRDs were re-applied" || pass "pre-existing Gateway API CRDs are left alone"
+gw g5 -e runai_platform_exposure=gateway -e runai_gateway_install_controller=false -e runai_test_action=remove
+[ -e "$STATE/gwcrds" ] && pass "pre-existing Gateway API CRDs survive uninstall" || bad "foreign CRDs removed"
+unset STATE
+STATE=""; gw g6 -e runai_platform_exposure=gateway -e runai_gateway_workload_routing=host
+python3 - "$STATE" <<'P' && pass "host routing adds the wildcard listener and sub-domain support" || bad "host routing"
+import json,sys
+d=json.load(open(sys.argv[1]+"/result.json"))
+assert len(d["gateway"]["spec"]["listeners"])==2 and d["cluster"]["clusterConfig"]["global"]["subdomainSupport"] is True
+P
+unset STATE
+STATE=""; run bx -e runai_mode=platform -e runai_platform_domain=runai.lab.test -e 'runai_platform_admin_password=Passw0rd!x' -e runai_platform_exposure=bogus
+[ $rc -ne 0 ] && pass "unknown exposure refused" || bad "unknown exposure"
+unset STATE
+
+# 11. filter unit tests
 python3 -m unittest discover -q -s "$HERE" -p "test_runai_helpers.py" && pass "helper unit tests" || bad "helper unit tests"
 
 exit $fail
