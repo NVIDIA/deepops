@@ -1,0 +1,32 @@
+---
+- name: Install KAI Scheduler
+  ansible.builtin.include_tasks: helm_release.yml
+  vars:
+    _rel:
+      release: "{{ runai_kai_release_name }}"
+      namespace: "{{ runai_kai_namespace }}"
+      chart: "{{ runai_kai_chart }}"
+      version: "{{ runai_kai_chart_version }}"
+      helm_values: "{{ runai_kai_values }}"
+
+# The chart installs only the KAI operator; the operator then creates the scheduler,
+# binder, queue controller and admission webhook. Wait for those, not just helm.
+- name: Wait for the KAI Scheduler components
+  ansible.builtin.command: >-
+    {{ runai_kubectl }} --namespace {{ runai_kai_namespace }}
+    wait --for=condition=Available --timeout=30s deployment/{{ item }}
+  loop: "{{ runai_kai_components }}"
+  register: runai_kai_wait
+  until: runai_kai_wait.rc == 0
+  retries: 30
+  delay: 10
+  changed_when: false
+  check_mode: false
+
+- name: Show how to check the result
+  ansible.builtin.debug:
+    msg: >-
+      KAI Scheduler {{ runai_kai_chart_version }} is installed. Check it with:
+      python3 scripts/validation/validate_runai.py --json
+      (add --memory-enforcement when runai_kai_gpu_fractioning is true).
+  run_once: true

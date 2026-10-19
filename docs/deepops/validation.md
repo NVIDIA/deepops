@@ -88,6 +88,25 @@ namespace is kept on failure for debugging).
 
 For an exhaustive every-GPU job test, see `scripts/k8s/verify_gpu.sh`.
 
+## KAI Scheduler / Run:ai: `scripts/validation/validate_runai.py`
+
+Run anywhere `kubectl` reaches the cluster after `playbooks/k8s-cluster/runai.yml`
+(only if you enabled `runai_mode`; see [the guide](../k8s-cluster/runai.md)):
+
+```bash
+python3 scripts/validation/validate_runai.py --json
+python3 scripts/validation/validate_runai.py --json --memory-enforcement
+python3 scripts/validation/validate_runai.py --json --mode platform --platform-domain <fqdn>
+python3 scripts/validation/validate_runai.py --json --verify-uninstalled
+```
+
+It proves that a pod scheduled by KAI ran `nvidia-smi` and completed, that two
+half-GPU pods shared one GPU, optionally that a pod past its GPU-memory share is
+refused, and (platform) that the control plane answers and the cluster is
+Connected. `--verify-uninstalled` is read-only and passes only when no
+`kai-scheduler`/`runai*` namespace or release is left. The JSON carries
+`schema_version`, `ok`, one `*_ran`/`*_ok` pair per check, and `failures`.
+
 ## Testing the tools
 
 ```bash
