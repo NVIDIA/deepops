@@ -795,15 +795,16 @@ def gateway_addresses(gateways_json):
 
 
 def ingress_addresses(services_json, nodes_json):
-    """External addresses of the ingress controller: LoadBalancer service addresses plus node
-    addresses (NodePort and host-port setups answer on a node)."""
+    """LoadBalancer addresses, or node addresses when a NodePort service exists."""
     out = set()
     for item in (services_json or {}).get("items", []):
         for lb in ((item.get("status") or {}).get("loadBalancer") or {}).get("ingress") or []:
             for key in ("ip", "hostname"):
                 if isinstance(lb.get(key), str):
                     out.add(lb[key])
-    for item in (nodes_json or {}).get("items", []):
+    node_services = [s for s in (services_json or {}).get('items', [])
+                     if s.get('spec', {}).get('type') == 'NodePort']
+    for item in (nodes_json or {}).get("items", []) if node_services else []:
         for addr in (item.get("status") or {}).get("addresses") or []:
             if addr.get("type") in ("InternalIP", "ExternalIP") and isinstance(addr.get("address"), str):
                 out.add(addr["address"])
@@ -811,8 +812,9 @@ def ingress_addresses(services_json, nodes_json):
 
 
 def classify_exposure(connected_to, gw_addrs, ingress_addrs):
-    """Which path owns the address the validator connected to. Gateway wins a tie: its address is
-    the more specific one."""
+    """Ambiguous addresses cannot prove either exposure path."""
+    if connected_to in gw_addrs and connected_to in ingress_addrs:
+        return "unknown"
     if connected_to and connected_to in gw_addrs:
         return "gateway"
     if connected_to and connected_to in ingress_addrs:
@@ -836,8 +838,24 @@ def check_exposure(kube, result, args):
     gws, _ = kube.get_json(["get", "gateways.gateway.networking.k8s.io", "--all-namespaces"])
     svcs, _ = kube.get_json(["-n", args.ingress_namespace, "get", "services"])
     nodes, _ = kube.get_json(["get", "nodes"])
-    reached = classify_exposure(resolve_target(args), gateway_addresses(gws),
-                                ingress_addresses(svcs, nodes))
+    ing_addrs, gw_addrs = set(), set()
+    for namespace in (args.cp_namespace, args.cluster_namespace):
+        ing, _ = kube.get_json(['-n', namespace, 'get', 'ingresses'])
+        if any(args.platform_domain in [r.get('host') for r in i.get('spec', {}).get('rules', [])]
+               for i in (ing or {}).get('items', [])):
+            ing_addrs.update(ingress_addresses(svcs, nodes))
+        routes, _ = kube.get_json(['-n', namespace, 'get', 'httproutes.gateway.networking.k8s.io'])
+        for route in (routes or {}).get('items', []):
+            if args.platform_domain not in route.get('spec', {}).get('hostnames', []):
+                continue
+            for ref in route.get('spec', {}).get('parentRefs', []):
+                if ref.get('kind', 'Gateway') != 'Gateway' or ref.get('group', 'gateway.networking.k8s.io') != 'gateway.networking.k8s.io':
+                    continue
+                matches = {'items': [g for g in (gws or {}).get('items', [])
+                                    if g.get('metadata', {}).get('name') == ref.get('name')
+                                    and g.get('metadata', {}).get('namespace') == ref.get('namespace', namespace)]}
+                gw_addrs.update(gateway_addresses(matches))
+    reached = classify_exposure(resolve_target(args), gw_addrs, ing_addrs)
     result["exposure_reached"] = reached
     if args.exposure and reached != args.exposure:
         result["failures"].append("requested exposure is %s but the control plane was reached through: %s"
@@ -866,7 +884,10 @@ def verify_uninstalled(kube, result):
     if ns is None:
         result["failures"].append("could not list namespaces: %s" % err)
         return
-    rc, out, _ = run(["helm", "list", "--all-namespaces", "-o", "json"], timeout=60)
+    rc, out, err = run(["helm", "list", "--all", "--all-namespaces", "-o", "json"], timeout=60)
+    if rc != 0:
+        result['failures'].append('could not list Helm releases: %s' % err)
+        return
     releases = []
     if rc == 0 and out:
         try:
@@ -875,6 +896,19 @@ def verify_uninstalled(kube, result):
             result["failures"].append("could not parse helm list output")
             return
     result["leftovers"] = leftovers(ns, releases)
+    crds, err = kube.get_json(['get', 'crd'])
+    owners, owner_err = kube.get_json(['get', 'configmaps', '--all-namespaces'])
+    if crds is None or owners is None:
+        result['failures'].append('could not inspect Gateway ownership: %s %s' % (err, owner_err))
+        return
+    for crd in crds.get('items', []):
+        meta = crd.get('metadata', {})
+        if meta.get('annotations', {}).get('deepops.nvidia.com/runai-installed') == 'true':
+            result['leftovers'].append('crd/' + meta.get('name', ''))
+    for owner in owners.get('items', []):
+        meta = owner.get('metadata', {})
+        if meta.get('name') in ('deepops-runai-kgateway', 'deepops-runai-kgateway-crds'):
+            result['leftovers'].append('release-owner/%s/%s' % (meta.get('namespace', ''), meta['name']))
     if result["leftovers"]:
         result["failures"].append("leftover objects: %s" % ", ".join(result["leftovers"]))
     else:
@@ -970,6 +1004,8 @@ def parse_args(argv):
                         "(ingress or gateway). Without it the path is only reported (exposure_reached)")
     p.add_argument("--ingress-namespace", default="haproxy-controller",
                    help="namespace of the ingress controller's service (platform mode)")
+    p.add_argument('--cp-namespace', default='runai-backend', help='Run:ai control-plane route namespace')
+    p.add_argument('--cluster-namespace', default='runai', help='Run:ai cluster route namespace')
     p.add_argument("--cluster-name", default="deepops", help="Run:ai cluster name to look up")
     args = p.parse_args(argv)
     for label, value in (("namespace", args.namespace), ("kai-namespace", args.kai_namespace)):

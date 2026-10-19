@@ -28,24 +28,21 @@
   changed_when: true
   when: runai_gw_crds_apply is not skipped
 
-- name: Install the KGateway CRDs
-  ansible.builtin.include_tasks: helm_release.yml
-  vars:
-    _rel:
-      release: kgateway-crds
-      namespace: "{{ runai_gateway_controller_namespace }}"
-      chart: "{{ runai_gateway_controller_crds_chart }}"
-      version: "{{ runai_gateway_controller_version }}"
-      helm_values: {}
+- name: Look for existing KGateway releases
+  ansible.builtin.command: "{{ runai_helm }} list --all --namespace {{ runai_gateway_controller_namespace }} --output json"
+  register: runai_gw_helm_before
+  changed_when: false
+  check_mode: false
   when: runai_gateway_install_controller | bool
 
-- name: Install the KGateway controller
-  ansible.builtin.include_tasks: helm_release.yml
-  vars:
-    _rel:
-      release: kgateway
-      namespace: "{{ runai_gateway_controller_namespace }}"
-      chart: "{{ runai_gateway_controller_chart }}"
-      version: "{{ runai_gateway_controller_version }}"
-      helm_values: {}
+- name: Note existing KGateway releases
+  ansible.builtin.set_fact:
+    runai_gw_releases_before: "{{ runai_gw_helm_before.stdout | from_json | map(attribute='name') | list }}"
+  when: runai_gateway_install_controller | bool
+
+- name: Install missing or role-owned KGateway releases
+  ansible.builtin.include_tasks: gateway_release.yml
+  loop: [kgateway-crds, kgateway]
+  loop_control:
+    loop_var: runai_gw_release
   when: runai_gateway_install_controller | bool

@@ -183,7 +183,9 @@ so; set `runai_platform_ingress_ip` to use a fixed address instead.
 The role then, instead of installing HAProxy:
 
 1. installs the Gateway API CRDs (v1.4.0, standard channel) if none are present, and
-   the KGateway controller (v2.2.1) in `kgateway-system`;
+   missing KGateway releases (v2.2.1) in `kgateway-system`, recording ownership
+   in per-release `deepops-runai-kgateway*` ConfigMaps. Existing unowned releases
+   are not upgraded or adopted;
 2. creates one `Gateway` (`runai-gateway`) in the Run:ai cluster namespace with a TLS
    listener for the domain, using the same certificate as the ingress path;
 3. installs the control plane and cluster with Ingress off and Gateway API on, pointing at
@@ -196,9 +198,14 @@ under URL paths of the one domain (`runai_gateway_workload_routing: path`, the d
 `host` gives each workload a sub-domain: it needs wildcard DNS and a certificate that covers
 `*.<domain>` (the generated lab certificate does).
 
-Uninstall (`runai_state=absent`) removes the Gateway, the KGateway releases this role
-installed, and the Gateway API CRDs only if this role installed them and no other
-Gateway remains. It never removes a controller or CRDs that were already there. To switch
+Uninstall (`runai_state=absent`, without needing to repeat the exposure option)
+removes the Gateway and discovers the ownership records. It removes owned KGateway
+releases and Gateway API CRDs only when no remaining Gateway, route or KGateway
+policy depends on them. Pre-existing releases and CRDs are preserved. The controller
+namespace is left in place because it may contain unrelated resources; an empty
+namespace alone is not an uninstall failure. `--verify-uninstalled` detects remaining
+ownership records and annotated CRDs, including resources retained for other users.
+To switch
 between `ingress` and `gateway`, uninstall first and install again. Prove the path with
 `--exposure gateway` (or `ingress`) in the validator below.
 
@@ -219,7 +226,12 @@ RUNAI_USERNAME=admin@example.com RUNAI_PASSWORD='...' \
 ```
 
 The result includes `exposure_reached` (`ingress`, `gateway` or `unknown`): the path that
-owns the address the validator connected to. `--exposure ingress|gateway` makes `ok` false
+owns the address the validator connected to, linked to an Ingress for the platform
+domain or an HTTPRoute for that domain and its referenced Gateway in the Run:ai
+namespaces. Node addresses require a NodePort ingress service; a LoadBalancer does
+not claim every node address. Ambiguous or unlinked addresses report `unknown`.
+Override `--cp-namespace` and `--cluster-namespace` if using non-default namespaces.
+`--exposure ingress|gateway` makes `ok` false
 if the control plane was reached any other way, so a Gateway install that quietly still
 answers through the old ingress cannot pass. For the Gateway install use `--exposure gateway`.
 

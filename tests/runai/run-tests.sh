@@ -158,6 +158,9 @@ STATE=""; run bx -e runai_mode=platform -e runai_platform_domain=runai.lab.test 
 [ $rc -ne 0 ] && pass "unknown exposure refused" || bad "unknown exposure"
 unset STATE
 
+# Ownership, foreign users and default absent exercise the real task files.
+python3 -m unittest discover -q -s "$HERE" -p "test_gateway_lifecycle.py" && pass "Gateway lifecycle regressions" || bad "Gateway lifecycle regressions"
+
 # 11. filter unit tests
 python3 -m unittest discover -q -s "$HERE" -p "test_runai_helpers.py" && pass "helper unit tests" || bad "helper unit tests"
 

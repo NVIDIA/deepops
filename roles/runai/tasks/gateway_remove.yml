@@ -1,34 +1,54 @@
 ---
-# Removes only what gateway.yml and gateway_controller.yml added.
+# Discover owned resources even when absent is invoked with default exposure.
+- name: Discover Gateway resource types
+  ansible.builtin.command: "{{ runai_kubectl }} api-resources --verbs=list --output name"
+  register: runai_gw_types
+  changed_when: false
+  check_mode: false
+
 - name: Remove the Gateway
   ansible.builtin.command: "{{ runai_kubectl }} --namespace {{ runai_cluster_namespace }} delete gateway {{ runai_gateway_name }} --ignore-not-found"
   register: runai_rm_gw
   changed_when: "'deleted' in runai_rm_gw.stdout"
-  failed_when: runai_rm_gw.rc != 0 and 'the server doesn' not in runai_rm_gw.stderr
+  when: "'gateways.gateway.networking.k8s.io' in runai_gw_types.stdout_lines"
 
-- name: Remove the KGateway controller and its CRDs
-  ansible.builtin.command: "{{ runai_helm }} uninstall {{ item }} --namespace {{ runai_gateway_controller_namespace }} --wait"
+# Check every route/policy as well as Gateways BEFORE removing either controller
+# release. API discovery and resource queries must fail closed on access errors.
+- name: Look for remaining Gateway API and KGateway users
+  ansible.builtin.command: "{{ runai_kubectl }} get {{ item }} --all-namespaces --output name"
+  loop: "{{ runai_gw_types.stdout_lines | select('search', '(\\.gateway\\.networking\\.k8s\\.io|\\.kgateway\\.dev)$') | reject('equalto', 'gatewayclasses.gateway.networking.k8s.io') | list }}"
+  register: runai_gw_users
+  changed_when: false
+  check_mode: false
+
+- name: Note whether Gateway resources are unused
+  ansible.builtin.set_fact:
+    runai_gw_unused: "{{ runai_gw_users.results | map(attribute='stdout') | select | list | length == 0 }}"
+
+- name: Read controller release ownership records
+  ansible.builtin.command: "{{ runai_kubectl }} --namespace {{ runai_gateway_controller_namespace }} get configmap deepops-runai-{{ item }} --ignore-not-found --output name"
   loop: [kgateway, kgateway-crds]
+  register: runai_gw_owners
+  changed_when: false
+  check_mode: false
+
+- name: Remove unused controller releases owned by this role
+  ansible.builtin.command: "{{ runai_helm }} uninstall {{ item.item }} --namespace {{ runai_gateway_controller_namespace }} --wait"
+  loop: "{{ runai_gw_owners.results }}"
   register: runai_rm_kgw
   changed_when: runai_rm_kgw.rc == 0
   failed_when: runai_rm_kgw.rc != 0 and 'not found' not in runai_rm_kgw.stderr
-  when: runai_gateway_install_controller | bool
+  when:
+    - runai_gw_unused | bool
+    - item.stdout | length > 0
 
-- name: Note whether this role removed the controller releases
-  ansible.builtin.set_fact:
-    runai_gateway_controller_removed: "{{ runai_gateway_install_controller | bool and (runai_rm_kgw.results | selectattr('rc', 'equalto', 0) | list | length > 0) }}"
-
-# Only CRDs marked by this role, and only when no Gateway-API object is left that
-# somebody else still depends on.
-- name: Count remaining Gateways
-  ansible.builtin.shell: >-
-    set -o pipefail;
-    {{ runai_kubectl }} get gateways.gateway.networking.k8s.io --all-namespaces --output name 2>/dev/null | wc -l
-  args:
-    executable: /bin/bash
-  register: runai_gw_left
-  changed_when: false
-  check_mode: false
+- name: Remove ownership records after release cleanup
+  ansible.builtin.command: "{{ runai_kubectl }} --namespace {{ runai_gateway_controller_namespace }} delete configmap deepops-runai-{{ item.item }} --ignore-not-found"
+  loop: "{{ runai_gw_owners.results }}"
+  changed_when: true
+  when:
+    - runai_gw_unused | bool
+    - item.stdout | length > 0
 
 - name: List the Gateway API CRDs this role installed
   ansible.builtin.command: >-
@@ -37,8 +57,11 @@
   changed_when: false
   check_mode: false
 
-- name: Remove the Gateway API CRDs this role installed
+- name: Remove unused Gateway API CRDs this role installed
   ansible.builtin.command: "{{ runai_kubectl }} delete crd {{ item }} --ignore-not-found"
   loop: "{{ runai_gw_crds_owned.stdout_lines }}"
   changed_when: true
-  when: runai_gw_left.stdout | trim | int == 0
+  when: runai_gw_unused | bool
+
+# Never delete the controller namespace: it can contain unrelated releases,
+# Secrets and workloads, even when no Gateway remains.

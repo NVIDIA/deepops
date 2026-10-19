@@ -27,7 +27,6 @@
 
 - name: Remove the Gateway and what was installed for it
   ansible.builtin.include_tasks: gateway_remove.yml
-  when: runai_gateway_enabled | bool
 
 - name: Remove the CoreDNS rewrite
   ansible.builtin.include_tasks: coredns.yml
@@ -73,7 +72,6 @@
     - "{{ runai_cluster_namespace }}"
     - "{{ runai_cp_namespace }}"
     - "{{ runai_platform_ingress_namespace if runai_haproxy_managed | bool else omit }}"
-    - "{{ runai_gateway_controller_namespace if (runai_gateway_enabled | bool and runai_gateway_controller_removed | default(false) | bool) else omit }}"
   register: runai_rm_ns
   changed_when: "'deleted' in runai_rm_ns.stdout"
   when: item is not none

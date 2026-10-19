@@ -50,6 +50,8 @@ class FakeKube:
             return self.namespaces, ""
         if "deployments" in args:
             return (self.deployments, "") if self.deployments is not None else (None, "forbidden")
+        if 'configmaps' in args:
+            return {'items': []}, ''
         if "crd" in args:
             return ({}, "") if self.crd else (None, "not found")
         if "pod" in args:
@@ -329,8 +331,8 @@ class TestPlatformAndUninstall(unittest.TestCase):
 
 
 class TestExposure(unittest.TestCase):
-    GW = {"items": [{"status": {"addresses": [{"type": "IPAddress", "value": "192.0.2.50"}]}}]}
-    SVC = {"items": [{"status": {"loadBalancer": {"ingress": [{"ip": "192.0.2.60"}]}}}]}
+    GW = {"items": [{"metadata": {"name": "runai-gateway", "namespace": "runai"}, "status": {"addresses": [{"type": "IPAddress", "value": "192.0.2.50"}]}}]}
+    SVC = {"items": [{"spec": {"type": "NodePort"}, "status": {"loadBalancer": {"ingress": [{"ip": "192.0.2.60"}]}}}]}
     NODES = {"items": [{"status": {"addresses": [{"type": "InternalIP", "address": "192.0.2.10"},
                                                   {"type": "Hostname", "address": "n1"}]}}]}
 
@@ -349,6 +351,10 @@ class TestExposure(unittest.TestCase):
     def _run(self, ip, *extra):
         class K(FakeKube):
             def get_json(self, a, timeout=60):
+                if 'ingresses' in a:
+                    return {'items': [{'spec': {'rules': [{'host': 'runai.lab.test'}]}}]}, ''
+                if 'httproutes.gateway.networking.k8s.io' in a:
+                    return {'items': [{'spec': {'hostnames': ['runai.lab.test'], 'parentRefs': [{'name': 'runai-gateway', 'namespace': 'runai'}]}}]}, ''
                 if "gateways.gateway.networking.k8s.io" in a:
                     return TestExposure.GW, ""
                 if "services" in a:

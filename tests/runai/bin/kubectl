@@ -12,7 +12,19 @@ def _crds():
     return open(f).read().split() if os.path.exists(f) else []
 gpus = os.environ.get("FAKE_GPUS", "1")
 major = os.environ.get("FAKE_DRIVER_MAJOR", "580")
-if "get nodes" in joined:
+if joined.startswith('api-resources'):
+    if os.environ.get('FAKE_DISCOVERY_FAIL'):
+        sys.stderr.write('forbidden'); sys.exit(1)
+    print('gateways.gateway.networking.k8s.io\nhttproutes.gateway.networking.k8s.io')
+elif 'get configmap deepops-runai-' in joined:
+    name = sys.argv[sys.argv.index('configmap') + 1]
+    if os.path.exists(os.path.join(state, name)):
+        print('configmap/' + name)
+elif 'delete configmap deepops-runai-' in joined:
+    name = sys.argv[sys.argv.index('configmap') + 1]
+    if os.path.exists(os.path.join(state, name)):
+        os.remove(os.path.join(state, name))
+elif "get nodes" in joined:
     print(json.dumps({"items": [{"metadata": {"name": "n1", "labels": {"nvidia.com/gpu.present": "true", "nvidia.com/cuda.driver-version.major": major}},
                                  "status": {"allocatable": {"nvidia.com/gpu": gpus}}}]}))
 elif joined.startswith("version"):
@@ -31,12 +43,21 @@ elif " annotate " in " " + joined + " ":
 elif "get gateway " in joined and "jsonpath" in joined:
     if os.path.exists(os.path.join(state, "gateway")) and os.environ.get("FAKE_GW_ADDR", "192.0.2.50") != "none":
         print(os.environ.get("FAKE_GW_ADDR", "192.0.2.50"))
+elif 'get httproutes' in joined:
+    if os.path.exists(os.path.join(state, 'foreign-route')):
+        print('httproute.gateway.networking.k8s.io/foreign')
 elif "get gateways" in joined:
     if os.path.exists(os.path.join(state, "gateway")):
         print("gateway.gateway.networking.k8s.io/runai-gateway")
-elif joined.startswith("apply --filename -") and sys.stdin.read().find('"kind": "Gateway"') >= 0:
-    open(os.path.join(state, "gateway"), "w").write("1")
-    print("gateway.gateway.networking.k8s.io/runai-gateway created")
+    if os.path.exists(os.path.join(state, "foreign-gateway")):
+        print("gateway.gateway.networking.k8s.io/foreign")
+elif joined.startswith("apply --filename -"):
+    manifest = json.load(sys.stdin)
+    if manifest['kind'] == 'ConfigMap':
+        open(os.path.join(state, manifest['metadata']['name']), 'w').write('1')
+    elif manifest['kind'] == 'Gateway':
+        open(os.path.join(state, "gateway"), "w").write("1")
+        print("gateway.gateway.networking.k8s.io/runai-gateway created")
 elif " delete gateway " in " " + joined + " ":
     if os.path.exists(os.path.join(state, "gateway")):
         os.remove(os.path.join(state, "gateway")); print("gateway deleted")
