@@ -22,6 +22,14 @@ DeepOps assumes that a full mirror of your Linux distribution repositories will 
 If you do not already have mirrors of the distribution repositories available, please follow the
 [instructions provided by Red Hat for creating these mirrors](https://access.redhat.com/solutions/23016).
 
+On EL9 and newer, NVIDIA driver role v2.4.0 installs the `kernel-modules`
+package matching the newest installed `kernel-core` by default. Ensure your
+Linux distribution mirror includes that matching package, including when DKMS
+pulls in a newer kernel. If you manage kernel modules separately, set
+`nvidia_driver_ensure_kernel_modules: false` in your DeepOps configuration to
+disable this reconciliation; you must then ensure the matching modules are
+available yourself.
+
 The following additional RPM repositories are commonly used for GPU-enabled systems deployed by DeepOps:
 
 - [Fedora Extra Packages for Enterprise Linux (EPEL)](https://fedoraproject.org/wiki/EPEL)

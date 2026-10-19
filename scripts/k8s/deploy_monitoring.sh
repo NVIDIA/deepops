@@ -142,8 +142,9 @@ function setup_prom_monitoring() {
     if ! kubectl get ns monitoring >/dev/null 2>&1 ; then
         kubectl create ns monitoring
     fi
-    if ! helm status -n monitoring kube-prometheus-stack >/dev/null 2>&1 ; then
-        helm upgrade --install \
+    # Install when the release is missing or not healthy; a failed release is retried.
+    if ! helm status -n monitoring kube-prometheus-stack -o json 2>/dev/null | grep -Eq '"status": *"deployed"' ; then
+        if ! helm upgrade --install \
             kube-prometheus-stack \
             prometheus-community/kube-prometheus-stack \
             --version "${HELM_PROMETHEUS_CHART_VERSION}" \
@@ -154,7 +155,16 @@ function setup_prom_monitoring() {
             --set grafana.ingress.hosts[0]="grafana-${ingress_ip_string}" \
 	    --timeout 1200s \
             ${helm_prom_oper_args} \
-            ${helm_kube_prom_args}
+            ${helm_kube_prom_args} ; then
+            echo "ERROR: helm upgrade --install of kube-prometheus-stack failed" >&2
+            exit 1
+        fi
+    fi
+    # Never report success while the release is not deployed
+    if ! helm status -n monitoring kube-prometheus-stack -o json 2>/dev/null | grep -Eq '"status": *"deployed"' ; then
+        echo "ERROR: Helm release kube-prometheus-stack in namespace monitoring is not in 'deployed' state" >&2
+        echo "Inspect with: helm status -n monitoring kube-prometheus-stack" >&2
+        exit 1
     fi
 }
 
