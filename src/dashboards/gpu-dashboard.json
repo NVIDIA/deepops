@@ -82,21 +82,21 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "node_load1{instance=\"$hostname:9100\"}",
+          "expr": "node_load1{instance=\"$node_instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "1min",
           "refId": "A"
         },
         {
-          "expr": "node_load5{instance=\"$hostname:9100\"}",
+          "expr": "node_load5{instance=\"$node_instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "5min",
           "refId": "B"
         },
         {
-          "expr": "node_load15{instance=\"$hostname:9100\"}",
+          "expr": "node_load15{instance=\"$node_instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "15min",
@@ -192,7 +192,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "DCGM_FI_DEV_POWER_USAGE{instance=\"$hostname:9400\"}",
+          "expr": "DCGM_FI_DEV_POWER_USAGE{instance=\"$gpu_instance\"}",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -309,7 +309,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(DCGM_FI_DEV_POWER_USAGE{instance=\"$hostname:9400\"})",
+          "expr": "sum(DCGM_FI_DEV_POWER_USAGE{instance=\"$gpu_instance\"})",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -378,7 +378,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "1e6*sum(DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL{instance=\"$hostname:9400\"})",
+          "expr": "1e6*sum(DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL{instance=\"$gpu_instance\"})",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -476,7 +476,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "node_memory_MemTotal_bytes{instance=\"$hostname:9100\"} - node_memory_MemFree_bytes{instance=\"$hostname:9100\"} - node_memory_Buffers_bytes{instance=\"$hostname:9100\"} - node_memory_Cached_bytes{instance=\"$hostname:9100\"}",
+          "expr": "node_memory_MemTotal_bytes{instance=\"$node_instance\"} - node_memory_MemFree_bytes{instance=\"$node_instance\"} - node_memory_Buffers_bytes{instance=\"$node_instance\"} - node_memory_Cached_bytes{instance=\"$node_instance\"}",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -486,7 +486,7 @@
           "refId": "A"
         },
         {
-          "expr": "node_memory_Buffers_bytes{instance=\"$hostname:9100\"}",
+          "expr": "node_memory_Buffers_bytes{instance=\"$node_instance\"}",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -496,7 +496,7 @@
           "refId": "B"
         },
         {
-          "expr": "node_memory_Cached_bytes{instance=\"$hostname:9100\"}",
+          "expr": "node_memory_Cached_bytes{instance=\"$node_instance\"}",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -505,7 +505,7 @@
           "refId": "C"
         },
         {
-          "expr": "node_memory_MemFree_bytes{instance=\"$hostname:9100\"}",
+          "expr": "node_memory_MemFree_bytes{instance=\"$node_instance\"}",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -604,7 +604,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "DCGM_FI_DEV_GPU_TEMP{instance=\"$hostname:9400\"}",
+          "expr": "DCGM_FI_DEV_GPU_TEMP{instance=\"$gpu_instance\"}",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -722,7 +722,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(DCGM_FI_DEV_GPU_TEMP{instance=\"$hostname:9400\"})",
+          "expr": "avg(DCGM_FI_DEV_GPU_TEMP{instance=\"$gpu_instance\"})",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -796,7 +796,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(DCGM_FI_PROF_PCIE_TX_BYTES{instance=\"$hostname:9400\"})",
+          "expr": "sum(DCGM_FI_PROF_PCIE_TX_BYTES{instance=\"$gpu_instance\"})",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -805,7 +805,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(DCGM_FI_PROF_PCIE_RX_BYTES{instance=\"$hostname:9400\"})",
+          "expr": "sum(DCGM_FI_PROF_PCIE_RX_BYTES{instance=\"$gpu_instance\"})",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -922,7 +922,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "(sum(node_filesystem_size_bytes{device!=\"rootfs\",instance=\"$hostname:9100\"}) - sum(node_filesystem_avail_bytes{device!=\"rootfs\",instance=\"$hostname:9100\"})) / sum(node_filesystem_size_bytes{device!=\"rootfs\",instance=\"$hostname:9100\"})",
+          "expr": "(sum(node_filesystem_size_bytes{device!=\"rootfs\",instance=\"$node_instance\"}) - sum(node_filesystem_avail_bytes{device!=\"rootfs\",instance=\"$node_instance\"})) / sum(node_filesystem_size_bytes{device!=\"rootfs\",instance=\"$node_instance\"})",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1010,7 +1010,7 @@
       "tableColumn": "{instance=\"$hostname:9100\", job=\"cluster\", module=\"node-exporter\"}",
       "targets": [
         {
-          "expr": "((node_memory_MemTotal_bytes{instance=\"$hostname:9100\"} - node_memory_MemFree_bytes{instance=\"$hostname:9100\"}  - node_memory_Buffers_bytes{instance=\"$hostname:9100\"} - node_memory_Cached_bytes{instance=\"$hostname:9100\"}) / node_memory_MemTotal_bytes{instance=\"$hostname:9100\"}) * 100",
+          "expr": "((node_memory_MemTotal_bytes{instance=\"$node_instance\"} - node_memory_MemFree_bytes{instance=\"$node_instance\"}  - node_memory_Buffers_bytes{instance=\"$node_instance\"} - node_memory_Cached_bytes{instance=\"$node_instance\"}) / node_memory_MemTotal_bytes{instance=\"$node_instance\"}) * 100",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
@@ -1079,7 +1079,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "DCGM_FI_DEV_GPU_UTIL{instance=\"$hostname:9400\"}",
+          "expr": "DCGM_FI_DEV_GPU_UTIL{instance=\"$gpu_instance\"}",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -1197,7 +1197,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(DCGM_FI_DEV_GPU_UTIL{instance=\"$hostname:9400\"})",
+          "expr": "avg(DCGM_FI_DEV_GPU_UTIL{instance=\"$gpu_instance\"})",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -1271,7 +1271,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(node_network_transmit_bytes_total{instance=\"$hostname:9100\",device=~\"en.*\"}[$__interval]))",
+          "expr": "sum(rate(node_network_transmit_bytes_total{instance=\"$node_instance\",device=~\"en.*\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
           "interval": ".5m",
@@ -1280,7 +1280,7 @@
           "refId": "B"
         },
         {
-          "expr": "sum(rate(node_network_receive_bytes_total{instance=\"$hostname:9100\",device=~\"en.*\"}[$__interval]))",
+          "expr": "sum(rate(node_network_receive_bytes_total{instance=\"$node_instance\",device=~\"en.*\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -1384,7 +1384,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(node_disk_read_bytes_total{instance=\"$hostname:9100\"}[$__interval])",
+          "expr": "rate(node_disk_read_bytes_total{instance=\"$node_instance\"}[$__interval])",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -1394,7 +1394,7 @@
           "refId": "E"
         },
         {
-          "expr": "rate(node_disk_written_bytes_total{instance=\"$hostname:9100\"}[$__interval])",
+          "expr": "rate(node_disk_written_bytes_total{instance=\"$node_instance\"}[$__interval])",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -1404,7 +1404,7 @@
           "refId": "F"
         },
         {
-          "expr": "sum by (instance) (rate(node_disk_io_time_ms{instance=\"$hostname:9100\"}[$__interval]))",
+          "expr": "sum by (instance) (rate(node_disk_io_time_ms{instance=\"$node_instance\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -1503,7 +1503,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "DCGM_FI_DEV_MEM_COPY_UTIL{instance=\"$hostname:9400\"}",
+          "expr": "DCGM_FI_DEV_MEM_COPY_UTIL{instance=\"$gpu_instance\"}",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -1621,7 +1621,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(DCGM_FI_DEV_MEM_COPY_UTIL{instance=\"$hostname:9400\"})",
+          "expr": "avg(DCGM_FI_DEV_MEM_COPY_UTIL{instance=\"$gpu_instance\"})",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -1695,7 +1695,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(node_infiniband_port_data_transmitted_bytes_total{instance=\"$hostname:9100\"}[$__interval]))",
+          "expr": "sum(rate(node_infiniband_port_data_transmitted_bytes_total{instance=\"$node_instance\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -1704,7 +1704,7 @@
           "refId": "B"
         },
         {
-          "expr": "sum(rate(node_infiniband_port_data_received_bytes_total{instance=\"$hostname:9100\"}[$__interval]))",
+          "expr": "sum(rate(node_infiniband_port_data_received_bytes_total{instance=\"$node_instance\"}[$__interval]))",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -1822,7 +1822,7 @@
       "tableColumn": "nodename",
       "targets": [
         {
-          "expr": "node_uname_info{instance=\"$hostname:9100\"}",
+          "expr": "node_uname_info{instance=\"$node_instance\"}",
           "format": "table",
           "intervalFactor": 1,
           "refId": "A"
@@ -1908,7 +1908,7 @@
       "tableColumn": "release",
       "targets": [
         {
-          "expr": "node_uname_info{instance=\"$hostname:9100\"}",
+          "expr": "node_uname_info{instance=\"$node_instance\"}",
           "format": "table",
           "intervalFactor": 1,
           "refId": "A"
@@ -1975,7 +1975,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "DCGM_FI_DEV_FB_USED{instance=\"$hostname:9400\"}/(DCGM_FI_DEV_FB_USED{instance=\"$hostname:9400\"}+DCGM_FI_DEV_FB_FREE{instance=\"$hostname:9400\"})",
+          "expr": "DCGM_FI_DEV_FB_USED{instance=\"$gpu_instance\"}/(DCGM_FI_DEV_FB_USED{instance=\"$gpu_instance\"}+DCGM_FI_DEV_FB_FREE{instance=\"$gpu_instance\"})",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -2090,10 +2090,10 @@
         "lineColor": "rgb(31, 120, 193)",
         "show": false
       },
-      "tableColumn": "node_hwmon_power_average_watt{chip=\"lnxsybus:00_acpi000d:00\", instance=\"$hostname:9100\", job=\"cluster\", module=\"node-exporter\", sensor=\"power1\"}",
+      "tableColumn": "node_hwmon_power_average_watt{chip=\"lnxsybus:00_acpi000d:00\", instance=\"$node_instance\", job=\"cluster\", module=\"node-exporter\", sensor=\"power1\"}",
       "targets": [
         {
-          "expr": "node_hwmon_power_average_watt{instance=\"$hostname:9100\"}",
+          "expr": "node_hwmon_power_average_watt{instance=\"$node_instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -2165,7 +2165,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "node_hwmon_power_average_watt{instance=\"$hostname:9100\"}",
+          "expr": "node_hwmon_power_average_watt{instance=\"$node_instance\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Total",
@@ -2280,7 +2280,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(DCGM_FI_DEV_SM_CLOCK{instance=\"$hostname:9400\"}*1000000)",
+          "expr": "avg(DCGM_FI_DEV_SM_CLOCK{instance=\"$gpu_instance\"}*1000000)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -2368,7 +2368,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "avg(DCGM_FI_DEV_MEM_CLOCK{instance=\"$hostname:9400\"}*1000000)",
+          "expr": "avg(DCGM_FI_DEV_MEM_CLOCK{instance=\"$gpu_instance\"}*1000000)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -2431,9 +2431,9 @@
         "multi": false,
         "name": "hostname",
         "options": [],
-        "query": "query_result(label_replace(DCGM_FI_DEV_POWER_USAGE{instance=~\".*:9400\"}, \"instance\", \"$1\", \"instance\", \"(.*):9400.*\"))",
+        "query": "query_result(label_replace(DCGM_FI_DEV_POWER_USAGE{kubernetes_node!=\"\"}, \"hostname\", \"$1\", \"kubernetes_node\", \"(.+)\") or label_replace(DCGM_FI_DEV_POWER_USAGE{kubernetes_node=\"\",instance=~\".*:9400\"}, \"hostname\", \"$1\", \"instance\", \"(.*):9400\"))",
         "refresh": 1,
-        "regex": "/.*instance=\"([^\"]*).*/",
+        "regex": "/hostname=\"([^\"]+)\"/",
         "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
@@ -2441,6 +2441,34 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+      {
+        "current": {},
+        "datasource": "$datasource",
+        "hide": 2,
+        "includeAll": false,
+        "multi": false,
+        "name": "gpu_instance",
+        "options": [],
+        "query": "query_result(DCGM_FI_DEV_POWER_USAGE{kubernetes_node=\"$hostname\"} or DCGM_FI_DEV_POWER_USAGE{kubernetes_node=\"\",instance=\"$hostname:9400\"})",
+        "refresh": 1,
+        "regex": "/instance=\"([^\"]+)\"/",
+        "skipUrlSync": true,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": "$datasource",
+        "hide": 2,
+        "includeAll": false,
+        "multi": false,
+        "name": "node_instance",
+        "options": [],
+        "query": "query_result(node_uname_info{nodename=\"$hostname\"} or node_uname_info{instance=\"$hostname:9100\"})",
+        "refresh": 1,
+        "regex": "/instance=\"([^\"]+)\"/",
+        "skipUrlSync": true,
+        "type": "query"
       }
     ]
   },
