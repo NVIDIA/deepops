@@ -115,3 +115,9 @@ runai_mode: "off"
 # Lab without DNS: let the role add the hosts entry and a cluster DNS rewrite.
 #runai_platform_manage_hosts_entry: true
 #runai_platform_coredns_rewrite: true
+# How the control plane is reached: ingress (HAProxy, default) or gateway (Kubernetes
+# Gateway API with KGateway). With ingress and a LoadBalancer service the role waits for
+# the external address (deploy a load balancer first: scripts/k8s/deploy_loadbalancer.sh).
+#runai_platform_exposure: ingress
+#runai_platform_ingress_service_type: LoadBalancer   # or NodePort
+#runai_gateway_workload_routing: path               # gateway only: path or host

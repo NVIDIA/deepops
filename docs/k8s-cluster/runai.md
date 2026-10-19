@@ -44,6 +44,8 @@ and any DeepOps-owned UI. The web UI in `platform` mode is the upstream one.
 | gpu-fractioning (bundled in the KAI chart) | v0.1.7 |
 | Run:ai control-plane and cluster charts | 3.0.20 |
 | HAProxy ingress controller chart (platform) | 1.54.2 |
+| Gateway API CRDs (`runai_platform_exposure: gateway`) | v1.4.0 |
+| KGateway controller and CRD charts (gateway) | v2.2.1 |
 
 All are Apache-2.0. The Run:ai images come from `nvcr.io` without an NGC key.
 Versions are variables (`runai_*_version`); pins are refreshed with each release.
@@ -163,6 +165,43 @@ The role then:
 4. installs the control plane, registers the cluster with it through its API, and
    installs the cluster chart with the short-lived install key the API returns.
 
+### Reaching the control plane: LoadBalancer or Gateway API
+
+`runai_platform_exposure` picks how traffic gets in. The default, `ingress`, is the
+HAProxy path above and is unchanged.
+
+**LoadBalancer.** With `runai_platform_ingress_service_type: LoadBalancer` (the
+default) the role waits up to `runai_platform_address_timeout` seconds (300) for the
+service to get an external address and uses it, instead of the node address, for the
+hosts entry, the CoreDNS entry and the API helper. Install a load balancer first:
+`./scripts/k8s/deploy_loadbalancer.sh` with an address pool in `config/helm/metallb.yml`
+([Load Balancer and Ingress](ingress.md)). If no address appears the role stops and says
+so; set `runai_platform_ingress_ip` to use a fixed address instead.
+
+**Gateway API** (opt in). Set `runai_platform_exposure: gateway` to follow the
+[Run:ai Gateway API guide](https://docs.nvidia.com/run-ai/self-hosted/v3.0/documentation/installation-and-configuration/config/networking/kubernetes-gateway-api).
+The role then, instead of installing HAProxy:
+
+1. installs the Gateway API CRDs (v1.4.0, standard channel) if none are present, and
+   the KGateway controller (v2.2.1) in `kgateway-system`;
+2. creates one `Gateway` (`runai-gateway`) in the Run:ai cluster namespace with a TLS
+   listener for the domain, using the same certificate as the ingress path;
+3. installs the control plane and cluster with Ingress off and Gateway API on, pointing at
+   that Gateway, and uses the Gateway's address for the lab DNS helpers.
+
+KGateway is the controller in the guide, it is Apache-2.0 and conformant. Any conformant
+controller works: set `runai_gateway_install_controller: false` and
+`runai_gateway_class` to its class; you then install it yourself. Workloads are served
+under URL paths of the one domain (`runai_gateway_workload_routing: path`, the default).
+`host` gives each workload a sub-domain: it needs wildcard DNS and a certificate that covers
+`*.<domain>` (the generated lab certificate does).
+
+Uninstall (`runai_state=absent`) removes the Gateway, the KGateway releases this role
+installed, and the Gateway API CRDs only if this role installed them and no other
+Gateway remains. It never removes a controller or CRDs that were already there. To switch
+between `ingress` and `gateway`, uninstall first and install again. Prove the path with
+`--exposure gateway` (or `ingress`) in the validator below.
+
 **Names.** `runai_platform_domain` must resolve to the ingress address from the
 nodes and from wherever you browse. Without DNS (a lab), set
 `runai_platform_manage_hosts_entry: true` (hosts-file line on the control-plane
@@ -176,8 +215,13 @@ Check it (the admin credentials go in the environment, never on the command line
 RUNAI_USERNAME=admin@example.com RUNAI_PASSWORD='...' \
   python3 scripts/validation/validate_runai.py --json --mode platform \
   --platform-domain runai.example.com --ca-file /opt/deepops/runai/ca.pem \
-  --create-project deepops-validate
+  --create-project deepops-validate --exposure ingress
 ```
+
+The result includes `exposure_reached` (`ingress`, `gateway` or `unknown`): the path that
+owns the address the validator connected to. `--exposure ingress|gateway` makes `ok` false
+if the control plane was reached any other way, so a Gateway install that quietly still
+answers through the old ingress cannot pass. For the Gateway install use `--exposure gateway`.
 
 In platform mode, pods must be submitted in a Run:ai project's namespace and use
 that project's queue. The validator does this itself: `--create-project deepops-validate`
@@ -223,4 +267,5 @@ too (this deletes any queues and projects still defined).
 | Pod stays `Pending` with `schedulerName: kai-scheduler` | No queue label, or the queue does not exist: `kubectl get queues.scheduling.run.ai`. |
 | A half-GPU pod is rejected | It also asks for a whole `nvidia.com/gpu`, or the fraction is not between 0 and 1. |
 | Validator: scheduler deployments missing | The KAI operator is still starting. Wait a minute and rerun. |
+| Role stops: "No external address" | The LoadBalancer or Gateway got no address. Deploy a load balancer (`scripts/k8s/deploy_loadbalancer.sh`) or use `NodePort` / `runai_platform_ingress_ip`. |
 | Platform validator: control plane unreachable | The domain does not resolve to the ingress address, or the CA is not trusted: pass `--ca-file` and `--resolve-ip`. |
