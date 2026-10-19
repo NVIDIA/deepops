@@ -118,7 +118,7 @@ scheduler stays the default.
 caps each pod's GPU memory. It is opt-in because it needs a GPU stack the
 DeepOps defaults do not use:
 
-- GPU Operator **v26.7.1 or newer** (DeepOps pins v26.7.0 by default), and
+- GPU Operator **v26.7.1 or newer** (check `gpu_operator_chart_version` in `roles/nvidia-gpu-operator/defaults/main.yml` for the DeepOps default), and
 - an NVIDIA driver **r615 or newer** on every GPU node. The GPU Operator does not
   choose r615 by default; set `gpu_operator_driver_version` to an r615 release
   and `gpu_operator_preinstalled_nvidia_software: false` (or install an r615 host
