@@ -1,0 +1,15 @@
+---
+# Local, fact-only regression: no driver install, package changes or privilege escalation.
+# Run: ansible-playbook -i tests/nvidia-driver/inventory.yml tests/nvidia-driver/ubuntu-packages.yml
+- name: Verify Ubuntu driver package selection before role defaults load
+  hosts: all
+  gather_facts: false
+  connection: local
+  tasks:
+    - name: Select packages using the production task
+      ansible.builtin.include_tasks: ../../playbooks/nvidia-software/tasks/nvidia-driver-ubuntu-packages.yml
+
+    - name: Check selected packages or unchanged proprietary configuration
+      ansible.builtin.assert:
+        that:
+          - nvidia_driver_ubuntu_packages == expected_packages

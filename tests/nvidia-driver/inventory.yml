@@ -1,0 +1,35 @@
+---
+all:
+  hosts:
+    default_open:
+      nvidia_driver_ubuntu_use_open_kernel_modules: true
+      expected_packages:
+        - nvidia-headless-580-server-open
+        - nvidia-utils-580-server
+        - nvidia-headless-no-dkms-580-server-open
+        - nvidia-kernel-source-580-server-open
+    explicit_driver_branch:
+      nvidia_driver_ubuntu_use_open_kernel_modules: true
+      nvidia_driver_branch: '535'
+      expected_packages:
+        - nvidia-headless-535-server-open
+        - nvidia-utils-535-server
+        - nvidia-headless-no-dkms-535-server-open
+        - nvidia-kernel-source-535-server-open
+    explicit_ubuntu_branch:
+      nvidia_driver_ubuntu_use_open_kernel_modules: true
+      nvidia_driver_branch: '535'
+      nvidia_driver_ubuntu_branch: '550'
+      nvidia_driver_ubuntu_packages_suffix: ''
+      expected_packages:
+        - nvidia-headless-550-open
+        - nvidia-utils-550
+        - nvidia-headless-no-dkms-550-open
+        - nvidia-kernel-source-550-open
+    explicit_proprietary:
+      nvidia_driver_ubuntu_use_open_kernel_modules: false
+      nvidia_driver_ubuntu_packages: [existing-package]
+      expected_packages: [existing-package]
+    default_proprietary:
+      nvidia_driver_ubuntu_packages: [existing-package]
+      expected_packages: [existing-package]
