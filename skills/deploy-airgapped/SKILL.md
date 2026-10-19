@@ -255,7 +255,7 @@ reference host; distribution repositories remain a separate prerequisite.
 
 2. Mirror the Helm repositories/charts required by the selected Kubernetes
    profile. The default tree references the stable Helm repository, GPU
-   Operator `v26.3.3`, and, when enabled, NFS subdir external provisioner
+   Operator `v26.7.2`, and, when enabled, NFS subdir external provisioner
    `4.0.18`. Set `gpu_operator_helm_repo` and
    `k8s_nfs_client_helm_repo` to internal chart repositories.
 
@@ -265,7 +265,7 @@ reference host; distribution repositories remain a separate prerequisite.
    ```bash
    mkdir -p /tmp/charts
    helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
-   helm pull nvidia/gpu-operator --version v26.3.3 --destination /tmp/charts
+   helm pull nvidia/gpu-operator --version v26.7.2 --destination /tmp/charts
    helm repo add nfs-subdir-external-provisioner \
      https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
    helm pull nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
@@ -310,7 +310,7 @@ reference host; distribution repositories remain a separate prerequisite.
    NO_HTTP_SERVER=1 ./manage-offline-files.sh
 
    helm template nvidia-gpu-operator \
-     /tmp/charts/gpu-operator-v26.3.3.tgz \
+     /tmp/charts/gpu-operator-v26.7.2.tgz \
      --namespace gpu-operator \
      --set driver.version=580.126.20 \
      --set mig.strategy=mixed \
@@ -391,8 +391,8 @@ reference host; distribution repositories remain a separate prerequisite.
    docker pull nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04
    docker save -o /tmp/images/nvidia-cuda-12.4.1-base-ubuntu22.04.tar \
      nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04
-   docker pull registry:3.1.1
-   docker save -o /tmp/images/registry-3.1.1.tar registry:3.1.1
+   docker pull registry:3.1.2
+   docker save -o /tmp/images/registry-3.1.2.tar registry:3.1.2
    ```
 
    When Slurm monitoring stays enabled, also mirror the images selected by
@@ -571,10 +571,10 @@ sha256sum -c SHA256SUMS
    separately and deliberately configured for the insecure endpoint:
 
    ```bash
-   docker load -i /tmp/images/registry-3.1.1.tar
+   docker load -i /tmp/images/registry-3.1.2.tar
    docker volume create registry-images
    docker run -d -p 5000:5000 --restart=always --name registry \
-     -v registry-images:/var/lib/registry registry:3.1.1
+     -v registry-images:/var/lib/registry registry:3.1.2
    ```
 
 4. Import, retag, and push every archived image on that registry host. Preserve
