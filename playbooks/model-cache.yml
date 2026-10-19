@@ -1,0 +1,85 @@
+---
+# Precondition: the site already mounted shared storage and provisioned identities.
+# Run only on the designated writer. No mount, account, package, or download changes.
+- name: Prepare a shared model cache on existing storage
+  hosts: model-cache-warmer
+  gather_facts: true
+  vars:
+    model_cache_path: "{{ model_cache_root | default(model_cache_mount ~ '/hf-cache') }}"
+  tasks:
+    - name: Require one explicit cache writer and site configuration
+      assert:
+        that:
+          - ansible_play_hosts_all | length == 1
+          - model_cache_mount is defined
+          - model_cache_owner is defined
+          - model_cache_group is defined
+        fail_msg: Configure one model-cache-warmer host, model_cache_mount, model_cache_owner and model_cache_group.
+
+    - name: Validate dedicated cache path
+      assert:
+        that:
+          - model_cache_mount is match('^/[A-Za-z0-9_/-]+$')
+          - model_cache_mount != '/'
+          - not model_cache_mount.endswith('/')
+          - "'..' not in model_cache_mount"
+          - "'//' not in model_cache_mount"
+          - model_cache_path is match('^/[A-Za-z0-9_/-]+$')
+          - model_cache_path | dirname == model_cache_mount
+          - model_cache_path != model_cache_mount
+          - not model_cache_path.endswith('/')
+          - "'..' not in model_cache_path"
+          - "'//' not in model_cache_path"
+        fail_msg: Use a dedicated direct child of the existing shared mount; paths must be normalized.
+
+    - name: Refuse to populate a local directory when shared storage is absent
+      assert:
+        that:
+          - >-
+            ansible_mounts | selectattr('mount', 'equalto', model_cache_mount)
+            | selectattr('fstype', 'in', ['nfs', 'nfs4']) | list | length == 1
+        fail_msg: The configured mount must already be mounted as NFS; this playbook never mounts storage.
+
+    - name: Inspect cache directories without following symlinks
+      stat:
+        path: "{{ item }}"
+        follow: false
+      loop:
+        - "{{ model_cache_path }}"
+        - "{{ model_cache_path }}/hub"
+      register: model_cache_directories
+
+    - name: Refuse redirected or non-directory cache paths
+      assert:
+        that:
+          - not item.stat.exists or (item.stat.isdir | default(false) and not item.stat.islnk | default(false))
+        fail_msg: Existing cache paths must be real directories, not links or files.
+      loop: "{{ model_cache_directories.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Create writer-owned cache directories with read-only group access
+      become: true
+      become_user: "{{ model_cache_owner }}"
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ model_cache_owner }}"
+        group: "{{ model_cache_group }}"
+        mode: '2750'
+      loop:
+        - "{{ model_cache_path }}"
+        - "{{ model_cache_path }}/hub"
+
+    - name: Write explicit opt-in cache environment
+      become: true
+      become_user: "{{ model_cache_owner }}"
+      copy:
+        dest: "{{ model_cache_path }}/environment.sh"
+        owner: "{{ model_cache_owner }}"
+        group: "{{ model_cache_group }}"
+        mode: '0640'
+        content: |
+          # Source explicitly in the writer or consumer shell.
+          # Keep HF_HOME, HF_TOKEN_PATH and HF_XET_CACHE private to each user.
+          export HF_HUB_CACHE='{{ model_cache_path }}/hub'

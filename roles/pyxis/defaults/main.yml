@@ -23,5 +23,8 @@ pyxis_run_tmpfs_size: 50%
 # which blocks enroot-nsenter. The role installs an AppArmor profile that grants
 # the capability to enroot-nsenter alone. Set this to true only if that profile
 # cannot be used on your installation: it clears the restriction for every
-# process on the host and lowers the security default of the OS.
+# process on the host and lowers the security default of the OS. When false,
+# the role removes its earlier global override and replays only this key from
+# remaining systemd-sysctl policy. If the restriction is still disabled, it fails
+# for administrator reconciliation rather than guessing or forcing a prior value.
 pyxis_userns_allow_globally: false

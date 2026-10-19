@@ -58,6 +58,19 @@ python3 scripts/validation/validate_k8s.py --json --cuda-smoke
 The validator must report `"ok": true` with `cuda_smoke_ok: true`. See
 `skills/deploy-k8s-gpu-cluster/` for the full procedure and failure branches.
 
+## Golden path: shared model cache
+
+Use `playbooks/model-cache.yml` only on an approved, existing NFS mount and one
+explicit `model-cache-warmer` host. Share `HF_HUB_CACHE`, never credentials or
+`HF_HOME`. A designated writer downloads immutable model revisions; consumers
+use local snapshot paths and read-only mounts.
+
+Run `scripts/validation/validate_model_cache.py --json` as the actual consumer,
+with an explicit cache, repository, commit and required-file list. Require exit
+`0` and `"ok": true`; this proves file readability, not inference or complete
+model coverage. See `skills/manage-model-cache/` and
+`docs/model-workflows/shared-cache.md` for commands and failure branches.
+
 ## Rules for operating this repository
 
 1. **Validate, don't assume.** Run the doctor before deploying and the

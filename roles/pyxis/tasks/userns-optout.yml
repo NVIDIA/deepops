@@ -1,0 +1,90 @@
+---
+# Do not use ansible.posix.sysctl for removal: it rewrites unrelated entries
+# (including whitespace and duplicates). Remove only the role-owned key and
+# never reload this file, which may also contain administrator-owned settings.
+- name: remove the host-wide enroot user namespace override
+  lineinfile:
+    path: /etc/sysctl.d/60-enroot-userns.conf
+    regexp: '^[ \t]*kernel\.apparmor_restrict_unprivileged_userns[ \t]*='
+    state: absent
+
+- name: check whether the enroot sysctl file is empty
+  stat:
+    path: /etc/sysctl.d/60-enroot-userns.conf
+  register: pyxis_userns_file
+
+- name: remove the empty enroot sysctl file
+  file:
+    path: /etc/sysctl.d/60-enroot-userns.conf
+    state: absent
+  when:
+    - pyxis_userns_file.stat.exists
+    - pyxis_userns_file.stat.size == 0
+
+# Check mode predicts file cleanup only. Do not replay policy, write the
+# runtime value, or claim it has been restored in a dry run.
+- name: reconcile the remaining user namespace policy
+  when: not ansible_check_mode
+  block:
+    - name: locate systemd-sysctl
+      stat:
+        path: "{{ item }}"
+        follow: true
+      loop:
+        - /usr/lib/systemd/systemd-sysctl
+        - /lib/systemd/systemd-sysctl
+      register: pyxis_systemd_sysctl
+
+    - name: select the systemd-sysctl executable
+      set_fact:
+        pyxis_systemd_sysctl_path: >-
+          {{ pyxis_systemd_sysctl.results
+             | selectattr('stat.exists') | selectattr('stat.isreg')
+             | selectattr('stat.executable') | map(attribute='item')
+             | first | default('') }}
+
+    - name: require targeted sysctl policy replay
+      fail:
+        msg: >-
+          Cannot reconcile kernel.apparmor_restrict_unprivileged_userns after
+          cleaning /etc/sysctl.d/60-enroot-userns.conf: systemd-sysctl was not
+          found in /usr/lib/systemd or /lib/systemd. Install systemd-sysctl
+          and rerun. No host-wide sysctl reload or forced value will be used.
+      when: pyxis_systemd_sysctl_path | length == 0
+
+    - name: read the user namespace restriction before replay
+      command: sysctl -n kernel.apparmor_restrict_unprivileged_userns
+      register: pyxis_userns_before
+      changed_when: false
+      failed_when: >-
+        pyxis_userns_before.rc != 0 or
+        pyxis_userns_before.stdout | trim not in ['0', '1']
+
+    # Run even when removal changed nothing: an interrupted earlier run may
+    # have removed the file without replaying policy. Let systemd handle its
+    # own file precedence, symlinks and globs; do not guess the previous value.
+    - name: reapply only the user namespace restriction
+      command:
+        argv:
+          - "{{ pyxis_systemd_sysctl_path }}"
+          - --prefix=kernel.apparmor_restrict_unprivileged_userns
+      changed_when: false
+
+    - name: read the user namespace restriction after replay
+      command: sysctl -n kernel.apparmor_restrict_unprivileged_userns
+      register: pyxis_userns_after
+      changed_when: pyxis_userns_after.stdout | trim != pyxis_userns_before.stdout | trim
+      failed_when: >-
+        pyxis_userns_after.rc != 0 or
+        pyxis_userns_after.stdout | trim not in ['0', '1']
+
+    - name: require administrator reconciliation if the restriction is not restored
+      fail:
+        msg: >-
+          Removed the role-owned override from /etc/sysctl.d/60-enroot-userns.conf
+          and reapplied the remaining policy, but
+          kernel.apparmor_restrict_unprivileged_userns is
+          {{ pyxis_userns_after.stdout | trim }} instead of 1. An administrator
+          must reconcile this setting manually. The role does not know the
+          previous value and will not force 1 over administrator policy.
+      when: pyxis_userns_after.stdout | trim != '1'

@@ -283,7 +283,10 @@ deepops_disable_cloud_init: true
 # Default profile when using NVIDIA MIG Manager: https://github.com/NVIDIA/mig-parted
 mig_manager_profile: all-disabled
 mig_manager_config: /etc/nvidia-mig-manager/config.yml
-mig_manager_hooks: /etc/nvidia-mig-manager/hooks.yaml
+# Optional, site-managed hooks file passed to `nvidia-mig-parted apply -k`.
+# DeepOps does not create this file. Leave empty to apply without custom hooks;
+# set a path only after provisioning and reviewing the hooks on every target.
+mig_manager_hooks: ""
 
 ################################################################################
 # Container registry                                                           #

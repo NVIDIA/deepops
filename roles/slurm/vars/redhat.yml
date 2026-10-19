@@ -15,6 +15,10 @@ slurm_build_deps:
   - perl-ExtUtils-MakeMaker
   - libatomic
 
+# Installed only when slurm_build_lua is enabled.
+slurm_lua_deps:
+  - lua-devel
+
 slurm_pmix_deps:
   - "@Development Tools"
   - libev-devel
