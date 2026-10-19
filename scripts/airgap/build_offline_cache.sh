@@ -83,7 +83,6 @@ ansible-playbook -b \
 	-e kubectl_localhost=true \
 	-e helm_enabled=true \
 	-e cephfs_provisioner_enabled=true \
-	-e dashboard_enabled=true \
         -e registry_enabled=true \
 	-e local_release_dir="${DEST_DIR}/misc-files" \
 	--tags download \
