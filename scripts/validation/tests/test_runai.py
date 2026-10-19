@@ -328,6 +328,84 @@ class TestPlatformAndUninstall(unittest.TestCase):
         self.assertEqual(result["leftovers"], ["namespace/runai"])
 
 
+class TestExposure(unittest.TestCase):
+    GW = {"items": [{"status": {"addresses": [{"type": "IPAddress", "value": "192.0.2.50"}]}}]}
+    SVC = {"items": [{"status": {"loadBalancer": {"ingress": [{"ip": "192.0.2.60"}]}}}]}
+    NODES = {"items": [{"status": {"addresses": [{"type": "InternalIP", "address": "192.0.2.10"},
+                                                  {"type": "Hostname", "address": "n1"}]}}]}
+
+    def test_classify(self):
+        gw, ing = vr.gateway_addresses(self.GW), vr.ingress_addresses(self.SVC, self.NODES)
+        self.assertEqual(vr.classify_exposure("192.0.2.50", gw, ing), "gateway")
+        self.assertEqual(vr.classify_exposure("192.0.2.60", gw, ing), "ingress")
+        self.assertEqual(vr.classify_exposure("192.0.2.10", gw, ing), "ingress")
+        self.assertEqual(vr.classify_exposure("203.0.113.9", gw, ing), "unknown")
+        self.assertEqual(vr.classify_exposure("", gw, ing), "unknown")
+
+    def test_load_balancer_hostnames_match(self):
+        svc = {"items": [{"status": {"loadBalancer": {"ingress": [{"hostname": "lb.example"}]}}}]}
+        self.assertEqual(vr.ingress_addresses(svc, {}), {"lb.example"})
+
+    def _run(self, ip, *extra):
+        class K(FakeKube):
+            def get_json(self, a, timeout=60):
+                if "gateways.gateway.networking.k8s.io" in a:
+                    return TestExposure.GW, ""
+                if "services" in a:
+                    return TestExposure.SVC, ""
+                if a[:2] == ["get", "nodes"]:
+                    return TestExposure.NODES, ""
+                return FakeKube.get_json(self, a, timeout)
+        orig = vr.https_request
+
+        def fake(domain, rip, ca, method, path, body=None, headers=None, timeout=20):
+            if path == "/api/v2/token":
+                return 200, json.dumps({"access_token": "t"}).encode()
+            if path == "/api/v1/clusters":
+                return 200, json.dumps({"clusters": [{"name": "deepops", "status": {"platform": "Connected"}}]}).encode()
+            return 200, b""
+        vr.https_request = fake
+        try:
+            return vr.validate(args("--mode", "platform", "--platform-domain", "runai.lab.test",
+                                    "--skip-gpu-jobs", "--resolve-ip", ip, *extra),
+                               {"RUNAI_USERNAME": "u", "RUNAI_PASSWORD": "p"}, K(pods=GOOD_PODS))
+        finally:
+            vr.https_request = orig
+
+    def test_ingress_path_reported_and_accepted(self):
+        r = self._run("192.0.2.60", "--exposure", "ingress")
+        self.assertEqual(r["exposure_reached"], "ingress")
+        self.assertTrue(r["ok"], r["failures"])
+
+    def test_gateway_path_reported_and_accepted(self):
+        r = self._run("192.0.2.50", "--exposure", "gateway")
+        self.assertEqual(r["exposure_reached"], "gateway")
+        self.assertEqual(r["exposure_requested"], "gateway")
+        self.assertTrue(r["ok"], r["failures"])
+
+    def test_wrong_path_fails_both_ways(self):
+        r = self._run("192.0.2.60", "--exposure", "gateway")
+        self.assertFalse(r["ok"])
+        self.assertTrue(any("requested exposure is gateway" in f for f in r["failures"]))
+        self.assertFalse(self._run("192.0.2.50", "--exposure", "ingress")["ok"])
+
+    def test_unknown_path_fails_when_one_is_requested(self):
+        r = self._run("203.0.113.9", "--exposure", "ingress")
+        self.assertEqual(r["exposure_reached"], "unknown")
+        self.assertFalse(r["ok"])
+
+    def test_without_request_the_path_is_only_reported(self):
+        r = self._run("192.0.2.50")
+        self.assertEqual(r["exposure_reached"], "gateway")
+        self.assertTrue(r["ok"], r["failures"])
+
+    def test_exposure_needs_platform_mode_and_known_word(self):
+        with self.assertRaises(SystemExit):
+            args("--exposure", "gateway")
+        with self.assertRaises(SystemExit):
+            args("--mode", "platform", "--platform-domain", "a.test", "--skip-gpu-jobs", "--exposure", "nginx")
+
+
 class TestPlatformProject(unittest.TestCase):
     NS = "dv-abcd1234"
 

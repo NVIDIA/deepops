@@ -16,6 +16,8 @@ Checks (all in a fresh namespace this run creates (it refuses an existing one) a
    and the cluster reports ``Connected``. With ``--create-project NAME`` the
    validator also creates a throw-away Run:ai project through the API, runs checks
    2 and 3 in the project's namespace with ``runai-scheduler``, then deletes the project.
+   The result also says which path the control plane was reached through (``exposure_reached``:
+   ``ingress``, ``gateway`` or ``unknown``); ``--exposure ingress|gateway`` fails on any other.
 
 ``--verify-uninstalled`` is a separate read-only mode: it passes only if no
 ``kai-scheduler``/``runai*`` namespace or Helm release is left.
@@ -779,6 +781,69 @@ def check_platform(result, args, env):
         result["platform_cluster_connected"] = True
 
 
+EXPOSURES = ("ingress", "gateway")  # fixed vocabulary; "unknown" = no match, nothing else is ever reported
+
+
+def gateway_addresses(gateways_json):
+    """Addresses of every Gateway in a ``kubectl get gateways -A -o json`` document."""
+    out = set()
+    for item in (gateways_json or {}).get("items", []):
+        for addr in (item.get("status") or {}).get("addresses") or []:
+            if isinstance(addr.get("value"), str):
+                out.add(addr["value"])
+    return out
+
+
+def ingress_addresses(services_json, nodes_json):
+    """External addresses of the ingress controller: LoadBalancer service addresses plus node
+    addresses (NodePort and host-port setups answer on a node)."""
+    out = set()
+    for item in (services_json or {}).get("items", []):
+        for lb in ((item.get("status") or {}).get("loadBalancer") or {}).get("ingress") or []:
+            for key in ("ip", "hostname"):
+                if isinstance(lb.get(key), str):
+                    out.add(lb[key])
+    for item in (nodes_json or {}).get("items", []):
+        for addr in (item.get("status") or {}).get("addresses") or []:
+            if addr.get("type") in ("InternalIP", "ExternalIP") and isinstance(addr.get("address"), str):
+                out.add(addr["address"])
+    return out
+
+
+def classify_exposure(connected_to, gw_addrs, ingress_addrs):
+    """Which path owns the address the validator connected to. Gateway wins a tie: its address is
+    the more specific one."""
+    if connected_to and connected_to in gw_addrs:
+        return "gateway"
+    if connected_to and connected_to in ingress_addrs:
+        return "ingress"
+    return "unknown"
+
+
+def resolve_target(args):
+    """The address the platform checks connect to (--resolve-ip, else what the domain resolves to)."""
+    if args.resolve_ip:
+        return args.resolve_ip
+    import socket
+    try:
+        return socket.gethostbyname(args.platform_domain)
+    except OSError:
+        return ""
+
+
+def check_exposure(kube, result, args):
+    result["exposure_requested"] = args.exposure or ""
+    gws, _ = kube.get_json(["get", "gateways.gateway.networking.k8s.io", "--all-namespaces"])
+    svcs, _ = kube.get_json(["-n", args.ingress_namespace, "get", "services"])
+    nodes, _ = kube.get_json(["get", "nodes"])
+    reached = classify_exposure(resolve_target(args), gateway_addresses(gws),
+                                ingress_addresses(svcs, nodes))
+    result["exposure_reached"] = reached
+    if args.exposure and reached != args.exposure:
+        result["failures"].append("requested exposure is %s but the control plane was reached through: %s"
+                                  % (args.exposure, reached))
+
+
 def new_result(mode):
     return {
         "schema_version": SCHEMA_VERSION, "ok": False, "mode": mode,
@@ -790,6 +855,7 @@ def new_result(mode):
         "project_created": False, "project_deleted": False,
         "uninstalled_ran": False, "uninstalled_ok": False, "leftovers": [],
         "cluster_status": {},
+        "exposure_requested": "", "exposure_reached": "",
         "failures": [],
     }
 
@@ -846,6 +912,8 @@ def validate(args, env, kube=None):
                 check_memory_enforcement(kube, result, args)
     if args.mode == "platform" and not result["platform_ran"]:
         check_platform(result, args, env)
+    if args.mode == "platform" and result["platform_api_ok"]:
+        check_exposure(kube, result, args)
     ran_ok = (result["scheduler_ready"] and
               (args.skip_gpu_jobs or (result["gpu_job_ok"] and (result["fraction_job_ok"] or result["fraction_job_skipped"]))) and
               (not args.memory_enforcement or result["memory_enforcement_ok"]) and
@@ -897,6 +965,11 @@ def parse_args(argv):
     p.add_argument("--create-project", default="",
                    help="platform mode: create this throw-away Run:ai project through the API, run the "
                         "GPU checks in its namespace, then delete it (needs RUNAI_USERNAME/RUNAI_PASSWORD)")
+    p.add_argument("--exposure", choices=EXPOSURES, default="",
+                   help="platform mode: fail unless the control plane is reached through this path "
+                        "(ingress or gateway). Without it the path is only reported (exposure_reached)")
+    p.add_argument("--ingress-namespace", default="haproxy-controller",
+                   help="namespace of the ingress controller's service (platform mode)")
     p.add_argument("--cluster-name", default="deepops", help="Run:ai cluster name to look up")
     args = p.parse_args(argv)
     for label, value in (("namespace", args.namespace), ("kai-namespace", args.kai_namespace)):
@@ -905,6 +978,10 @@ def parse_args(argv):
     if args.mode == "platform" and not args.verify_uninstalled:
         if not args.platform_domain or not FQDN_RE.match(args.platform_domain):
             p.error("--platform-domain is required in platform mode")
+    if args.exposure and args.mode != "platform":
+        p.error("--exposure needs --mode platform")
+    if not NAME_RE.match(args.ingress_namespace):
+        p.error("--ingress-namespace must be a valid Kubernetes name")
     if args.create_project and (args.mode != "platform" or not NAME_RE.match(args.create_project)):
         p.error("--create-project needs --mode platform and a valid Kubernetes name")
     if args.skip_fractions and not args.create_project:
