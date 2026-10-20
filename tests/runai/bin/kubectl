@@ -5,6 +5,9 @@ state = os.environ["FAKE_STATE"]
 os.makedirs(state, exist_ok=True)
 with open(os.path.join(state, "kubectl.log"), "a") as log:
     log.write(" ".join(sys.argv[1:]) + "\n")
+# Preserve argument boundaries so lifecycle tests catch command parsing bugs.
+with open(os.path.join(state, "kubectl-argv.jsonl"), "a") as log:
+    log.write(json.dumps(sys.argv[1:]) + "\n")
 a = [x for x in sys.argv[1:] if x not in ("--namespace",)]
 joined = " ".join(sys.argv[1:])
 def _crds():

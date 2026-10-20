@@ -51,8 +51,13 @@
     - item.stdout | length > 0
 
 - name: List the Gateway API CRDs this role installed
-  ansible.builtin.command: >-
-    {{ runai_kubectl }} get crd --output jsonpath={range .items[?(@.metadata.annotations.deepops\.nvidia\.com/runai-installed=="true")]}{.metadata.name}{"\n"}{end}
+  ansible.builtin.command:
+    argv:
+      - "{{ runai_kubectl }}"
+      - get
+      - crd
+      - --output
+      - 'jsonpath={range .items[?(@.metadata.annotations.deepops\.nvidia\.com/runai-installed=="true")]}{.metadata.name}{"\n"}{end}'
   register: runai_gw_crds_owned
   changed_when: false
   check_mode: false

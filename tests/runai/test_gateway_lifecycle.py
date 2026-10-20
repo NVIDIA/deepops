@@ -60,6 +60,20 @@ class Lifecycle(unittest.TestCase):
         self.assertNotEqual(p.returncode, 0)
         self.assertEqual(set(self.releases()), {'kgateway-system/kgateway', 'kgateway-system/kgateway-crds'})
 
+    def test_owned_crd_query_preserves_jsonpath_argument(self):
+        self.play()
+        self.play(remove=True)
+        calls = [json.loads(line) for line in
+                 (self.state / 'kubectl-argv.jsonl').read_text().splitlines()]
+        queries = [args for args in calls if args[:3] == ['get', 'crd', '--output']
+                   and any(arg.startswith('jsonpath=') for arg in args)]
+        # One argument must retain the range space, escaped annotation key,
+        # quoted string comparison and newline escape, exactly as kubectl needs.
+        self.assertEqual(queries, [[
+            'get', 'crd', '--output',
+            r'jsonpath={range .items[?(@.metadata.annotations.deepops\.nvidia\.com/runai-installed=="true")]}{.metadata.name}{"\n"}{end}',
+        ]])
+
     def test_standard_absent_discovers_owned_gateway_install(self):
         self.play()
         self.play(standard=True)
