@@ -12,7 +12,7 @@ gpu_operator_nvaie_helm_repo: "https://helm.ngc.nvidia.com/nvaie"
 gpu_operator_nvaie_chart_name: "nvaie/gpu-operator"
 
 # NVAIE GPU Operator may require different version, check NGC enterprise collection.
-gpu_operator_chart_version: "v26.7.0"
+gpu_operator_chart_version: "v26.7.2"
 
 k8s_gpu_mig_strategy: "mixed"
 
@@ -33,6 +33,10 @@ gpu_operator_grid_config_dir: "{{ deepops_dir }}/gpu_operator"
 # Defaults from https://github.com/NVIDIA/gpu-operator/blob/master/deployments/gpu-operator/values.yaml
 gpu_operator_default_runtime: "containerd"
 gpu_operator_driver_registry: "nvcr.io/nvidia"
+# Deliberately retain the R580 pin rather than chart v26.7.2's R595 default:
+# a chart refresh must not also introduce an unvalidated driver-branch upgrade.
+# Used only when Operator-managed drivers are enabled; preinstalled drivers
+# are not changed. Validate the target GPU/OS before overriding this version.
 gpu_operator_driver_version: "580.126.20"
 
 # This enables/disables NVAIE

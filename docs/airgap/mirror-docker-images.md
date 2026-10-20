@@ -211,22 +211,22 @@ set -euo pipefail
 TRUSTED_RECORD_DIR="${TRUSTED_RECORD_DIR:-${HOME}/deepops-trusted-records}"
 mkdir -p "${TRUSTED_RECORD_DIR}"
 chmod 0700 "${TRUSTED_RECORD_DIR}"
-REGISTRY_SOURCE="docker.io/library/registry:3.1.1"
+REGISTRY_SOURCE="docker.io/library/registry:3.1.2"
 REGISTRY_DIGEST="$(skopeo inspect --format '{{.Digest}}' "docker://${REGISTRY_SOURCE}")"
-printf '%s\n' "${REGISTRY_DIGEST}" > "${TRUSTED_RECORD_DIR}/registry-3.1.1.source-digest"
+printf '%s\n' "${REGISTRY_DIGEST}" > "${TRUSTED_RECORD_DIR}/registry-3.1.2.source-digest"
 
 docker pull "registry@${REGISTRY_DIGEST}"
-docker tag "registry@${REGISTRY_DIGEST}" registry:3.1.1
-docker save -o /tmp/images/registry-3.1.1.tar registry:3.1.1
+docker tag "registry@${REGISTRY_DIGEST}" registry:3.1.2
+docker save -o /tmp/images/registry-3.1.2.tar registry:3.1.2
 (
     cd /tmp/images
-    sha256sum registry-3.1.1.tar > registry-3.1.1.tar.sha256
-    cp registry-3.1.1.tar.sha256 "${TRUSTED_RECORD_DIR}/registry-3.1.1.tar.sha256"
+    sha256sum registry-3.1.2.tar > registry-3.1.2.tar.sha256
+    cp registry-3.1.2.tar.sha256 "${TRUSTED_RECORD_DIR}/registry-3.1.2.tar.sha256"
 )
 )
 ```
 
-Retain `${TRUSTED_RECORD_DIR}/registry-3.1.1.tar.sha256` and the recorded
+Retain `${TRUSTED_RECORD_DIR}/registry-3.1.2.tar.sha256` and the recorded
 source digest in a separate trusted system or signed manifest. The checksum copy carried on the
 same removable media detects accidental corruption but does not prove
 authenticity if that media is replaced.
@@ -255,7 +255,7 @@ umask 077
 sudo apt install genisoimage
 TRANSFER_ROOT="/tmp/images"
 CUDA_NAME="nvidia-cuda-12.4.1-base-ubuntu22.04"
-REGISTRY_NAME="registry-3.1.1"
+REGISTRY_NAME="registry-3.1.2"
 ISO_STAGING_DIR="$(mktemp -d "${TMPDIR:-/tmp}/deepops-image-iso.XXXXXX")"
 chmod 0700 "${ISO_STAGING_DIR}"
 genisoimage \
@@ -302,19 +302,19 @@ host:
 set -euo pipefail
 TRUSTED_RECORD_DIR="${TRUSTED_RECORD_DIR:-${HOME}/deepops-trusted-records}"
 cd /tmp/images
-sha256sum --check "${TRUSTED_RECORD_DIR}/registry-3.1.1.tar.sha256"
-EXPECTED_REGISTRY_DIGEST="$(cat "${TRUSTED_RECORD_DIR}/registry-3.1.1.source-digest")"
+sha256sum --check "${TRUSTED_RECORD_DIR}/registry-3.1.2.tar.sha256"
+EXPECTED_REGISTRY_DIGEST="$(cat "${TRUSTED_RECORD_DIR}/registry-3.1.2.source-digest")"
 case "${EXPECTED_REGISTRY_DIGEST}" in sha256:[0-9a-f][0-9a-f]*) ;; *) exit 1 ;; esac
-docker load -i registry-3.1.1.tar
-LOADED_REGISTRY_ID="$(docker image inspect --format '{{.Id}}' registry:3.1.1)"
+docker load -i registry-3.1.2.tar
+LOADED_REGISTRY_ID="$(docker image inspect --format '{{.Id}}' registry:3.1.2)"
 test -n "${LOADED_REGISTRY_ID}"
 )
 ```
 
-`${TRUSTED_RECORD_DIR}/registry-3.1.1.source-digest` is the separately retained
+`${TRUSTED_RECORD_DIR}/registry-3.1.2.source-digest` is the separately retained
 or signed digest record from the connected side, delivered to this host through
 an independently trusted path (set `TRUSTED_RECORD_DIR` to where you placed it). The archive checksum binds the
-loaded `registry:3.1.1` tag to the connected-side archive; Docker's save format
+loaded `registry:3.1.2` tag to the connected-side archive; Docker's save format
 does not preserve repository-digest metadata, so the separately retained digest
 remains provenance evidence rather than an offline `RepoDigests` assertion. Do
 not source either trust anchor from the same untrusted transfer media as the
@@ -336,7 +336,7 @@ docker run -d \
     --restart=always \
     --name registry \
     -v registry-images:/var/lib/registry \
-    registry:3.1.1
+    registry:3.1.2
 ```
 
 Before binding the registry to a network-reachable address, follow the
