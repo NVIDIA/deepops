@@ -161,6 +161,9 @@ unset STATE
 # Ownership, foreign users and default absent exercise the real task files.
 python3 -m unittest discover -q -s "$HERE" -p "test_gateway_lifecycle.py" && pass "Gateway lifecycle regressions" || bad "Gateway lifecycle regressions"
 
+# Full platform path, including TLS, DNS, registration, rerun and absent.
+python3 -m unittest discover -v -s "$HERE" -p "test_gateway_platform.py" && pass "Gateway full platform path" || bad "Gateway full platform path"
+
 # 11. filter unit tests
 python3 -m unittest discover -q -s "$HERE" -p "test_runai_helpers.py" && pass "helper unit tests" || bad "helper unit tests"
 

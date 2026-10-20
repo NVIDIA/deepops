@@ -6,6 +6,8 @@ import subprocess
 import tempfile
 import unittest
 
+import yaml
+
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 
@@ -24,6 +26,28 @@ class Lifecycle(unittest.TestCase):
         p = subprocess.run(['ansible-playbook', '-i', 'localhost,', str(HERE / play)] +
                            [a for opt in opts for a in ['-e', opt]], env=self.env, capture_output=True, text=True)
         self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+
+    def mark_crds(self, names):
+        (self.state / 'gwcrds').write_text('\n'.join(names))
+        tasks = yaml.safe_load((ROOT / 'roles/runai/tasks/gateway_controller.yml').read_text())
+        task = next(t for t in tasks if t['name'] == 'Mark the CRDs this role installed')
+        command = task['ansible.builtin.shell'].replace('{{ runai_kubectl }}', str(HERE / 'bin/kubectl'))
+        return subprocess.run(['/bin/bash', '-c', command], env=self.env, capture_output=True, text=True)
+
+    def test_annotation_resources_precede_assignment(self):
+        result = self.mark_crds(['gateways.gateway.networking.k8s.io', 'httproutes.gateway.networking.k8s.io'])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue((self.state / 'crd-owned').exists())
+        calls = [json.loads(line) for line in (self.state / 'kubectl-argv.jsonl').read_text().splitlines()]
+        annotations = [a for a in calls if a[0] == 'annotate']
+        for name in ['gateways', 'httproutes']:
+            resource = 'customresourcedefinition.apiextensions.k8s.io/' + name + '.gateway.networking.k8s.io'
+            self.assertTrue(any(resource in a and a.index(resource) < a.index('deepops.nvidia.com/runai-installed=true') for a in annotations))
+
+    def test_empty_crd_list_does_not_annotate(self):
+        self.mark_crds([])
+        calls = [json.loads(line) for line in (self.state / 'kubectl-argv.jsonl').read_text().splitlines()]
+        self.assertFalse(any(a[0] == 'annotate' for a in calls), calls)
 
     def releases(self):
         return json.loads((self.state / 'releases.json').read_text())

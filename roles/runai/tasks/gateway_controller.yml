@@ -22,7 +22,7 @@
   ansible.builtin.shell: >-
     set -o pipefail;
     {{ runai_kubectl }} get crd --output name | grep -E '\.gateway\.networking\.k8s\.io$'
-    | xargs {{ runai_kubectl }} annotate --overwrite deepops.nvidia.com/runai-installed=true
+    | xargs -r -I{} {{ runai_kubectl }} annotate --overwrite {} deepops.nvidia.com/runai-installed=true
   args:
     executable: /bin/bash
   changed_when: true

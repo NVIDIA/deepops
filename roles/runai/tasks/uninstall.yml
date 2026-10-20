@@ -64,17 +64,12 @@
 # them behind is not clean, so remove them here.
 - name: Remove namespaces left behind
   ansible.builtin.command: "{{ runai_kubectl }} delete namespace {{ item }} --ignore-not-found --wait --timeout=300s"
-  loop:
-    - "{{ runai_kai_namespace }}"
-    - kai-resource-reservation
-    - runai-reservation
-    - runai-scale-adjust
-    - "{{ runai_cluster_namespace }}"
-    - "{{ runai_cp_namespace }}"
-    - "{{ runai_platform_ingress_namespace if runai_haproxy_managed | bool else omit }}"
+  loop: >-
+    {{ [runai_kai_namespace, 'kai-resource-reservation', 'runai-reservation',
+        'runai-scale-adjust', runai_cluster_namespace, runai_cp_namespace]
+       + ([runai_platform_ingress_namespace] if runai_haproxy_managed | bool else []) }}
   register: runai_rm_ns
   changed_when: "'deleted' in runai_rm_ns.stdout"
-  when: item is not none
 
 - name: List CRDs from these charts
   ansible.builtin.shell: >-

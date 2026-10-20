@@ -1,0 +1,41 @@
+#!/usr/bin/python3
+"""Run the real API helper with an offline HTTP transport; delegate other Python.
+
+Only used in the full-path test PATH. Credentials and response fixtures are
+synthetic. No network or TLS-handshake claim is made by this test.
+"""
+import importlib.util
+import json
+import os
+from pathlib import Path
+import sys
+
+if len(sys.argv) < 2 or Path(sys.argv[1]).name != 'runai_api.py':
+    os.execv('/usr/bin/python3', ['/usr/bin/python3'] + sys.argv[1:])
+
+spec = importlib.util.spec_from_file_location('runai_api', sys.argv[1])
+api = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(api)
+state = Path(os.environ['FAKE_STATE'])
+
+
+def request(self, method, path, body=None, form=None):
+    with (state / 'api-calls.jsonl').open('a') as log:
+        log.write(json.dumps([method, path]) + '\n')
+    if (method, path) == ('POST', '/api/v2/token'):
+        assert form['grant_type'] == 'password' and form['username'] and form['password']
+        return {'access_token': 'offline-token'}
+    assert self.bearer == 'offline-token'
+    if (method, path) == ('GET', '/api/v1/clusters'):
+        return {'clusters': []}
+    if (method, path) == ('POST', '/api/v1/clusters'):
+        assert body['name'] == 'deepops'
+        return {'uuid': 'offline-cluster'}
+    if (method, path) == ('GET', '/api/v1/clusters/offline-cluster/cluster-install-info?version=3.0.20'):
+        return {'installationStr': '--set controlPlane.url=https://runai.lab.test --set cluster.uid=offline-cluster',
+                'bootstrapToken': 'offline-bootstrap'}
+    raise AssertionError('unsupported HTTP request: %s %s' % (method, path))
+
+
+api.Client.request = request
+sys.exit(api.main(sys.argv[2:]))
