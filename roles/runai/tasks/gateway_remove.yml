@@ -42,6 +42,16 @@
     - runai_gw_unused | bool
     - item.stdout | length > 0
 
+# KGateway creates this Secret at runtime, outside the Helm release. Remove it
+# only after the owned controller is stopped, before dropping its ownership record.
+- name: Remove the owned controller runtime HMAC Secret
+  ansible.builtin.command: "{{ runai_kubectl }} --namespace {{ runai_gateway_controller_namespace }} delete secret oauth2-hmac-secret --ignore-not-found"
+  register: runai_rm_gw_hmac
+  changed_when: "'deleted' in runai_rm_gw_hmac.stdout"
+  when:
+    - runai_gw_unused | bool
+    - runai_gw_owners.results | selectattr('item', 'equalto', 'kgateway') | map(attribute='stdout') | select | list | length > 0
+
 - name: Remove ownership records after release cleanup
   ansible.builtin.command: "{{ runai_kubectl }} --namespace {{ runai_gateway_controller_namespace }} delete configmap deepops-runai-{{ item.item }} --ignore-not-found"
   loop: "{{ runai_gw_owners.results }}"

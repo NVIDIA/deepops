@@ -215,6 +215,15 @@ elif verb == 'delete':
     elif kind == 'crd':
         save_lines('gwcrds', [c for c in lines('gwcrds') if c != name])
         save_lines('crd-owned', [c for c in lines('crd-owned') if c != name])
+    elif kind == 'secret':
+        db = manifests()
+        key = 'Secret/' + ns + '/' + name
+        if key not in db:
+            if '--ignore-not-found' in opts:
+                sys.exit(0)
+            fail('secret not found')
+        del db[key]
+        (state / 'manifests.json').write_text(json.dumps(db))
     elif kind == 'namespace':
         if not re.fullmatch(r'[a-z0-9]([-a-z0-9]*[a-z0-9])?', name):
             fail('invalid namespace name: ' + name)

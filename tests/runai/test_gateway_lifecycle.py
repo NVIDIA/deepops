@@ -52,26 +52,69 @@ class Lifecycle(unittest.TestCase):
     def releases(self):
         return json.loads((self.state / 'releases.json').read_text())
 
+    def seed_controller_secrets(self):
+        # Runtime-created objects are not part of the Helm release. No values
+        # are needed: the role must delete only this name in this namespace.
+        path = self.state / 'manifests.json'
+        db = json.loads(path.read_text()) if path.exists() else {}
+        for namespace, name in [('kgateway-system', 'oauth2-hmac-secret'),
+                                ('kgateway-system', 'unrelated-secret'),
+                                ('other-controller', 'oauth2-hmac-secret')]:
+            db[f'Secret/{namespace}/{name}'] = {
+                'apiVersion': 'v1', 'kind': 'Secret',
+                'metadata': {'namespace': namespace, 'name': name},
+            }
+        path.write_text(json.dumps(db))
+        return self.secrets()
+
+    def secrets(self):
+        db = json.loads((self.state / 'manifests.json').read_text())
+        return {k: v for k, v in db.items() if v['kind'] == 'Secret'}
+
+    def test_owned_controller_runtime_secret_cleanup_is_scoped_and_repeatable(self):
+        self.play()
+        expected = self.seed_controller_secrets()
+        del expected['Secret/kgateway-system/oauth2-hmac-secret']
+        self.play(remove=True)
+        self.assertEqual(self.secrets(), expected)
+        self.assertEqual(self.releases(), {})
+        self.play(remove=True)
+        self.assertEqual(self.secrets(), expected)
+
+    def test_crds_ownership_alone_does_not_authorize_secret_cleanup(self):
+        self.play()
+        expected = self.seed_controller_secrets()
+        (self.state / 'deepops-runai-kgateway').unlink()
+        self.play(remove=True)
+        self.assertEqual(self.secrets(), expected)
+        self.assertEqual(set(self.releases()), {'kgateway-system/kgateway'})
+
     def test_foreign_controller_is_not_upgraded_or_removed(self):
         foreign = {'kgateway-system/' + n: {'ns': 'kgateway-system', 'chart': n + '-v1.0.0', 'values': {'foreign': True}}
                    for n in ('kgateway', 'kgateway-crds')}
         (self.state / 'releases.json').write_text(json.dumps(foreign))
         self.play()
         self.assertEqual(self.releases(), foreign)
+        expected = self.seed_controller_secrets()
         self.play(remove=True)
         self.assertEqual(self.releases(), foreign)
+        self.assertEqual(self.secrets(), expected)
 
     def test_other_gateway_preserves_owned_controller(self):
         self.play()
         (self.state / 'foreign-gateway').write_text('1')
+        expected = self.seed_controller_secrets()
         self.play(remove=True)
+        self.assertEqual(self.secrets(), expected)
         self.assertEqual(set(self.releases()), {'kgateway-system/kgateway', 'kgateway-system/kgateway-crds'})
         self.assertTrue((self.state / 'gwcrds').exists())
 
     def test_route_without_gateway_preserves_controller(self):
         self.play()
         (self.state / 'foreign-route').write_text('1')
+        expected = self.seed_controller_secrets()
         self.play(remove=True)
+        self.assertEqual(self.secrets(), expected)
         self.assertEqual(set(self.releases()), {'kgateway-system/kgateway', 'kgateway-system/kgateway-crds'})
         self.assertTrue((self.state / 'gwcrds').exists())
 
@@ -100,6 +143,11 @@ class Lifecycle(unittest.TestCase):
 
     def test_standard_absent_discovers_owned_gateway_install(self):
         self.play()
+        expected = self.seed_controller_secrets()
+        # Standard absent also removes the Run:ai namespace and its TLS secret.
+        del expected['Secret/runai/runai-cluster-domain-tls-secret']
+        del expected['Secret/kgateway-system/oauth2-hmac-secret']
         self.play(standard=True)
+        self.assertEqual(self.secrets(), expected)
         self.assertEqual(self.releases(), {})
         self.assertFalse((self.state / 'gwcrds').exists())
