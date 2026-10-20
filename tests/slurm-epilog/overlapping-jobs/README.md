@@ -265,7 +265,7 @@ refused rather than adopted or overwritten.
 
 Normal teardown releases parked jobs/holds, cancels only recorded IDs, verifies
 job termination, removes owned hooks, removes exact owned scratch/container names,
-restores `localusers.backup`, removes the recorded new enroot data/runtime roots
+restores `localusers.backup`, removes the recorded new enroot data/runtime/cache roots and any enroot parent directories the fixture itself created (rmdir only, if empty)
 (with ownership checks and filesystem-boundary protection), deletes the two new
 accounts/private groups and run state, and
 releases the lock. Cleanup failure retains state and returns nonzero. Finalization

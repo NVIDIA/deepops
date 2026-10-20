@@ -26,7 +26,7 @@
 # See README.md for the run procedure and the report format.
 set -uo pipefail
 
-FIXTURE_VERSION="2"
+FIXTURE_VERSION="3"
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ---------------------------------------------------------------------------
@@ -141,7 +141,8 @@ JOBSCRIPT="$here/jobs/fixture-job.sh"
 HOLD_HOOK_SRC="$here/hooks/10-fixture-hold"
 PROBE_HOOK_SRC="$here/hooks/00-fixture-probe"
 SQSH=""
-declare -A ENROOT_DATA=() ENROOT_RUNTIME=()
+declare -A ENROOT_DATA=() ENROOT_RUNTIME=() ENROOT_CACHE=()
+ENROOT_PARENTS=()
 CGROUP_MODE=unknown
 CTLD_PORT=6817
 SBIN=""
@@ -475,6 +476,14 @@ enroot_runtime_path_for() {
     as_user "$1" "echo \"$raw\"" 2>/dev/null | tail -1
 }
 
+enroot_cache_path_for() {
+    [ -z "${ENROOT_CACHE[$1]:-}" ] || { printf '%s' "${ENROOT_CACHE[$1]}"; return; }
+    local raw
+    raw=$(awk '$1=="ENROOT_CACHE_PATH"{sub(/^[[:space:]]*[^[:space:]]+[[:space:]]*/, ""); print}' /etc/enroot/enroot.conf 2>/dev/null | tail -1)
+    [ -n "$raw" ] || raw='${XDG_CACHE_HOME:-$HOME/.cache}/enroot'
+    as_user "$1" "echo \"$raw\"" 2>/dev/null | tail -1
+}
+
 enroot_enabled() { [ "$NO_ENROOT" = 0 ] && [ -n "$SQSH" ]; }
 
 ctr_dir_for() { # $1 = user, $2 = tag
@@ -652,12 +661,15 @@ finalise() {
                 if [ -n "${ENROOT_DATA[$u]:-}" ]; then
                     remove_owned_path "${ENROOT_DATA[$u]}" "$u" || cleanup_rc=2
                     remove_owned_path "${ENROOT_RUNTIME[$u]}" "$u" || cleanup_rc=2
+                    remove_owned_path "${ENROOT_CACHE[$u]}" "$u" || cleanup_rc=2
                 fi
                 [ "$cleanup_rc" = 0 ] || break
                 userdel -r "$u" || cleanup_rc=2
                 if getent group "$u" >/dev/null 2>&1; then groupdel "$u" || cleanup_rc=2; fi
             done
             if [ "$cleanup_rc" = 0 ]; then
+                local d
+                for d in "${ENROOT_PARENTS[@]}"; do rmdir -- "$d" 2>/dev/null || say "  left enroot parent $d (not empty or already gone)"; done
                 rm -rf -- "$BASE"
                 rm -f -- "$ACTIVE/control-path"
                 rmdir "$ACTIVE" || cleanup_rc=2
@@ -811,6 +823,9 @@ preflight() {
         install -d -m 0700 -o "$u" "$BASE/status-$u" || die "cannot create status directory"
         reserve_enroot_paths "$u" || die "existing, unsafe or shared enroot paths for new account $u"
     done
+    for u in "$USER_QA" "$USER_OPS"; do
+        prepare_enroot_dirs "$u" || die "cannot prepare enroot roots for $u"
+    done
     chown "$USER_QA" "$STAGE" || die "cannot grant image staging access"
     import_image || die "enroot import failed (see enroot-import.log)"
     chown root:root "$STAGE" "$SQSH" || die "cannot seal image staging"
@@ -818,7 +833,7 @@ preflight() {
 }
 
 reserve_enroot_paths() {
-    local user="$1" data runtime path other
+    local user="$1" data runtime cache path other
     data=$(enroot_data_path_for "$user") || return 1
     runtime=$(enroot_runtime_path_for "$user") || return 1
     [[ "$data/" != "$runtime/"* ]] && [[ "$runtime/" != "$data/"* ]] || return 1
@@ -830,8 +845,35 @@ reserve_enroot_paths() {
             [[ "$path/" != "$other/"* ]] && [[ "$other/" != "$path/"* ]] || return 1
         done
     done
-    ENROOT_DATA[$user]=$data; ENROOT_RUNTIME[$user]=$runtime
-    printf 'enroot_data_%s=%s\nenroot_runtime_%s=%s\n' "$user" "$data" "$user" "$runtime" >> "$OUT/ownership.txt"
+    cache=$(enroot_cache_path_for "$user") || return 1
+    [[ "$cache" =~ ^/[a-zA-Z0-9_./-]+$ ]] && [[ "/$cache/" != *'/../'* ]] && [[ "/$cache/" != *'/./'* ]] || return 1
+    [ ! -e "$cache" ] && [ ! -L "$cache" ] || return 1
+    for other in "$data" "$runtime"; do
+        [[ "$cache/" != "$other/"* ]] && [[ "$other/" != "$cache/"* ]] || return 1
+    done
+    for other in "${ENROOT_CACHE[@]}"; do
+        [[ "$cache/" != "$other/"* ]] && [[ "$other/" != "$cache/"* ]] || return 1
+    done
+    ENROOT_DATA[$user]=$data; ENROOT_RUNTIME[$user]=$runtime; ENROOT_CACHE[$user]=$cache
+    printf 'enroot_data_%s=%s\nenroot_runtime_%s=%s\nenroot_cache_%s=%s\n' "$user" "$data" "$user" "$runtime" "$user" "$cache" >> "$OUT/ownership.txt"
+}
+
+# Mirror what the role's prolog does for a job (root creates the per-user roots),
+# because the one-off image import runs before any job. Parents are created
+# root:root 0755 only if absent and recorded for removal; per-user roots are 0700.
+prepare_enroot_dirs() {
+    local user="$1" path parent gid
+    gid=$(id -g "$user") || return 1
+    for path in "${ENROOT_RUNTIME[$user]}" "${ENROOT_CACHE[$user]}" "${ENROOT_DATA[$user]}"; do
+        parent=$(dirname "$path")
+        if [ ! -e "$parent" ] && [ ! -L "$parent" ]; then
+            install -d -m 0755 -o root -g root -- "$parent" || return 1
+            ENROOT_PARENTS+=("$parent")
+            printf 'enroot_parent_created=%s\n' "$parent" >> "$OUT/ownership.txt"
+        fi
+        [ ! -L "$parent" ] && [ -d "$parent" ] || return 1
+        install -d -m 0700 -o "$user" -g "$gid" -- "$path" || return 1
+    done
 }
 
 import_image() {

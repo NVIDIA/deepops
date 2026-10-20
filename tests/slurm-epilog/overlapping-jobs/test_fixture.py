@@ -395,6 +395,25 @@ class FixtureTests(unittest.TestCase):
                     '/tmp/enroot-data/user-21002', '/run/enroot/user-21002',
                 ])
 
+    def test_enroot_cache_path_is_reserved_and_disjoint(self):
+        p = self.shell('''
+            enroot_data_path_for() { echo "$TEST_TMP/d/qa"; }
+            enroot_runtime_path_for() { echo "$TEST_TMP/r/qa"; }
+            enroot_cache_path_for() { echo "$TEST_TMP/c/qa"; }
+            OUT="$TEST_TMP"; : > "$OUT/ownership.txt"
+            reserve_enroot_paths qa && echo "$(enroot_cache_path_for qa)" "${ENROOT_CACHE[qa]}"
+        ''')
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+        self.assertIn('/c/qa', p.stdout)
+        p = self.shell('''
+            enroot_data_path_for() { echo "$TEST_TMP/d/qa"; }
+            enroot_runtime_path_for() { echo "$TEST_TMP/r/qa"; }
+            enroot_cache_path_for() { echo "$TEST_TMP/d/qa/cache"; }
+            OUT="$TEST_TMP"; : > "$OUT/ownership.txt"
+            reserve_enroot_paths qa
+        ''')
+        self.assertNotEqual(p.returncode, 0)
+
     def test_enroot_existing_or_shared_paths_are_refused(self):
         p = self.shell('''
             enroot_data_path_for() { echo "$TEST_TMP"; }
