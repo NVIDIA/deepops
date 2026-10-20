@@ -70,7 +70,7 @@ runai_platform_ingress_repo: "https://haproxytech.github.io/helm-charts"
 runai_platform_ingress_chart_version: "1.54.2"
 runai_platform_ingress_release_name: "haproxy-kubernetes-ingress"
 runai_platform_ingress_namespace: "haproxy-controller"
-# NodePort is the only type live-tested in 26.11; LoadBalancer is untested in 26.11.
+# 26.11 live-tested NodePort and LoadBalancer (MetalLB, single node, ingress and Gateway API).
 # With LoadBalancer the role waits for the external address (MetalLB: see
 # scripts/k8s/deploy_loadbalancer.sh) and uses it for the hosts entry, the CoreDNS
 # entry and the validator, instead of the node address.
