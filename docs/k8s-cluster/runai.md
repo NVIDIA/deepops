@@ -178,6 +178,26 @@ hosts entry, the CoreDNS entry and the API helper. Install a load balancer first
 ([Load Balancer and Ingress](ingress.md)). If no address appears the role stops and says
 so; set `runai_platform_ingress_ip` to use a fixed address instead.
 
+**MetalLB L2 with IPVS kube-proxy.** Kubespray defaults to IPVS mode. Before
+deploying the cluster, set the following in `config/group_vars/k8s_cluster.yml`:
+
+```yaml
+kube_proxy_strict_arp: true
+```
+
+On an existing cluster, edit the `kube-proxy` ConfigMap in `kube-system` and set
+`ipvs.strictARP: true` inside its `config.conf`, then restart kube-proxy so every
+instance loads the change. Keep the group variable above set as well so a later
+Kubespray run preserves it. Without strict ARP, nodes can answer ARP for the
+LoadBalancer address even when they are not the MetalLB L2 announcer, sending
+traffic to the wrong node. This applies to both the ingress LoadBalancer and a
+Gateway backed by a LoadBalancer service; see the
+[upstream MetalLB requirement](https://metallb.io/installation/#preparation).
+
+**26.11 validation scope.** The release validation uses kube-proxy in iptables
+mode, not IPVS. IPVS operation relies on the strict ARP setting above; it is an
+upstream MetalLB requirement, not a separately live-tested path for this release.
+
 **Gateway API** (opt in). Set `runai_platform_exposure: gateway` to follow the
 [Run:ai Gateway API guide](https://docs.nvidia.com/run-ai/self-hosted/v3.0/documentation/installation-and-configuration/config/networking/kubernetes-gateway-api).
 The role then, instead of installing HAProxy:
