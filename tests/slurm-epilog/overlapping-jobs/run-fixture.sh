@@ -390,7 +390,9 @@ submit_job() {
     local user="$1" tag="$RUN_KEY-$2" id
     local args=(-c1 --partition="$PARTITION")
     if [ "${CURRENT_SCENARIO:-}" = 2 ]; then
-        local cpus=$((NODE_CPUS - 1))
+        # Whole cores: with CR_ONE_TASK_PER_CORE (2 threads/core) -c(N-1) rounds up to
+        # the whole node, so B and the peer could never share it (Slurm 26.05 evidence).
+        local cpus=$((NODE_CPUS - NODE_TPC))
         [ "$2" != A ] || cpus=1
         args=(-c"$cpus" --oversubscribe --partition="$GANG_PARTITION")
     fi
@@ -765,7 +767,9 @@ preflight() {
         partition_config=$(sc show partition "$GANG_PARTITION" -o) || die "gang partition query failed"
         grep -Eq 'OverSubscribe=FORCE:[2-9][0-9]*' <<<"$partition_config" || die "gang partition must force sharing"
         NODE_CPUS=$(sc show node "$NODE" -o | grep -o 'CPUTot=[0-9]*' | cut -d= -f2) || die "node CPU query failed"
-        [[ "$NODE_CPUS" =~ ^[1-9][0-9]*$ ]] && [ "$NODE_CPUS" -ge 2 ] || die "gang scenario needs at least two CPUs"
+        NODE_TPC=$(sc show node "$NODE" -o | grep -o 'ThreadsPerCore=[0-9]*' | cut -d= -f2) || die "node thread query failed"
+        [[ "$NODE_TPC" =~ ^[1-9][0-9]*$ ]] || NODE_TPC=1
+        [[ "$NODE_CPUS" =~ ^[1-9][0-9]*$ ]] && [ "$NODE_CPUS" -ge $((2 * NODE_TPC)) ] || die "gang scenario needs at least two cores"
     fi
     if [ "${selected[6]:-0}" = 1 ]; then
         grep -Eq '^Epilog(\[0\])?[[:space:]]*=[[:space:]]*/etc/slurm/epilog-fixture-wrapper[[:space:]]*$' <<<"$config" || die "scenario 6 requires the reviewed fixture wrapper configured as Epilog"
@@ -899,7 +903,7 @@ scenario_1_2() {
     record "$s" ready yes
 
     if [ "$s" = 2 ]; then
-        # A uses one CPU; B and a different-user peer compete for N-1 CPUs.
+        # A uses one core; B and a different-user peer compete for the other cores.
         # The peer keeps a real gang suspension possible after A exits.
         peer=$(submit_job "$USER_OPS" GANGPEER) || { note "$s" "cannot submit gang peer"; return; }
         wait_job_ready "$peer" GANGPEER "$USER_OPS" || { note "$s" "gang peer not ready"; return; }
