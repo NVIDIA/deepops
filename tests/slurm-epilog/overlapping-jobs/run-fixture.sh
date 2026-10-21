@@ -768,7 +768,7 @@ preflight() {
         [[ "$NODE_CPUS" =~ ^[1-9][0-9]*$ ]] && [ "$NODE_CPUS" -ge 2 ] || die "gang scenario needs at least two CPUs"
     fi
     if [ "${selected[6]:-0}" = 1 ]; then
-        grep -Eq '^Epilog[[:space:]]*=[[:space:]]*/etc/slurm/epilog-fixture-wrapper[[:space:]]*$' <<<"$config" || die "scenario 6 requires the reviewed fixture wrapper configured as Epilog"
+        grep -Eq '^Epilog(\[0\])?[[:space:]]*=[[:space:]]*/etc/slurm/epilog-fixture-wrapper[[:space:]]*$' <<<"$config" || die "scenario 6 requires the reviewed fixture wrapper configured as Epilog"
         trusted_path /etc/slurm/epilog-fixture-wrapper || die "unsafe wrapper path"
         trusted_path "$here/epilog-wrapper.sh" || die "unsafe wrapper source"
         cmp -s "$here/epilog-wrapper.sh" /etc/slurm/epilog-fixture-wrapper || die "installed wrapper differs from fixture"
@@ -802,7 +802,7 @@ preflight() {
     say "fixture v$FIXTURE_VERSION expect=$EXPECT scenarios=$SCENARIOS node=$NODE out=$OUT"
     {
         echo "node=$NODE hostname=$(hostname -s) cgroup=$CGROUP_MODE slurm='$SLURM_VERSION' ctld_port=$CTLD_PORT"
-        sc show config 2>/dev/null | grep -E '^(ProctrackType|TaskPlugin|CompleteWait|PreemptMode|PreemptType|Epilog|Prolog|PrologFlags|KillWait|SlurmctldPort) '
+        sc show config 2>/dev/null | grep -E '^(ProctrackType|TaskPlugin|CompleteWait|PreemptMode|PreemptType|Epilog(\[[0-9]+\])?|Prolog(\[[0-9]+\])?|PrologFlags|KillWait|SlurmctldPort) '
         echo
         echo "epilog scripts under test (sha256):"
         sha256sum /etc/slurm/epilog.sh /etc/slurm/shared/bin/run-parts.sh "$EPILOG_DIR"/* 2>/dev/null | grep -v -- '-fixture-'

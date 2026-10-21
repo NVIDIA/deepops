@@ -137,6 +137,36 @@ class FixtureTests(unittest.TestCase):
                     self.assertNotIn('CONFIG_ACCEPTED', p.stdout)
                     self.assertIn('scenario 3 requires CompleteWait=0', p.stderr)
 
+    def test_s6_epilog_check_accepts_indexed_and_plain_forms(self):
+        # Slurm 26.05 prints "Epilog[0] = ..."; older releases print "Epilog = ...".
+        source = DRIVER.read_text()
+        start = source.index('    config=$(sc show config)')
+        end = source.index('\n    CTLD_PORT=', start)
+        checks = source[start:end]
+        wrapper = '/etc/slurm/epilog-fixture-wrapper'
+        for line, ok in [(f'Epilog                  = {wrapper}', True),
+                         (f'Epilog[0]               = {wrapper}', True),
+                         ('Epilog[0]               = /etc/slurm/epilog.sh', False),
+                         ('Epilog[1]               = ' + wrapper, False),
+                         ('Epilog                  = (null)', False)]:
+            with self.subTest(line=line):
+                config = ('ProctrackType           = proctrack/cgroup\n' + line + '\n')
+                p = self.shell('''
+                    selected=(); selected[6]=1
+                    sc() {
+                        [ "$*" = "show config" ] || return 1
+                        printf '%s\\n' ''' + shlex.quote(config) + '''
+                    }
+                    die() { echo "DIE: $*" >&2; exit 2; }
+                    trusted_path() { return 0; }
+                    here=/nonexistent
+                ''' + checks + '\nprintf "CONFIG_ACCEPTED"\n')
+                if ok:
+                    # Passes the Epilog grep; later steps (wrapper cmp) may die.
+                    self.assertNotIn('requires the reviewed fixture wrapper', p.stderr)
+                else:
+                    self.assertIn('requires the reviewed fixture wrapper', p.stderr)
+
     def test_window_reference_is_recorded_with_approval(self):
         # Execute the actual evidence write, but only in the temporary output
         # directory. Never run the live setup surrounding this statement.
