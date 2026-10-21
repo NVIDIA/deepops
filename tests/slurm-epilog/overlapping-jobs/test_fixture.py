@@ -33,6 +33,24 @@ class FixtureTests(unittest.TestCase):
             return subprocess.run(['bash', '-c', script], env=env, text=True,
                                   capture_output=True, timeout=10)
 
+    def test_s2_a_uses_its_own_partition_and_peers_the_gang_partition(self):
+        body = ('CURRENT_SCENARIO=2; NODE_CPUS=16; NODE_TPC=2; GANG_PARTITION=gang; A_PARTITION=apart; '
+                'as_user() { printf "%s\\n" "$2" >> "$TEST_TMP/cmds"; echo 7; }; '
+                'submit_job qa A >/dev/null; submit_job qa B >/dev/null; cat "$TEST_TMP/cmds"')
+        p = self.shell(body)
+        self.assertEqual(p.returncode, 0, p.stderr)
+        a, b = p.stdout.strip().split('\n')
+        self.assertIn('-c1 ', a)
+        self.assertIn('--partition=apart', a)
+        self.assertNotIn('--oversubscribe', a)
+        self.assertIn('-c14 ', b)
+        self.assertIn('--partition=gang', b)
+
+    def test_a_partition_option_validated(self):
+        p = subprocess.run(['bash', str(DRIVER), '--selftest', '--a-partition', 'x;id'],
+                           capture_output=True, text=True, timeout=15)
+        self.assertEqual(p.returncode, 2, p.stdout + p.stderr)
+
     def test_submit_stdout_is_only_id(self):
         p = self.shell('as_user() { echo 123; }; id=$(submit_job qa A); printf "<%s>" "$id"')
         self.assertEqual(p.returncode, 0, p.stderr)

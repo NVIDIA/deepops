@@ -26,7 +26,7 @@
 # See README.md for the run procedure and the report format.
 set -uo pipefail
 
-FIXTURE_VERSION="3"
+FIXTURE_VERSION="4"
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ---------------------------------------------------------------------------
@@ -46,6 +46,7 @@ IMAGE="docker://ubuntu:24.04"
 SUSPEND_MODE=gang
 PARTITION=""
 GANG_PARTITION=""
+A_PARTITION=""
 APPROVAL=""
 WINDOW=""
 KEEP_USERS=0
@@ -68,6 +69,7 @@ Usage: $0 [options]
   --scenarios LIST              nonempty, unique comma list from 1-7 (default: $SCENARIOS)
   --partition NAME              normal partition for scenarios 1,3-7
   --gang-partition NAME         FORCE-sharing partition for scenario 2
+  --a-partition NAME            scenario 2: separate higher-PriorityTier partition on the same node for A
   --approval REF                operator-verified authorization reference
   --window REF                  operator-verified exclusive active maintenance-window reference
   --out DIR                     report/evidence directory (default: /root/epilog-fixture-<timestamp>)
@@ -85,12 +87,13 @@ EOF
 
 while [ $# -gt 0 ]; do
     case "$1" in
-        --expect|--scenarios|--out|--node|--slurm-prefix|--user|--operator|--image|--suspend-mode|--partition|--gang-partition|--approval|--window)
+        --expect|--scenarios|--out|--node|--slurm-prefix|--user|--operator|--image|--suspend-mode|--partition|--gang-partition|--a-partition|--approval|--window)
             [ $# -ge 2 ] && [ -n "$2" ] && [[ "$2" != --* ]] || { echo "missing value for $1" >&2; exit 2; } ;;
     esac
     case "$1" in
         --partition) PARTITION="$2"; shift 2 ;;
         --gang-partition) GANG_PARTITION="$2"; shift 2 ;;
+        --a-partition) A_PARTITION="$2"; shift 2 ;;
         --approval) APPROVAL="$2"; shift 2 ;;
         --window) WINDOW="$2"; shift 2 ;;
         --expect) EXPECT="$2"; shift 2 ;;
@@ -123,7 +126,7 @@ for u in "$USER_QA" "$USER_OPS"; do
     [[ "$u" =~ ^[a-z_][a-z0-9_]{0,30}$ ]] && [ "$u" != root ] || { echo "invalid throwaway account" >&2; exit 2; }
 done
 [ "$USER_QA" != "$USER_OPS" ] || { echo "user and operator must differ" >&2; exit 2; }
-for value in "$NODE" "$PARTITION" "$GANG_PARTITION"; do
+for value in "$NODE" "$PARTITION" "$GANG_PARTITION" "$A_PARTITION"; do
     [[ "$value" =~ ^[a-zA-Z0-9_.-]*$ ]] || { echo "invalid node/partition" >&2; exit 2; }
 done
 for value in "$OUT" "$SLURM_PREFIX"; do
@@ -393,8 +396,9 @@ submit_job() {
         # Whole cores: with CR_ONE_TASK_PER_CORE (2 threads/core) -c(N-1) rounds up to
         # the whole node, so B and the peer could never share it (Slurm 26.05 evidence).
         local cpus=$((NODE_CPUS - NODE_TPC))
-        [ "$2" != A ] || cpus=1
         args=(-c"$cpus" --oversubscribe --partition="$GANG_PARTITION")
+        # A sits in its own higher-tier partition so the gang scheduler never suspends it.
+        [ "$2" != A ] || args=(-c1 --partition="$A_PARTITION")
     fi
     id=$(as_user "$user" "$(printf '%q ' "$SBIN/sbatch" --parsable -N1 -n1 "${args[@]}" --mem=1G -w "$NODE" \
             -J "epilog-fixture-$tag" -o "$JOBOUT/%x-%j.out" --export=ALL,FIXTURE_JOB_TIMEOUT=1800 \
@@ -766,6 +770,14 @@ preflight() {
         grep -Eq '^PreemptMode[[:space:]]*=.*GANG' <<<"$config" || die "PreemptMode must include GANG"
         partition_config=$(sc show partition "$GANG_PARTITION" -o) || die "gang partition query failed"
         grep -Eq 'OverSubscribe=FORCE:[2-9][0-9]*' <<<"$partition_config" || die "gang partition must force sharing"
+        [ -n "$A_PARTITION" ] || die "--a-partition is required for scenario 2"
+        [ "$A_PARTITION" != "$GANG_PARTITION" ] || die "--a-partition must differ from the gang partition"
+        a_partition_config=$(sc show partition "$A_PARTITION" -o) || die "A partition query failed"
+        local gang_tier a_tier
+        gang_tier=$(grep -o 'PriorityTier=[0-9]*' <<<"$partition_config" | cut -d= -f2)
+        a_tier=$(grep -o 'PriorityTier=[0-9]*' <<<"$a_partition_config" | cut -d= -f2)
+        [[ "$gang_tier" =~ ^[0-9]+$ && "$a_tier" =~ ^[0-9]+$ ]] && [ "$a_tier" -gt "$gang_tier" ] || die "A partition PriorityTier must be higher than the gang partition's"
+        grep -Eq "(^| )Nodes=([^ ]*,)?$NODE(,[^ ]*)?( |$)" <<<"$a_partition_config" || die "A partition must include the node"
         NODE_CPUS=$(sc show node "$NODE" -o | grep -o 'CPUTot=[0-9]*' | cut -d= -f2) || die "node CPU query failed"
         NODE_TPC=$(sc show node "$NODE" -o | grep -o 'ThreadsPerCore=[0-9]*' | cut -d= -f2) || die "node thread query failed"
         [[ "$NODE_TPC" =~ ^[1-9][0-9]*$ ]] || NODE_TPC=1
@@ -802,6 +814,7 @@ preflight() {
     printf 'approval=%s\nwindow=%s\nrun=%s\nuser=%s\noperator=%s\nbase=%s\n' "$APPROVAL" "$WINDOW" "$RUN_ID" "$USER_QA" "$USER_OPS" "$BASE" > "$OUT/ownership.txt"
     printf '%s\n' "$config" > "$OUT/slurm-config.txt"
     [ -z "${partition_config:-}" ] || printf '%s\n' "$partition_config" > "$OUT/gang-partition.txt"
+    [ -z "${a_partition_config:-}" ] || printf '%s\n' "$a_partition_config" > "$OUT/a-partition.txt"
     chmod 1777 "$JOBOUT"
     say "fixture v$FIXTURE_VERSION expect=$EXPECT scenarios=$SCENARIOS node=$NODE out=$OUT"
     {
@@ -890,6 +903,16 @@ import_image() {
 # ---------------------------------------------------------------------------
 # scenarios
 # ---------------------------------------------------------------------------
+snapshot_s2() {
+    # $1 A, $2 B, $3 peer, $4 label: record every job's state/partition before any check can fail
+    local j
+    {
+        date -u +%FT%TZ
+        for j in "$1" "$2" "$3"; do sq -h -j "$j" -o '%i %P %T %C %r' 2>&1; done
+    } > "$OUT/scenario-2.states-$4.txt" 2>&1
+    say "  job states ($4): A=$(job_state "$1") B=$(job_state "$2") peer=$(job_state "$3")"
+}
+
 scenario_1_2() {
     # $1 = 1 (B running) or 2 (B suspended)
     local s="$1" since A B peer
@@ -907,8 +930,9 @@ scenario_1_2() {
         # The peer keeps a real gang suspension possible after A exits.
         peer=$(submit_job "$USER_OPS" GANGPEER) || { note "$s" "cannot submit gang peer"; return; }
         wait_job_ready "$peer" GANGPEER "$USER_OPS" || { note "$s" "gang peer not ready"; return; }
-        wait_for 360 "gang scheduler to suspend B" job_is_suspended "$B" || { note "$s" "B never gang-suspended"; return; }
-        job_is_running "$A" || { note "$s" "A not running while B suspended"; return; }
+        wait_for 360 "gang scheduler to suspend B" job_is_suspended "$B" || { snapshot_s2 "$A" "$B" "$peer" no-suspend; note "$s" "B never gang-suspended"; return; }
+        snapshot_s2 "$A" "$B" "$peer" before
+        job_is_running "$A" || { note "$s" "A not running while B suspended (A=$(job_state "$A") B=$(job_state "$B") peer=$(job_state "$peer"); see scenario-2.states-before.txt)"; return; }
         sc show job "$A" > "$OUT/scenario-2.A-before.txt" || return 2
         sc show job "$B" > "$OUT/scenario-2.B-suspended.txt" || return 2
         record "$s" gang yes
