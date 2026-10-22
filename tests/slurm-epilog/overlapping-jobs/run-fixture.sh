@@ -26,7 +26,7 @@
 # See README.md for the run procedure and the report format.
 set -uo pipefail
 
-FIXTURE_VERSION="5"
+FIXTURE_VERSION="6"
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ---------------------------------------------------------------------------
@@ -954,7 +954,8 @@ scenario_1_2() {
     capture_evidence "$s" "$since"
 
     release_job B
-    wait_for 120 "B over" job_is_over "$B"
+    # B may still be gang-suspended when released and only finishes once it rotates back in (SchedulerTimeSlice 120 s, peer ahead of it).
+    wait_for 420 "B over" job_is_over "$B"
 }
 
 scenario_3() {
