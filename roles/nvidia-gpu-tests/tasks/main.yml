@@ -73,6 +73,20 @@
   debug:
     msg: "{{ p2p_results.stdout }}"
 
+# Exits 0 when every GPU is healthy and 1 when a fault is detected
+- name: create the pantheon output directory
+  file:
+    path: "{{ gpu_test_pantheon_dir }}"
+    state: directory
+  when: gpu_test_pantheon
+
+- name: run pantheon stress test
+  shell: "pantheon --test {{ gpu_test_pantheon_suite }} --duration {{ gpu_test_pantheon_duration }} --gpu all"
+  args:
+    chdir: "{{ gpu_test_pantheon_dir }}"
+  register: pantheon
+  when: gpu_test_pantheon
+
 - name: Report on matrixmul results
   debug:
     msg: "{{ matrixmul.stdout }}"
@@ -84,3 +98,8 @@
 - name: Report on GPU results
   debug:
     msg: "Found {{ gpu_count.stdout }} GPUs"
+
+- name: Report on pantheon results
+  debug:
+    msg: "{{ pantheon.stdout_lines | select('search', '^.*VERDICT') | list }}"
+  when: gpu_test_pantheon

@@ -18,3 +18,14 @@ gpu_test_dcgm_level: 3
 # DGX-2 -> (512, 50); DGX-1 -> (256,50); DGX-Station -> (128, 50)
 gpu_test_tf_batch_size: 128 # (choose from 32, 64, 128, 256, 512)
 gpu_test_tf_layers: 50 # (choose from 18, 34, 50, 101, 152)
+
+# Whether to run a Pantheon stress and verification pass (pip install pantheon-gpu,
+# needs nvcc on the node). Unlike the tests above, a detected fault fails the play.
+gpu_test_pantheon: no
+
+# Pantheon suite and seconds per workload; "quick" takes about a minute per GPU
+gpu_test_pantheon_suite: quick
+gpu_test_pantheon_duration: 10
+
+# Pantheon writes its reports into this directory
+gpu_test_pantheon_dir: "/tmp/pantheon"

@@ -11,6 +11,7 @@ Running this will perform the following:
 * Run the Peer2Peer and MatrixMultiply tests
 * Run the DCGM diagnostics
 * Run a basic Tensorflow DL job
+* Optionally (`gpu_test_pantheon: yes`) run a short [Pantheon](https://github.com/pantheongpu/pantheon) stress and verification pass, which fails the play if a GPU fault is detected
 
 
 # Requirements
@@ -23,4 +24,5 @@ The following should be installed on the system prior to running this role (thes
 * dcgmi
 * nvidia-docker
 * docker
+* [pantheon-gpu](https://pypi.org/project/pantheon-gpu/) (`pip install pantheon-gpu`), only with `gpu_test_pantheon: yes`
 
