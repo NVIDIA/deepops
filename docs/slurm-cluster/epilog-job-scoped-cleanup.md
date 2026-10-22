@@ -57,8 +57,14 @@ removed now.
 - Accounts listed in `/etc/slurm/localusers.backup`, and root, are exempt as
   before.
 - Requires cgroup-based process tracking (`ProctrackType=proctrack/cgroup`, the
-  DeepOps default). With a different process tracker the epilog cannot find job
-  cgroups and will defer cleanup; use `user` (below) or fix the tracker.
+  DeepOps default). With a different process tracker the epilog cannot tell
+  which job a process belongs to, so it treats every process as unassigned and
+  falls back to asking `squeue`: if the user has another job on the node nothing
+  is cleaned up, otherwise all of the user's processes are removed. It does not
+  defer. Use `user` (below) or fix the tracker if that is not what you want.
+- Processes started outside Slurm while a job is finishing, for example over
+  SSH, are not protected: they are not part of any job, so they count as
+  unassigned and can be removed when the user's last job ends.
 
 ### Related fix: SSH access entry
 
