@@ -74,12 +74,13 @@ scratch directory. These tests are **not** hardware certification.
   UID is refused rather than handed to the product's per-user cleanup.
 - For S2, `PreemptMode` includes `GANG`, and a dedicated partition on the same node
   has `OverSubscribe=FORCE:2` (or more). Use at least two cores. A runs in a second
-  partition on the same node with a higher `PriorityTier` (`--a-partition`), so the
-  gang scheduler never rotates A out; A requests one core. B and a different-user
+  single-job (`FORCE:1`) partition on the same node at the same `PriorityTier` 1
+  (`--a-partition`), so the gang scheduler never rotates A out (a higher tier stalls
+  the gang rotation: the second gang job never runs; PRE-1891); A requests one core. B and a different-user
   scheduling peer request all other cores in the gang partition. This keeps real
   gang contention after A ends. Example slurm.conf lines (node `NODE`):
   `PartitionName=epilog-gang Nodes=NODE OverSubscribe=FORCE:2 PriorityTier=1 State=UP`
-  and `PartitionName=epilog-a Nodes=NODE PriorityTier=2 State=UP`. The fixture saves
+  and `PartitionName=epilog-a Nodes=NODE OverSubscribe=FORCE:1 PriorityTier=1 State=UP`. The fixture saves
   every job's partition and state before the first S2 check (`scenario-2.states-*.txt`). The fixture never issues `scontrol suspend`.
   It must observe A RUNNING and B SUSPENDED before A ends, and B still SUSPENDED
   after the epilog. Tune `SchedulerTimeSlice` to give the epilog time to finish;

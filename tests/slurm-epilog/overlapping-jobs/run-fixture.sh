@@ -26,7 +26,7 @@
 # See README.md for the run procedure and the report format.
 set -uo pipefail
 
-FIXTURE_VERSION="4"
+FIXTURE_VERSION="5"
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ---------------------------------------------------------------------------
@@ -69,7 +69,7 @@ Usage: $0 [options]
   --scenarios LIST              nonempty, unique comma list from 1-7 (default: $SCENARIOS)
   --partition NAME              normal partition for scenarios 1,3-7
   --gang-partition NAME         FORCE-sharing partition for scenario 2
-  --a-partition NAME            scenario 2: separate higher-PriorityTier partition on the same node for A
+  --a-partition NAME            scenario 2: separate single-job (FORCE:1) partition at PriorityTier 1 on the same node for A
   --approval REF                operator-verified authorization reference
   --window REF                  operator-verified exclusive active maintenance-window reference
   --out DIR                     report/evidence directory (default: /root/epilog-fixture-<timestamp>)
@@ -397,7 +397,8 @@ submit_job() {
         # the whole node, so B and the peer could never share it (Slurm 26.05 evidence).
         local cpus=$((NODE_CPUS - NODE_TPC))
         args=(-c"$cpus" --oversubscribe --partition="$GANG_PARTITION")
-        # A sits in its own higher-tier partition so the gang scheduler never suspends it.
+        # A sits in its own single-job (FORCE:1) tier-1 partition: nothing to share with, so never suspended.
+        # Tier 1 on purpose: a higher-tier partition on the node stalled the gang rotation (PRE-1891).
         [ "$2" != A ] || args=(-c1 --partition="$A_PARTITION")
     fi
     id=$(as_user "$user" "$(printf '%q ' "$SBIN/sbatch" --parsable -N1 -n1 "${args[@]}" --mem=1G -w "$NODE" \
@@ -776,7 +777,9 @@ preflight() {
         local gang_tier a_tier
         gang_tier=$(grep -o 'PriorityTier=[0-9]*' <<<"$partition_config" | cut -d= -f2)
         a_tier=$(grep -o 'PriorityTier=[0-9]*' <<<"$a_partition_config" | cut -d= -f2)
-        [[ "$gang_tier" =~ ^[0-9]+$ && "$a_tier" =~ ^[0-9]+$ ]] && [ "$a_tier" -gt "$gang_tier" ] || die "A partition PriorityTier must be higher than the gang partition's"
+        # Reason: a higher tier on the same node stalls gang rotation (second gang job never runs); PRE-1891 evidence.
+        [[ "$gang_tier" =~ ^[0-9]+$ && "$a_tier" =~ ^[0-9]+$ ]] && [ "$a_tier" -eq "$gang_tier" ] || die "A partition PriorityTier must equal the gang partition's (tier 1; a higher tier stalls gang rotation)"
+        ! grep -Eq 'OverSubscribe=FORCE:([2-9]|[1-9][0-9]+)' <<<"$a_partition_config" || die "A partition must be single-job (OverSubscribe=NO or FORCE:1)"
         grep -Eq "(^| )Nodes=([^ ]*,)?$NODE(,[^ ]*)?( |$)" <<<"$a_partition_config" || die "A partition must include the node"
         NODE_CPUS=$(sc show node "$NODE" -o | grep -o 'CPUTot=[0-9]*' | cut -d= -f2) || die "node CPU query failed"
         NODE_TPC=$(sc show node "$NODE" -o | grep -o 'ThreadsPerCore=[0-9]*' | cut -d= -f2) || die "node thread query failed"
