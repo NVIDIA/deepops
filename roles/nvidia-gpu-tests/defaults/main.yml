@@ -14,6 +14,10 @@ gpu_test_build: yes
 # 1 -> quick test (seconds), 2 -> regular test (minute), 3 -> long test (minutes)
 gpu_test_dcgm_level: 3
 
+# Whether a failed DCGM diagnostic (dcgmi exits non-zero) fails the play. Set to
+# yes to stop on a failing GPU; by default the failure is ignored and only reported.
+gpu_test_dcgm_fail_on_error: no
+
 # Batch size to use for Tensorflow tests
 # DGX-2 -> (512, 50); DGX-1 -> (256,50); DGX-Station -> (128, 50)
 gpu_test_tf_batch_size: 128 # (choose from 32, 64, 128, 256, 512)
