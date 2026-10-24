@@ -1,0 +1,25 @@
+---
+# A per-release marker survives reruns; never adopt an existing Helm release.
+- name: "{{ runai_gw_release }} | read ownership record"
+  ansible.builtin.command: "{{ runai_kubectl }} --namespace {{ runai_gateway_controller_namespace }} get configmap deepops-runai-{{ runai_gw_release }} --ignore-not-found --output name"
+  register: runai_gw_owner
+  changed_when: false
+  check_mode: false
+
+- name: "{{ runai_gw_release }} | install only missing or owned release"
+  ansible.builtin.include_tasks: helm_release.yml
+  vars:
+    _rel:
+      release: "{{ runai_gw_release }}"
+      namespace: "{{ runai_gateway_controller_namespace }}"
+      chart: "{{ runai_gateway_controller_crds_chart if runai_gw_release == 'kgateway-crds' else runai_gateway_controller_chart }}"
+      version: "{{ runai_gateway_controller_version }}"
+      helm_values: {}
+  when: runai_gw_release not in runai_gw_releases_before or runai_gw_owner.stdout | length > 0
+
+- name: "{{ runai_gw_release }} | record ownership of new release"
+  ansible.builtin.command:
+    argv: ["{{ runai_kubectl }}", apply, --filename, '-']
+    stdin: "{{ {'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': 'deepops-runai-' ~ runai_gw_release, 'namespace': runai_gateway_controller_namespace}, 'data': {'release': runai_gw_release}} | to_json }}"
+  changed_when: true
+  when: runai_gw_release not in runai_gw_releases_before

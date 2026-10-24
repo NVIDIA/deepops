@@ -22,6 +22,37 @@ runai_platform_ingress_values:
     daemonset:
       useHostPort: "{{ runai_platform_ingress_host_ports | bool }}"
 
+# The role installs and removes the HAProxy controller only for ingress exposure.
+runai_haproxy_managed: "{{ runai_platform_exposure == 'ingress' and runai_platform_install_ingress | bool }}"
+# True when the role waits for the ingress service's external address.
+runai_wait_ingress_lb: >-
+  {{ runai_haproxy_managed | bool and runai_platform_ingress_service_type == 'LoadBalancer'
+     and runai_platform_ingress_ip | length == 0 }}
+# The service name the HAProxy chart gives its controller (the release name contains the chart name).
+runai_ingress_service_name: "{{ runai_platform_ingress_release_name }}"
+
+# Gateway API exposure (runai_platform_exposure: gateway): Ingress off, Gateway on.
+runai_gateway_enabled: "{{ runai_platform_exposure == 'gateway' }}"
+runai_gateway_cp_values:
+  global:
+    ingress:
+      enabled: false
+    gatewayAPI:
+      enabled: true
+      parentRefs:
+        - name: "{{ runai_gateway_name }}"
+          namespace: "{{ runai_cluster_namespace }}"
+runai_gateway_cluster_values:
+  clusterConfig:
+    global:
+      ingress:
+        enabled: false
+      gatewayAPI:
+        enabled: true
+        name: "{{ runai_gateway_name }}"
+        namespace: "{{ runai_cluster_namespace }}"
+      subdomainSupport: "{{ runai_gateway_workload_routing == 'host' }}"
+
 runai_cp_base_values:
   global:
     domain: "{{ runai_platform_domain }}"
@@ -33,13 +64,13 @@ runai_cp_base_values:
     config:
       adminUsername: "{{ runai_platform_admin_user }}"
       adminPassword: "{{ runai_platform_admin_password }}"
-runai_cp_values: "{{ runai_cp_base_values | runai_deep_merge(runai_platform_cp_extra_values) }}"
+runai_cp_values: "{{ runai_cp_base_values | runai_deep_merge(runai_gateway_cp_values if runai_gateway_enabled | bool else {}) | runai_deep_merge(runai_platform_cp_extra_values) }}"
 
 # The Run:ai cluster chart turns GPU-memory fractioning on by default. That needs GPU Operator
 # >= v26.7.1 and an r615+ driver, which DeepOps does not install by default, so the fractioning
 # daemon crash-loops and Run:ai reports the cluster as "Missing prerequisites" (gpu-stack).
 # Follow the same opt-in as kai mode: off unless runai_kai_gpu_fractioning is true.
-runai_cluster_base_values:
+runai_cluster_base_values_ingress:
   kai-resource-management:
     kai-scheduler:
       global:
@@ -53,3 +84,45 @@ runai_cluster_base_values:
   global:
     customCA:
       enabled: "{{ (runai_tls_ca | default('')) | length > 0 }}"
+
+runai_cluster_base_values: "{{ runai_cluster_base_values_ingress | runai_deep_merge(runai_gateway_cluster_values if runai_gateway_enabled | bool else {}) }}"
+
+# The Gateway, as in the Run:ai v3.0 Gateway API guide. allowedRoutes lets the control plane's
+# route (in its own namespace) attach; the guide's example leaves it at the default.
+runai_gateway_listeners_base:
+  - name: https-cluster-domain
+    protocol: HTTPS
+    port: 443
+    hostname: "{{ runai_platform_domain }}"
+    tls:
+      mode: Terminate
+      certificateRefs:
+        - kind: Secret
+          name: runai-cluster-domain-tls-secret
+    allowedRoutes:
+      namespaces:
+        from: All
+runai_gateway_listeners_host:
+  - name: https-workloads
+    protocol: HTTPS
+    port: 443
+    hostname: "*.{{ runai_platform_domain }}"
+    tls:
+      mode: Terminate
+      certificateRefs:
+        - kind: Secret
+          name: runai-cluster-domain-star-tls-secret
+    allowedRoutes:
+      namespaces:
+        from: All
+runai_gateway_manifest:
+  apiVersion: gateway.networking.k8s.io/v1
+  kind: Gateway
+  metadata:
+    name: "{{ runai_gateway_name }}"
+    namespace: "{{ runai_cluster_namespace }}"
+    labels:
+      app.kubernetes.io/managed-by: deepops-runai
+  spec:
+    gatewayClassName: "{{ runai_gateway_class }}"
+    listeners: "{{ runai_gateway_listeners_base + (runai_gateway_listeners_host if runai_gateway_workload_routing == 'host' else []) }}"

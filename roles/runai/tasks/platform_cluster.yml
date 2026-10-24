@@ -27,7 +27,7 @@
           '--domain', runai_platform_domain,
           '--cluster-name', runai_cluster_name,
           '--chart-version', runai_chart_version]
-         + (['--resolve-ip', runai_platform_ingress_ip] if runai_platform_ingress_ip | length > 0 else [])
+         + (['--resolve-ip', runai_exposure_address] if runai_exposure_address | length > 0 else [])
          + (['--ca-file', runai_tls_ca] if runai_tls_ca | length > 0 else []) }}
   environment:
     RUNAI_USERNAME: "{{ runai_platform_admin_user }}"

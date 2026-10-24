@@ -1,26 +1,246 @@
 #!/usr/bin/env python3
-"""Fake kubectl for offline role tests."""
-import json, os, sys
-state = os.environ["FAKE_STATE"]
-os.makedirs(state, exist_ok=True)
-with open(os.path.join(state, "kubectl.log"), "a") as log:
-    log.write(" ".join(sys.argv[1:]) + "\n")
-a = [x for x in sys.argv[1:] if x not in ("--namespace",)]
-joined = " ".join(sys.argv[1:])
-gpus = os.environ.get("FAKE_GPUS", "1")
-major = os.environ.get("FAKE_DRIVER_MAJOR", "580")
-if "get nodes" in joined:
-    print(json.dumps({"items": [{"metadata": {"name": "n1", "labels": {"nvidia.com/gpu.present": "true", "nvidia.com/cuda.driver-version.major": major}},
-                                 "status": {"allocatable": {"nvidia.com/gpu": gpus}}}]}))
-elif joined.startswith("version"):
-    print(json.dumps({"clientVersion": {"gitVersion": "v1.35.4"}}))
-elif "get storageclass" in joined:
-    print(json.dumps({"items": [{"metadata": {"name": "nfs", "annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}]}))
-elif "get crd" in joined:
-    print("")
-elif " wait " in " " + joined + " ":
-    pass
-elif "delete namespace" in joined:
-    print("namespace \"x\" deleted")
-else:
-    pass
+"""Bounded kubectl double: strict argv, JSON stdin, persistent offline resources.
+
+Unknown invocations fail rather than silently succeeding. This checks the CLI
+boundary, not Kubernetes schema admission, controllers or networking.
+"""
+import json
+import os
+from pathlib import Path
+import re
+import sys
+
+from fake_cli import count, fail, parse
+
+state = Path(os.environ['FAKE_STATE'])
+state.mkdir(exist_ok=True)
+a = sys.argv[1:]
+with (state / 'kubectl.log').open('a') as log:
+    log.write(' '.join(a) + '\n')
+with (state / 'kubectl-argv.jsonl').open('a') as log:
+    log.write(json.dumps(a) + '\n')
+
+# Only the command/option combinations exercised by the role are implemented.
+ns = ''
+if a and a[0] in ('-n', '--namespace'):
+    ns, a = a[1], a[2:]
+if not a:
+    fail('command required')
+verb, rest = a[0], a[1:]
+valued = {
+    'version': ['--output'], 'api-resources': ['--verbs', '--output'],
+    'get': ['--output', '-o'], 'apply': ['--filename', '-f'],
+    'annotate': [], 'label': [], 'delete': ['--timeout'],
+    'create': ['--dry-run', '-o', '--cert', '--key', '--from-file'],
+    'patch': ['--type', '--patch'], 'rollout': [],
+    'wait': ['--for', '--timeout'],
+}
+flags = {
+    'get': ['--all-namespaces', '--ignore-not-found'],
+    'annotate': ['--overwrite'], 'label': ['--overwrite'],
+    'delete': ['--ignore-not-found', '--wait'],
+}
+if verb not in valued:
+    fail('unsupported kubectl command: ' + verb)
+p, opts = parse(rest, valued[verb] + ['-n', '--namespace'], flags.get(verb, []))
+ns = opts.get('--namespace', opts.get('-n', ns))
+output = opts.get('--output', opts.get('-o', ''))
+owned_query = r'jsonpath={range .items[?(@.metadata.annotations.deepops\.nvidia\.com/runai-installed=="true")]}{.metadata.name}{"\n"}{end}'
+if output.startswith('jsonpath=') and output not in (
+        owned_query, 'jsonpath={.status.addresses[0].value}',
+        'jsonpath={.status.loadBalancer.ingress[0].ip}'):
+    fail('unsupported or malformed jsonpath argument: ' + output)
+
+
+def lines(name):
+    path = state / name
+    return path.read_text().splitlines() if path.exists() else []
+
+
+def save_lines(name, values):
+    path = state / name
+    if values:
+        path.write_text('\n'.join(values))
+    else:
+        path.unlink(missing_ok=True)
+
+
+def manifests():
+    path = state / 'manifests.json'
+    return json.loads(path.read_text()) if path.exists() else {}
+
+
+def store(doc):
+    db = manifests()
+    key = '/'.join([doc['kind'], doc['metadata'].get('namespace', ''), doc['metadata']['name']])
+    db[key] = doc
+    (state / 'manifests.json').write_text(json.dumps(db))
+
+
+if verb == 'version':
+    count(p, 0)
+    print(json.dumps({'clientVersion': {'gitVersion': 'v1.35.4'}}))
+elif verb == 'api-resources':
+    count(p, 0)
+    if os.environ.get('FAKE_DISCOVERY_FAIL'):
+        fail('forbidden')
+    print('gateways.gateway.networking.k8s.io\nhttproutes.gateway.networking.k8s.io')
+elif verb == 'get':
+    if not p:
+        fail('resource required')
+    kind = p[0]
+    if kind == 'nodes':
+        count(p, 1)
+        print(json.dumps({'items': [{'metadata': {'name': 'n1', 'labels': {
+            'nvidia.com/gpu.present': 'true', 'nvidia.com/cuda.driver-version.major': os.environ.get('FAKE_DRIVER_MAJOR', '580')}},
+            'status': {'allocatable': {'nvidia.com/gpu': os.environ.get('FAKE_GPUS', '1')}}}]}))
+    elif kind == 'storageclass':
+        count(p, 1)
+        print(json.dumps({'items': [{'metadata': {'name': 'nfs', 'annotations': {'storageclass.kubernetes.io/is-default-class': 'true'}}}]}))
+    elif kind == 'crd':
+        count(p, 1)
+        if output == owned_query:
+            print('\n'.join(c for c in lines('gwcrds') if c in lines('crd-owned')))
+        elif output == 'name':
+            print('\n'.join('customresourcedefinition.apiextensions.k8s.io/' + c for c in lines('gwcrds')))
+        else:
+            fail('unsupported CRD output')
+    elif kind == 'configmap':
+        count(p, 2)
+        name = p[1]
+        if name.startswith('deepops-runai-'):
+            if (state / name).exists():
+                print('configmap/' + name)
+        elif name in ('coredns', 'nodelocaldns'):
+            if output == 'name':
+                print('configmap/' + name)
+            elif output == 'json':
+                core = (state / name).read_text() if (state / name).exists() else '.:53 {\n    forward . /etc/resolv.conf\n}\n'
+                print(json.dumps({'data': {'Corefile': core}}))
+            else:
+                fail('unsupported ConfigMap output')
+        else:
+            fail('unsupported ConfigMap')
+    elif kind == 'gateway':
+        count(p, 2)
+        if output != 'jsonpath={.status.addresses[0].value}':
+            fail('unsupported Gateway output')
+        addr = os.environ.get('FAKE_GW_ADDR', '192.0.2.50')
+        if (state / 'gateway').exists() and addr != 'none':
+            print(addr)
+    elif kind == 'service':
+        count(p, 2)
+        if output != 'jsonpath={.status.loadBalancer.ingress[0].ip}':
+            fail('unsupported service output')
+        addr = os.environ.get('FAKE_LB_IP', '192.0.2.60')
+        if addr != 'none':
+            print(addr)
+    elif kind in ('gateways.gateway.networking.k8s.io', 'httproutes.gateway.networking.k8s.io'):
+        count(p, 1)
+        if kind.startswith('gateways'):
+            if (state / 'gateway').exists():
+                print('gateway.gateway.networking.k8s.io/runai-gateway')
+            if (state / 'foreign-gateway').exists():
+                print('gateway.gateway.networking.k8s.io/foreign')
+        elif (state / 'foreign-route').exists():
+            print('httproute.gateway.networking.k8s.io/foreign')
+    else:
+        fail('unsupported get resource: ' + kind)
+elif verb in ('annotate', 'label'):
+    changed, resources = False, []
+    for operand in p:
+        if '=' in operand:
+            changed = True
+        elif changed:
+            fail('all resources must be specified before annotation changes')
+        else:
+            resources.append(operand)
+    if not resources or not changed:
+        fail('resource and assignment required')
+    if verb == 'annotate':
+        names = [r.split('/', 1)[-1] for r in resources]
+        if not set(names) <= set(lines('gwcrds')):
+            fail('CRD not found')
+        save_lines('crd-owned', sorted(set(lines('crd-owned') + names)))
+    else:
+        count(resources, 2)
+        if 'Secret/' + ns + '/' + resources[1] not in manifests():
+            fail('secret not found')
+elif verb == 'create':
+    if opts.get('--dry-run') != 'client' or output != 'yaml':
+        fail('only dry-run manifest generation is supported')
+    if p[:1] == ['namespace']:
+        count(p, 2)
+        doc = {'apiVersion': 'v1', 'kind': 'Namespace', 'metadata': {'name': p[1]}}
+    elif p[:1] == ['secret']:
+        count(p, 3)
+        if p[1] == 'tls':
+            for key in ('--cert', '--key'):
+                if key not in opts or not Path(opts[key]).is_file() and opts[key] != '/dev/null':
+                    fail('missing TLS input')
+        elif p[1] == 'generic':
+            if not Path(opts.get('--from-file', '=').split('=', 1)[-1]).is_file():
+                fail('missing secret input')
+        else:
+            fail('unsupported secret type')
+        doc = {'apiVersion': 'v1', 'kind': 'Secret', 'metadata': {'name': p[2], 'namespace': ns}}
+    else:
+        fail('unsupported create')
+    print(json.dumps(doc))  # JSON is a YAML subset; no secret bytes in logs/state.
+elif verb == 'apply':
+    count(p, 0)
+    filename = opts.get('--filename', opts.get('-f'))
+    if filename and filename.startswith('https://'):
+        save_lines('gwcrds', ['gateways.gateway.networking.k8s.io', 'httproutes.gateway.networking.k8s.io'])
+        print('customresourcedefinition created')
+    elif filename == '-':
+        doc = json.load(sys.stdin)
+        store(doc)
+        if doc['kind'] == 'ConfigMap':
+            (state / doc['metadata']['name']).write_text('1')
+        elif doc['kind'] == 'Gateway':
+            (state / 'gateway').write_text('1')
+        elif doc['kind'] not in ('Namespace', 'Secret'):
+            fail('unsupported manifest kind')
+        print(doc['kind'].lower() + '/' + doc['metadata']['name'] + ' created')
+    else:
+        fail('unsupported apply filename')
+elif verb == 'delete':
+    count(p, 2)
+    kind, name = p
+    if kind == 'gateway':
+        (state / 'gateway').unlink(missing_ok=True)
+    elif kind == 'configmap' and name.startswith('deepops-runai-'):
+        (state / name).unlink(missing_ok=True)
+    elif kind == 'crd':
+        save_lines('gwcrds', [c for c in lines('gwcrds') if c != name])
+        save_lines('crd-owned', [c for c in lines('crd-owned') if c != name])
+    elif kind == 'secret':
+        db = manifests()
+        key = 'Secret/' + ns + '/' + name
+        if key not in db:
+            if '--ignore-not-found' in opts:
+                sys.exit(0)
+            fail('secret not found')
+        del db[key]
+        (state / 'manifests.json').write_text(json.dumps(db))
+    elif kind == 'namespace':
+        if not re.fullmatch(r'[a-z0-9]([-a-z0-9]*[a-z0-9])?', name):
+            fail('invalid namespace name: ' + name)
+        db = {k: v for k, v in manifests().items() if v['metadata'].get('namespace') != name}
+        (state / 'manifests.json').write_text(json.dumps(db))
+    else:
+        fail('unsupported delete')
+    print(kind + '/' + name + ' deleted')
+elif verb == 'patch':
+    count(p, 2)
+    if p[0] != 'configmap' or p[1] not in ('coredns', 'nodelocaldns') or opts.get('--type') != 'merge':
+        fail('unsupported patch')
+    (state / p[1]).write_text(json.loads(opts['--patch'])['data']['Corefile'])
+elif verb == 'rollout':
+    count(p, 2)
+    if p not in (['restart', 'deployment/coredns'], ['restart', 'daemonset/nodelocaldns']):
+        fail('unsupported rollout')
+elif verb == 'wait':
+    if not p or '--for' not in opts:
+        fail('wait needs a resource and condition')

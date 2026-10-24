@@ -11,7 +11,7 @@
 - name: Plan the Corefile change
   ansible.builtin.set_fact:
     runai_corefile_old: "{{ (runai_corefile_raw.stdout | from_json).data.Corefile }}"
-    runai_corefile_block: "    hosts {\n      {{ runai_platform_ingress_ip }} {{ runai_platform_domain }}\n      fallthrough\n    }  # deepops-runai\n"
+    runai_corefile_block: "    hosts {\n      {{ runai_exposure_address | default('') }} {{ runai_platform_domain }}\n      fallthrough\n    }  # deepops-runai\n"
   no_log: true
 
 - name: Compute the new Corefile

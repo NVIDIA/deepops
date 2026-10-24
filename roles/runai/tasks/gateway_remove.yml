@@ -1,0 +1,82 @@
+---
+# Discover owned resources even when absent is invoked with default exposure.
+- name: Discover Gateway resource types
+  ansible.builtin.command: "{{ runai_kubectl }} api-resources --verbs=list --output name"
+  register: runai_gw_types
+  changed_when: false
+  check_mode: false
+
+- name: Remove the Gateway
+  ansible.builtin.command: "{{ runai_kubectl }} --namespace {{ runai_cluster_namespace }} delete gateway {{ runai_gateway_name }} --ignore-not-found"
+  register: runai_rm_gw
+  changed_when: "'deleted' in runai_rm_gw.stdout"
+  when: "'gateways.gateway.networking.k8s.io' in runai_gw_types.stdout_lines"
+
+# Check every route/policy as well as Gateways BEFORE removing either controller
+# release. API discovery and resource queries must fail closed on access errors.
+- name: Look for remaining Gateway API and KGateway users
+  ansible.builtin.command: "{{ runai_kubectl }} get {{ item }} --all-namespaces --output name"
+  loop: "{{ runai_gw_types.stdout_lines | select('search', '(\\.gateway\\.networking\\.k8s\\.io|\\.kgateway\\.dev)$') | reject('equalto', 'gatewayclasses.gateway.networking.k8s.io') | list }}"
+  register: runai_gw_users
+  changed_when: false
+  check_mode: false
+
+- name: Note whether Gateway resources are unused
+  ansible.builtin.set_fact:
+    runai_gw_unused: "{{ runai_gw_users.results | map(attribute='stdout') | select | list | length == 0 }}"
+
+- name: Read controller release ownership records
+  ansible.builtin.command: "{{ runai_kubectl }} --namespace {{ runai_gateway_controller_namespace }} get configmap deepops-runai-{{ item }} --ignore-not-found --output name"
+  loop: [kgateway, kgateway-crds]
+  register: runai_gw_owners
+  changed_when: false
+  check_mode: false
+
+- name: Remove unused controller releases owned by this role
+  ansible.builtin.command: "{{ runai_helm }} uninstall {{ item.item }} --namespace {{ runai_gateway_controller_namespace }} --wait"
+  loop: "{{ runai_gw_owners.results }}"
+  register: runai_rm_kgw
+  changed_when: runai_rm_kgw.rc == 0
+  failed_when: runai_rm_kgw.rc != 0 and 'not found' not in runai_rm_kgw.stderr
+  when:
+    - runai_gw_unused | bool
+    - item.stdout | length > 0
+
+# KGateway creates this Secret at runtime, outside the Helm release. Remove it
+# only after the owned controller is stopped, before dropping its ownership record.
+- name: Remove the owned controller runtime HMAC Secret
+  ansible.builtin.command: "{{ runai_kubectl }} --namespace {{ runai_gateway_controller_namespace }} delete secret oauth2-hmac-secret --ignore-not-found"
+  register: runai_rm_gw_hmac
+  changed_when: "'deleted' in runai_rm_gw_hmac.stdout"
+  when:
+    - runai_gw_unused | bool
+    - runai_gw_owners.results | selectattr('item', 'equalto', 'kgateway') | map(attribute='stdout') | select | list | length > 0
+
+- name: Remove ownership records after release cleanup
+  ansible.builtin.command: "{{ runai_kubectl }} --namespace {{ runai_gateway_controller_namespace }} delete configmap deepops-runai-{{ item.item }} --ignore-not-found"
+  loop: "{{ runai_gw_owners.results }}"
+  changed_when: true
+  when:
+    - runai_gw_unused | bool
+    - item.stdout | length > 0
+
+- name: List the Gateway API CRDs this role installed
+  ansible.builtin.command:
+    argv:
+      - "{{ runai_kubectl }}"
+      - get
+      - crd
+      - --output
+      - 'jsonpath={range .items[?(@.metadata.annotations.deepops\.nvidia\.com/runai-installed=="true")]}{.metadata.name}{"\n"}{end}'
+  register: runai_gw_crds_owned
+  changed_when: false
+  check_mode: false
+
+- name: Remove unused Gateway API CRDs this role installed
+  ansible.builtin.command: "{{ runai_kubectl }} delete crd {{ item }} --ignore-not-found"
+  loop: "{{ runai_gw_crds_owned.stdout_lines }}"
+  changed_when: true
+  when: runai_gw_unused | bool
+
+# Never delete the controller namespace: it can contain unrelated releases,
+# Secrets and workloads, even when no Gateway remains.

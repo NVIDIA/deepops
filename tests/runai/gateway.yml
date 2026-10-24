@@ -1,0 +1,32 @@
+---
+# Offline harness for the exposure tasks: runs them against fake helm/kubectl.
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    runai_helm: "{{ lookup('env', 'RUNAI_TEST_BIN') }}/helm"
+    runai_kubectl: "{{ lookup('env', 'RUNAI_TEST_BIN') }}/kubectl"
+    runai_work_dir: "{{ lookup('env', 'FAKE_STATE') }}/work"
+    ansible_become: false   # sudo would drop the fake-state variable
+    runai_mode: platform
+    runai_platform_domain: runai.lab.test
+    runai_tls_cert: /dev/null
+    runai_tls_key: /dev/null
+    runai_platform_address_timeout: 10
+    ansible_default_ipv4: {address: 192.0.2.10}
+  tasks:
+    - name: Install exposure (gateway)
+      ansible.builtin.include_role: {name: runai, tasks_from: "{{ item }}", public: true}
+      loop: [gateway_controller, gateway, platform_address]
+      when: runai_platform_exposure == 'gateway' and runai_test_action | default('install') == 'install'
+    - name: Address only (ingress)
+      ansible.builtin.include_role: {name: runai, tasks_from: platform_address, public: true}
+      when: runai_platform_exposure == 'ingress' and runai_test_action | default('install') == 'install'
+    - name: Remove the Gateway pieces
+      ansible.builtin.include_role: {name: runai, tasks_from: gateway_remove, public: true}
+      when: runai_test_action | default('install') == 'remove'
+    - name: Show address and values
+      ansible.builtin.copy:
+        dest: "{{ lookup('env', 'FAKE_STATE') }}/result.json"
+        content: "{{ {'address': runai_exposure_address | default(''), 'cp': runai_cp_values, 'cluster': runai_cluster_base_values, 'gateway': runai_gateway_manifest} | to_json }}"
+      when: runai_test_action | default('install') == 'install'

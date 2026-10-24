@@ -9,11 +9,14 @@
       - runai_platform_admin_user is match('^[^@\s]+@[^@\s]+$')
       - runai_platform_admin_password | runai_password_ok
       - (runai_platform_tls_cert_file | length > 0) == (runai_platform_tls_key_file | length > 0)
+      - runai_platform_exposure in ['ingress', 'gateway']
+      - runai_gateway_workload_routing in ['path', 'host']
     fail_msg: >-
       Platform mode needs runai_platform_domain (a DNS name), runai_platform_admin_user (an email
       address) and runai_platform_admin_password (8+ characters with a digit, lower case, upper
       case and one of -!@#$%^&*()_+=). Keep it in an Ansible vault.
-      A certificate file needs its key file too.
+      A certificate file needs its key file too. runai_platform_exposure must be ingress or gateway
+      and runai_gateway_workload_routing must be path or host.
     quiet: true
   no_log: true
 
@@ -30,10 +33,21 @@
       repo: "{{ runai_platform_ingress_repo }}"
       version: "{{ runai_platform_ingress_chart_version }}"
       helm_values: "{{ runai_platform_ingress_values }}"
-  when: runai_platform_install_ingress | bool
+  when: runai_haproxy_managed | bool
+
+- name: Install the Gateway API CRDs and the Gateway controller
+  ansible.builtin.include_tasks: gateway_controller.yml
+  when: runai_gateway_enabled | bool
 
 - name: Prepare the domain and certificates
   ansible.builtin.include_tasks: platform_tls.yml
+
+- name: Create the Gateway
+  ansible.builtin.include_tasks: gateway.yml
+  when: runai_gateway_enabled | bool
+
+- name: Find the address the domain points at
+  ansible.builtin.include_tasks: platform_address.yml
 
 - name: Make the domain resolve
   ansible.builtin.include_tasks: platform_dns.yml
