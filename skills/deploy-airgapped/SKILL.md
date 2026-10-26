@@ -157,7 +157,7 @@ reference host; distribution repositories remain a separate prerequisite.
    while read -r url name; do
      sudo curl -fL "${url}" -o "/var/repos/downloads/${name}"
    done <<'EOF'
-   https://download.schedmd.com/slurm/slurm-26.05.1.tar.bz2 slurm-26.05.1.tar.bz2
+   https://download.schedmd.com/slurm/slurm-26.05.5.tar.bz2 slurm-26.05.5.tar.bz2
    https://download.open-mpi.org/release/hwloc/v2.5/hwloc-2.5.0.tar.gz hwloc-2.5.0.tar.gz
    https://github.com/openpmix/openpmix/releases/download/v3.2.3/pmix-3.2.3.tar.bz2 pmix-3.2.3.tar.bz2
    https://github.com/mej/nhc/releases/download/1.4.3/lbnl-nhc-1.4.3.tar.xz lbnl-nhc-1.4.3.tar.xz
@@ -165,7 +165,7 @@ reference host; distribution repositories remain a separate prerequisite.
    https://developer.download.nvidia.com/hpc-sdk/23.7/nvhpc_2023_237_Linux_x86_64_cuda_12.2.tar.gz nvhpc_2023_237_Linux_x86_64_cuda_12.2.tar.gz
    https://get.helm.sh/helm-v3.17.1-linux-amd64.tar.gz helm-v3.17.1-linux-amd64.tar.gz
    EOF
-   for name in slurm-26.05.1.tar.bz2 hwloc-2.5.0.tar.gz \
+   for name in slurm-26.05.5.tar.bz2 hwloc-2.5.0.tar.gz \
      pmix-3.2.3.tar.bz2 lbnl-nhc-1.4.3.tar.xz pyxis-0.11.1.tar.gz \
      nvhpc_2023_237_Linux_x86_64_cuda_12.2.tar.gz \
      helm-v3.17.1-linux-amd64.tar.gz; do
@@ -217,7 +217,7 @@ reference host; distribution repositories remain a separate prerequisite.
    nonempty. Use these exact overrides with the published paths:
 
    ```yaml
-   slurm_src_url: "http://package-server/downloads/slurm-26.05.1.tar.bz2"
+   slurm_src_url: "http://package-server/downloads/slurm-26.05.5.tar.bz2"
    hwloc_src_url: "http://package-server/downloads/hwloc-2.5.0.tar.gz"
    pmix_src_url: "http://package-server/downloads/pmix-3.2.3.tar.bz2"
    nhc_src_url: "http://package-server/downloads/lbnl-nhc-1.4.3.tar.xz"
@@ -255,7 +255,7 @@ reference host; distribution repositories remain a separate prerequisite.
 
 2. Mirror the Helm repositories/charts required by the selected Kubernetes
    profile. The default tree references the stable Helm repository, GPU
-   Operator `v26.3.3`, and, when enabled, NFS subdir external provisioner
+   Operator `v26.7.2`, and, when enabled, NFS subdir external provisioner
    `4.0.18`. Set `gpu_operator_helm_repo` and
    `k8s_nfs_client_helm_repo` to internal chart repositories.
 
@@ -265,7 +265,7 @@ reference host; distribution repositories remain a separate prerequisite.
    ```bash
    mkdir -p /tmp/charts
    helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
-   helm pull nvidia/gpu-operator --version v26.3.3 --destination /tmp/charts
+   helm pull nvidia/gpu-operator --version v26.7.2 --destination /tmp/charts
    helm repo add nfs-subdir-external-provisioner \
      https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
    helm pull nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
@@ -310,7 +310,7 @@ reference host; distribution repositories remain a separate prerequisite.
    NO_HTTP_SERVER=1 ./manage-offline-files.sh
 
    helm template nvidia-gpu-operator \
-     /tmp/charts/gpu-operator-v26.3.3.tgz \
+     /tmp/charts/gpu-operator-v26.7.2.tgz \
      --namespace gpu-operator \
      --set driver.version=580.126.20 \
      --set mig.strategy=mixed \
@@ -391,8 +391,8 @@ reference host; distribution repositories remain a separate prerequisite.
    docker pull nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04
    docker save -o /tmp/images/nvidia-cuda-12.4.1-base-ubuntu22.04.tar \
      nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04
-   docker pull registry:3.1.1
-   docker save -o /tmp/images/registry-3.1.1.tar registry:3.1.1
+   docker pull registry:3.1.2
+   docker save -o /tmp/images/registry-3.1.2.tar registry:3.1.2
    ```
 
    When Slurm monitoring stays enabled, also mirror the images selected by
@@ -405,14 +405,14 @@ reference host; distribution repositories remain a separate prerequisite.
    prebuilt image offline:
 
    ```bash
-   for image in prom/prometheus:v3.13.0 grafana/grafana:13.1.0 \
-     prom/alertmanager:v0.33.0 quay.io/prometheus/node-exporter:v1.11.1 \
+   for image in prom/prometheus:v3.15.0 grafana/grafana:13.2.4 \
+     prom/alertmanager:v0.34.1 quay.io/prometheus/node-exporter:v1.12.1 \
      nvcr.io/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless; do
      docker pull "${image}"
    done
    docker save -o /tmp/images/slurm-monitoring.tar \
-     prom/prometheus:v3.13.0 grafana/grafana:13.1.0 \
-     prom/alertmanager:v0.33.0 quay.io/prometheus/node-exporter:v1.11.1 \
+     prom/prometheus:v3.15.0 grafana/grafana:13.2.4 \
+     prom/alertmanager:v0.34.1 quay.io/prometheus/node-exporter:v1.12.1 \
      nvcr.io/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless
    docker build -t deepops/prometheus-slurm-exporter:2.0.0 \
      roles/prometheus-slurm-exporter/files/docker
@@ -571,10 +571,10 @@ sha256sum -c SHA256SUMS
    separately and deliberately configured for the insecure endpoint:
 
    ```bash
-   docker load -i /tmp/images/registry-3.1.1.tar
+   docker load -i /tmp/images/registry-3.1.2.tar
    docker volume create registry-images
    docker run -d -p 5000:5000 --restart=always --name registry \
-     -v registry-images:/var/lib/registry registry:3.1.1
+     -v registry-images:/var/lib/registry registry:3.1.2
    ```
 
 4. Import, retag, and push every archived image on that registry host. Preserve
@@ -597,10 +597,10 @@ sha256sum -c SHA256SUMS
      docker tag "${source}" "${target}"
      docker push "${target}"
    done <<'EOF'
-   prom/prometheus:v3.13.0 127.0.0.1:5000/prom/prometheus:v3.13.0
-   grafana/grafana:13.1.0 127.0.0.1:5000/grafana/grafana:13.1.0
-   prom/alertmanager:v0.33.0 127.0.0.1:5000/prom/alertmanager:v0.33.0
-   quay.io/prometheus/node-exporter:v1.11.1 127.0.0.1:5000/prometheus/node-exporter:v1.11.1
+   prom/prometheus:v3.15.0 127.0.0.1:5000/prom/prometheus:v3.15.0
+   grafana/grafana:13.2.4 127.0.0.1:5000/grafana/grafana:13.2.4
+   prom/alertmanager:v0.34.1 127.0.0.1:5000/prom/alertmanager:v0.34.1
+   quay.io/prometheus/node-exporter:v1.12.1 127.0.0.1:5000/prometheus/node-exporter:v1.12.1
    nvcr.io/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless 127.0.0.1:5000/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless
    EOF
    ```
@@ -776,10 +776,10 @@ slurm_enable_container_registry: false
 standalone_container_registry_cache_enable: false
 slurm_exporter_build_image: false
 slurm_exporter_container: "registry-host:5000/deepops/prometheus-slurm-exporter:2.0.0"
-prometheus_container: "registry-host:5000/prom/prometheus:v3.13.0"
-grafana_container: "registry-host:5000/grafana/grafana:13.1.0"
-alertmanager_container: "registry-host:5000/prom/alertmanager:v0.33.0"
-node_exporter_container: "registry-host:5000/prometheus/node-exporter:v1.11.1"
+prometheus_container: "registry-host:5000/prom/prometheus:v3.15.0"
+grafana_container: "registry-host:5000/grafana/grafana:13.2.4"
+alertmanager_container: "registry-host:5000/prom/alertmanager:v0.34.1"
+node_exporter_container: "registry-host:5000/prometheus/node-exporter:v1.12.1"
 nvidia_dcgm_container: "registry-host:5000/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless"
 ```
 
