@@ -71,6 +71,17 @@ with an explicit cache, repository, commit and required-file list. Require exit
 model coverage. See `skills/manage-model-cache/` and
 `docs/model-workflows/shared-cache.md` for commands and failure branches.
 
+## Golden path: single-node model serving
+
+Follow `docs/model-workflows/vllm-quickstart.md` inside an approved, isolated GPU
+allocation. Use the pinned local snapshot, one GPU, and a loopback-only endpoint.
+After startup, run `scripts/validation/validate_vllm.py --json` with the expected
+served model name and the cache validator's explicit inputs. This submits one
+small completion request; it does not start a server or download models. Require
+exit `0` and `ok: true`, but do not treat this as revision attestation, GPU-use
+proof, or a performance result. Never run it against someone else's service
+without permission. No live testing is implied by offline fixtures.
+
 ## Rules for operating this repository
 
 1. **Validate, don't assume.** Run the doctor before deploying and the
