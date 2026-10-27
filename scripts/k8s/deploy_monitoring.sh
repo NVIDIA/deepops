@@ -103,29 +103,68 @@ function delete_monitoring() {
     kubectl delete ns monitoring
 }
 
+# Chart 92.14.0 uses registry/repository/tag/sha image objects for all
+# five components. Keep omitted suffixes from the chart/site values.
+function add_monitoring_image_override() {
+    local key="$1" reference="$2" image digest="" tag="" registry repository
+    [ -z "${reference}" ] && return 0
+    if [[ ! "${reference}" =~ ^[a-zA-Z0-9.-]+(:[0-9]+)?/[a-z0-9._/-]+(:[a-zA-Z0-9_][a-zA-Z0-9_.-]*)?(@sha256:[a-fA-F0-9]{64})?$ ]]; then
+        echo "ERROR: Invalid ${key} mirror; use registry/path[:tag][@sha256:digest]" >&2
+        return 1
+    fi
+    image="${reference%%@*}"
+    if [[ "${reference}" == *@* ]]; then
+        digest="${reference##*@sha256:}"
+    fi
+    registry="${image%%/*}"
+    repository="${image#*/}"
+    if [[ "${repository}" == *:* ]]; then
+        tag="${repository##*:}"
+        repository="${repository%:*}"
+    fi
+    if [[ "${repository}" == */ || "${repository}" == *//* ]]; then
+        echo "ERROR: Invalid ${key} mirror repository path" >&2
+        return 1
+    fi
+    helm_monitoring_image_args+=(--set-string "${key}.registry=${registry}"
+                                --set-string "${key}.repository=${repository}")
+    [ -z "${tag}" ] || helm_monitoring_image_args+=(--set-string "${key}.tag=${tag}")
+    [ -z "${digest}" ] || helm_monitoring_image_args+=(--set-string "${key}.sha=${digest}")
+    return 0
+}
+
 function setup_prom_monitoring() {
     # Add Helm prometheus-community repo if it doesn't exist
     if ! helm repo list | grep prometheus-community >/dev/null 2>&1 ; then
         helm repo add prometheus-community "${HELM_CHARTS_REPO_PROMETHEUS}"
     fi
 
-    # Configure air-gapped deployment
-    helm_prom_oper_args=""
-    if [ "${PROMETHEUS_OPER_REPO}" ]; then
-        helm_prom_oper_args="${helm_prom_oper_args} --set-string image.repository="${PROMETHEUS_OPER_REPO}""
+    # Configure component mirrors without shell word splitting or legacy keys.
+    local -a helm_monitoring_image_args=()
+    add_monitoring_image_override prometheusOperator.image "${PROMETHEUS_OPER_REPO}" || exit 1
+    add_monitoring_image_override alertmanager.alertmanagerSpec.image "${ALERTMANAGER_REPO}" || exit 1
+    add_monitoring_image_override prometheus.prometheusSpec.image "${PROMETHEUS_REPO}" || exit 1
+    add_monitoring_image_override grafana.image "${GRAFANA_REPO}" || exit 1
+    add_monitoring_image_override grafana.sidecar.image "${GRAFANA_WATCHER_REPO}" || exit 1
+
+    # --all includes failed/pending/uninstalled releases. Lookup errors must not
+    # be mistaken for absence. Healthy releases still skip; all other existing
+    # releases require the reviewed manual exact-package CRD-first procedure.
+    local releases release_status
+    if ! releases=$(helm list -n monitoring --all --filter '^kube-prometheus-stack$' -q); then
+        echo "ERROR: Cannot determine whether the monitoring release exists" >&2
+        exit 1
     fi
-    helm_kube_prom_args=""
-    if [ "${ALERTMANAGER_REPO}" ]; then
-        helm_kube_prom_args="${helm_kube_prom_args} --set-string alertmanager.image.repository="${ALERTMANAGER_REPO}""
-    fi
-    if [ "${PROMETHEUS_REPO}" ]; then
-        helm_kube_prom_args="${helm_kube_prom_args} --set-string prometheus.image.repository="${PROMETHEUS_REPO}""
-    fi
-    if [ "${GRAFANA_REPO}" ]; then
-        helm_kube_prom_args="${helm_kube_prom_args} --set-string grafana.image.repository="${GRAFANA_REPO}""
-    fi
-    if [ "${GRAFANA_WATCHER_REPO}" ]; then
-        helm_kube_prom_args="${helm_kube_prom_args} --set-string grafana.grafanaWatcher.repository="${GRAFANA_WATCHER_REPO}""
+    if [ -n "${releases}" ]; then
+        if ! release_status=$(helm status -n monitoring kube-prometheus-stack -o json); then
+            echo "ERROR: Cannot determine the existing monitoring release state" >&2
+            exit 1
+        fi
+        if ! echo "${release_status}" | grep -Eq '"status": *"deployed"'; then
+            echo "ERROR: Existing monitoring release requires manual CRD-first recovery before any workload upgrade." >&2
+            echo "Follow docs/k8s-cluster/monitoring-upgrade-92.md using the exact requested chart ${HELM_PROMETHEUS_CHART_VERSION}; do not delete CRDs." >&2
+            exit 1
+        fi
     fi
 
     # Deploy the ingress controller with a set name
@@ -146,9 +185,10 @@ function setup_prom_monitoring() {
     if ! kubectl get ns monitoring >/dev/null 2>&1 ; then
         kubectl create ns monitoring
     fi
-    # Install when the release is missing or not healthy; a failed release is retried.
-    if ! helm status -n monitoring kube-prometheus-stack -o json 2>/dev/null | grep -Eq '"status": *"deployed"' ; then
-        if ! helm upgrade --install \
+    # Only install missing releases. Plain install also fails safely if another
+    # process creates the release after our lookup; never race into an upgrade.
+    if [ -z "${releases}" ]; then
+        if ! helm install \
             kube-prometheus-stack \
             prometheus-community/kube-prometheus-stack \
             --version "${HELM_PROMETHEUS_CHART_VERSION}" \
@@ -158,9 +198,8 @@ function setup_prom_monitoring() {
             --set prometheus.ingress.hosts[0]="prometheus-${ingress_ip_string}" \
             --set grafana.ingress.hosts[0]="grafana-${ingress_ip_string}" \
 	    --timeout 1200s \
-            ${helm_prom_oper_args} \
-            ${helm_kube_prom_args} ; then
-            echo "ERROR: helm upgrade --install of kube-prometheus-stack failed" >&2
+            "${helm_monitoring_image_args[@]}" ; then
+            echo "ERROR: helm install of kube-prometheus-stack failed" >&2
             exit 1
         fi
     fi

@@ -112,6 +112,35 @@ registry/path in `repository` while the default `registry` is still set.
 Inspect tags/digests and auxiliary images too; retaining a stale unused key is
 not proof of an air-gapped image override.
 
+For fresh installs with chart 92.14.0 the installer maps these environment
+variables to the effective image objects:
+
+| Environment variable | Chart image object |
+| --- | --- |
+| `PROMETHEUS_OPER_REPO` | `prometheusOperator.image` |
+| `PROMETHEUS_REPO` | `prometheus.prometheusSpec.image` |
+| `ALERTMANAGER_REPO` | `alertmanager.alertmanagerSpec.image` |
+| `GRAFANA_REPO` | `grafana.image` |
+| `GRAFANA_WATCHER_REPO` | `grafana.sidecar.image` |
+
+Use `registry/path[:tag][@sha256:digest]`, for example
+`mirror.example:5443/monitoring/prometheus`. Registry ports and nested repository
+paths are retained. The installer splits registry, repository, optional tag and
+optional SHA-256 digest into separate chart fields; omitted tag/digest fields
+retain the chart or site values. A digest-only reference therefore retains the
+selected tag as well. Schemes, empty paths and Helm comma-separated assignments
+are rejected. These five variables do **not** mirror auxiliary images (config
+reloader, admission webhook, exporters, Grafana init containers, etc.); configure
+and render those separately before an air-gapped install. Upstream
+`global.imageRegistry` (including `grafana.global.imageRegistry`) takes precedence
+over component registries: leave it unset when using component mirror variables.
+Do not combine conflicting global and per-component overrides.
+
+`HELM_PROMETHEUS_CHART_VERSION` still selects an explicit chart version, but
+these image mappings and the shipped rotating-token values are render-verified
+for **92.14.0 only**. Other versions require a reviewed site values file and an
+independent exact-version render; version selection is not a compatibility claim.
+
 ## Update CRDs first, then Helm
 
 Ordinary Helm upgrades do not upgrade CRDs automatically. Use the CRDs bundled
@@ -138,8 +167,19 @@ For a deliberately nonpersistent installation substitute its reviewed
 Resolve server-side field conflicts deliberately; do not blindly add
 `--force-conflicts`. Do not enable `crds.upgradeJob.enabled` as well as manually
 applying CRDs: that alternative introduces a privileged CRD-upgrade job needing
-its own review. `scripts/k8s/deploy_monitoring.sh` installs missing/failed releases
-but **skips healthy deployed releases**, so use the explicit upgrade above.
+its own review. `scripts/k8s/deploy_monitoring.sh` installs **missing releases
+only** and still **skips healthy deployed releases**. An existing failed,
+pending, uninstalled or otherwise unhealthy release fails closed **before any
+workload install/upgrade** and directs you here. Release lookup errors also stop
+the installer rather than assuming the release is missing. Retry an unhealthy
+88.6.5 release using the same reviewed CRD-first sequence above: pull the exact
+requested chart package, render its bundled CRDs, inspect and dry-run them,
+apply and wait for Established, then upgrade workloads using that same package.
+Stop on **any** pull/render/dry-run/apply/wait failure; do not run the workload
+upgrade until all prior commands succeed. For a nondefault requested chart
+version substitute that exact version in both package commands and review its
+CRD/schema requirements. There is no installer bypass flag or automatic
+privileged CRD-upgrade job. Use the explicit procedure for healthy upgrades too.
 
 ## Required verification
 
