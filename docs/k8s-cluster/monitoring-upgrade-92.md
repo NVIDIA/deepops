@@ -147,15 +147,52 @@ Ordinary Helm upgrades do not upgrade CRDs automatically. Use the CRDs bundled
 with the **exact pinned chart** (including its CRD subchart), not `main` or the
 v0.94.0 links from the 91.x notes:
 
+Run these blocks as Bash scripts so `set -e` stops on a failed command.
+
 ```bash
+set -e
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update prometheus-community
 helm pull prometheus-community/kube-prometheus-stack --version 92.14.0 --destination monitoring-upgrade-backup
 helm show crds monitoring-upgrade-backup/kube-prometheus-stack-92.14.0.tgz > monitoring-upgrade-backup/target-crds.yaml
 # Inspect: expected 10 monitoring.coreos.com CRDs, from operator v0.94.2.
-kubectl apply --server-side --dry-run=server -f monitoring-upgrade-backup/target-crds.yaml
-kubectl apply --server-side -f monitoring-upgrade-backup/target-crds.yaml
+```
+
+Start with `crd_apply_flags=()` in the script below. CRDs installed by Helm can
+conflict with server-side apply because Helm owns these fields:
+
+- `.metadata.annotations.controller-gen.kubebuilder.io/version`
+- `.metadata.annotations.operator.prometheus.io/version`
+- `.spec.versions`
+
+If the dry-run fails, stop and review the full conflict output against the
+exact target CRDs. **Only if every conflict is with `helm` and limited to the
+three fields above**, and their target changes are reviewed, change the line to
+`crd_apply_flags=(--force-conflicts)` and rerun the script. This reruns the
+server-side **dry-run first**, with the same flags as the real apply. Any other
+field, owner or error requires separate investigation; do not force it through.
+
+Established alone does not prove the CRD schemas were updated. The script must
+confirm **all 10** expected CRDs have `operator.prometheus.io/version` equal to
+**0.94.2** before running Helm; a missing CRD, missing annotation, different
+version or failed lookup stops the upgrade.
+
+```bash
+set -e
+crd_apply_flags=() # Use (--force-conflicts) only after the review above.
+kubectl apply --server-side "${crd_apply_flags[@]}" --dry-run=server -f monitoring-upgrade-backup/target-crds.yaml
+kubectl apply --server-side "${crd_apply_flags[@]}" -f monitoring-upgrade-backup/target-crds.yaml
 kubectl wait --for=condition=Established --timeout=120s -f monitoring-upgrade-backup/target-crds.yaml
+for crd in alertmanagerconfigs alertmanagers podmonitors probes prometheusagents \
+  prometheuses prometheusrules scrapeconfigs servicemonitors thanosrulers; do
+  version=$(kubectl get crd "${crd}.monitoring.coreos.com" \
+    -o jsonpath='{.metadata.annotations.operator\.prometheus\.io/version}')
+  printf '%s: %s\n' "${crd}.monitoring.coreos.com" "$version"
+  if [ "$version" != "0.94.2" ]; then
+    echo "ERROR: ${crd}.monitoring.coreos.com must be at 0.94.2 before Helm upgrade." >&2
+    exit 1
+  fi
+done
 helm upgrade kube-prometheus-stack monitoring-upgrade-backup/kube-prometheus-stack-92.14.0.tgz \
   --namespace monitoring \
   --values monitoring-upgrade-backup/values.yaml \
@@ -164,8 +201,8 @@ helm upgrade kube-prometheus-stack monitoring-upgrade-backup/kube-prometheus-sta
 
 For a deliberately nonpersistent installation substitute its reviewed
 `monitoring-no-persist.yml`; do not switch an existing persistent release to it.
-Resolve server-side field conflicts deliberately; do not blindly add
-`--force-conflicts`. Do not enable `crds.upgradeJob.enabled` as well as manually
+Use `--force-conflicts` only under the reviewed Helm-owned-field condition
+above. Do not enable `crds.upgradeJob.enabled` as well as manually
 applying CRDs: that alternative introduces a privileged CRD-upgrade job needing
 its own review. `scripts/k8s/deploy_monitoring.sh` installs **missing releases
 only** and still **skips healthy deployed releases**. An existing failed,
@@ -174,19 +211,22 @@ workload install/upgrade** and directs you here. Release lookup errors also stop
 the installer rather than assuming the release is missing. Retry an unhealthy
 88.6.5 release using the same reviewed CRD-first sequence above: pull the exact
 requested chart package, render its bundled CRDs, inspect and dry-run them,
-apply and wait for Established, then upgrade workloads using that same package.
-Stop on **any** pull/render/dry-run/apply/wait failure; do not run the workload
+apply, wait for Established and verify all 10 CRD version annotations, then
+upgrade workloads using that same package. Stop on **any**
+pull/render/dry-run/apply/wait/version-check failure; do not run the workload
 upgrade until all prior commands succeed. For a nondefault requested chart
 version substitute that exact version in both package commands and review its
-CRD/schema requirements. There is no installer bypass flag or automatic
+CRD/schema requirements and expected operator version before adjusting the
+version check. There is no installer bypass flag or automatic
 privileged CRD-upgrade job. Use the explicit procedure for healthy upgrades too.
 
 ## Required verification
 
 - Helm reports version 92.14.0 and state `deployed`; operator and workloads roll
   out successfully without RBAC denials or CRD/schema errors.
-- All 10 CRDs are Established; custom monitoring objects remain present and
-  reconciliation succeeds. Record CRD versions and operator image, not secret data.
+- All 10 CRDs are Established and show `operator.prometheus.io/version: 0.94.2`;
+  custom monitoring objects remain present and reconciliation succeeds. Record
+  CRD versions and operator image, not secret data.
 - No new `kubernetes.io/service-account-token` Secret exists for Prometheus.
   Rendered Prometheus has the rotating-token scrape class, and each enabled
   control-plane ServiceMonitor selects it. Inspect generated scrape configuration
