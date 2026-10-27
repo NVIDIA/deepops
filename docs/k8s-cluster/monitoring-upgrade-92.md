@@ -89,6 +89,28 @@ keys listed in upstream's 90.x notes. Copy the rotating-token settings above int
 **both** local values files if used. Do not overwrite site settings with examples
 or blindly use `--reuse-values`: Helm can preserve removed keys and old defaults.
 Keep ingress addresses, persistence, resource sizing and dashboard settings.
+The installer injects the three `*.ingress.hosts` lists and optional image
+repository overrides via `--set`; these live in the saved Helm user values,
+not necessarily in `config/helm/monitoring.yml`. Audit and migrate
+`monitoring-upgrade-backup/values.yaml` for the target chart, removing obsolete
+keys and translating any changed image keys. The upgrade below loads these
+reviewed saved values **first**, then the reviewed site file **second** so new
+rotating-token settings win. Confirm the resulting ingress hosts and image
+repositories with a private `helm template` render before applying; do not
+attach rendered Secrets or values. This is an explicit values merge, not
+`--reuse-values` (which also retains old chart defaults).
+
+In particular, legacy installer overrides such as `image.repository`,
+`prometheus.image.repository`, `alertmanager.image.repository`, and
+`grafana.grafanaWatcher.repository` are not the target chart's effective keys.
+Translate operator/Prometheus/Alertmanager mirrors to
+`prometheusOperator.image`, `prometheus.prometheusSpec.image`, and
+`alertmanager.alertmanagerSpec.image` (`registry` plus repository path), and
+Grafana watcher mirrors to `grafana.sidecar.image`. Grafana's main image uses
+`grafana.image.registry` plus `grafana.image.repository`; do not leave a full
+registry/path in `repository` while the default `registry` is still set.
+Inspect tags/digests and auxiliary images too; retaining a stale unused key is
+not proof of an air-gapped image override.
 
 ## Update CRDs first, then Helm
 
@@ -106,7 +128,9 @@ kubectl apply --server-side --dry-run=server -f monitoring-upgrade-backup/target
 kubectl apply --server-side -f monitoring-upgrade-backup/target-crds.yaml
 kubectl wait --for=condition=Established --timeout=120s -f monitoring-upgrade-backup/target-crds.yaml
 helm upgrade kube-prometheus-stack monitoring-upgrade-backup/kube-prometheus-stack-92.14.0.tgz \
-  --namespace monitoring --values config/helm/monitoring.yml --wait --timeout 1200s
+  --namespace monitoring \
+  --values monitoring-upgrade-backup/values.yaml \
+  --values config/helm/monitoring.yml --wait --timeout 1200s
 ```
 
 For a deliberately nonpersistent installation substitute its reviewed

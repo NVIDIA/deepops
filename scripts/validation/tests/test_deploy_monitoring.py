@@ -27,6 +27,7 @@ esac
 exit 0
 """
 KUBECTL = r"""#!/bin/bash
+echo "kubectl $*" >> "$STUB_LOG"
 [ "$1 $2" = "get storageclass" ] && echo "standard (default)"
 exit 0
 """
@@ -58,13 +59,26 @@ class TestDeployMonitoringExit(unittest.TestCase):
             f.write(text)
         os.chmod(path, os.stat(path).st_mode | stat.S_IXUSR)
 
-    def run_script(self, **env):
+    def run_script(self, args=(), **env):
         e = dict(os.environ, PATH=self.bin + ":" + os.environ["PATH"],
                  STUB_LOG=self.log, STUB_STATE=self.state, **env)
-        r = subprocess.run(["bash", os.path.join(self.tmp, "scripts", "k8s", "deploy_monitoring.sh")],
+        r = subprocess.run(["bash", os.path.join(self.tmp, "scripts", "k8s", "deploy_monitoring.sh"), *args],
                            cwd=self.tmp, env=e, capture_output=True, text=True, timeout=60)
-        calls = open(self.log).read() if os.path.exists(self.log) else ""
+        calls = ""
+        if os.path.exists(self.log):
+            with open(self.log) as log:
+                calls = log.read()
         return r, calls
+
+    def test_reset_deletes_all_monitoring_crds(self):
+        r, calls = self.run_script(args=("-d",))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        deleted = {line.removeprefix("kubectl delete crd ")
+                   for line in calls.splitlines() if line.startswith("kubectl delete crd ")}
+        self.assertEqual(deleted, {name + ".monitoring.coreos.com" for name in (
+            "alertmanagerconfigs", "alertmanagers", "podmonitors", "probes",
+            "prometheusagents", "prometheuses", "prometheusrules", "scrapeconfigs",
+            "servicemonitors", "thanosrulers")})
 
     def test_fresh_install_succeeds(self):
         r, calls = self.run_script(STATUS_AFTER="deployed")

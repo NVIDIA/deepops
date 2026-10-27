@@ -31,6 +31,10 @@ class TestMonitoringChart(unittest.TestCase):
                 self.assertFalse(any(d.get("type") == "kubernetes.io/service-account-token"
                                      for d in docs))
                 prom = next(d for d in docs if d["kind"] == "Prometheus")
+                self.assertIs(prom["spec"]["automountServiceAccountToken"], True)
+                sa = next(d for d in docs if d["kind"] == "ServiceAccount"
+                          and d["metadata"]["name"] == prom["spec"]["serviceAccountName"])
+                self.assertIs(sa["automountServiceAccountToken"], True)
                 classes = {c["name"]: c for c in prom["spec"]["scrapeClasses"]}
                 self.assertEqual(classes["kube-prometheus-stack-control-plane"]["authorization"], {
                     "type": "Bearer",
@@ -48,9 +52,20 @@ class TestMonitoringChart(unittest.TestCase):
                     self.assertEqual(monitor["spec"]["scrapeClass"], "kube-prometheus-stack-control-plane")
                     for endpoint in monitor["spec"]["endpoints"]:
                         self.assertNotIn("authorization", endpoint)
+                        if monitor["metadata"]["name"].endswith((
+                                "apiserver", "kubelet", "kube-controller-manager", "kube-scheduler")):
+                            self.assertEqual(endpoint["tlsConfig"]["ca"]["configMap"], {
+                                "name": "kube-root-ca.crt", "key": "ca.crt"})
                 operator = next(d for d in docs if d["kind"] == "ClusterRole"
                                 and d["metadata"]["name"] == "kube-prometheus-stack-operator")
                 self.assertTrue(all("*" not in rule["verbs"] for rule in operator["rules"]))
+                deployment = next(d for d in docs if d["kind"] == "Deployment"
+                                  and d["metadata"]["name"] == "kube-prometheus-stack-operator")
+                args = deployment["spec"]["template"]["spec"]["containers"][0]["args"]
+                selectors = [arg for arg in args if arg.startswith("--secret-field-selector=")]
+                self.assertTrue(selectors)
+                self.assertTrue(all("kubernetes.io/service-account-token" not in arg
+                                    for arg in selectors))
 
 
 if __name__ == "__main__":
