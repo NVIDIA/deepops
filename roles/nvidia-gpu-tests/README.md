@@ -9,7 +9,7 @@ Running this will perform the following:
 * Install the CUDA toolkit
 * Download and build cuda-samples
 * Run the Peer2Peer and MatrixMultiply tests
-* Run the DCGM diagnostics
+* Run the DCGM diagnostics (set `gpu_test_dcgm_fail_on_error: yes` to fail the play when `dcgmi diag` exits non-zero; by default failures are ignored)
 * Run a basic Tensorflow DL job
 
 
