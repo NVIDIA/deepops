@@ -3,6 +3,11 @@ prometheusOperator:
     node-role.kubernetes.io/control-plane: ""
 
 prometheus:
+  # Use the pod's rotating projected token, not a non-expiring token Secret.
+  serviceAccount:
+    createTokenSecret: false
+  controlPlaneScrapeClass:
+    enabled: true
   ingress:
     pathType: ImplementationSpecific
     enabled: true
