@@ -1,9 +1,9 @@
 # Upgrade monitoring from 88.6.5 to 92.14.0
 
-This change is for DeepOps 26.12, not 26.11. The target is
+This upgrade ships in DeepOps 26.11. The target is
 `kube-prometheus-stack` **92.14.0**, Prometheus Operator **v0.94.2**;
-the chart requires Kubernetes **1.25 or newer**. Fresh-install and live-upgrade
-validation are required before release; offline rendering alone is not proof.
+the chart requires Kubernetes **1.25 or newer**. Existing installs must follow
+the CRD-first steps below.
 
 ## Security and scheduling changes
 
