@@ -1,0 +1,104 @@
+# {{ ansible_managed | default('Managed by DeepOps') }}
+# Complete NVSentinel values for mode "{{ nvsentinel_mode }}". Always applied
+# without --reuse-values; every module is set explicitly so stepping down a
+# mode switches the higher modules off.
+{% set _modes = ['observe', 'cordon', 'drain', 'remediate'] %}
+{% set _lvl = _modes.index(nvsentinel_mode) %}
+{% set _db = _lvl >= 1 %}
+{% set _members = nvsentinel_db_members | default(1) | int %}
+{% set _gpu_nodes = nvsentinel_gpu_node_count | default(1) | int %}
+global:
+  dryRun: {{ nvsentinel_dry_run | default(false) | bool | lower }}
+{% if nvsentinel_priority_class | default('') %}
+  priorityClassName: {{ nvsentinel_priority_class | to_json }}
+  systemPriorityClassName: {{ nvsentinel_priority_class | to_json }}
+{% endif %}
+  gpuHealthMonitor:
+    enabled: true
+  syslogHealthMonitor:
+    enabled: true
+  labeler:
+    enabled: true
+  metadataCollector:
+    enabled: true
+  mongodbStore:
+    enabled: {{ _db | lower }}
+  faultQuarantine:
+    enabled: {{ (_lvl >= 1) | lower }}
+  nodeDrainer:
+    enabled: {{ (_lvl >= 2) | lower }}
+  faultRemediation:
+    enabled: {{ (_lvl >= 3) | lower }}
+  janitor:
+    enabled: {{ (_lvl >= 3) | lower }}
+  janitorProvider:
+    enabled: {{ (_lvl >= 3) | lower }}
+  lifecycleManager:
+    enabled: false
+
+labeler:
+  assumeDriverInstalled: {{ nvsentinel_assume_driver_installed | default(true) | bool | lower }}
+
+podMonitor:
+  enabled: {{ nvsentinel_pod_monitor | default(false) | bool | lower }}
+{% if _db %}
+
+mongodb-store:
+  useBitnami: false
+  usePerconaOperator: true
+  psmdb-operator:
+    disableTelemetry: true
+  psmdb-db:
+    unsafeFlags:
+      replsetSize: {{ (_members < 3) | lower }}
+    upgradeOptions:
+      apply: disabled
+    replsets:
+      rs0:
+        size: {{ _members }}
+{% if _members < 3 %}
+        replsetOverrides: null
+{% endif %}
+{% if nvsentinel_priority_class | default('') %}
+        priorityClass: {{ nvsentinel_priority_class | to_json }}
+{% endif %}
+        volumeSpec:
+          pvc:
+            storageClassName: {{ nvsentinel_storage_class | default('local-path') | to_json }}
+{% endif %}
+{% if _lvl >= 1 %}
+
+fault-quarantine:
+  circuitBreaker:
+    enabled: true
+{% if nvsentinel_breaker_percentage | default('') != '' %}
+    percentage: {{ nvsentinel_breaker_percentage | int }}
+{% elif _gpu_nodes < 10 %}
+    percentage: 100
+{% else %}
+    percentage: 50
+{% endif %}
+{% endif %}
+{% if _lvl >= 2 %}
+
+node-drainer:
+  userNamespaces:
+    - name: "*"
+      mode: AllowCompletion
+{% endif %}
+{% if _lvl >= 3 %}
+
+janitor-provider:
+  csp:
+    provider: generic
+{% endif %}
+
+janitor:
+  config:
+    nodes:
+      exclusions:
+        - matchLabels:
+            "node-role.kubernetes.io/control-plane": ""
+{% for e in nvsentinel_janitor_extra_exclusions | default([]) %}
+        - {{ e | to_json }}
+{% endfor %}
