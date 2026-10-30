@@ -131,7 +131,7 @@ docs, err = helm(t)
 check(docs is not None and "--dry-run=true" in " ".join(
     a for d in docs if d.get("kind") == "Deployment" for c in d["spec"]["template"]["spec"]["containers"]
     for a in c.get("args", [])), "dryRun=true not rendered via global.dryRun")
-check(all("dryRun" not in (m if isinstance(m, dict) else {}) for m in yaml.safe_load(t).values()),
+check(all("dryRun" not in (m if isinstance(m, dict) else {}) for k, m in yaml.safe_load(t).items() if k != "global"),
       "per-module dryRun key present")
 
 if fails:
