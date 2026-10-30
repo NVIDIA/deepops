@@ -37,7 +37,7 @@ global:
     enabled: false
 
 labeler:
-  assumeDriverInstalled: {{ nvsentinel_assume_driver_installed | default(true) | bool | lower }}
+  assumeDriverInstalled: {{ nvsentinel_assume_driver_installed | default(gpu_operator_preinstalled_nvidia_software | default(true)) | bool | lower }}
 
 podMonitor:
   enabled: {{ nvsentinel_pod_monitor | default(false) | bool | lower }}
@@ -77,6 +77,9 @@ fault-quarantine:
     percentage: 100
 {% else %}
     percentage: 50
+{% endif %}
+{% if nvsentinel_breaker_duration | default('') %}
+    duration: {{ nvsentinel_breaker_duration | to_json }}
 {% endif %}
 {% endif %}
 {% if _lvl >= 2 %}

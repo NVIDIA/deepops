@@ -98,7 +98,8 @@ for mode in MODES:
             continue
         deploys = " ".join(names(docs, "Deployment") + names(docs, "DaemonSet"))
         check(("drainer" in deploys) == (lvl >= 2), f"{tag}: node-drainer presence wrong")
-        check(("janitor" in deploys) == (lvl >= 3), f"{tag}: janitor presence wrong")
+        dn = names(docs, "Deployment")
+        check(("janitor" in dn) == (lvl >= 3) and ("janitor-provider" in dn) == (lvl >= 3), f"{tag}: janitor/janitor-provider presence wrong")
         check(("fault-quarantine" in deploys) == (lvl >= 1), f"{tag}: fault-quarantine presence wrong")
         check(("fault-remediation" in deploys) == (lvl >= 3), f"{tag}: fault-remediation presence wrong")
         kinds = {d.get("kind") for d in docs}
@@ -112,8 +113,13 @@ for mode in MODES:
                   f"{tag}: rendered storageClassName")
             check(not (members < 3 and r0.get("replsetOverrides")), f"{tag}: rendered overrides at size 1")
             check(bool(r0.get("replsetOverrides")) == (members >= 3), f"{tag}: upstream overrides kept at 3")
+            check(get(psmdb, "spec.upgradeOptions.apply") == "disabled", f"{tag}: rendered upgradeOptions")
+            ops = [d for d in docs if d.get("kind") == "Deployment" and "psmdb-operator" in d["metadata"]["name"]]
+            envs = [e for d in ops for c in d["spec"]["template"]["spec"]["containers"] for e in c.get("env", [])]
+            check(any(e.get("name") == "DISABLE_TELEMETRY" and str(e.get("value")).lower() == "true" for e in envs),
+                  f"{tag}: rendered DISABLE_TELEMETRY")
             ba = breaker_args(docs)
-            check(ba is not None and "circuit-breaker" in ba.lower(), f"{tag}: breaker arg")
+            check(ba is not None and "--circuit-breaker-enabled=true" in ba, f"{tag}: breaker arg")
 
 # dry-run goes through the global key only
 t = render_values(nvsentinel_mode="cordon", nvsentinel_db_members=1, nvsentinel_gpu_node_count=3, nvsentinel_dry_run=True)
