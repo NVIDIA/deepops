@@ -102,6 +102,10 @@ for mode in MODES:
         check(("janitor" in dn) == (lvl >= 3) and ("janitor-provider" in dn) == (lvl >= 3), f"{tag}: janitor/janitor-provider presence wrong")
         check(("fault-quarantine" in deploys) == (lvl >= 1), f"{tag}: fault-quarantine presence wrong")
         check(("fault-remediation" in deploys) == (lvl >= 3), f"{tag}: fault-remediation presence wrong")
+        if lvl >= 3:
+            check("node-role.kubernetes.io/control-plane" in yaml.dump(
+                  [d for d in docs if d.get("kind") == "ConfigMap" and "janitor" in d["metadata"]["name"]]),
+                  f"{tag}: rendered janitor config lacks control-plane exclusion")
         kinds = {d.get("kind") for d in docs}
         check(("PerconaServerMongoDB" in kinds) == (lvl >= 1), f"{tag}: PerconaServerMongoDB presence")
         check("StatefulSet" not in kinds or lvl >= 1, f"{tag}: unexpected StatefulSet")
@@ -127,7 +131,7 @@ docs, err = helm(t)
 check(docs is not None and "--dry-run=true" in " ".join(
     a for d in docs if d.get("kind") == "Deployment" for c in d["spec"]["template"]["spec"]["containers"]
     for a in c.get("args", [])), "dryRun=true not rendered via global.dryRun")
-check(not any(k in yaml.safe_load(t) for k in ("fault-quarantine",)) or "dryRun" not in yaml.safe_load(t)["fault-quarantine"],
+check(all("dryRun" not in (m if isinstance(m, dict) else {}) for m in yaml.safe_load(t).values()),
       "per-module dryRun key present")
 
 if fails:
