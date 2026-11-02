@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+"""Strict offline Helm double. State lives only in $FAKE_STATE."""
+import json
+import os
+from pathlib import Path
+import sys
+
+from fake_cli import count, fail, parse
+
+state = Path(os.environ['FAKE_STATE'])
+state.mkdir(exist_ok=True)
+db = state / 'releases.json'
+rels = json.loads(db.read_text()) if db.exists() else {}
+a = sys.argv[1:]
+with (state / 'calls.log').open('a') as log:
+    log.write(' '.join(a) + '\n')
+with (state / 'helm-argv.jsonl').open('a') as log:
+    log.write(json.dumps(a) + '\n')
+if not a:
+    fail('helm command required')
+verb = a[0]
+valued = {
+    'list': ['--namespace', '--output'],
+    'get': ['--namespace', '--output'],
+    'upgrade': ['--namespace', '--version', '--repo', '--timeout', '--values'],
+    'uninstall': ['--namespace', '--timeout'],
+}
+flags = {
+    'list': ['--all', '--all-namespaces'], 'get': [],
+    'upgrade': ['--install', '--create-namespace', '--wait'], 'uninstall': ['--wait'],
+}
+if verb not in valued:
+    fail('unsupported helm command')
+p, opts = parse(a[1:], valued[verb], flags[verb])
+ns = opts.get('--namespace', '')
+if verb == 'list':
+    count(p, 0)
+    if opts.get('--output') != 'json':
+        fail('unsupported list output')
+    print(json.dumps([dict(name=k.split('/', 1)[1], namespace=v['ns'], chart=v['chart'], status=v.get('status', 'deployed'))
+                      for k, v in rels.items() if '--all-namespaces' in opts or v['ns'] == ns]))
+elif verb == 'get':
+    count(p, 2)
+    if p[0] != 'values' or opts.get('--output') != 'json':
+        fail('unsupported get')
+    key = ns + '/' + p[1]
+    if key not in rels:
+        fail('release: not found')
+    print(json.dumps(rels[key]['values']))
+elif verb == 'upgrade':
+    count(p, 2)
+    if '--install' not in opts or not ns or not opts.get('--version') or opts.get('--values') != '-':
+        fail('upgrade requires install, namespace, version and stdin values')
+    values = json.load(sys.stdin)
+    if not isinstance(values, dict):
+        fail('Helm values must be a mapping')
+    rel, chart = p
+    rels[ns + '/' + rel] = dict(ns=ns, chart=chart.rstrip('/').split('/')[-1] + '-' + opts['--version'], values=values)
+    db.write_text(json.dumps(rels))
+elif verb == 'uninstall':
+    count(p, 1)
+    key = ns + '/' + p[0]
+    if key not in rels:
+        fail('Error: uninstall: Release not loaded: %s: release: not found' % p[0])
+    del rels[key]
+    db.write_text(json.dumps(rels))

@@ -125,6 +125,15 @@
     - apparmor_userns_knob.stat.exists | default(false)
     - pyxis_userns_allow_globally
 
+# Opting out must also retract any earlier host-wide override. Reconcile on
+# every run, including retries after an interrupted cleanup.
+- name: restore configured user namespace policy on opt-out
+  include_tasks: userns-optout.yml
+  when:
+    - is_compute
+    - apparmor_userns_knob.stat.exists | default(false)
+    - not pyxis_userns_allow_globally
+
 - name: install slurm-pmi hook
   file:
     path: /etc/enroot/hooks.d/50-slurm-pmi.sh

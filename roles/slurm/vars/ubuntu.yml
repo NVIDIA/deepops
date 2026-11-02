@@ -24,6 +24,11 @@ slurm_build_deps:
   - ruby-dev
   - wget
 
+# Installed only when slurm_build_lua is enabled. Lua 5.3 is available on
+# every Ubuntu release DeepOps targets and is supported by Slurm's configure.
+slurm_lua_deps:
+  - liblua5.3-dev
+
 slurm_pmix_deps:
   - build-essential
   - libev-dev

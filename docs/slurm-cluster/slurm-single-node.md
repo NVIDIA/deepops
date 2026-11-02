@@ -12,6 +12,7 @@ Single Node Slurm Deployment Guide
     - [Running Containers](#running-containers)
       - [Rootless Docker](#rootless-docker)
     - [Enroot and Pyxis](#enroot-and-pyxis)
+  - [Uninstalling](#uninstalling)
 
 ## Introduction
 
@@ -510,3 +511,12 @@ separately, it can run the same containers with `singularity exec --nv` (remembe
 the “--nv” option for GPUs). Enroot/Pyxis is the supported path and excels at
 running containerized multi node jobs, which is somewhat difficult and less
 convenient to do using docker on Slurm.
+
+## Uninstalling
+
+There is no automated uninstall for a single-node Slurm deployment. The
+[Slurm uninstall guide](./slurm-uninstall.md) lists the main services, paths, and
+system changes to review, including the `slurm_login_on_compute`
+specifics (the `DeviceAllow` property on the SSH unit and the `/etc/localusers`
+PAM rule), and gives a step-by-step manual procedure. On a single node, run
+both the controller and compute steps on the same machine.
