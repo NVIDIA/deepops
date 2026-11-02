@@ -22,7 +22,7 @@ roles:
   version: "v6.1.9"
 
 - src: nvidia.nvidia_driver
-  version: "v2.3.1"
+  version: "v2.4.0"
 
 - src: nvidia.nvidia_docker
   version: "v1.2.4"

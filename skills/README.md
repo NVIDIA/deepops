@@ -19,6 +19,7 @@ agent (or person) can simply read the relevant `SKILL.md` before acting.
 | [manage-model-cache](manage-model-cache/SKILL.md) | Preparing shared model files, pinning revisions, or diagnosing offline cache access. |
 | [serve-model](serve-model/SKILL.md) | Serving a cached snapshot on one GPU and validating a local completion endpoint. |
 | [finetune-model](finetune-model/SKILL.md) | Checking single-node training prerequisites without claiming training success. |
+| [deploy-runai-kai](deploy-runai-kai/SKILL.md) | Adding or removing optional KAI Scheduler / Run:ai, fractional-GPU scheduling. |
 | [validate-gpu-cluster](validate-gpu-cluster/SKILL.md) | Health checks and post-deploy verification. |
 | [diagnose-driver-install](diagnose-driver-install/SKILL.md) | NVIDIA driver failures, `nvidia-smi` errors, GPU pods crash-looping. |
 

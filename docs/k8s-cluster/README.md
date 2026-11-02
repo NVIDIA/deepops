@@ -20,6 +20,7 @@ Instructions for deploying a GPU cluster with Kubernetes
     - [Load Balancer and Ingress](#load-balancer-and-ingress)
     - [Kubeflow](#kubeflow)
     - [NVIDIA Network Operator](#nvidia-network-operator)
+    - [Run:ai and KAI Scheduler](#runai-and-kai-scheduler)
   - [Cluster Maintenance](#cluster-maintenance)
     - [Adding Nodes](#adding-nodes)
     - [Removing Nodes](#removing-nodes)
@@ -114,11 +115,23 @@ The following components are completely optional and can be installed on an exis
 
 ### Kubernetes Dashboard
 
-Run the following script to create an administrative user and print out the dashboard URL and access token:
+DeepOps does not install Kubernetes Dashboard. The pinned Kubespray release
+(v2.31.0) no longer ships the dashboard add-on; the former `dashboard_enabled`
+and dashboard image settings have no effect.
 
-```bash
-./scripts/k8s/deploy_dashboard_user.sh
-```
+If you need a dashboard, install and configure it separately using the
+[upstream Kubernetes Dashboard documentation](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/),
+including its authentication and access instructions. For air-gapped deployments,
+mirror the images and charts required by that installation separately; the
+Kubespray download step does not cache a dashboard add-on.
+
+The legacy `scripts/k8s/deploy_dashboard_user.sh` helper is not an installer. It
+assumes a `kubernetes-dashboard` Service already exists in `kube-system`, changes
+it to a NodePort, and creates a cluster-admin service account if it is missing.
+It also expects a legacy service-account token Secret. Do not use it as a setup
+step for a new DeepOps cluster or assume it works with a separately installed
+Dashboard version. The helper is unchanged; this guidance does not establish
+that its HTTPS access works.
 
 ### Persistent Storage
 
@@ -263,6 +276,10 @@ For more information on Kubeflow, please refer to the [official documentation](h
 ### NVIDIA Network Operator
 
 NVIDIA Network Operator leverages Kubernetes CRDs and Operator SDK to manage networking related components in Kuberenets cluster. High performance networking in Kuberentes requires many components, such as multus-CNI, device drivers and plugins to be installed correctly, NVIDIA network operator aims to manage all those necessary components automatically under one operator frame work to simply the deployment, operation and management of NVIDIA networking for Kubernetes. To deploy NVIDIA network operator, please refer to the [NVIDIA Network Operator Deployment Guide in DeepOps](nvidia-network-operator.md), for more information on NVIDIA network operator, please refer to its [github](https://github.com/Mellanox/network-operator) page and this [solution guide](https://docs.nvidia.com/networking/display/COKAN10/Network+Operator).
+
+### Run:ai and KAI Scheduler
+
+Optional GPU-aware scheduling (queues, gang scheduling, fractional GPUs) on top of the GPU Operator, off by default. See the [Run:ai and KAI Scheduler guide](runai.md).
 
 ## Cluster Maintenance
 

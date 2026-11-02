@@ -162,7 +162,7 @@ if command -v ansible-galaxy &> /dev/null ; then
     as_user ansible-galaxy role install -p "${roles_path}" --force -r "roles/requirements.yml" >/dev/null
 
     # Install any user-defined config requirements
-    if [ -d "${CONFIG_DIR}" ] && [ -f "${CONFIG_DIR}/requirement.yml" ] ; then
+    if [ -d "${CONFIG_DIR}" ] && [ -f "${CONFIG_DIR}/requirements.yml" ] ; then
         cd "${CONFIG_DIR}"
         as_user ansible-galaxy collection install -p "${collections_path}" --force -i -r "requirements.yml" >/dev/null
         as_user ansible-galaxy role install -p "${roles_path}" --force -i -r "requirements.yml" >/dev/null

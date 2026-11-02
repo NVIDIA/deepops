@@ -1,0 +1,60 @@
+---
+# Decide which address the domain points at (runai_exposure_address):
+#   1. runai_platform_ingress_ip if set
+#   2. gateway exposure: the Gateway's address (waits for the load balancer to give one)
+#   3. ingress + LoadBalancer: the controller service's external address (waits)
+#   4. otherwise this host's primary address (NodePort / host ports)
+- name: Wait for the Gateway address
+  ansible.builtin.command: >-
+    {{ runai_kubectl }} --namespace {{ runai_cluster_namespace }} get gateway {{ runai_gateway_name }}
+    --output jsonpath={.status.addresses[0].value}
+  register: runai_gw_addr
+  changed_when: false
+  check_mode: false
+  until: runai_gw_addr.rc == 0 and runai_gw_addr.stdout | length > 0
+  retries: "{{ ((runai_platform_address_timeout | int) / 10) | round(0, 'ceil') | int }}"
+  delay: 10
+  failed_when: false
+  when:
+    - runai_gateway_enabled | bool
+    - runai_platform_ingress_ip | length == 0
+    - not ansible_check_mode
+
+- name: Wait for the ingress controller's external address
+  ansible.builtin.command: >-
+    {{ runai_kubectl }} --namespace {{ runai_platform_ingress_namespace }} get service {{ runai_ingress_service_name }}
+    --output jsonpath={.status.loadBalancer.ingress[0].ip}
+  register: runai_lb_addr
+  changed_when: false
+  check_mode: false
+  until: runai_lb_addr.rc == 0 and runai_lb_addr.stdout | length > 0
+  retries: "{{ ((runai_platform_address_timeout | int) / 10) | round(0, 'ceil') | int }}"
+  delay: 10
+  failed_when: false
+  when:
+    - runai_wait_ingress_lb | bool
+    - not ansible_check_mode
+
+- name: Require an address when one was asked for
+  ansible.builtin.assert:
+    that: runai_found_address | length > 0
+    fail_msg: >-
+      No external address after {{ runai_platform_address_timeout }} seconds. A LoadBalancer service
+      needs a load balancer (DeepOps: scripts/k8s/deploy_loadbalancer.sh and an address pool in
+      config/helm/metallb.yml). Without one, use runai_platform_ingress_service_type: NodePort
+      (ingress exposure), or set runai_platform_ingress_ip yourself.
+    quiet: true
+  vars:
+    runai_found_address: "{{ (runai_gw_addr.stdout | default('')) if runai_gateway_enabled | bool else (runai_lb_addr.stdout | default('')) }}"
+  when:
+    - (runai_gateway_enabled | bool or runai_wait_ingress_lb | bool)
+    - runai_platform_ingress_ip | length == 0
+    - not ansible_check_mode
+
+- name: Set the address
+  ansible.builtin.set_fact:
+    runai_exposure_address: >-
+      {{ runai_platform_ingress_ip if runai_platform_ingress_ip | length > 0
+         else ((runai_gw_addr.stdout | default('')) if runai_gateway_enabled | bool
+         else ((runai_lb_addr.stdout | default('')) if runai_wait_ingress_lb | bool
+         else (ansible_default_ipv4.address | default('')))) }}

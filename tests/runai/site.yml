@@ -1,0 +1,11 @@
+---
+# Offline harness: runs the role against localhost with fake helm/kubectl.
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    runai_helm: "{{ lookup('env', 'RUNAI_TEST_BIN') }}/helm"
+    runai_kubectl: "{{ lookup('env', 'RUNAI_TEST_BIN') }}/kubectl"
+    runai_work_dir: "{{ lookup('env', 'FAKE_STATE') }}/work"
+  roles:
+    - runai

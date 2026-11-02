@@ -33,6 +33,19 @@ for node in ${gpus}; do
 done
 echo "total_gpus=$total_gpus"
 
+# Without any advertised GPU capacity the test job would be created with
+# parallelism 0, never schedule a pod, and fail later with a message that does
+# not point at the real problem. Stop here and say what to check instead.
+if [ "${total_gpus}" -eq 0 ]; then
+    echo "ERROR: no node in this cluster advertises nvidia.com/gpu capacity, so there is nothing to test."
+    echo "Kubernetes only reports GPUs once the NVIDIA device plugin (or GPU Operator) is running on the GPU nodes."
+    echo "Check per-node GPU capacity with:"
+    echo "  kubectl get nodes -o custom-columns='NAME:.metadata.name,GPUS:.status.capacity.nvidia\\.com/gpu'"
+    echo "If a GPU node shows <none>, confirm the driver works on that node ('nvidia-smi') and that the"
+    echo "device plugin / GPU Operator pods are Running ('kubectl get pods -A | grep -i nvidia'), then rerun this script."
+    exit 1
+fi
+
 echo "Creating/Deleting sandbox Namespace"
 kubectl delete ns ${CLUSTER_VERIFY_NS} > /dev/null 2>&1
 kubectl create ns ${CLUSTER_VERIFY_NS} > /dev/null 2>&1
