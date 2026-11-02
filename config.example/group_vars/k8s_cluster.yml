@@ -126,3 +126,7 @@ runai_mode: "off"
 # class that is NOT the cluster default, so existing workloads keep their current default class.
 local_path_provisioner_enabled: true
 local_path_provisioner_is_default_storageclass: "false"
+
+# NVSentinel (GPU health monitoring). Defined here so the GPU Operator role sees it too:
+# gpu_operator_enable_dcgm follows this setting. Set to false to keep DCGM off.
+nvsentinel_enabled: true
