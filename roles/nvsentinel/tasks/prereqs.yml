@@ -1,0 +1,49 @@
+---
+# Own variables are read with defaults so this file works before the role's defaults/main.yml lands.
+# cert-manager is only needed from `cordon` up (the observe render has no Certificate objects).
+- name: nvsentinel | cert-manager prerequisite
+  when: (nvsentinel_mode | default('cordon')) in ['cordon', 'drain', 'remediate']
+  block:
+    - name: nvsentinel | look for an existing cert-manager deployment
+      command: >-
+        kubectl -n {{ nvsentinel_cert_manager_namespace | default('cert-manager') }} get deployment cert-manager
+        -o jsonpath={.spec.template.spec.containers[0].image}
+      register: nvsentinel_cm_image
+      changed_when: false
+      failed_when: false
+
+    - name: nvsentinel | look for cert-manager CRDs installed elsewhere
+      command: kubectl get crd certificates.cert-manager.io -o name
+      register: nvsentinel_cm_crd
+      changed_when: false
+      failed_when: false
+      when: nvsentinel_cm_image.rc != 0
+
+    - name: nvsentinel | read installed cert-manager version
+      set_fact:
+        nvsentinel_cm_installed: "{{ (nvsentinel_cm_image.stdout.split(':')[-1] | regex_replace('^v', '')) if nvsentinel_cm_image.rc == 0 and ':' in nvsentinel_cm_image.stdout else '' }}"
+
+    - name: nvsentinel | refuse an unknown or too-old existing cert-manager
+      fail:
+        msg: >-
+          cert-manager {{ nvsentinel_cm_installed | default('(version unknown)', true) }} is already installed or its CRDs exist,
+          but NVSentinel needs cert-manager 1.{{ nvsentinel_cert_manager_min_minor | default(21) }} or newer.
+          DeepOps never upgrades an existing cert-manager. Upgrade it yourself, or set nvsentinel_mode: observe.
+      when:
+        - (nvsentinel_cm_image.rc == 0 and
+           (nvsentinel_cm_installed == '' or
+            (nvsentinel_cm_installed is version('1.' ~ (nvsentinel_cert_manager_min_minor | default(21)) ~ '.0', '<')))) or
+          (nvsentinel_cm_image.rc != 0 and nvsentinel_cm_crd.rc == 0)
+
+    - name: nvsentinel | add jetstack helm repo
+      command: /usr/local/bin/helm repo add jetstack "{{ nvsentinel_cert_manager_helm_repo | default('https://charts.jetstack.io') }}"
+      changed_when: false
+      when: nvsentinel_cm_image.rc != 0
+
+    - name: nvsentinel | install cert-manager (only when missing)
+      command: >-
+        /usr/local/bin/helm upgrade --install cert-manager jetstack/cert-manager
+        --version {{ nvsentinel_cert_manager_chart_version | default('v1.21.1') }}
+        --namespace {{ nvsentinel_cert_manager_namespace | default('cert-manager') }} --create-namespace
+        --set crds.enabled=true --wait
+      when: nvsentinel_cm_image.rc != 0

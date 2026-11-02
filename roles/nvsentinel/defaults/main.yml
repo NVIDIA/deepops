@@ -1,0 +1,10 @@
+---
+nvsentinel_enabled: true
+# observe | cordon | drain | remediate
+nvsentinel_mode: cordon
+nvsentinel_chart_version: "v1.27.0"
+nvsentinel_cert_manager_chart_version: "v1.21.1"
+nvsentinel_cert_manager_min_minor: 21
+nvsentinel_cert_manager_namespace: cert-manager
+nvsentinel_cert_manager_helm_repo: "https://charts.jetstack.io"
+nvsentinel_storage_class: local-path

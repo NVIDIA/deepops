@@ -19,7 +19,9 @@ k8s_gpu_mig_strategy: "mixed"
 # Enable/Disalbe specific components of GPU Operator
 gpu_operator_enable_driver: true
 gpu_operator_enable_toolkit: true
-gpu_operator_enable_dcgm: false
+# On when NVSentinel is on (its GPU monitor talks to the DCGM service on port 5555).
+# dcgm-exporter then uses that standalone DCGM service, the GPU Operator's normal mode.
+gpu_operator_enable_dcgm: "{{ nvsentinel_enabled | default(true) }}"
 gpu_operator_enable_migmanager: true
 
 # Set to true for DGX and other systems with pre-installed drivers

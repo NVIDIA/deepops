@@ -121,3 +121,8 @@ runai_mode: "off"
 #runai_platform_exposure: ingress
 #runai_platform_ingress_service_type: LoadBalancer   # or NodePort
 #runai_gateway_workload_routing: path               # gateway only: path or host
+
+# NVSentinel database storage. Kubespray's local-path provisioner gives a local-disk
+# class that is NOT the cluster default, so existing workloads keep their current default class.
+local_path_provisioner_enabled: true
+local_path_provisioner_is_default_storageclass: "false"
