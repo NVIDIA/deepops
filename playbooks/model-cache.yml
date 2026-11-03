@@ -41,6 +41,8 @@
         fail_msg: The configured mount must already be mounted as NFS; this playbook never mounts storage.
 
     - name: Inspect cache directories without following symlinks
+      become: true
+      become_user: "{{ model_cache_owner }}"
       stat:
         path: "{{ item }}"
         follow: false
