@@ -16,7 +16,10 @@ is needed. Review the model license before use.
   v0.31.0 NVIDIA guide describes CUDA 12.9 wheels and compute capability 7.5+.
   Check the upstream installation guide for your GPU/driver before installing;
   a working `nvidia-smi` alone does not establish wheel compatibility.
-- Python **3.12** with venv support, available disk space for the serving packages,
+- Python **3.12** with venv support, the Python 3.12 development headers and a C
+  compiler (on Ubuntu 24.04: `sudo apt install python3.12-dev build-essential`;
+  vLLM's Triton helper compiles at server start and fails with `Python.h: No such
+  file` without them), available disk space for the serving packages,
   and a fresh private environment separate from both Ansible and the cache writer.
   Python 3.12 lies in both the tagged guide's 3.10–3.13 range and the package's
   broader `>=3.10,<3.15` metadata. This is not a claim that every listed Python
