@@ -4,7 +4,7 @@
 # Keep the two maps separate so a single ansible_architecture value resolves
 # to the right token for each package type.
 # 'arm64' matches existing practice in roles/nvidia-dgx/vars/ubuntu-24.04.yml.
-mig_manager_version: "0.14.2"
+mig_manager_version: "0.15.1"
 mig_manager_release: "1"
 
 mig_manager_deb_arch_map:
