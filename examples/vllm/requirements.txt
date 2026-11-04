@@ -1,0 +1,2 @@
+# Install in a private Python 3.12 environment, separate from Ansible and the cache writer.
+vllm==0.31.0
