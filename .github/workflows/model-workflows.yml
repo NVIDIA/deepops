@@ -1,0 +1,19 @@
+---
+name: offline model workflow validation
+on:
+  - push
+  - pull_request
+permissions:
+  contents: read
+jobs:
+  offline-validation:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install local fixture dependencies
+        run: python3 -m pip install ansible==10.7.0 PyYAML==6.0.2
+      - name: Run offline validator contracts
+        run: python3 -m unittest discover -s scripts/validation/tests -v
