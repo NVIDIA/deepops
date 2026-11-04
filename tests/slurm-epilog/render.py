@@ -21,12 +21,18 @@ VARS = {
     "enroot_data_path": "/tmp/enroot-data/user-$(id -u)",
 }
 
+SCOPES = ("job", "user")
+
 
 def main():
-    if len(sys.argv) != 3:
-        sys.exit("usage: render.py <template-path> <output-path>")
+    if len(sys.argv) not in (3, 4):
+        sys.exit("usage: render.py <template-path> <output-path> [job|user]")
 
     template_path, output_path = sys.argv[1], sys.argv[2]
+    # slurm_epilog_cleanup_scope. "job" is the role default.
+    scope = sys.argv[3] if len(sys.argv) == 4 else "job"
+    if scope not in SCOPES:
+        sys.exit("scope must be one of: " + ", ".join(SCOPES))
 
     # keep_trailing_newline so the rendered script ends the way the original
     # does; a missing final newline changes nothing functionally but makes
@@ -48,9 +54,15 @@ def main():
         loader=FileSystemLoader("/"),
         undefined=StrictUndefined,
         keep_trailing_newline=True,
+        # Ansible's template module sets trim_blocks, so a block tag on a line
+        # of its own leaves no blank line behind. Match it, or the rendered
+        # scripts here differ from the deployed ones.
+        trim_blocks=True,
         autoescape=False,
     )
-    rendered = env.get_template(template_path.lstrip("/")).render(**VARS)
+    rendered = env.get_template(template_path.lstrip("/")).render(
+        slurm_epilog_cleanup_scope=scope, **VARS
+    )
 
     with open(output_path, "w") as handle:
         handle.write(rendered)

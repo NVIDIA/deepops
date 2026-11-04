@@ -1,8 +1,19 @@
 #!/usr/bin/env bash
 set -ex
 
-if grep -q -w "$SLURM_JOB_USER" /etc/slurm/localusers.backup ; then
+# Both lookups below act on whole lines. `grep -w` and an unanchored
+# `sed "/${user}/d"` match substrings and regular expressions instead: with a
+# job user `al`, the sed deleted the SSH allow entry of `alice`, `halley` and
+# every other account containing "al", and a dot in a name (`je.kim`) matched
+# any character. Match the exact line, literally, in both places.
+localusers_backup=/etc/slurm/localusers.backup
+localusers_live=/etc/localusers
+
+if grep -qxF -- "$SLURM_JOB_USER" "$localusers_backup" ; then
     exit 0  # don't revoke access for these users
 fi
 
-sed -i "/${SLURM_JOB_USER}/d" /etc/localusers
+# Escape the characters that are special in a sed regular expression (and the
+# `/` delimiter) so the account name is matched literally.
+user_pattern=$(printf '%s' "$SLURM_JOB_USER" | sed -e 's/[][\.*^$/]/\\&/g')
+sed -i "/^${user_pattern}\$/d" "$localusers_live"

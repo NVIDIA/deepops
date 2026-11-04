@@ -33,6 +33,23 @@ case "$lookup_rc" in
         ;;
 esac
 
+{% if slurm_epilog_cleanup_scope == 'job' %}
+# Job-scoped cleanup (slurm_epilog_cleanup_scope: job).
+#
+# Files carry a uid, never a job id, so deleting "this job's files" from
+# ownership alone is not possible: this script stays per user, and the
+# dispatcher only runs it when neither squeue nor the node's cgroups show
+# another job of the user. When Slurm's job_container/tmpfs plugin is active,
+# /tmp and /dev/shm are private to each job and vanish with it, so this
+# cleanup has nothing to add and would only reach into the host's copies.
+slurm_conf='{{ slurm_config_dir }}/slurm.conf'
+if grep -qE '^[[:space:]]*JobContainerType[[:space:]]*=[[:space:]]*job_container/tmpfs' "$slurm_conf" 2>/dev/null; then
+    logger -s -t slurm-epilog \
+        "job_container/tmpfs is configured; per-job /tmp and /dev/shm are removed with the job, skipping file cleanup"
+    exit 0
+fi
+
+{% endif %}
 if [[ -n "$SLURM_JOB_USER" && "$SLURM_JOB_USER" != "root" ]]; then
     # `find -user` needs the account to resolve. When the directory service is
     # unavailable find exits non-zero without printing anything, and the old
