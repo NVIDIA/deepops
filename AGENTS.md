@@ -58,6 +58,15 @@ python3 scripts/validation/validate_k8s.py --json --cuda-smoke
 The validator must report `"ok": true` with `cuda_smoke_ok: true`. See
 `skills/deploy-k8s-gpu-cluster/` for the full procedure and failure branches.
 
+## Choose a model workflow
+
+Start with `skills/model-workflows/` to distinguish cached inputs, single-node
+inference and training. Use the documented cache, serving and fine-tuning
+readiness paths below. Fine-tuning has no training recipe or training-result
+validator here yet; obtain a reviewed recipe and success criteria rather than
+reporting readiness as training success. Multi-node workflows are not supported
+by these skills.
+
 ## Golden path: shared model cache
 
 Use `playbooks/model-cache.yml` only on an approved, existing NFS mount and one
@@ -73,14 +82,26 @@ model coverage. See `skills/manage-model-cache/` and
 
 ## Golden path: single-node model serving
 
-Follow `docs/model-workflows/vllm-quickstart.md` inside an approved, isolated GPU
-allocation. Use the pinned local snapshot, one GPU, and a loopback-only endpoint.
+Use `skills/serve-model/` and follow `docs/model-workflows/vllm-quickstart.md`
+inside an approved, isolated GPU allocation. Use the pinned local snapshot, one GPU, and a loopback-only endpoint.
 After startup, run `scripts/validation/validate_vllm.py --json` with the expected
 served model name and the cache validator's explicit inputs. This submits one
 small completion request; it does not start a server or download models. Require
 exit `0` and `ok: true`, but do not treat this as revision attestation, GPU-use
 proof, or a performance result. Never run it against someone else's service
 without permission. No live testing is implied by offline fixtures.
+
+## Golden path: fine-tuning readiness (not training)
+
+Use `skills/finetune-model/` for the readiness-only scope. Run
+`scripts/validation/validate_finetune.py --json` as the consumer on the selected
+Slurm compute host, with explicit node, partition, digest-pinned image and cache
+inputs. It checks scheduler availability, idle GPU capacity, local container
+support and the supported model file layout. Exit `0` and `status: ready` mean
+preparation only; `training_validated` is always false. No job runs by default.
+The optional `--gpu-smoke` requires separate authorization and proves only a
+single-GPU container probe. See `docs/model-workflows/finetune-readiness.md` for
+limits, failure reasons and the distinction from training success.
 
 ## Rules for operating this repository
 
