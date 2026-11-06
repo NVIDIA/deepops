@@ -184,9 +184,9 @@ cross-user NFS and actual model loading remain separate validation gates.
 - [CLI guide](https://huggingface.co/docs/huggingface_hub/v2.1.1/en/guides/cli),
   [environment variables](https://huggingface.co/docs/huggingface_hub/v2.1.1/en/package_reference/environment_variables),
   [cache layout](https://huggingface.co/docs/huggingface_hub/v2.1.1/en/guides/manage-cache).
-- [vLLM v0.31.0](https://github.com/vllm-project/vllm/releases/tag/v0.31.0)
+- [vLLM v0.32.0](https://github.com/vllm-project/vllm/releases/tag/v0.32.0)
   is the serving release observed on this date; its
-  [requirements](https://github.com/vllm-project/vllm/blob/v0.31.0/requirements/common.txt)
+  [requirements](https://github.com/vllm-project/vllm/blob/v0.32.0/requirements/common.txt)
   specify `huggingface_hub >= 1.31.0`. This cache change neither installs vLLM
   nor claims a tested serving combination. Re-check and validate the serving
   environment separately; a minimum requirement is not compatibility evidence.
