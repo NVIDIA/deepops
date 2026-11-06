@@ -52,8 +52,9 @@ python3 scripts/validation/validate_finetune.py --json \
 
 Off by default. Only with explicit authorization to allocate a GPU and run the
 reviewed image, repeat the command with `--gpu-smoke`. This can download the
-container image and submits one bounded, single-node, single-GPU `nvidia-smi`
-job after all readiness gates pass. It does not load the model or train.
+container image, but its scheduler window is only five seconds, so pre-pull the
+pinned image on the node first. It submits one bounded, single-node, single-GPU
+`nvidia-smi` job after all readiness gates pass. It does not load the model or train.
 `gpu_smoke_ok: true` proves only the container GPU probe, not cache access
 inside the container, framework compatibility, learning or checkpoint recovery.
 

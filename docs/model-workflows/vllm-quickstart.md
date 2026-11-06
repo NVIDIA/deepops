@@ -53,7 +53,7 @@ python3.12 -m venv "$HOME/.venvs/deepops-vllm"
 "$HOME/.venvs/deepops-vllm/bin/vllm" --version
 ```
 
-The example pins vLLM **0.31.0**, licensed under **Apache-2.0** (verified
+The example pins vLLM **0.31.0**, licensed under **Apache-2.0** (verified on
 2026-10-07 against the [tagged license](https://github.com/vllm-project/vllm/blob/v0.31.0/LICENSE)
 and [package metadata](https://pypi.org/project/vllm/0.31.0/)). This is the serving
 package's license, not the model's or every dependency's. Transitive packages
@@ -67,7 +67,7 @@ package problem. vLLM loads a local snapshot, not a mutable Hub repository name.
 The example model, `openai-community/gpt2` at
 `607a30d783dfa663caf39e06633721c8d4cfcd7e`, is listed as **MIT** in its
 [pinned model card](https://huggingface.co/openai-community/gpt2/blob/607a30d783dfa663caf39e06633721c8d4cfcd7e/README.md)
-(verified 2026-10-07). Review its license terms before use; re-check the model's
+(verified on 2026-10-07). Review its license terms before use; re-check the model's
 license and access requirements when selecting another model or revision.
 
 ```bash
@@ -80,7 +80,12 @@ python3 scripts/validation/validate_model_cache.py --json \
   --require-file config.json --require-file tokenizer.json --require-file model.safetensors
 ```
 
-Stop unless exit status is `0` and `ok` is `true`. For a different model, review
+Stop unless exit status is `0` and `ok` is `true`. These three files are the
+set this example was validated with. The fine-tuning readiness check
+([finetune-readiness.md](finetune-readiness.md)) additionally requires
+`tokenizer_config.json` because its validator insists on that layout; add it
+here too if your model's tokenizer needs it, or if one cache snapshot will serve
+both workflows. For a different model, review
 its complete tokenizer/configuration/weight file list, including every indexed
 shard. The validator only checks files you name. Never enable remote model code
 as a workaround; this example does not use `--trust-remote-code`.
