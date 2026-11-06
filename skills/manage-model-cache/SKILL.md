@@ -34,8 +34,11 @@ for the supported CLI version, exact configuration and working download example.
    as shown in the guide. Include every tokenizer/config file and weight shard
    required by the workload. Do not use `main`, `--local-dir`, or deprecated
    `hf_transfer`; do not have compute jobs warm the cache themselves.
-3. Stop writes to the selected snapshot. As the actual reader UID, in the actual
-   workload mount context, run `python3 scripts/validation/validate_model_cache.py`
+3. Stop writes to the selected snapshot. Use a DeepOps checkout on the reader node
+   (or inside the workload container) with `scripts/validation/validate_model_cache.py`
+   readable and its parent directories traversable by the consumer UID.
+   From that checkout's root, as the actual reader UID in the actual workload
+   mount context, run `python3 scripts/validation/validate_model_cache.py`
    with `--json`, `--cache-dir`, `--repo-id`, `--revision`, and one `--require-file`
    per needed file. The guide has a complete command for the public example.
 4. Accept only exit `0` **and** `ok: true`. Record revision, `checked_files` and

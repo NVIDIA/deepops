@@ -107,7 +107,9 @@ when transferring it, not just a snapshot directory.
 ## 3. Validate as the consumer, then load a local snapshot
 
 On a reader node (or inside the actual workload container, with its real UID and
-mount), run the validator from the repository root:
+mount), use a DeepOps checkout present there with
+`scripts/validation/validate_model_cache.py` readable and its parent directories
+traversable by the consumer UID; run the validator from that checkout's root:
 
 ```bash
 python3 scripts/validation/validate_model_cache.py --json \

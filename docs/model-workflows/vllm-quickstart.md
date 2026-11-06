@@ -39,8 +39,11 @@ is needed. Review the model license before use.
   production isolation, multi-node serving, and scheduler manifests are outside
   this example. The validator deliberately has no authentication options.
 
-The commands below run **on the allocated serving node**, from the repository
-root. Package installation can download large GPU dependencies. For disconnected
+The commands below run **on the allocated serving node**, from a DeepOps checkout
+present there with `scripts/validation/validate_model_cache.py` and
+`scripts/validation/validate_vllm.py` readable and their parent directories
+traversable by the consumer UID; run from that checkout's root.
+Package installation can download large GPU dependencies. For disconnected
 systems, prepare an approved wheel mirror first; offline model loading does not
 make package installation offline.
 
