@@ -80,6 +80,8 @@ def parse_record(output):
 
 
 def gpu_count(tres):
+    # Fails closed: if Slurm changes the TRES format, no match returns None and
+    # the node is reported not ready instead of guessed.
     matches = re.findall(r"(?:^|,)gres/gpu=(\d+)(?:,|$)", tres)
     return int(matches[0]) if len(matches) == 1 else None
 
