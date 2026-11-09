@@ -21,6 +21,7 @@ Instructions for deploying a GPU cluster with Kubernetes
     - [Kubeflow](#kubeflow)
     - [NVIDIA Network Operator](#nvidia-network-operator)
     - [Run:ai and KAI Scheduler](#runai-and-kai-scheduler)
+    - [NVSentinel GPU health monitoring](#nvsentinel-gpu-health-monitoring)
   - [Cluster Maintenance](#cluster-maintenance)
     - [Adding Nodes](#adding-nodes)
     - [Removing Nodes](#removing-nodes)
@@ -280,6 +281,10 @@ NVIDIA Network Operator leverages Kubernetes CRDs and Operator SDK to manage net
 ### Run:ai and KAI Scheduler
 
 Optional GPU-aware scheduling (queues, gang scheduling, fractional GPUs) on top of the GPU Operator, off by default. See the [Run:ai and KAI Scheduler guide](runai.md).
+
+### NVSentinel GPU health monitoring
+
+Installed by default on GPU Operator clusters (not optional to install, but one switch turns it off). [NVSentinel](https://github.com/NVIDIA/NVSentinel) watches GPU and kernel health on each GPU node and, by default, cordons a node with a fatal GPU fault; it never touches running pods or reboots a node unless you choose that. Set `nvsentinel_enabled: false` to skip it. See the [NVSentinel guide](nvsentinel.md).
 
 ## Cluster Maintenance
 
