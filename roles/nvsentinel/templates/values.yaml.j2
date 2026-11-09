@@ -1,12 +1,14 @@
 # {{ ansible_managed | default('Managed by DeepOps') }}
-# Complete NVSentinel values for mode "{{ nvsentinel_mode }}". Always applied
+# Complete NVSentinel values for mode "{{ nvsentinel_effective_mode | default(nvsentinel_mode) }}". Always applied
 # without --reuse-values; every module is set explicitly so stepping down a
 # mode switches the higher modules off.
 {% set _modes = ['observe', 'cordon', 'drain', 'remediate'] %}
-{% set _lvl = _modes.index(nvsentinel_mode) %}
+{# Role-resolved inputs win over public ones so a user -e cannot override a step-down. #}
+{% set _mode = nvsentinel_effective_mode | default(nvsentinel_mode) %}
+{% set _lvl = _modes.index(_mode) %}
 {% set _db = _lvl >= 1 %}
 {% set _members = nvsentinel_db_members | default(1) | int %}
-{% set _gpu_nodes = nvsentinel_gpu_node_count | default(1) | int %}
+{% set _gpu_nodes = nvsentinel_effective_gpu_node_count | default(nvsentinel_gpu_node_count | default(1)) | int %}
 global:
   dryRun: {{ nvsentinel_dry_run | default(false) | bool | lower }}
 {% if nvsentinel_priority_class | default('') %}
@@ -40,7 +42,7 @@ labeler:
   assumeDriverInstalled: {{ nvsentinel_assume_driver_installed | default(gpu_operator_preinstalled_nvidia_software | default(true)) | bool | lower }}
 
 podMonitor:
-  enabled: {{ nvsentinel_pod_monitor | default(false) | bool | lower }}
+  enabled: {{ nvsentinel_pod_monitor_available | default(nvsentinel_pod_monitor | default(false)) | bool | lower }}
 {% if _db %}
 
 mongodb-store:

@@ -134,6 +134,36 @@ check(docs is not None and "--dry-run=true" in " ".join(
 check(all("dryRun" not in (m if isinstance(m, dict) else {}) for k, m in yaml.safe_load(t).items() if k != "global"),
       "per-module dryRun key present")
 
+# precedence: role-resolved effective_* inputs beat public ones (-e overrides)
+t = yaml.safe_load(render_values(nvsentinel_mode="cordon", nvsentinel_effective_mode="observe",
+                                 nvsentinel_gpu_node_count=3, nvsentinel_effective_gpu_node_count=12,
+                                 nvsentinel_db_members=3, nvsentinel_pod_monitor=True,
+                                 nvsentinel_pod_monitor_available=False))
+check(t["global"]["faultQuarantine"]["enabled"] is False and "mongodb-store" not in t, "effective_mode must beat nvsentinel_mode")
+check(t["podMonitor"]["enabled"] is False, "pod_monitor_available=false must beat nvsentinel_pod_monitor=true")
+t = yaml.safe_load(render_values(nvsentinel_mode="cordon", nvsentinel_gpu_node_count=3,
+                                 nvsentinel_effective_gpu_node_count=12, nvsentinel_db_members=1))
+check(t["fault-quarantine"]["circuitBreaker"]["percentage"] == 50, "effective_gpu_node_count must beat public count")
+t = yaml.safe_load(render_values(nvsentinel_mode="drain", nvsentinel_gpu_node_count=12, nvsentinel_db_members=1,
+                                 nvsentinel_pod_monitor=True))
+check(t["global"]["nodeDrainer"]["enabled"] is True and t["podMonitor"]["enabled"] is True
+      and t["fault-quarantine"]["circuitBreaker"]["percentage"] == 50, "public fallback when effective_* unset")
+check(yaml.safe_load(render_values(nvsentinel_mode="cordon", nvsentinel_effective_mode="cordon",
+      nvsentinel_pod_monitor_available=True))["podMonitor"]["enabled"] is True, "pod_monitor_available=true")
+# driver fallback
+check(yaml.safe_load(render_values(nvsentinel_mode="observe", gpu_operator_preinstalled_nvidia_software=False))
+      ["labeler"]["assumeDriverInstalled"] is False, "driver fallback to gpu_operator_preinstalled_nvidia_software")
+check(yaml.safe_load(render_values(nvsentinel_mode="observe"))["labeler"]["assumeDriverInstalled"] is True, "driver default true")
+# Percona: no systemUsers in values or rendered CR (operator generates credentials on cluster)
+for m in ("cordon", "remediate"):
+    tx = render_values(nvsentinel_mode=m, nvsentinel_db_members=3, nvsentinel_gpu_node_count=3)
+    check("systemUsers" not in tx, f"{m}: systemUsers present in values")
+    docs, _ = helm(tx)
+    for d in docs or []:
+        if d.get("kind") == "PerconaServerMongoDB":
+            check("systemUsers" not in d["spec"], f"{m}: rendered CR has spec.systemUsers")
+            check("secrets" not in d["spec"] or "users" not in d["spec"].get("secrets", {}), f"{m}: rendered CR names users secret")
+
 if fails:
     print("FAIL"); [print(" -", f) for f in fails]; sys.exit(1)
 print("OK: all render checks passed")
