@@ -4,6 +4,34 @@ on:
   - push
   - pull_request
 jobs:
+  nvsentinel-render:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: check out repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      - name: set up helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "v3.17.1"
+      - name: install render dependencies
+        run: python3 -m pip install Jinja2==3.1.6 PyYAML==6.0.2
+      - name: pull pinned NVSentinel chart
+        run: |
+          mkdir -p "${RUNNER_TEMP}/nvsentinel-chart"
+          helm pull oci://ghcr.io/nvidia/nvsentinel --version v1.27.0 \
+            --destination "${RUNNER_TEMP}/nvsentinel-chart"
+      - name: check offline renders
+        env:
+          NVSENTINEL_CHART: "${{ runner.temp }}/nvsentinel-chart/nvsentinel-v1.27.0.tgz"
+        run: scripts/nvsentinel/render-check.sh
   build:
     runs-on: ubuntu-24.04
     strategy:
