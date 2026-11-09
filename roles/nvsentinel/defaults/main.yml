@@ -2,6 +2,8 @@
 nvsentinel_enabled: true
 # observe | cordon | drain | remediate
 nvsentinel_mode: cordon
+# Permit the requested mode on a single GPU node instead of falling back to observe.
+# Does not bypass reboot permission or dry-run guards.
 nvsentinel_mode_force: false
 nvsentinel_allow_node_reboot: false
 nvsentinel_dry_run: false
@@ -11,7 +13,10 @@ nvsentinel_db_members: 1
 nvsentinel_priority_class: ""
 nvsentinel_breaker_percentage: ""
 nvsentinel_breaker_duration: "5m"
+# Kubernetes label selectors: matchLabels and/or matchExpressions.
 nvsentinel_janitor_extra_exclusions: []
+# Optional nvsentinel_assume_driver_installed overrides the labeler setting.
+# When unset, it follows gpu_operator_preinstalled_nvidia_software (default true).
 # Still disabled automatically when the PodMonitor CRD is absent.
 nvsentinel_pod_monitor: true
 nvsentinel_chart: "oci://ghcr.io/nvidia/nvsentinel"

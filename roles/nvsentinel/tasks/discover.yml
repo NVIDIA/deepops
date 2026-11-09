@@ -26,6 +26,18 @@
       {{ nvsentinel_gpu_node_count | int if nvsentinel_gpu_node_count is not none
          else (nvsentinel_gpu_nodes.stdout | from_json)['items'] | length }}
 
+# Extra vars outrank set_fact. Check every derived input before it can enable
+# controllers, skip fallback, or enable monitoring without its CRD.
+- name: Require the role-resolved GPU node count
+  ansible.builtin.assert:
+    that:
+      - nvsentinel_effective_gpu_node_count | string is match('^[0-9]+$')
+      - >-
+        nvsentinel_effective_gpu_node_count | int ==
+        (nvsentinel_gpu_node_count | int if nvsentinel_gpu_node_count is not none
+         else (nvsentinel_gpu_nodes.stdout | from_json)['items'] | length)
+    fail_msg: "Do not override the role-resolved nvsentinel_effective_gpu_node_count; use nvsentinel_gpu_node_count."
+
 - name: Refuse a cluster without labelled GPU nodes
   ansible.builtin.assert:
     that:
@@ -39,6 +51,18 @@
     nvsentinel_effective_mode: >-
       {{ 'observe' if nvsentinel_effective_gpu_node_count | int == 1 and not (nvsentinel_mode_force | bool)
          else nvsentinel_mode }}
+
+- name: Require the role-resolved mode and safety guards
+  ansible.builtin.assert:
+    that:
+      - >-
+        nvsentinel_effective_mode ==
+        ('observe' if nvsentinel_effective_gpu_node_count | int == 1 and not (nvsentinel_mode_force | bool)
+         else nvsentinel_mode)
+      - nvsentinel_effective_mode in ['observe', 'cordon', 'drain', 'remediate']
+      - nvsentinel_effective_mode != 'remediate' or (nvsentinel_allow_node_reboot | bool)
+      - nvsentinel_effective_mode != 'remediate' or not (nvsentinel_dry_run | bool)
+    fail_msg: "Do not override the role-resolved nvsentinel_effective_mode; use nvsentinel_mode and its safety controls."
 
 - name: Explain the single-GPU-node fallback
   ansible.builtin.debug:
@@ -57,6 +81,14 @@
 - name: Resolve PodMonitor availability
   ansible.builtin.set_fact:
     nvsentinel_pod_monitor_available: "{{ nvsentinel_pod_monitor_crd.stdout | trim | length > 0 and nvsentinel_pod_monitor | bool }}"
+
+- name: Require the role-resolved PodMonitor availability
+  ansible.builtin.assert:
+    that:
+      - >-
+        (nvsentinel_pod_monitor_available | bool) ==
+        (nvsentinel_pod_monitor_crd.stdout | trim | length > 0 and nvsentinel_pod_monitor | bool)
+    fail_msg: "Do not override the role-resolved nvsentinel_pod_monitor_available; use nvsentinel_pod_monitor."
 
 - name: Require the database storage class
   ansible.builtin.command:

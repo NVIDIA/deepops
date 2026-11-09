@@ -1,6 +1,6 @@
 ---
-# Do not interpret an API/auth failure as an absent release. Keep shared
-# prerequisites, retained database volumes/secrets and node state untouched.
+# Fail closed on API/auth failure: stop if release status cannot be determined.
+# Keep shared prerequisites, retained database volumes/secrets and node state untouched.
 - name: Find the NVSentinel release in any state
   ansible.builtin.command:
     argv:

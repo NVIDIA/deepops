@@ -1,0 +1,42 @@
+---
+- name: Require an exclusion label selector mapping
+  ansible.builtin.assert:
+    that:
+      - nvsentinel_exclusion is mapping
+    fail_msg: "Each janitor exclusion must be a label selector mapping."
+
+- name: Validate exclusion selector fields
+  ansible.builtin.assert:
+    that:
+      - nvsentinel_exclusion.keys() | difference(['matchLabels', 'matchExpressions']) | length == 0
+      - nvsentinel_exclusion.matchLabels | default({}) is mapping
+      - nvsentinel_exclusion.matchExpressions | default([]) is sequence
+      - nvsentinel_exclusion.matchExpressions | default([]) is not string
+      - nvsentinel_exclusion.matchExpressions | default([]) is not mapping
+    fail_msg: "Exclusions support a matchLabels mapping and a matchExpressions list."
+
+- name: Require string exclusion labels
+  ansible.builtin.assert:
+    that:
+      - item.key is string
+      - item.key | length > 0
+      - item.value is string
+    fail_msg: "Exclusion matchLabels must map nonempty string keys to string values."
+  loop: "{{ nvsentinel_exclusion.matchLabels | default({}) | dict2items }}"
+
+- name: Validate exclusion match expressions
+  ansible.builtin.assert:
+    that:
+      - item is mapping
+      - item.keys() | difference(['key', 'operator', 'values']) | length == 0
+      - item.key is defined and item.key is string and item.key | length > 0
+      - item.operator | default('') in ['In', 'NotIn', 'Exists', 'DoesNotExist']
+      - item.get('values', []) is sequence
+      - item.get('values', []) is not string
+      - item.get('values', []) is not mapping
+      - item.get('values', []) | reject('string') | list | length == 0
+      - >-
+        (item.operator in ['In', 'NotIn'] and item.get('values', []) | length > 0) or
+        (item.operator in ['Exists', 'DoesNotExist'] and item.get('values', []) | length == 0)
+    fail_msg: "Exclusion expressions require a string key, a valid operator, and string values only for In/NotIn."
+  loop: "{{ nvsentinel_exclusion.matchExpressions | default([]) }}"

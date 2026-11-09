@@ -126,6 +126,51 @@ class RoleTests(unittest.TestCase):
                 self.assertIn(message, output)
                 self.assert_no_writes(trace)
 
+    def test_internal_overrides_cannot_bypass_discovery(self):
+        cases = [
+            ({'nvsentinel_effective_mode': 'remediate'}, {}),
+            ({'nvsentinel_effective_mode': 'remediate',
+              'nvsentinel_allow_node_reboot': True, 'nvsentinel_dry_run': True}, {}),
+            ({'nvsentinel_effective_mode': 'cordon'}, {'nodes': 1}),
+            ({'nvsentinel_effective_gpu_node_count': 3}, {'nodes': 1}),
+            ({'nvsentinel_effective_gpu_node_count': 3}, {'nodes': 0}),
+            ({'nvsentinel_pod_monitor_available': True}, {'podmonitor': False}),
+        ]
+        for variables, state in cases:
+            with self.subTest(variables=variables, state=state):
+                rc, output, trace, values = self.run_role(variables, state)
+                self.assertNotEqual(rc, 0, output)
+                self.assertIn('role-resolved', output)
+                self.assert_no_writes(trace)
+                self.assertIsNone(values)
+        rc, output, trace, _ = self.run_role(
+            {'nvsentinel_effective_mode': 'remediate'}, check=True)
+        self.assertNotEqual(rc, 0, output)
+        self.assert_no_writes(trace)
+
+    def test_exclusions_reject_malformed_selectors_before_writes(self):
+        for exclusions in ['bad', {}, ['bad'], [{'unknown': 'field'}],
+                           [{'matchLabels': ['bad']}], [{'matchLabels': {'zone': 1}}],
+                           [{'matchExpressions': 'bad'}],
+                           [{'matchExpressions': [{'key': 'zone', 'operator': 'Invalid'}]}],
+                           [{'matchExpressions': [{'key': 'zone', 'operator': 'In', 'values': []}]}],
+                           [{'matchExpressions': [{'key': 'zone', 'operator': 'Exists', 'values': ['a']}]}]]:
+            with self.subTest(exclusions=exclusions):
+                rc, output, trace, _ = self.run_role(
+                    {'nvsentinel_janitor_extra_exclusions': exclusions})
+                self.assertNotEqual(rc, 0, output)
+                self.assertIn('exclusion', output.lower())
+                self.assert_no_writes(trace)
+
+    def test_exclusions_preserve_valid_selectors_and_control_plane(self):
+        exclusions = [{'matchLabels': {'zone': 'a'}},
+                      {'matchExpressions': [{'key': 'zone', 'operator': 'In', 'values': ['b']},
+                                            {'key': 'maintenance', 'operator': 'Exists'}]}]
+        rc, output, _, values = self.run_role({'nvsentinel_janitor_extra_exclusions': exclusions})
+        self.assertEqual(rc, 0, output)
+        self.assertEqual(values['janitor']['config']['nodes']['exclusions'],
+                         [{'matchLabels': {'node-role.kubernetes.io/control-plane': ''}}, *exclusions])
+
     def test_zero_or_invalid_count_fails(self):
         for variables, state in [({}, {'nodes': 0}),
                                  ({'nvsentinel_gpu_node_count': 0}, {}),

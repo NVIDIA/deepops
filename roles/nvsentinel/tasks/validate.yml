@@ -25,6 +25,20 @@
       - nvsentinel_gpu_node_count is none or (nvsentinel_gpu_node_count | string is match('^[1-9][0-9]*$'))
     fail_msg: "GPU node count override nvsentinel_gpu_node_count must be a positive integer."
 
+- name: Validate the extra exclusion list
+  ansible.builtin.assert:
+    that:
+      - nvsentinel_janitor_extra_exclusions is sequence
+      - nvsentinel_janitor_extra_exclusions is not string
+      - nvsentinel_janitor_extra_exclusions is not mapping
+    fail_msg: "nvsentinel_janitor_extra_exclusions must be a list of label selectors."
+
+- name: Validate each extra exclusion selector
+  ansible.builtin.include_tasks: validate_exclusion.yml
+  loop: "{{ nvsentinel_janitor_extra_exclusions }}"
+  loop_control:
+    loop_var: nvsentinel_exclusion
+
 - name: Validate database and breaker settings
   ansible.builtin.assert:
     that:

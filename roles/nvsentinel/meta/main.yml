@@ -1,5 +1,7 @@
 ---
 galaxy_info:
+  namespace: nvidia
+  role_name: nvsentinel
   author: NVIDIA
   description: Install and configure NVSentinel for Kubernetes GPU health monitoring
   license: BSD-3-Clause
