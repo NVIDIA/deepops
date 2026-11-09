@@ -284,7 +284,7 @@ Optional GPU-aware scheduling (queues, gang scheduling, fractional GPUs) on top 
 
 ### NVSentinel GPU health monitoring
 
-Installed by default on GPU Operator clusters (not optional to install, but one switch turns it off). [NVSentinel](https://github.com/NVIDIA/NVSentinel) watches GPU and kernel health on each GPU node and, by default, cordons a node with a fatal GPU fault; it never touches running pods or reboots a node unless you choose that. Set `nvsentinel_enabled: false` to skip it. See the [NVSentinel guide](nvsentinel.md).
+Installed by default on GPU Operator clusters; set `nvsentinel_enabled: false` to disable. [NVSentinel](https://github.com/NVIDIA/NVSentinel) watches GPU and kernel health on each GPU node and, by default, cordons a node with a fatal GPU fault; it never touches running pods or reboots a node unless you choose that. See the [NVSentinel guide](nvsentinel.md).
 
 ## Cluster Maintenance
 

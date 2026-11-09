@@ -137,10 +137,18 @@ nvsentinel_enabled: true
 #nvsentinel_allow_node_reboot: false
 # Log what would happen without acting (global dry-run).
 #nvsentinel_dry_run: false
-# Database: 1 member (default) or 3 on clusters with 3+ schedulable nodes; storage class for its volume.
+# Database: 1 member (default) or 3 on clusters with 3+ nodes that can run its pods; storage class for its volume.
 #nvsentinel_db_members: 1
 #nvsentinel_storage_class: local-path
 # Circuit breaker: percentage of GPU nodes that may be cordoned within the window (empty = automatic).
 #nvsentinel_breaker_percentage: ""
 #nvsentinel_breaker_duration: "5m"
+#nvsentinel_priority_class: ""
+# Janitor skips control-plane nodes always; add more label selectors here.
+#nvsentinel_janitor_extra_exclusions: []
+#nvsentinel_pod_monitor: true                 # PodMonitor, only if the CRD exists
+#nvsentinel_assume_driver_installed: true     # default follows gpu_operator_preinstalled_nvidia_software
+#nvsentinel_chart_version: "v1.27.0"
+#nvsentinel_cert_manager_chart_version: "v1.21.1"
+# All settings: docs/k8s-cluster/nvsentinel.md.
 # Keep one node out of NVSentinel: set per host in config/inventory, e.g. `gpu01 nvsentinel_unmanaged=true`.

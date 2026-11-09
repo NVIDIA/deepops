@@ -3,8 +3,8 @@
 [NVSentinel](https://github.com/NVIDIA/NVSentinel) watches the GPUs and kernel
 messages on every GPU node of a Kubernetes cluster, turns what it finds into node
 conditions, labels and events, and can optionally act on serious faults: stop a
-node from receiving new work, move work off it, or reset or reboot it. It is part
-and is documented upstream in the
+node from receiving new work, move work off it, or reset or reboot it. It is
+documented upstream in the
 [NVSentinel docs](https://github.com/NVIDIA/NVSentinel/tree/main/docs).
 
 DeepOps installs it by default on Kubernetes clusters that use the GPU Operator.
@@ -40,7 +40,7 @@ Two rules adjust the default for you:
   it stepped down. Set `nvsentinel_mode_force: true` if you want `cordon` on a lab
   with one GPU node anyway.
 - **Counting GPU nodes:** DeepOps counts the nodes that carry the label
-  `nvidia.com/gpu.present=true`, as set by the GPU Operator. It does not use the
+  `nvidia.com/gpu.present` with the value `true`, as set by the GPU Operator. It does not use the
   inventory group, because that group can include CPU-only workers. If the
   GPU Operator has not labelled any node yet, the role stops with a message rather
   than guessing. Set `nvsentinel_gpu_node_count` to override the count.
@@ -61,7 +61,7 @@ installs it.
 To turn it off, set `nvsentinel_enabled: false` and run the same command. The
 Helm release is removed. The database volume and secrets, cert-manager, the
 `local-path` storage class and any labels already on nodes are left in place. The
-GPU Operator's DCGM service follows `nvsentinel_enabled`; set
+GPU Operator's DCGM service follows `nvsentinel_enabled`, so it is switched off too; set
 `gpu_operator_enable_dcgm: true` if you want to keep the DCGM service without
 NVSentinel.
 
@@ -182,7 +182,7 @@ number of GPU nodes:
 | GPU nodes | Behavior |
 |---|---|
 | 1 | `observe` (see above) |
-| 2 to 9 | Trips only if **every** GPU node would be cordoned (`percentage: 100`) |
+| 2 to 9 | Trips only if every GPU node would be cordoned (threshold 100 %) |
 | 10 or more | Upstream default: 50 % within 5 minutes |
 
 Override with `nvsentinel_breaker_percentage` (1 to 100) and
@@ -193,12 +193,12 @@ the playbook so the count is refreshed, or set `nvsentinel_gpu_node_count`.
 
 | Needed | What DeepOps does |
 |---|---|
-| GPU Operator DCGM service (port 5555) | `gpu_operator_enable_dcgm` now follows `nvsentinel_enabled`, so the service is on by default. dcgm-exporter then uses this standalone DCGM service, which is the GPU Operator's normal mode. On an existing cluster the next GPU Operator run adds it. |
+| GPU Operator DCGM service (port 5555) | **Changed in this release:** `gpu_operator_enable_dcgm` now follows `nvsentinel_enabled`, so the service is on by default (it was off before). dcgm-exporter then uses this standalone DCGM service, which is the GPU Operator's normal mode. On an existing cluster the next GPU Operator run adds it. |
 | Host-installed drivers | The labeler setting follows `gpu_operator_preinstalled_nvidia_software` (default `true`). Override with `nvsentinel_assume_driver_installed`. |
 | Kubernetes 1.34 or newer | Checked by the role. |
 | cert-manager 1.21 or newer (from `cordon` up) | Installed (chart v1.21.1, namespace `cert-manager`) if it is missing. If cert-manager or its CRDs already exist and are older than 1.21, or the version cannot be read, the role stops. DeepOps never upgrades an existing cert-manager. Upgrade it yourself, or use `observe`. |
 | A storage class for the database (from `cordon` up) | Kubespray's `local_path_provisioner` is enabled (set in `config.example`) with `local_path_provisioner_is_default_storageclass: "false"`, so your cluster's default class is unchanged. The database uses `nvsentinel_storage_class` (default `local-path`) explicitly. To use your own class, set the variable to its name. The role stops if the class does not exist. |
-| A database (from `cordon` up) | The [Percona Server for MongoDB operator](https://docs.percona.com/percona-operator-for-mongodb/) with **one** member (`nvsentinel_db_members: 1`). Use `3` on clusters with three or more schedulable nodes. Credentials are generated inside the cluster and are not written to logs. |
+| A database (from `cordon` up) | The [Percona Server for MongoDB operator](https://docs.percona.com/percona-operator-for-mongodb/) with **one** member (`nvsentinel_db_members: 1`). Use `3` on clusters with three or more nodes that can run the database pods (no taint the pods do not tolerate). Credentials are generated inside the cluster and are not written to logs. |
 | Prometheus PodMonitor | Enabled only if the PodMonitor CRD exists (`nvsentinel_pod_monitor: true` to allow it). |
 
 While the database is down, monitors keep writing node conditions, but cordon and
@@ -233,7 +233,8 @@ use it on a shared or regulated cluster.
   and keeps the database's automatic upgrades disabled (`upgradeOptions.apply:
   disabled`).
 - **Third-party components.** cert-manager and the Percona operator are new on a
-  cluster that did not have them. NVSentinel releases often and warns that APIs
+  cluster that did not have them, and their images come from external registries
+  (see the air-gapped list below). NVSentinel releases often and warns that APIs
   may change; DeepOps pins one chart version (see [Upgrading](#upgrading)).
 
 ### Images for air-gapped sites
@@ -242,7 +243,7 @@ Mirror these images (chart v1.27.0). The set grows with the step you choose.
 
 | From | Images |
 |---|---|
-| Every step | `ghcr.io/nvidia/nvsentinel/{gpu-health-monitor (tags v1.27.0-dcgm-3.x and v1.27.0-dcgm-4.x),labeler,metadata-collector,platform-connectors,syslog-health-monitor}:v1.27.0` |
+| Every step | `ghcr.io/nvidia/nvsentinel/{labeler,metadata-collector,platform-connectors,syslog-health-monitor}:v1.27.0`, and `ghcr.io/nvidia/nvsentinel/gpu-health-monitor` with both tags `v1.27.0-dcgm-3.x` and `v1.27.0-dcgm-4.x` (the chart runs the one that matches the node's DCGM) |
 | `cordon` and up | `ghcr.io/nvidia/nvsentinel/fault-quarantine:v1.27.0` |
 | | `percona/percona-server-mongodb:8.0.26-11`, `percona/percona-server-mongodb-operator:1.23.0`, `percona/fluentbit:5.0.9-1`, `percona/mongodb_exporter:0.40.0` |
 | | `docker.io/lachlanevenson/k8s-kubectl:v1.25.4`, `ghcr.io/rtsp/docker-mongosh:2.5.2` (helper images) |
@@ -258,11 +259,11 @@ with the `nvsentinel_chart` and `nvsentinel_cert_manager_*` variables.
 
 ## Footprint
 
-Requests from the rendered chart (limits are higher):
+Requests from the rendered chart (limits are higher; each GPU node runs one GPU health monitor):
 
 | What | CPU | Memory |
 |---|---|---|
-| Per GPU node: GPU health monitor, syslog monitor, metadata collector, platform connector | about 0.5 | about 0.9 GiB |
+| Per GPU node: GPU health monitor, syslog monitor, metadata collector, platform connector | 500m | 896 MiB |
 | Cluster-wide, `observe`: labeler | 0.1 | 128 MiB |
 | Cluster-wide, `cordon`: fault quarantine | 1 | 1 GiB |
 | `drain`: node drainer | 0.2 | 300 MiB |
@@ -279,6 +280,17 @@ DeepOps pins NVSentinel chart `v1.27.0` (`nvsentinel_chart_version`) and cert-ma
 per DeepOps release and not changed between releases. You can set another chart
 version, but only the pinned one is tested with these settings. Re-running the
 playbook applies the pinned version and your current settings.
+
+To move to a different version, set the two variables, test on a non-production
+cluster first, then re-run:
+
+```bash
+ansible-playbook -l k8s_cluster playbooks/k8s-cluster.yml --tags nvidia-gpu-operator,nvsentinel
+```
+
+Helm does not update a chart's CRDs on upgrade. When a new chart adds or changes
+them, apply them first, as shown in
+[Troubleshooting](#troubleshooting).
 
 ## Slurm
 
@@ -310,7 +322,7 @@ MongoDB 8.0.26-11, the image in chart v1.27.0, refuses to start on Linux kernels
 node that runs the database.
 
 **`no matches for kind "PerconaServerMongoDB"` when moving from `observe` to a
-higher step.** Helm installs a chart's CRDs only on first install, not on upgrade,
+higher step.** *One-time step for an existing `observe` release.* Helm installs a chart's CRDs only on first install, not on upgrade,
 so an existing `observe` release has no database CRDs. Apply them once, then run
 the playbook again:
 
@@ -348,3 +360,4 @@ Set in `config/group_vars/k8s_cluster.yml`. Defaults are in
 | `nvsentinel_assume_driver_installed` | follows `gpu_operator_preinstalled_nvidia_software` | Labeler driver setting |
 | `nvsentinel_unmanaged` | `false` | Per host: keep this node out of NVSentinel |
 | `nvsentinel_chart_version` | `v1.27.0` | Pinned chart version |
+| `nvsentinel_cert_manager_chart_version` | `v1.21.1` | cert-manager chart version installed when it is missing |
