@@ -1,0 +1,24 @@
+---
+- name: Verify NVSentinel guards and check-mode without a cluster
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Run the real role against strict kubectl and Helm fixtures
+      ansible.builtin.command:
+        argv:
+          - /opt/nvsentinel-ci/venv/bin/python
+          - -m
+          - unittest
+          - discover
+          - -s
+          - /opt/nvsentinel-ci/ci-tests
+          - -v
+      environment:
+        PATH: "/opt/nvsentinel-ci/venv/bin:{{ ansible_env.PATH | default('/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin') }}"
+      timeout: 600
+      register: nvsentinel_ci_tests
+      changed_when: false
+
+    - name: Show individual role test results
+      ansible.builtin.debug:
+        var: nvsentinel_ci_tests.stderr_lines

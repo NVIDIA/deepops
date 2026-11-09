@@ -1,0 +1,31 @@
+---
+- name: Prepare isolated offline role test environments
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Require the expected Ubuntu release
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == 'Ubuntu'
+          - ansible_distribution_version == expected_ubuntu_version
+
+    - name: Install Python virtual environment support
+      ansible.builtin.apt:
+        name: python3-venv
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Create the isolated test workspace
+      ansible.builtin.file:
+        path: /opt/nvsentinel-ci
+        state: directory
+        mode: "0755"
+
+    - name: Install the pinned offline test dependencies
+      ansible.builtin.pip:
+        name:
+          - ansible-core==2.17.14
+          - PyYAML==6.0.2
+        virtualenv: /opt/nvsentinel-ci/venv
+        virtualenv_command: python3 -m venv

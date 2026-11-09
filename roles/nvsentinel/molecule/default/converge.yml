@@ -1,0 +1,37 @@
+---
+- name: Stage the real role and offline tests in each container
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Create role and test directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - /opt/nvsentinel-ci/roles/nvsentinel
+        - /opt/nvsentinel-ci/roles/nvsentinel/tests
+        - /opt/nvsentinel-ci/ci-tests
+
+    - name: Copy the real role without Galaxy dependencies or generated files
+      ansible.builtin.copy:
+        src: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/{{ item }}"
+        dest: /opt/nvsentinel-ci/roles/nvsentinel/
+        mode: preserve
+      loop:
+        - defaults
+        - tasks
+        - templates
+        - meta
+
+    - name: Copy the role owner's real-role test harness
+      ansible.builtin.copy:
+        src: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/tests/test_role.py"
+        dest: /opt/nvsentinel-ci/roles/nvsentinel/tests/test_role.py
+        mode: "0644"
+
+    - name: Copy additional CI check-mode assertions
+      ansible.builtin.copy:
+        src: tests/test_ci.py
+        dest: /opt/nvsentinel-ci/ci-tests/test_ci.py
+        mode: "0644"

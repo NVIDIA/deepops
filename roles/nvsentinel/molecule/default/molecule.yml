@@ -1,0 +1,24 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: nvsentinel-ubuntu-2204
+    image: geerlingguy/docker-ubuntu2204-ansible
+    pre_build_image: true
+    command: sleep infinity
+  - name: nvsentinel-ubuntu-2404
+    image: geerlingguy/docker-ubuntu2404-ansible
+    pre_build_image: true
+    command: sleep infinity
+provisioner:
+  name: ansible
+  inventory:
+    host_vars:
+      nvsentinel-ubuntu-2204:
+        expected_ubuntu_version: "22.04"
+      nvsentinel-ubuntu-2404:
+        expected_ubuntu_version: "24.04"
+verifier:
+  name: ansible
