@@ -2,22 +2,24 @@
 # Own variables are read with defaults so this file works before the role's defaults/main.yml lands.
 # cert-manager is only needed from `cordon` up (the observe render has no Certificate objects).
 - name: nvsentinel | cert-manager prerequisite
-  when: (nvsentinel_mode | default('cordon')) in ['cordon', 'drain', 'remediate']
+  when: (nvsentinel_effective_mode | default(nvsentinel_mode | default('cordon'))) in ['cordon', 'drain', 'remediate']
   block:
     - name: nvsentinel | look for an existing cert-manager deployment
       command: >-
-        kubectl -n {{ nvsentinel_cert_manager_namespace | default('cert-manager') }} get deployment cert-manager
+        {{ nvsentinel_kubectl_binary | default('/usr/local/bin/kubectl') }} -n {{ nvsentinel_cert_manager_namespace | default('cert-manager') }} get deployment cert-manager
         -o jsonpath={.spec.template.spec.containers[0].image}
       register: nvsentinel_cm_image
       changed_when: false
+      check_mode: false
       failed_when:
         - nvsentinel_cm_image.rc != 0
         - "'NotFound' not in nvsentinel_cm_image.stderr"
 
     - name: nvsentinel | look for cert-manager CRDs
-      command: kubectl get crd certificates.cert-manager.io -o name
+      command: "{{ nvsentinel_kubectl_binary | default('/usr/local/bin/kubectl') }} get crd certificates.cert-manager.io -o name"
       register: nvsentinel_cm_crd
       changed_when: false
+      check_mode: false
       failed_when:
         - nvsentinel_cm_crd.rc != 0
         - "'NotFound' not in nvsentinel_cm_crd.stderr"
@@ -41,18 +43,18 @@
           nvsentinel_cm_installed is version('1.' ~ (nvsentinel_cert_manager_min_minor | default(21)) ~ '.0', '<')
 
     - name: nvsentinel | add jetstack helm repo
-      command: /usr/local/bin/helm repo add jetstack "{{ nvsentinel_cert_manager_helm_repo | default('https://charts.jetstack.io') }}"
+      command: "{{ nvsentinel_helm_binary | default('/usr/local/bin/helm') }} repo add jetstack {{ nvsentinel_cert_manager_helm_repo | default('https://charts.jetstack.io') | quote }}"
       changed_when: false
       when: not (nvsentinel_cm_found or nvsentinel_cm_crds_found)
 
     - name: nvsentinel | refresh helm repo index
-      command: /usr/local/bin/helm repo update jetstack
+      command: "{{ nvsentinel_helm_binary | default('/usr/local/bin/helm') }} repo update jetstack"
       changed_when: false
       when: not (nvsentinel_cm_found or nvsentinel_cm_crds_found)
 
     - name: nvsentinel | install cert-manager (only when missing)
       command: >-
-        /usr/local/bin/helm upgrade --install cert-manager jetstack/cert-manager
+        {{ nvsentinel_helm_binary | default('/usr/local/bin/helm') }} upgrade --install cert-manager jetstack/cert-manager
         --version {{ nvsentinel_cert_manager_chart_version | default('v1.21.1') }}
         --namespace {{ nvsentinel_cert_manager_namespace | default('cert-manager') }} --create-namespace
         --set crds.enabled=true --wait --timeout 300s

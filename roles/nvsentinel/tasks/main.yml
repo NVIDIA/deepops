@@ -1,0 +1,33 @@
+---
+- name: Manage NVSentinel
+  environment:
+    KUBECONFIG: "{{ nvsentinel_kubeconfig }}"
+  block:
+    - name: Validate requested NVSentinel settings
+      ansible.builtin.include_tasks: validate.yml
+      when: nvsentinel_enabled | bool
+
+    - name: Discover cluster capabilities and resolve the mode
+      ansible.builtin.include_tasks: discover.yml
+      when: nvsentinel_enabled | bool
+
+    - name: Check NVSentinel prerequisites
+      ansible.builtin.include_tasks: prereqs.yml
+      when: nvsentinel_enabled | bool
+
+    - name: Install NVSentinel with complete values
+      ansible.builtin.include_tasks: install.yml
+      when:
+        - nvsentinel_enabled | bool
+        - not ansible_check_mode
+
+    - name: Report NVSentinel check-mode result
+      ansible.builtin.debug:
+        msg: "NVSentinel would install in {{ nvsentinel_effective_mode }} mode; no cluster changes made."
+      when:
+        - nvsentinel_enabled | bool
+        - ansible_check_mode
+
+    - name: Remove disabled NVSentinel release
+      ansible.builtin.include_tasks: uninstall.yml
+      when: not (nvsentinel_enabled | bool)

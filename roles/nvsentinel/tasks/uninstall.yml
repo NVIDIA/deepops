@@ -1,0 +1,33 @@
+---
+# Do not interpret an API/auth failure as an absent release. Keep shared
+# prerequisites, retained database volumes/secrets and node state untouched.
+- name: Find the NVSentinel release in any state
+  ansible.builtin.command:
+    argv:
+      - "{{ nvsentinel_helm_binary }}"
+      - list
+      - --all
+      - --namespace
+      - "{{ nvsentinel_namespace }}"
+      - --filter
+      - "^{{ nvsentinel_release_name | regex_escape }}$"
+      - --output
+      - json
+  register: nvsentinel_releases
+  changed_when: false
+  check_mode: false
+
+- name: Uninstall the disabled NVSentinel release
+  ansible.builtin.command:
+    argv:
+      - "{{ nvsentinel_helm_binary }}"
+      - uninstall
+      - "{{ nvsentinel_release_name }}"
+      - --namespace
+      - "{{ nvsentinel_namespace }}"
+      - --wait
+      - --timeout
+      - "{{ nvsentinel_helm_timeout }}"
+  when: nvsentinel_releases.stdout | from_json | length > 0
+  changed_when: true
+  no_log: true

@@ -1,0 +1,91 @@
+---
+- name: Read the Kubernetes server version
+  ansible.builtin.command:
+    argv: ["{{ nvsentinel_kubectl_binary }}", version, -o, json]
+  register: nvsentinel_server_version
+  changed_when: false
+  check_mode: false
+
+- name: Require Kubernetes 1.34 or newer
+  ansible.builtin.assert:
+    that:
+      - (nvsentinel_server_version.stdout | from_json).serverVersion.gitVersion | regex_replace('^v', '') is version('1.34.0', '>=', version_type='semver')
+    fail_msg: "NVSentinel requires a stable Kubernetes server version >= 1.34.0."
+
+- name: Count live GPU-labelled nodes
+  ansible.builtin.command:
+    argv: ["{{ nvsentinel_kubectl_binary }}", get, nodes, -l, "nvidia.com/gpu.present=true", -o, json]
+  register: nvsentinel_gpu_nodes
+  changed_when: false
+  check_mode: false
+  when: nvsentinel_gpu_node_count is none
+
+- name: Resolve the GPU node count
+  ansible.builtin.set_fact:
+    nvsentinel_effective_gpu_node_count: >-
+      {{ nvsentinel_gpu_node_count | int if nvsentinel_gpu_node_count is not none
+         else (nvsentinel_gpu_nodes.stdout | from_json)['items'] | length }}
+
+- name: Refuse a cluster without labelled GPU nodes
+  ansible.builtin.assert:
+    that:
+      - nvsentinel_effective_gpu_node_count | int > 0
+    fail_msg: >-
+      GPU node count is zero. Wait for the GPU Operator to label nodes with
+      nvidia.com/gpu.present=true, or set a positive nvsentinel_gpu_node_count override.
+
+- name: Resolve the effective mode without changing the requested setting
+  ansible.builtin.set_fact:
+    nvsentinel_effective_mode: >-
+      {{ 'observe' if nvsentinel_effective_gpu_node_count | int == 1 and not (nvsentinel_mode_force | bool)
+         else nvsentinel_mode }}
+
+- name: Explain the single-GPU-node fallback
+  ansible.builtin.debug:
+    msg: >-
+      Only one GPU node is available; stepping down from {{ nvsentinel_mode }} to observe.
+      Set nvsentinel_mode_force: true only if cordoning the sole GPU node is intentional.
+  when: nvsentinel_effective_mode != nvsentinel_mode
+
+- name: Check for the PodMonitor CRD
+  ansible.builtin.command:
+    argv: ["{{ nvsentinel_kubectl_binary }}", get, crd, podmonitors.monitoring.coreos.com, --ignore-not-found, -o, json]
+  register: nvsentinel_pod_monitor_crd
+  changed_when: false
+  check_mode: false
+
+- name: Resolve PodMonitor availability
+  ansible.builtin.set_fact:
+    nvsentinel_pod_monitor_available: "{{ nvsentinel_pod_monitor_crd.stdout | trim | length > 0 and nvsentinel_pod_monitor | bool }}"
+
+- name: Require the database storage class
+  ansible.builtin.command:
+    argv: ["{{ nvsentinel_kubectl_binary }}", get, storageclass, "{{ nvsentinel_storage_class }}", -o, name]
+  changed_when: false
+  check_mode: false
+  when: nvsentinel_effective_mode != 'observe'
+
+- name: Initialize the node opt-out list
+  ansible.builtin.set_fact:
+    nvsentinel_unmanaged_nodes: []
+
+- name: Collect explicit per-host opt-outs
+  ansible.builtin.set_fact:
+    nvsentinel_unmanaged_nodes: "{{ nvsentinel_unmanaged_nodes + [hostvars[item].kube_override_hostname | default(item)] }}"
+  loop: "{{ groups['k8s_cluster'] | default([]) }}"
+  when: hostvars[item].nvsentinel_unmanaged | default(false) | bool
+
+- name: Read actual node names for opt-out validation
+  ansible.builtin.command:
+    argv: ["{{ nvsentinel_kubectl_binary }}", get, nodes, -o, json]
+  register: nvsentinel_all_nodes
+  changed_when: false
+  check_mode: false
+  when: nvsentinel_unmanaged_nodes | length > 0
+
+- name: Refuse an opt-out that cannot be mapped to a live node
+  ansible.builtin.assert:
+    that:
+      - nvsentinel_unmanaged_nodes | difference((nvsentinel_all_nodes.stdout | from_json)['items'] | map(attribute='metadata.name') | list) | length == 0
+    fail_msg: "An nvsentinel_unmanaged host is not a Kubernetes node; set its kube_override_hostname to the actual node name."
+  when: nvsentinel_unmanaged_nodes | length > 0

@@ -2,7 +2,27 @@
 nvsentinel_enabled: true
 # observe | cordon | drain | remediate
 nvsentinel_mode: cordon
+nvsentinel_mode_force: false
+nvsentinel_allow_node_reboot: false
+nvsentinel_dry_run: false
+# Null discovers nodes from the live nvidia.com/gpu.present=true label.
+nvsentinel_gpu_node_count: null
+nvsentinel_db_members: 1
+nvsentinel_priority_class: ""
+nvsentinel_breaker_percentage: ""
+nvsentinel_breaker_duration: "5m"
+nvsentinel_janitor_extra_exclusions: []
+# Still disabled automatically when the PodMonitor CRD is absent.
+nvsentinel_pod_monitor: true
+nvsentinel_chart: "oci://ghcr.io/nvidia/nvsentinel"
 nvsentinel_chart_version: "v1.27.0"
+nvsentinel_release_name: nvsentinel
+nvsentinel_namespace: nvsentinel
+nvsentinel_helm_timeout: "10m"
+nvsentinel_config_dir: /var/lib/deepops/nvsentinel
+nvsentinel_kubeconfig: /etc/kubernetes/admin.conf
+nvsentinel_kubectl_binary: /usr/local/bin/kubectl
+nvsentinel_helm_binary: /usr/local/bin/helm
 nvsentinel_cert_manager_chart_version: "v1.21.1"
 nvsentinel_cert_manager_min_minor: 21
 nvsentinel_cert_manager_namespace: cert-manager

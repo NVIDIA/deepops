@@ -305,6 +305,20 @@
     - nvidia
   when: deepops_gpu_operator_enabled|default(true) | bool == true
 
+- name: Manage NVSentinel after the GPU Operator
+  hosts: kube_control_plane[0]
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Manage NVSentinel
+      ansible.builtin.include_role:
+        name: nvsentinel
+      when: deepops_gpu_operator_enabled | default(true) | bool
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
+  tags:
+    - nvidia
+    - nvsentinel
+
 - name: Setup a volume for NFS, install nfs_utils, and install NFS Helm chart
   import_playbook: k8s-cluster/nfs-client-provisioner.yml
   when: k8s_nfs_client_provisioner | default('false')

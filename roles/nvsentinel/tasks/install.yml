@@ -1,0 +1,52 @@
+---
+- name: Apply explicit node opt-outs before starting controllers
+  ansible.builtin.command:
+    argv:
+      - "{{ nvsentinel_kubectl_binary }}"
+      - label
+      - node
+      - "{{ item }}"
+      - nvsentinel.dgxc.nvidia.com/managed=false
+      - --overwrite
+  loop: "{{ nvsentinel_unmanaged_nodes | unique }}"
+  register: nvsentinel_label_result
+  changed_when: "'not labeled' not in nvsentinel_label_result.stdout"
+
+- name: Create the private NVSentinel configuration directory
+  ansible.builtin.file:
+    path: "{{ nvsentinel_config_dir }}"
+    state: directory
+    mode: "0700"
+
+# The Percona operator generates database credentials in-cluster. No password
+# lookup, Secret read, or controller-side credential generation is needed here.
+- name: Render the complete NVSentinel values file
+  ansible.builtin.template:
+    src: values.yaml.j2
+    dest: "{{ nvsentinel_config_dir }}/values.yaml"
+    mode: "0600"
+  no_log: true
+  diff: false
+
+- name: Install or reconcile NVSentinel without retained Helm values
+  ansible.builtin.command:
+    argv:
+      - "{{ nvsentinel_helm_binary }}"
+      - upgrade
+      - --install
+      - "{{ nvsentinel_release_name }}"
+      - "{{ nvsentinel_chart }}"
+      - --version
+      - "{{ nvsentinel_chart_version }}"
+      - --namespace
+      - "{{ nvsentinel_namespace }}"
+      - --create-namespace
+      - --reset-values
+      - --values
+      - "{{ nvsentinel_config_dir }}/values.yaml"
+      - --wait
+      - --wait-for-jobs
+      - --timeout
+      - "{{ nvsentinel_helm_timeout }}"
+  changed_when: true
+  no_log: true
