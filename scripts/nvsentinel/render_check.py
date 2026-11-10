@@ -6,6 +6,8 @@ import jinja2, yaml
 
 TEMPLATE = os.environ["NVSENTINEL_TEMPLATE"]
 CHART = os.environ["NVSENTINEL_CHART"]
+with open(os.path.join(os.path.dirname(TEMPLATE), "..", "defaults", "main.yml")) as f:
+    DB_IMAGE_TAG = yaml.safe_load(f)["nvsentinel_db_image_tag"]
 MODES = ["observe", "cordon", "drain", "remediate"]
 fails = []
 
@@ -24,6 +26,8 @@ def get(d, path, default=None):
 
 
 def render_values(**v):
+    # Match the role's image default without overriding explicit test inputs.
+    v.setdefault("nvsentinel_db_image_tag", DB_IMAGE_TAG)
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(TEMPLATE)),
                              trim_blocks=True, lstrip_blocks=False)
     env.filters["to_json"] = json.dumps
@@ -72,6 +76,7 @@ for mode in MODES:
               f"{tag}: janitor control-plane exclusion missing")
         if lvl >= 1:
             db = v["mongodb-store"]
+            check(get(db, "psmdb-db.image.tag") == DB_IMAGE_TAG, f"{tag}: database image tag")
             check(db["useBitnami"] is False and db["usePerconaOperator"] is True, f"{tag}: percona flags")
             rs = get(db, "psmdb-db.replsets.rs0")
             check(rs["size"] == members, f"{tag}: size")
@@ -112,6 +117,8 @@ for mode in MODES:
         if lvl >= 1:
             psmdb = [d for d in docs if d.get("kind") == "PerconaServerMongoDB"][0]
             r0 = psmdb["spec"]["replsets"][0]
+            check(psmdb["spec"]["image"] == f"percona/percona-server-mongodb:{DB_IMAGE_TAG}",
+                  f"{tag}: rendered database image")
             check(r0["size"] == members, f"{tag}: rendered size")
             check(get(r0, "volumeSpec.persistentVolumeClaim.storageClassName") == "local-path",
                   f"{tag}: rendered storageClassName")
@@ -124,6 +131,18 @@ for mode in MODES:
                   f"{tag}: rendered DISABLE_TELEMETRY")
             ba = breaker_args(docs)
             check(ba is not None and "--circuit-breaker-enabled=true" in ba, f"{tag}: breaker arg")
+
+# An explicit image input must still win over the role default.
+image_override = "test-tag@sha256:" + "a" * 64
+t = render_values(nvsentinel_mode="cordon", nvsentinel_db_members=1,
+                  nvsentinel_gpu_node_count=3, nvsentinel_db_image_tag=image_override)
+check(get(yaml.safe_load(t), "mongodb-store.psmdb-db.image.tag") == image_override,
+      "explicit database image override lost")
+docs, err = helm(t)
+check(docs is not None, f"image override: helm template failed: {err}")
+check(any(d.get("kind") == "PerconaServerMongoDB"
+          and d["spec"]["image"] == f"percona/percona-server-mongodb:{image_override}"
+          for d in docs or []), "rendered database image override lost")
 
 # dry-run goes through the global key only
 t = render_values(nvsentinel_mode="cordon", nvsentinel_db_members=1, nvsentinel_gpu_node_count=3, nvsentinel_dry_run=True)
