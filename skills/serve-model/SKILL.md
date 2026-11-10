@@ -5,7 +5,10 @@ description: Use when serving a cached model on one GPU with vLLM, checking a lo
 
 # Serve a model on one node
 
-Run from the repository root on the allocated serving node. Read the
+Use a DeepOps checkout on the allocated serving node (or inside the workload
+container) with `scripts/validation/validate_model_cache.py` and
+`scripts/validation/validate_vllm.py` readable and their parent directories
+traversable by the consumer UID; run from that checkout's root. Read the
 [vLLM quickstart](../../docs/model-workflows/vllm-quickstart.md) for the exact
 installation and foreground launch commands. This skill does not allocate a GPU
 or authorize a workload.
