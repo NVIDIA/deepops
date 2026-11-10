@@ -289,6 +289,20 @@ is much lower than the requests.
 
 ## Upgrading
 
+**Plan for DCGM restarts during GPU Operator changes.** Restarting DCGM on all
+GPU nodes at once can produce fatal `GpuDcgmConnectivityFailure` events and trip
+even the 100 % circuit-breaker threshold. Event processing then stops, including
+automatic uncordon after DCGM recovers. Before the operator change, apply
+`nvsentinel_mode: observe` with a separate `--tags nvsentinel` run and keep that
+setting throughout maintenance; the full playbook runs the GPU Operator before
+NVSentinel, so changing both in the same run is too late. Observe mode suspends
+automatic fault actions; it does not clear existing cordons. Restore the previous
+mode only after DCGM and the GPU health monitors are healthy and transient fault
+conditions have cleared. If the breaker already tripped, inspect each affected
+node and follow [When a node is cordoned](#when-a-node-is-cordoned) to uncordon
+healthy nodes, reset the breaker and restart fault quarantine. Do not simply
+raise the threshold or uncordon nodes with unresolved faults.
+
 The Percona `8.0.34-15` image pin is supported here only for fresh installs with
 fresh database volumes. Existing database upgrades, downgrades and volume reuse
 have not been validated. Do not apply the new default to an existing database
@@ -330,6 +344,27 @@ kubectl -n gpu-operator get pods | grep dcgm
 
 The service appears a minute or two after the GPU Operator run finishes. If you
 set `gpu_operator_enable_dcgm: false`, the monitor has nothing to talk to.
+
+**The NVIDIA runtime disappears after a full Kubernetes playbook rerun.** This
+is a known interaction between Kubespray's containerd configuration and the GPU
+Operator toolkit, not an NVSentinel image-import failure. Kubespray rewrites
+`/etc/containerd/config.toml` from its template and restarts containerd. With the
+default template settings, that removes the `imports` entry for the toolkit's
+`/etc/containerd/conf.d/` runtime drop-in. The drop-in can still exist while
+containerd no longer loads the `nvidia` runtime; GPU pod operations such as
+`kubectl exec` into DCGM can then fail with a missing-runtime error.
+
+On the affected node, check the top-level `imports` entry and the toolkit drop-in,
+and inspect the toolkit pod's logs. If the import is missing, arrange a maintenance
+window and recreate **only that node's** `nvidia-container-toolkit-daemonset` pod
+in the GPU Operator namespace. The toolkit reapplies its runtime configuration
+and may restart containerd; this can affect GPU workloads. Verify that the import
+and `nvidia` runtime are loaded again and that DCGM pod operations work before
+moving to another node. Use the [DCGM maintenance precautions](#upgrading) above.
+This is recovery, not a permanent fix: another full Kubespray run can overwrite
+the import again. For NVSentinel-only settings changes, use `--tags nvsentinel`
+rather than rerunning the whole Kubernetes playbook. The NVSentinel role does not
+manage containerd configuration.
 
 **The database pod is `Pending`.** Its volume claim has no storage class to bind
 to. Check `kubectl -n nvsentinel get pvc` and that the class named by
