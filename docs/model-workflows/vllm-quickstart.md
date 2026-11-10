@@ -13,7 +13,7 @@ is needed. Review the model license before use.
   in a login shell outside your allocation. Do not override `CUDA_VISIBLE_DEVICES`
   to reach other GPUs. This guide does not allocate resources or install drivers.
 - A driver compatible with the selected vLLM wheel's CUDA runtime. The tagged
-  v0.31.0 NVIDIA guide describes CUDA 12.9 wheels and compute capability 7.5+.
+  v0.32.0 NVIDIA guide describes CUDA 13.0 (default) and 12.9 wheels and compute capability 7.5+.
   Check the upstream installation guide for your GPU/driver before installing;
   a working `nvidia-smi` alone does not establish wheel compatibility.
 - Python **3.12** with venv support, the Python 3.12 development headers and a C
@@ -56,9 +56,9 @@ python3.12 -m venv "$HOME/.venvs/deepops-vllm"
 "$HOME/.venvs/deepops-vllm/bin/vllm" --version
 ```
 
-The example pins vLLM **0.31.0**, licensed under **Apache-2.0** (verified on
-2026-10-07 against the [tagged license](https://github.com/vllm-project/vllm/blob/v0.31.0/LICENSE)
-and [package metadata](https://pypi.org/project/vllm/0.31.0/)). This is the serving
+The example pins vLLM **0.32.0**, licensed under **Apache-2.0** (verified
+2026-10-07 (0.31.0) and rechecked for 0.32.0 against the [tagged license](https://github.com/vllm-project/vllm/blob/v0.32.0/LICENSE)
+and [package metadata](https://pypi.org/project/vllm/0.32.0/)). This is the serving
 package's license, not the model's or every dependency's. Transitive packages
 are not a full lockfile: record `pip freeze` with validation evidence, and use
 your site's reviewed wheel set for repeatable deployment. Do not mix an existing
@@ -210,8 +210,8 @@ It is not installed, required, or validated by this example.
 
 ## Primary sources (checked 2026-10-05)
 
-- [vLLM 0.31.0 package metadata](https://pypi.org/project/vllm/0.31.0/).
-- Tagged [GPU requirements](https://github.com/vllm-project/vllm/blob/v0.31.0/docs/getting_started/installation/gpu.md)
-  and [NVIDIA installation details](https://github.com/vllm-project/vllm/blob/v0.31.0/docs/getting_started/installation/gpu.cuda.inc.md).
-- Tagged [OpenAI-compatible server guide](https://github.com/vllm-project/vllm/blob/v0.31.0/docs/serving/online_serving/openai_compatible_server.md).
+- [vLLM 0.32.0 package metadata](https://pypi.org/project/vllm/0.32.0/).
+- Tagged [GPU requirements](https://github.com/vllm-project/vllm/blob/v0.32.0/docs/getting_started/installation/gpu.md)
+  and [NVIDIA installation details](https://github.com/vllm-project/vllm/blob/v0.32.0/docs/getting_started/installation/gpu.cuda.inc.md).
+- Tagged [OpenAI-compatible server guide](https://github.com/vllm-project/vllm/blob/v0.32.0/docs/serving/online_serving/openai_compatible_server.md).
 - [Shared-cache sources and writer pin](shared-cache.md#primary-sources-verified-2026-10-05).

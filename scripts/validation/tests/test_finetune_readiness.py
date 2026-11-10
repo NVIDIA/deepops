@@ -53,7 +53,7 @@ class ReadinessTests(unittest.TestCase):
             return 0, "--container-image --container-mounts", ""
         if command[0] == "srun" and "--gpus=1" in command:
             return 0, self.smoke_output, ""
-        self.fail("unexpected command: " + repr(command))
+        raise AssertionError("unexpected command: " + repr(command))
 
     def validate(self):
         with patch.object(self.validator, "run", side_effect=self.run_command):
