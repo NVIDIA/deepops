@@ -5,7 +5,10 @@ description: Use when serving a cached model on one GPU with vLLM, checking a lo
 
 # Serve a model on one node
 
-Run from the repository root on the allocated serving node. Read the
+Use a DeepOps checkout on the allocated serving node (or inside the workload
+container) with `scripts/validation/validate_model_cache.py` and
+`scripts/validation/validate_vllm.py` readable and their parent directories
+traversable by the consumer UID; run from that checkout's root. Read the
 [vLLM quickstart](../../docs/model-workflows/vllm-quickstart.md) for the exact
 installation and foreground launch commands. This skill does not allocate a GPU
 or authorize a workload.
@@ -29,7 +32,10 @@ or authorize a workload.
 
 1. Follow quickstart steps 1–2. Require cache validator exit `0` **and** `ok: true`
    as the actual reader before startup. Config alone is not a complete model;
-   name every required weight shard and tokenizer file.
+   name every required weight shard and tokenizer file. The three files in the
+   example are the set it was validated with; `finetune-model` also requires
+   `tokenizer_config.json`. Add it for any model whose tokenizer needs it, or
+   when one cache snapshot serves both workflows.
 2. Use quickstart step 3 unchanged for the public example: local snapshot and
    tokenizer, offline loading, one GPU, foreground process, loopback only. Never
    enable remote model code. `HF_HUB_OFFLINE=1` is not a firewall and belongs only

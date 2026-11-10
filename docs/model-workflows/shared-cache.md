@@ -92,6 +92,10 @@ export MODEL_REVISION=607a30d783dfa663caf39e06633721c8d4cfcd7e
   --revision "$MODEL_REVISION" --cache-dir "$HF_HUB_CACHE"
 ```
 
+The example list is what the vLLM quickstart needs. The fine-tuning readiness
+check also requires `tokenizer_config.json`, so download it too if the same
+snapshot will be used for fine-tuning.
+
 For another model, explicitly list all needed configuration, tokenizer and weight
 files. For sharded weights, include the index **and every referenced shard**.
 A successful download of `config.json` alone does not make a usable model.
@@ -107,7 +111,9 @@ when transferring it, not just a snapshot directory.
 ## 3. Validate as the consumer, then load a local snapshot
 
 On a reader node (or inside the actual workload container, with its real UID and
-mount), run the validator from the repository root:
+mount), use a DeepOps checkout present there with
+`scripts/validation/validate_model_cache.py` readable and its parent directories
+traversable by the consumer UID; run the validator from that checkout's root:
 
 ```bash
 python3 scripts/validation/validate_model_cache.py --json \

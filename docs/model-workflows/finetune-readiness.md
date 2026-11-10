@@ -24,7 +24,9 @@ uses Python's standard library and the existing local cache validator.
   an image or verify its framework compatibility, contents, trust or registry
   accessibility. The operator must choose a reviewed fine-tuning image.
 - Supported cache layout: `config.json`, `tokenizer_config.json`,
-  `tokenizer.json`, and either `model.safetensors` or
+  `tokenizer.json` (the vLLM quickstart's serving example lists only
+  `config.json`, `tokenizer.json` and the weights; this check is stricter and
+  requires `tokenizer_config.json` too), and either `model.safetensors` or
   `model.safetensors.index.json` with a nonempty `weight_map`. Every indexed
   shard must exist, be nonempty, and resolve within the cache. Weight indexes
   larger than 8 MiB fail closed. The explicit required-file list must include
@@ -74,7 +76,11 @@ srun --nodes=1 --ntasks=1 --gpus=1 --immediate=5 --time=1 \
 
 This may pull the container image. The allocation has a one-minute scheduler
 time limit and a five-second immediate-allocation limit; the local command has
-the configured timeout. A slow image pull can make the probe fail. Confirm job
+the configured timeout. A slow image pull can make the probe fail, because the
+five-second window is too short to pull an image: **pre-pull or pre-import the
+pinned image on the target node** (for example with the site's normal
+Enroot/Pyxis import step) before using `--gpu-smoke`, and treat a failure on a
+cold node as inconclusive. Confirm job
 termination through the site's normal procedure after a timeout; do not blindly
 retry. Require a zero exit and exactly one GPU row. No training, dataset loading,
 model loading or shared-cache mounting is performed by this probe. In particular,

@@ -39,8 +39,11 @@ is needed. Review the model license before use.
   production isolation, multi-node serving, and scheduler manifests are outside
   this example. The validator deliberately has no authentication options.
 
-The commands below run **on the allocated serving node**, from the repository
-root. Package installation can download large GPU dependencies. For disconnected
+The commands below run **on the allocated serving node**, from a DeepOps checkout
+present there with `scripts/validation/validate_model_cache.py` and
+`scripts/validation/validate_vllm.py` readable and their parent directories
+traversable by the consumer UID; run from that checkout's root.
+Package installation can download large GPU dependencies. For disconnected
 systems, prepare an approved wheel mirror first; offline model loading does not
 make package installation offline.
 
@@ -67,7 +70,7 @@ package problem. vLLM loads a local snapshot, not a mutable Hub repository name.
 The example model, `openai-community/gpt2` at
 `607a30d783dfa663caf39e06633721c8d4cfcd7e`, is listed as **MIT** in its
 [pinned model card](https://huggingface.co/openai-community/gpt2/blob/607a30d783dfa663caf39e06633721c8d4cfcd7e/README.md)
-(verified 2026-10-07). Review its license terms before use; re-check the model's
+(verified on 2026-10-07). Review its license terms before use; re-check the model's
 license and access requirements when selecting another model or revision.
 
 ```bash
@@ -80,7 +83,12 @@ python3 scripts/validation/validate_model_cache.py --json \
   --require-file config.json --require-file tokenizer.json --require-file model.safetensors
 ```
 
-Stop unless exit status is `0` and `ok` is `true`. For a different model, review
+Stop unless exit status is `0` and `ok` is `true`. These three files are the
+set this example was validated with. The fine-tuning readiness check
+([finetune-readiness.md](finetune-readiness.md)) additionally requires
+`tokenizer_config.json` because its validator insists on that layout; add it
+here too if your model's tokenizer needs it, or if one cache snapshot will serve
+both workflows. For a different model, review
 its complete tokenizer/configuration/weight file list, including every indexed
 shard. The validator only checks files you name. Never enable remote model code
 as a workaround; this example does not use `--trust-remote-code`.
