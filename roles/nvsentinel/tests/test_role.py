@@ -189,6 +189,7 @@ class RoleTests(unittest.TestCase):
         self.assertIsNotNone(values, output)
         self.assertFalse(values['global']['faultQuarantine']['enabled'])
         self.assertFalse(values['global']['mongodbStore']['enabled'])
+        self.assertNotIn('mongodb-store', values)
         self.assertIn('observe', output)
         self.assertFalse(any('cert-manager' in x for x in trace), trace)
         self.assertIn(['kubectl', 'get', 'nodes', '-l', 'nvidia.com/gpu.present=true', '-o', 'json'], trace)
@@ -213,6 +214,34 @@ class RoleTests(unittest.TestCase):
                 self.assertIn('v1.27.0', install)
                 self.assertNotIn('systemUsers', values['mongodb-store']['psmdb-db'])
                 self.assertFalse(any('secret' in x for x in trace))
+
+    def test_database_modes_render_digest_pinned_image(self):
+        for mode in ('cordon', 'drain', 'remediate'):
+            with self.subTest(mode=mode):
+                rc, output, _, values = self.run_role(
+                    {'nvsentinel_mode': mode, 'nvsentinel_allow_node_reboot': True})
+                self.assertEqual(rc, 0, output)
+                self.assertTrue(values['global']['mongodbStore']['enabled'])
+                self.assertEqual(
+                    values['mongodb-store']['psmdb-db'].get('image'),
+                    {'tag': '8.0.34-15@sha256:'
+                     'e1004538c31619ec471aa39423ef9ffa39a598750661c2d6c66d785de852d538'})
+
+    def test_database_image_override_reaches_values_unchanged(self):
+        image_tag = 'test-build@sha256:' + 'a' * 64
+        rc, output, _, values = self.run_role({'nvsentinel_db_image_tag': image_tag})
+        self.assertEqual(rc, 0, output)
+        self.assertEqual(values['mongodb-store']['psmdb-db'].get('image'), {'tag': image_tag})
+
+    def test_database_image_override_omitted_when_database_off(self):
+        for variables, state in [({'nvsentinel_mode': 'observe'}, {'nodes': 3}),
+                                 ({'nvsentinel_mode': 'cordon'}, {'nodes': 1})]:
+            with self.subTest(variables=variables, state=state):
+                rc, output, _, values = self.run_role(
+                    {**variables, 'nvsentinel_db_image_tag': 'unused-build'}, state)
+                self.assertEqual(rc, 0, output)
+                self.assertFalse(values['global']['mongodbStore']['enabled'])
+                self.assertNotIn('mongodb-store', values)
 
     def test_podmonitor_crd_gates_even_explicit_enable(self):
         for exists in (False, True):

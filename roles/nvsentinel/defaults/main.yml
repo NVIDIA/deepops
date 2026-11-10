@@ -10,6 +10,9 @@ nvsentinel_dry_run: false
 # Null discovers nodes from the live nvidia.com/gpu.present=true label.
 nvsentinel_gpu_node_count: null
 nvsentinel_db_members: 1
+# Fresh database volumes only. Requires Linux < 6.19.0 or > 7.0.13.
+# The chart accepts tag@digest; keep the default image immutable.
+nvsentinel_db_image_tag: "8.0.34-15@sha256:e1004538c31619ec471aa39423ef9ffa39a598750661c2d6c66d785de852d538"
 nvsentinel_priority_class: ""
 nvsentinel_breaker_percentage: ""
 nvsentinel_breaker_duration: "5m"

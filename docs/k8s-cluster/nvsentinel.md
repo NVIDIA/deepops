@@ -205,6 +205,13 @@ While the database is down, monitors keep writing node conditions, but cordon an
 uncordon pause. Set `nvsentinel_priority_class` to give NVSentinel and its database
 a priority class on busy clusters.
 
+Database-backed modes require a supported kernel on every node that can run a
+database pod: **below Linux 6.19.0 or above 7.0.13**. Linux 6.19 through 7.0.13,
+including Ubuntu kernels reporting `7.0.0-x`, are unsupported. Use `observe`
+without the database on those kernels; see [Troubleshooting](#troubleshooting).
+The database image pin described here is for **fresh installs with fresh database
+volumes only**, not an upgrade or downgrade procedure for existing data.
+
 ## Security notes
 
 NVSentinel needs host access to read GPU and kernel state. Review this before you
@@ -245,7 +252,7 @@ Mirror these images (chart v1.27.0). The set grows with the step you choose.
 |---|---|
 | Every step | `ghcr.io/nvidia/nvsentinel/{labeler,metadata-collector,platform-connectors,syslog-health-monitor}:v1.27.0`, and `ghcr.io/nvidia/nvsentinel/gpu-health-monitor` with both tags `v1.27.0-dcgm-3.x` and `v1.27.0-dcgm-4.x` (the chart runs the one that matches the node's DCGM) |
 | `cordon` and up | `ghcr.io/nvidia/nvsentinel/fault-quarantine:v1.27.0` |
-| | `percona/percona-server-mongodb:8.0.26-11`, `percona/percona-server-mongodb-operator:1.23.0`, `percona/fluentbit:5.0.9-1`, `percona/mongodb_exporter:0.40.0` |
+| | `percona/percona-server-mongodb:8.0.34-15@sha256:e1004538c31619ec471aa39423ef9ffa39a598750661c2d6c66d785de852d538`, `percona/percona-server-mongodb-operator:1.23.0`, `percona/fluentbit:5.0.9-1`, `percona/mongodb_exporter:0.40.0` |
 | | `docker.io/lachlanevenson/k8s-kubectl:v1.25.4`, `ghcr.io/rtsp/docker-mongosh:2.5.2` (helper images) |
 | | cert-manager v1.21.1 from `quay.io/jetstack`: `cert-manager-{controller,webhook,cainjector,startupapicheck}` |
 | | the local-path provisioner images Kubespray deploys (provisioner v0.0.32) |
@@ -256,6 +263,13 @@ The chart itself is `oci://ghcr.io/nvidia/nvsentinel`. The rendered database spe
 also names `percona/percona-backup-mongodb` and `percona/pmm-client`; both
 features stay off in DeepOps. Chart repositories and image locations can be changed
 with the `nvsentinel_chart` and `nvsentinel_cert_manager_*` variables.
+
+DeepOps overrides the chart's database image tag with `nvsentinel_db_image_tag`.
+Its default includes the multi-architecture manifest digest, so mirroring must
+preserve that digest. The chart renders it as `repository:tag@sha256:digest`.
+If you choose another database build, set the complete `tag@sha256:digest` value
+and validate kernel and operator compatibility first. The override is omitted
+in `observe`, including automatic single-node step-down.
 
 ## Footprint
 
@@ -274,6 +288,13 @@ The Percona operator and the janitor set no requests. Actual use on idle GPU nod
 is much lower than the requests.
 
 ## Upgrading
+
+The Percona `8.0.34-15` image pin is supported here only for fresh installs with
+fresh database volumes. Existing database upgrades, downgrades and volume reuse
+have not been validated. Do not apply the new default to an existing database
+as an upgrade procedure: re-running this role replaces prior Helm image
+settings. Plan any existing-data migration separately using Percona's guidance;
+removing the Helm release does not remove its database volumes.
 
 DeepOps pins NVSentinel chart `v1.27.0` (`nvsentinel_chart_version`) and cert-manager
 `v1.21.1` (`nvsentinel_cert_manager_chart_version`). The pins are re-checked once
@@ -314,12 +335,28 @@ set `gpu_operator_enable_dcgm: false`, the monitor has nothing to talk to.
 to. Check `kubectl -n nvsentinel get pvc` and that the class named by
 `nvsentinel_storage_class` exists (`kubectl get storageclass`).
 
-**The database pod restarts and every other pod waits on it.** Percona Server for
-MongoDB 8.0.26-11, the image in chart v1.27.0, refuses to start on Linux kernels
-6.19 and newer (MongoDB issue SERVER-121912). Check the node kernel with
-`uname -r`. Until a database image that supports your kernel is available, run
-`nvsentinel_mode: observe` (no database) or use a kernel older than 6.19 on the
-node that runs the database.
+**The database pod restarts and every other pod waits on it.** The chart's
+original Percona MongoDB `8.0.26-11` rejects Linux 6.19 and newer. DeepOps pins
+`8.0.34-15`, whose startup check accepts kernels below 6.19.0 or above 7.0.13.
+This is **not a fix for Linux 7.0.0**: database-backed modes remain unsupported
+on Linux 6.19 through 7.0.13. Check `uname -r` and the installed kernel package
+on every possible database node before installing. On Ubuntu, the ABI suffix
+in `7.0.0-31-generic` is not upstream patch version 7.0.31; do not assume it
+satisfies the check or proves which fixes were backported. The Ubuntu-numbering
+exemption tracked in [SERVER-131779](https://jira.mongodb.org/browse/SERVER-131779)
+is not part of this pinned image.
+
+Use `nvsentinel_mode: observe` (no database) on unsupported kernels, or arrange
+a supported kernel through your normal maintenance process. Do not disable the
+startup check or allocator safeguards. Do not fall back to `8.0.19-7`: MongoDB
+warns that versions 8.0.0 through 8.0.20 on Linux 6.19 through 7.0.13 can crash
+and potentially corrupt data, even if startup succeeds
+([SERVER-125742](https://jira.mongodb.org/browse/SERVER-125742)).
+
+For a fresh installation on a supported kernel, record the resolved database
+image digest and verify sustained database health and event processing well
+beyond 60 seconds. A short successful startup alone is not a compatibility or
+data-integrity test.
 
 **`no matches for kind "PerconaServerMongoDB"` when moving from `observe` to a
 higher step.** *One-time step for an existing `observe` release.* Helm installs a chart's CRDs only on first install, not on upgrade,
@@ -351,6 +388,7 @@ Set in `config/group_vars/k8s_cluster.yml`. Defaults are in
 | `nvsentinel_dry_run` | `false` | Global dry-run (not allowed with `remediate`) |
 | `nvsentinel_gpu_node_count` | discovered | Override the GPU node count |
 | `nvsentinel_db_members` | `1` | Database members (`1` or `3`) |
+| `nvsentinel_db_image_tag` | `8.0.34-15@sha256:e1004538c31619ec471aa39423ef9ffa39a598750661c2d6c66d785de852d538` | Percona tag with immutable manifest digest; database-backed modes only, fresh volumes and supported kernels required |
 | `nvsentinel_storage_class` | `local-path` | Storage class for the database |
 | `nvsentinel_priority_class` | none | Priority class for NVSentinel and its database |
 | `nvsentinel_breaker_percentage` | automatic | Circuit breaker threshold, 1 to 100 |

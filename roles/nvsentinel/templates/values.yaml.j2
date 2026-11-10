@@ -51,6 +51,8 @@ mongodb-store:
   psmdb-operator:
     disableTelemetry: true
   psmdb-db:
+    image:
+      tag: {{ nvsentinel_db_image_tag | to_json }}
     unsafeFlags:
       replsetSize: {{ (_members < 3) | lower }}
     upgradeOptions:
