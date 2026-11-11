@@ -72,10 +72,8 @@ string_array=($pods_output)
 number_pods=${#string_array[@]}
 
 # loop through all pod from each node
-i=1
-while [ $i -le $total_gpus ]; do
-    kubectl -n ${CLUSTER_VERIFY_NS} logs -f ${string_array[$k]}
-    let i=i+1
+for pod in "${string_array[@]}"; do
+    kubectl -n ${CLUSTER_VERIFY_NS} logs -f ${pod}
 done
 
 echo "Number of Nodes: ${number_gpu_nodes}"
