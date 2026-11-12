@@ -78,6 +78,14 @@ esac
                 self.assertTrue(any("create -f" in call for call in calls))
                 self.assertEqual(calls[-1], "delete ns fixture-gpu-verify")
 
+    def test_logs_are_read_once_from_every_completed_pod(self):
+        for capacities, count in (([1], 1), ([None, 2, 1], 3)):
+            with self.subTest(capacities=capacities):
+                result, calls, _, _ = self.run_script(capacities)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                logged = [call.split()[-1] for call in calls if " logs -f " in call]
+                self.assertEqual(logged, [f"cluster-gpu-tests-{i}" for i in range(count)])
+
 
 if __name__ == "__main__":
     unittest.main()
