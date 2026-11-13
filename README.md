@@ -28,9 +28,9 @@ The DeepOps project encapsulates best practices in the deployment of GPU server 
 - An existing cluster that needs a resource manager / batch scheduler, where DeepOps is used to install Slurm or Kubernetes
 - A single machine where no scheduler is desired, only NVIDIA drivers, Docker, and the NVIDIA Container Runtime
 
-Latest release: [DeepOps 26.09 Release](https://github.com/NVIDIA/deepops/releases/tag/26.09)
+Latest release: [DeepOps 26.11 Release](https://github.com/NVIDIA/deepops/releases/tag/26.11)
 
-It is recommended to use the latest release branch for stable code (linked above). All development takes place on the master branch, which is generally [functional](docs/deepops/testing.md) but may change significantly between releases.
+It is recommended to check out the latest release tag for stable code (linked above), for example `git checkout 26.11`. All development takes place on the master branch, which is generally [functional](docs/deepops/testing.md) but may change significantly between releases.
 
 Operating this repository with an AI agent (or onboarding as a new human)? Start with [AGENTS.md](AGENTS.md) for the golden paths, operating rules, and [machine-readable validation tools](docs/deepops/validation.md), and [skills/](skills/README.md) for step-by-step procedures.
 
