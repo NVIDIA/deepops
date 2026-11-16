@@ -1,0 +1,16 @@
+[Unit]
+Description=Loki
+After=docker.service
+Requires=docker.service
+PartOf=docker.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=/usr/bin/docker pull {{ loki_container }}
+ExecStart=/usr/bin/docker run --rm --network host --name %n -v {{ loki_config_dir }}:/etc/loki:ro -v {{ loki_docker_volume_name }}:/loki {{ loki_container }} -config.file=/etc/loki/loki-config.yml
+
+[Install]
+WantedBy=multi-user.target

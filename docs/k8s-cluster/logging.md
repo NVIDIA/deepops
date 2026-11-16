@@ -1,91 +1,27 @@
 # Logging
 
-Centralized logging is provided by Filebeat, Elasticsearch and Kibana.
+Optional log search for Kubernetes uses Loki (single binary on a persistent volume) and Grafana Alloy (one pod per node), shown in the Grafana installed by the monitoring script. It is off by default.
 
-- [Logging](#logging)
-  - [Installation](#installation)
-    - [Install and validate the Elasticsearch cluster](#install-and-validate-the-elasticsearch-cluster)
-    - [Install Filebeat](#install-filebeat)
-    - [Install Kibana](#install-kibana)
-  - [Deleting the logging stack](#deleting-the-logging-stack)
+> The previous Elastic/Filebeat/Kibana guide was removed: Elastic archived those Helm charts in 2023.
 
-## Installation
+## Install
 
-The following procedure walks through installation of a centralized logging stack using the Helm repositories provided by [Elastic NV](https://www.elastic.co/).
-
-Our centralized logging solution requires that all hosts be configured with the same timezone and synchronized clocks.
-This should be done automatically in our Kubernetes deployment process, but can be enforced manually by running the Chrony playbook:
+Install monitoring first, then logging (needs a default StorageClass):
 
 ```bash
-ansible-playbook playbooks/generic/chrony-client.yml
+./scripts/k8s/deploy_monitoring.sh
+./scripts/k8s/deploy_logging.sh
 ```
 
-Add the Elastic repo in Helm:
+This installs Loki and Alloy in the `monitoring` namespace, adds Loki as a Grafana data source, and adds a **Cluster logs** dashboard. Logs from all pods are labelled `namespace`, `pod`, `container` and `host`. Default retention is 7 days and the default volume is 50Gi; edit `config/helm/loki.yml` (copy from `config.example/helm/loki.yml`) before installing to change them.
+
+Check the charts render without touching a cluster: `./scripts/k8s/deploy_logging.sh -t`.
+
+Pinned versions: `HELM_LOKI_CHART_VERSION` (community chart `grafana-community/loki`; Grafana Labs moved it there in 2026) and `HELM_ALLOY_CHART_VERSION`.
+
+## Remove
 
 ```bash
-helm repo add elastic https://helm.elastic.co
-```
-
-### [Install and validate the Elasticsearch cluster](https://github.com/elastic/helm-charts/blob/main/elasticsearch/README.md)
-
-```bash
-# Install Elasticsearch
-# - Note that this document uses three replicas for availability, but you may
-#   want to set a different value depending on cluster size
-helm install elasticsearch elastic/elasticsearch --set replicas=3
-
-# Wait for the cluster to come online
-kubectl get pods --namespace=default -l app=elasticsearch-master -w
-
-# Test the cluster health
-helm --namespace=default test elasticsearch
-```
-
-### [Install Filebeat](https://github.com/elastic/helm-charts/blob/main/filebeat/README.md)
-
-Note that the default Filebeat configuration will import all container logs from the Kubernetes cluster nodes.
-
-```bash
-# Install Filebeat
-helm install filebeat elastic/filebeat
-
-# Wait for all containers to come up
-kubectl get pods --namespace=default -l app=filebeat-filebeat -w
-```
-
-### [Install Kibana](https://github.com/elastic/helm-charts/blob/main/kibana/README.md)
-
-```bash
-# Install Kibana
-helm install kibana elastic/kibana
-
-# Wait for the container to come up
-kubectl get pods --namespace=default -l app=kibana -w
-```
-
-By default, Kibana is only deployed as a ClusterIP service.
-In order to expose it for user access, see the [chart documentation](https://github.com/elastic/helm-charts/blob/main/kibana/README.md)
-or just expose it as a NodePort service:
-
-```bash
-kubectl expose deployment kibana-kibana \
-    --type=NodePort \
-    --name=kibana-nodeport
-
-service/kibana-nodeport exposed
-
-kubectl get service kibana-nodeport
-NAME              TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
-kibana-nodeport   NodePort   10.233.39.104   <none>        5601:30965/TCP   42s
-```
-
-## Deleting the logging stack
-
-If there is an issue, you can follow these steps to delete the logging stack:
-
-```bash
-helm delete kibana
-helm delete filebeat
-helm delete elasticsearch
-kubectl delete pvc -l app=elasticsearch-master
+./scripts/k8s/deploy_logging.sh -d      # keeps stored logs
+./scripts/k8s/deploy_logging.sh -d -D   # also deletes the stored logs
 ```

@@ -1,0 +1,5 @@
+---
+- name: restart loki
+  service:
+    name: "{{ loki_svc_name }}"
+    state: restarted

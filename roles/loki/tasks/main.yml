@@ -1,0 +1,29 @@
+---
+- name: write configuration
+  import_tasks: config.yml
+
+- name: install python3 docker module
+  package:
+    name: python3-docker
+    state: present
+
+- name: create a persistent docker volume for logs
+  docker_volume:
+    name: "{{ loki_docker_volume_name }}"
+    state: present
+
+- name: install systemd unit file
+  template:
+    src: docker.loki.service.j2
+    dest: "/etc/systemd/system/{{ loki_svc_name }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart loki
+
+- name: configure service
+  systemd:
+    name: "{{ loki_svc_name }}"
+    state: "{{ loki_state }}"
+    enabled: "{{ loki_enabled }}"
+    daemon_reload: yes

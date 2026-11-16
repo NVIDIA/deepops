@@ -1,0 +1,55 @@
+// Managed by DeepOps. Ships the system journal (including kernel) and
+// Slurm daemon logs to Loki.
+
+loki.write "default" {
+  endpoint {
+    url = "{{ alloy_loki_url }}"
+  }
+}
+
+loki.relabel "journal" {
+  forward_to = []
+
+  rule {
+    source_labels = ["__journal__hostname"]
+    target_label  = "host"
+  }
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+  rule {
+    source_labels = ["__journal_syslog_identifier"]
+    target_label  = "syslog_identifier"
+  }
+  rule {
+    source_labels = ["__journal_priority_keyword"]
+    target_label  = "level"
+  }
+  rule {
+    source_labels = ["__journal__transport"]
+    target_label  = "transport"
+  }
+}
+
+loki.source.journal "system" {
+  max_age       = "{{ alloy_journal_max_age }}"
+  relabel_rules = loki.relabel.journal.rules
+  labels        = {job = "systemd-journal", cluster = "slurm"}
+  forward_to    = [loki.write.default.receiver]
+}
+{% if alloy_collect_slurm_logs %}
+
+local.file_match "slurm" {
+  path_targets = [
+{% for p in alloy_slurm_log_paths %}
+    {"__path__" = "{{ p }}", "job" = "slurm", "host" = "{{ inventory_hostname_short }}", "cluster" = "slurm"},
+{% endfor %}
+  ]
+}
+
+loki.source.file "slurm" {
+  targets    = local.file_match.slurm.targets
+  forward_to = [loki.write.default.receiver]
+}
+{% endif %}

@@ -1,0 +1,22 @@
+[Unit]
+Description=Grafana Alloy
+After=docker.service
+Requires=docker.service
+PartOf=docker.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=/usr/bin/docker pull {{ alloy_container }}
+ExecStart=/usr/bin/docker run --rm --network host --name %n \
+  -v {{ alloy_config_dir }}:/etc/alloy:ro \
+  -v /var/log:/var/log:ro \
+  -v /run/log/journal:/run/log/journal:ro \
+  -v /etc/machine-id:/etc/machine-id:ro \
+  -v deepops_alloy_data:/var/lib/alloy/data \
+  {{ alloy_container }} run --server.http.listen-addr=127.0.0.1:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,17 @@
+---
+alloy_container: "grafana/alloy:v1.22.0"
+alloy_svc_name: "docker.alloy.service"
+alloy_config_dir: /etc/alloy
+alloy_state: started
+alloy_enabled: yes
+
+# Where to send logs. Defaults to Loki on the first monitoring host.
+alloy_loki_host: "{{ (groups[slurm_monitoring_group | default('slurm-master')] | default([]) | first) | default('localhost') }}"
+alloy_loki_port: 3100
+alloy_loki_url: "http://{{ alloy_loki_host }}:{{ alloy_loki_port }}/loki/api/v1/push"
+
+# Local Slurm daemon log files to tail (missing files are ignored).
+alloy_slurm_log_paths:
+  - /var/log/slurm/*.log
+alloy_collect_slurm_logs: true
+alloy_journal_max_age: 12h

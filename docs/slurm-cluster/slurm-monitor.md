@@ -103,3 +103,7 @@ Visit http://\<slurm-metric ip\>:9093 for checking and setting about alerting.
 ![Alertmanager](../img/slurm_monitoring_alertmanager02.png)
 
 For more information on constructing Alertmanager alerting see the official [Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/).
+
+## Log search
+
+Optional Loki + Alloy log search is described in [slurm-logging.md](slurm-logging.md).

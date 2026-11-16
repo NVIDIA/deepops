@@ -1,0 +1,10 @@
+---
+- name: Install docker
+  import_playbook: ../container/docker.yml
+
+- hosts: "{{ hostlist | default('all') }}"
+  become: yes
+  tasks:
+    - name: configure alloy
+      include_role:
+        name: alloy
