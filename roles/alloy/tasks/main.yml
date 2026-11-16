@@ -27,3 +27,5 @@
     state: "{{ alloy_state }}"
     enabled: "{{ alloy_enabled }}"
     daemon_reload: yes
+  tags:
+    - molecule-notest

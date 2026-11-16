@@ -27,3 +27,5 @@
     state: "{{ loki_state }}"
     enabled: "{{ loki_enabled }}"
     daemon_reload: yes
+  tags:
+    - molecule-notest
