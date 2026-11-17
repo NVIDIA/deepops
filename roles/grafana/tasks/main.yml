@@ -50,6 +50,32 @@
     mode: 0644
   notify: restart grafana
 
+- name: install Loki datasource config
+  template:
+    src: "templates/loki-datasource.yml.j2"
+    dest: "{{ grafana_config_dir }}/provisioning/datasources/loki-datasource.yml"
+    owner: root
+    group: root
+    mode: 0644
+  when: grafana_enable_loki | bool
+  notify: restart grafana
+
+- name: copy Cluster logs dashboard
+  copy:
+    src: ../../../src/dashboards/cluster-logs-dashboard.json
+    dest: "{{ grafana_cfg_dashboard_path }}"
+    owner: "{{ grafana_user_id }}"
+    mode: "0644"
+  when: grafana_enable_loki | bool
+  notify: restart grafana
+
+- name: remove Loki datasource config when log search is disabled
+  file:
+    path: "{{ grafana_config_dir }}/provisioning/datasources/loki-datasource.yml"
+    state: absent
+  when: not (grafana_enable_loki | bool)
+  notify: restart grafana
+
 - name: install dashboard config
   template:
     src: "templates/prometheus-dashboard.yml.j2"

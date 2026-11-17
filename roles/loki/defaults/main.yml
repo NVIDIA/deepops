@@ -1,0 +1,15 @@
+---
+loki_container: "grafana/loki:3.7.10"
+loki_svc_name: "docker.loki.service"
+loki_config_dir: /etc/loki
+loki_docker_volume_name: "deepops_loki_data"
+loki_state: started
+loki_enabled: yes
+
+# Port Loki listens on (host network). Loki has no authentication; restrict
+# access to the cluster network with a firewall.
+loki_http_port: 3100
+loki_http_listen_address: "0.0.0.0"
+
+# How long logs are kept. Must be a multiple of 24h (Loki compactor rule).
+loki_retention_period: 168h

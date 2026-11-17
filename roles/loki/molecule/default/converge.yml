@@ -1,0 +1,10 @@
+---
+# Docker containers can't run the docker-in-docker service, so only the
+# configuration tasks are converged here. The service is covered by a lab run.
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Write loki configuration"
+      include_role:
+        name: "loki"
+        tasks_from: config.yml

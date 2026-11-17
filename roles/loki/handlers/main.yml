@@ -1,0 +1,6 @@
+---
+- name: restart loki
+  service:
+    name: "{{ loki_svc_name }}"
+    state: restarted
+  when: "'molecule-notest' not in ansible_skip_tags"
