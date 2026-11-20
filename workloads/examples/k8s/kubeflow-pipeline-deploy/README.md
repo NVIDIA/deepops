@@ -27,7 +27,7 @@ This pipeline will create 3 `NodePorts` at 30800, 30801, and 30802 for communica
 
 ### Example models:
 
-This pipeline will download models that will work out of the box see [the Triton Inference Server guide](https://docs.nvidia.com/deeplearning/sdk/triton-inference-server-master-branch-guide/docs/run.html#example-model-repository) for additional details.
+This pipeline will download models that will work out of the box see [the Triton Inference Server guide](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/getting_started/quickstart.html#create-a-model-repository) for additional details.
 
 This can be skipped by setting skip_examples to any non-blank value.
 
@@ -81,7 +81,7 @@ Successful output will look like:
 
 ```
 
-7. Connect to your management server or worker node and run the [example client](https://docs.nvidia.com/deeplearning/sdk/triton-inference-server-master-branch-guide/docs/client_example.html#section-getting-the-client-examples)
+7. Connect to your management server or worker node and run the [example client](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/getting_started/quickstart.html#send-an-inference-request)
 ```sh
 sudo docker run --net=host -it --rm nvcr.io/nvidia/tritonserver:21.04-py3-sdk /workspace/install/bin/image_client -m densenet_onnx -c 3 -s INCEPTION /workspace/images/mug.jpg
 ```
