@@ -1,0 +1,15 @@
+---
+- name: create config dir
+  file:
+    path: "{{ loki_config_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: install config file
+  template:
+    src: loki-config.yml.j2
+    dest: "{{ loki_config_dir }}/loki-config.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart loki

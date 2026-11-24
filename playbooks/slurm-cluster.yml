@@ -103,6 +103,7 @@
   import_playbook: slurm-cluster/grafana.yml
   vars:
     hostlist: "{{ slurm_monitoring_group | default('slurm-metric') }}"
+    grafana_enable_loki: "{{ slurm_enable_log_search | default(false) }}"
   when: slurm_enable_monitoring
 
 - name: Install monitoring services | Install alert manager
@@ -124,6 +125,18 @@
 - name: Install monitoring exporters | Install nvidia dcgm exporter
   import_playbook: slurm-cluster/nvidia-dcgm-exporter.yml
   when: slurm_enable_monitoring
+
+- name: Install log search | Install loki
+  import_playbook: slurm-cluster/loki.yml
+  vars:
+    hostlist: "{{ slurm_monitoring_group | default('slurm-metric') }}"
+  when: slurm_enable_monitoring and (slurm_enable_log_search | default(false) | bool)
+
+- name: Install log search | Install alloy log collector
+  import_playbook: slurm-cluster/alloy.yml
+  vars:
+    hostlist: "slurm-cluster"
+  when: slurm_enable_monitoring and (slurm_enable_log_search | default(false) | bool)
 
 - name: Set up rsyslog forwarding from compute nodes to head node | Install rsyslog server
   import_playbook: generic/rsyslog-server.yml

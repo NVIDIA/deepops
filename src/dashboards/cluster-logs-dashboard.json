@@ -1,0 +1,67 @@
+{
+  "uid": "deepops-cluster-logs",
+  "title": "Cluster logs",
+  "tags": ["deepops", "logs"],
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-1h", "to": "now"},
+  "templating": {
+    "list": [
+      {
+        "name": "host", "label": "Host", "type": "query",
+        "datasource": {"type": "loki", "uid": "deepops-loki"},
+        "query": {"label": "host", "stream": "", "type": 1},
+        "refresh": 2, "includeAll": true, "multi": true,
+        "allValue": ".+", "current": {"text": "All", "value": "$__all"}
+      },
+      {
+        "name": "search", "label": "Search text", "type": "textbox",
+        "query": "", "current": {"text": "", "value": ""}
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1, "type": "timeseries", "title": "Log volume by host",
+      "datasource": {"type": "loki", "uid": "deepops-loki"},
+      "gridPos": {"h": 7, "w": 24, "x": 0, "y": 0},
+      "targets": [{
+        "refId": "A", "queryType": "range",
+        "expr": "sum by (host) (count_over_time({host=~\"$host\"} |~ \"(?i)$search\" [$__interval]))",
+        "legendFormat": "{{host}}"
+      }]
+    },
+    {
+      "id": 2, "type": "logs", "title": "System journal and kernel",
+      "datasource": {"type": "loki", "uid": "deepops-loki"},
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 7},
+      "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "enableLogDetails": true},
+      "targets": [{
+        "refId": "A", "queryType": "range",
+        "expr": "{job=\"systemd-journal\", host=~\"$host\"} |~ \"(?i)$search\""
+      }]
+    },
+    {
+      "id": 3, "type": "logs", "title": "Slurm daemon logs",
+      "datasource": {"type": "loki", "uid": "deepops-loki"},
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 19},
+      "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "enableLogDetails": true},
+      "targets": [{
+        "refId": "A", "queryType": "range",
+        "expr": "{job=\"slurm\", host=~\"$host\"} |~ \"(?i)$search\""
+      }]
+    },
+    {
+      "id": 4, "type": "logs", "title": "Kernel: GPU errors (XID) and out-of-memory kills",
+      "datasource": {"type": "loki", "uid": "deepops-loki"},
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 31},
+      "options": {"showTime": true, "wrapLogMessage": true, "sortOrder": "Descending"},
+      "targets": [{
+        "refId": "A", "queryType": "range",
+        "expr": "{job=\"systemd-journal\", transport=\"kernel\", host=~\"$host\"} |~ \"NVRM: Xid|Out of memory|oom-kill\""
+      }]
+    }
+  ]
+}

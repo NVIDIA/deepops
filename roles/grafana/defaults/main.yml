@@ -10,3 +10,8 @@ grafana_enabled: yes
 grafana_cfg_user: admin
 grafana_cfg_pass: deepops
 grafana_cfg_dashboard_path: "{{ grafana_data_dir }}/dashboards"
+
+# Optional log search: add Loki as a data source and ship the "Cluster logs"
+# dashboard. Off by default; see docs/slurm-cluster/slurm-logging.md.
+grafana_enable_loki: false
+grafana_loki_url: "http://localhost:3100"

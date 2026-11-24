@@ -16,6 +16,8 @@ jobs:
           - lmod
           - nfs
           - nhc
+          - alloy
+          - loki
           - nvidia_dcgm
           - openmpi
           - mofed

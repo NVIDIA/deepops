@@ -1,0 +1,13 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Read rendered config
+      slurp:
+        src: /etc/alloy/config.alloy
+      register: cfg
+    - name: Config contains expected content
+      assert:
+        that:
+          - "'loki.write' in (cfg.content | b64decode)"

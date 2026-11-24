@@ -211,6 +211,15 @@ slurm_enable_monitoring: true
 slurm_monitoring_group: "slurm-master"
 
 ################################################################################
+# Optional log search (Loki + Alloy), off by default                           #
+################################################################################
+# Runs Loki on the monitoring node and Alloy on every node, and adds a Loki
+# data source and a "Cluster logs" dashboard to Grafana. Requires
+# slurm_enable_monitoring. See docs/slurm-cluster/slurm-logging.md.
+slurm_enable_log_search: false
+# loki_retention_period: 168h   # 7 days; must be a multiple of 24h
+
+################################################################################
 # Logging with rsyslog                                                         #
 ################################################################################
 slurm_enable_rsyslog_server: true

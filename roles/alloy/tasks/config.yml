@@ -1,0 +1,15 @@
+---
+- name: create config dir
+  file:
+    path: "{{ alloy_config_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: install config file
+  template:
+    src: config.alloy.j2
+    dest: "{{ alloy_config_dir }}/config.alloy"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart alloy

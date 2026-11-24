@@ -1,0 +1,9 @@
+apiVersion: 1
+
+datasources:
+- name: Loki
+  uid: deepops-loki
+  type: loki
+  access: proxy
+  url: {{ grafana_loki_url }}
+  isDefault: false

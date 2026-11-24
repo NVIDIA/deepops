@@ -1,0 +1,13 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Read rendered config
+      slurp:
+        src: /etc/loki/loki-config.yml
+      register: cfg
+    - name: Config contains expected content
+      assert:
+        that:
+          - "'retention_period: 168h' in (cfg.content | b64decode)"
