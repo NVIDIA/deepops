@@ -207,7 +207,7 @@ add switch PFC, ECN configuration
    ansible-playbook -l k8s_cluster playbooks/k8s-cluster.yml
    ```
 
-   Please refer to [DeepOps Kubernetes Deployment Guidehere](https://github.com/NVIDIA/deepops/blob/master/docs/kubernetes-cluster.md) for more information.
+   Please refer to [DeepOps Kubernetes Deployment Guidehere](https://github.com/NVIDIA/deepops/blob/master/docs/k8s-cluster/README.md) for more information.
 
    Verify that Kubernetes clustering is working with "kubectl get nodes" command:
 

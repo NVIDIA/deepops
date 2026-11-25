@@ -45,7 +45,7 @@ Optional components are included as scripts in the [/scripts](/scripts) director
 
 ## Examples
 
-Examples are included in the [/examples](/examples) directory. Each example starts with the cluster type, so [/examples/k8s/dask-rapids](/examples/k8s/dask-rapids) requires a Kubernetes cluster.
+Examples are included in the [/examples](/workloads/examples) directory. Each example starts with the cluster type, so [/examples/k8s/dask-rapids](/workloads/examples/k8s/dask-rapids) requires a Kubernetes cluster.
 
 ## Docs
 

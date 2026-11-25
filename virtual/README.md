@@ -80,7 +80,7 @@ Also, using VMs and optionally GPU passthrough assumes that the host machine has
 
 ### Kubernetes
 
-Consult the [Kubernetes Usage Guide](/docs/kubernetes-usage.md) for examples of how to use Kubernetes.
+Consult the [Kubernetes Usage Guide](/docs/k8s-cluster/kubernetes-usage.md) for examples of how to use Kubernetes.
 
 ### Connecting to the VMs
 
