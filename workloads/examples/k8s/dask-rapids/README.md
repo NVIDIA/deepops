@@ -16,8 +16,8 @@ Any cluster hardware should work to duplicate this example, provided that each c
 
 These instructions assume that:
 
-* You have already set up a [Kubernetes cluster using DeepOps](/docs/kubernetes-cluster.md).
-* Your cluster has a [MetalLB load balancer](/docs/ingress.md) configured for ingress.
+* You have already set up a [Kubernetes cluster using DeepOps](/docs/k8s-cluster/README.md).
+* Your cluster has a [MetalLB load balancer](/docs/k8s-cluster/ingress.md) configured for ingress.
 * You have privileges to run containers in your cluster.
 * All compute nodes in your cluster have at least one CUDA-capable GPU.
 * You have push access to a container registry, whether local or public.
@@ -130,7 +130,7 @@ If you open your browser and go to the URL for Jupyter, you can log in with the 
 You'll then find yourself in JupyterLab session where you can interact with the RAPIDS and Dask libraries.
 If you open a terminal window (File -> New -> Terminal in the JupyterLab menu), you should even be able to run `nvidia-smi` to see your GPUs:
 
-![Screenshot of running nvidia-smi in JupyterLab](/examples/k8s/dask-rapids/jupyterlab-nvsmi.png "Screenshot of running nvidia-smi in JupyterLab")
+![Screenshot of running nvidia-smi in JupyterLab](jupyterlab-nvsmi.png "Screenshot of running nvidia-smi in JupyterLab")
 
 ## Running the benchmark
 
@@ -138,7 +138,7 @@ Once you have JupyterLab open, load the `ParallelSum.ipynb` notebook using the f
 This notebook will step through running a simple parallel sum benchmark on both the CPUs and GPUs in your cluster.
 Feel free to adjust the number of CPU cores or GPUs used and the parameters for the model to experiment with the calculation.
 
-![Screenshot of the parallel sum notebook](/examples/k8s/dask-rapids/parallel-sum.png "Screenshot of the parallel sum notebook")
+![Screenshot of the parallel sum notebook](parallel-sum.png "Screenshot of the parallel sum notebook")
 
 ## Experimenting further
 

@@ -80,12 +80,12 @@ For more information, see the [Enroot documentation](https://github.com/NVIDIA/e
 
 ## System containers using private registries
 
-DeepOps performs some container pulls as part of setting up a cluster, so many deployments will want to enable a registry login for the root user during the setup process. To enable this, we provide a convenience playbook [docker-login.yml](../playbooks/container/docker-login.yml) that you can use to log into one or more registries on each node in a cluster.
+DeepOps performs some container pulls as part of setting up a cluster, so many deployments will want to enable a registry login for the root user during the setup process. To enable this, we provide a convenience playbook [docker-login.yml](../../playbooks/container/docker-login.yml) that you can use to log into one or more registries on each node in a cluster.
 
 **_Note that we recommend registering a separate service account on the container registries for system setup, rather than relying on the individual account of an individual person._**
 
 First, create an Ansible vars file to store your registry login information.
-You can put this directly in your DeepOps [config directory](../config.example), but for security, we recommend creating a separate [Ansible Vault](https://docs.ansible.com/ansible/2.8/user_guide/vault.html) file.
+You can put this directly in your DeepOps [config directory](../../config.example), but for security, we recommend creating a separate [Ansible Vault](https://docs.ansible.com/ansible/2.8/user_guide/vault.html) file.
 
 ```bash
 ansible-vault create config/docker-login.yml
@@ -94,7 +94,7 @@ Confirm New Vault password:
 ```
 
 This will open your editor of choice, where you can enter the login information in a `docker_login_registries` variable.
-An example appears below, or in the [defaults for the docker-login role](../roles/docker-login/defaults/main.yml):
+An example appears below, or in the [defaults for the docker-login role](../../roles/docker-login/defaults/main.yml):
 
 ```yaml
 docker_login_registries:
